@@ -36,5 +36,13 @@
       }
     ]
   },
+  "permission": {
+    "filescope.read": {
+      "desc": "用于读取小程序内的文件"
+    },
+    "filescope.write": {
+      "desc": "用于写入小程序内的文件"
+    }
+  },
   "sitemapLocation": "sitemap.json"
 }

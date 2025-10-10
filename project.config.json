@@ -14,6 +14,10 @@
     "useCompilerPlugins": false,
     "minifyWXML": true
   },
+  "env": {
+    "API_KEY": "your_api_key_here",
+    "API_BASE_URL": "https://your-api-domain.com/api"
+  },
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {},
   "packOptions": {

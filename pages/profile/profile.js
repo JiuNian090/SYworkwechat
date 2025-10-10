@@ -1,4 +1,6 @@
 // pages/profile/profile.js
+const api = require('../../utils/api.js');
+
 Page({
   data: {
     userInfo: {
@@ -6,13 +8,42 @@ Page({
       nickName: '用户'
     },
     hasLogin: false,
-    exportFileName: ''
+    exportFileName: '',
+    hasUserInfo: false,
+    canIUseGetUserProfile: false,
+    canIUseNicknameComp: false,
+    logged: false,
+    exportSuccess: false,
+    exportFail: false,
+    loading: false,
+  },
+
+  // 获取用户信息
+  async getUserInfo() {
+    try {
+      const userInfo = await api.get('/user/info');
+      this.setData({
+        userInfo: userInfo,
+        hasUserInfo: true
+      });
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      wx.showToast({
+        title: '获取用户信息失败',
+        icon: 'none'
+      });
+    }
   },
 
   onLoad() {
     this.loadUserInfo();
     // 检查登录状态
     this.checkLoginStatus();
+    
+    // 如果已登录，获取用户信息
+    if (this.data.hasLogin) {
+      this.getUserInfo();
+    }
   },
 
   checkLoginStatus() {
