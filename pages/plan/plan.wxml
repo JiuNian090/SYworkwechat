@@ -47,6 +47,12 @@
           <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name}}" />
         </view>
         <view class="form-group">
+          <text class="label">班次类型</text>
+          <picker mode="selector" range="{{shiftTypes}}" bindchange="onTypeChange">
+            <view class="picker">{{newTemplate.type}}</view>
+          </picker>
+        </view>
+        <view class="form-group">
           <text class="label">颜色</text>
           <picker mode="selector" range="{{colorOptions}}" range-key="name" bindchange="onColorChange">
             <view class="picker" style="color:{{newTemplate.color}}">{{colorNames[newTemplate.color]}}</view>
@@ -75,12 +81,6 @@
             </picker>
           </view>
           <text class="work-hours-display">总计：{{newTemplate.workHours}} 小时</text>
-        </view>
-        <view class="form-group">
-          <text class="label">班次类型</text>
-          <picker mode="selector" range="{{shiftTypes}}" bindchange="onTypeChange">
-            <view class="picker">{{newTemplate.type}}</view>
-          </picker>
         </view>
         <view class="modal-footer">
           <button class="cancel-btn" bindtap="hideAddTemplateModal">取消</button>
@@ -101,6 +101,12 @@
           <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name}}" />
         </view>
         <view class="form-group">
+          <text class="label">班次类型</text>
+          <picker mode="selector" range="{{shiftTypes}}" bindchange="onTypeChange">
+            <view class="picker">{{newTemplate.type}}</view>
+          </picker>
+        </view>
+        <view class="form-group">
           <text class="label">颜色</text>
           <picker mode="selector" range="{{colorOptions}}" range-key="name" bindchange="onColorChange">
             <view class="picker" style="color:{{newTemplate.color}}">{{colorNames[newTemplate.color]}}</view>
@@ -129,12 +135,6 @@
             </picker>
           </view>
           <text class="work-hours-display">总计：{{newTemplate.workHours}} 小时</text>
-        </view>
-        <view class="form-group">
-          <text class="label">班次类型</text>
-          <picker mode="selector" range="{{shiftTypes}}" bindchange="onTypeChange">
-            <view class="picker">{{newTemplate.type}}</view>
-          </picker>
         </view>
         <view class="modal-footer">
           <button class="cancel-btn" bindtap="hideEditTemplateModal">取消</button>
