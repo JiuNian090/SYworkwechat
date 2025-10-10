@@ -1,4 +1,23 @@
 /* pages/schedule/schedule.wxss */
+/* 主色变量和统一按钮样式 */
+.main-color {
+  color: #07c160;
+}
+.btn-primary {
+  background: #07c160;
+  color: #fff;
+  border-radius: 10rpx;
+  font-size: 32rpx;
+  padding: 16rpx 0;
+  box-shadow: 0 2rpx 8rpx rgba(7,193,96,0.08);
+}
+.btn-primary:active {
+  background: #059e4d;
+}
+.modal {
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.12);
+}
 .container {
   padding: 20rpx;
 }

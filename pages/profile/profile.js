@@ -228,5 +228,106 @@ Page({
         });
       }
     });
+    },
+
+    // 导出所有本地数据为 CSV 文件
+    exportAllDataToCSV() {
+      try {
+        const userInfo = wx.getStorageSync('userInfo') || {};
+        const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+        const shifts = wx.getStorageSync('shifts') || {};
+        // 统计数据可按需扩展
+
+        let csv = '类型,字段,内容\n';
+        // 用户信息
+        Object.keys(userInfo).forEach(key => {
+          csv += `用户信息,${key},${userInfo[key]}\n`;
+        });
+        // 班次模板
+        shiftTemplates.forEach((tpl, idx) => {
+          Object.keys(tpl).forEach(key => {
+            csv += `班次模板${idx+1},${key},${tpl[key]}\n`;
+          });
+        });
+        // 排班信息
+        Object.keys(shifts).forEach(date => {
+          const shift = shifts[date];
+          Object.keys(shift).forEach(key => {
+            csv += `排班,${date}_${key},${shift[key]}\n`;
+          });
+        });
+
+        // 保存为文件
+        const fs = wx.getFileSystemManager();
+        const filePath = `${wx.env.USER_DATA_PATH}/sywork_backup_${Date.now()}.csv`;
+        fs.writeFile({
+          filePath,
+          data: csv,
+          encoding: 'utf8',
+          success: () => {
+            wx.openDocument({ filePath, fileType: 'csv' });
+            wx.showToast({ title: 'CSV已生成', icon: 'success' });
+          },
+          fail: () => {
+            wx.showToast({ title: '导出失败', icon: 'none' });
+          }
+        });
+      } catch (e) {
+        wx.showToast({ title: '导出异常', icon: 'none' });
+      }
+    },
+
+    // 导入 CSV 文件并恢复数据
+    importAllDataFromCSV() {
+      wx.chooseMessageFile({
+        count: 1,
+        type: 'file',
+        extension: ['csv'],
+        success: res => {
+          const filePath = res.tempFiles[0].path;
+          const fs = wx.getFileSystemManager();
+          fs.readFile({
+            filePath,
+            encoding: 'utf8',
+            success: r => {
+              try {
+                const lines = r.data.split('\n');
+                let userInfo = {};
+                let shiftTemplates = [];
+                let shifts = {};
+                let tplIdx = -1;
+                lines.forEach(line => {
+                  const arr = line.split(',');
+                  if (arr[0].startsWith('用户信息')) {
+                    userInfo[arr[1]] = arr[2];
+                  } else if (arr[0].startsWith('班次模板')) {
+                    const idx = parseInt(arr[0].replace('班次模板','')) - 1;
+                    if (!shiftTemplates[idx]) shiftTemplates[idx] = {};
+                    shiftTemplates[idx][arr[1]] = arr[2];
+                  } else if (arr[0] === '排班') {
+                    const [date, key] = arr[1].split('_');
+                    if (!shifts[date]) shifts[date] = {};
+                    shifts[date][key] = arr[2];
+                  }
+                });
+                wx.setStorageSync('userInfo', userInfo);
+                wx.setStorageSync('shiftTemplates', shiftTemplates);
+                wx.setStorageSync('shifts', shifts);
+                this.loadUserInfo();
+                wx.showToast({ title: 'CSV导入成功', icon: 'success' });
+              } catch (e) {
+                wx.showToast({ title: 'CSV解析失败', icon: 'none' });
+              }
+            },
+            fail: () => {
+              wx.showToast({ title: '读取文件失败', icon: 'none' });
+            }
+          });
+        },
+        fail: () => {
+          wx.showToast({ title: '未选择文件', icon: 'none' });
+        }
+      });
+    },
   }
-});
+);
