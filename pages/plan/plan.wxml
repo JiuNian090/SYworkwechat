@@ -20,10 +20,8 @@
           </view>
         </view>
         <view class="template-actions">
-          <view class="action-icons">
-            <icon class="edit-icon" type="edit" size="20" bindtap="showEditTemplateModal" data-index="{{index}}" />
-            <icon class="delete-icon" type="delete" size="20" bindtap="deleteTemplate" data-index="{{index}}" />
-          </view>
+          <button class="edit-btn" bindtap="showEditTemplateModal" data-index="{{index}}">编辑</button>
+          <button class="delete-btn" bindtap="deleteTemplate" data-index="{{index}}">删除</button>
         </view>
       </view>
     </view>

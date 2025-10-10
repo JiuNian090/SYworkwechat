@@ -36,7 +36,7 @@
           <text class="day-number">{{item.day}}</text>
         </view>
         <view class="day-content">
-          <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};border-radius:8rpx;padding:4rpx 8rpx;">
+          <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};">
             <text class="shift-name">{{item.shift.name}}</text>
             <text class="shift-time">{{item.shift.startTime}}-{{item.shift.endTime}}</text>
             <text wx:if="{{item.shift.type === '加班'}}" class="overtime-tag">加班</text>
@@ -75,10 +75,13 @@
           <view class="day-cell {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}" 
                 wx:for="{{item}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
             <text class="day-number">{{item.day}}</text>
-            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};border-radius:8rpx;padding:2rpx 6rpx;">
+            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};">
               <text class="shift-name">{{item.shift.name}}</text>
               <text wx:if="{{item.shift.type === '加班'}}" class="overtime-tag">加班</text>
               <!-- 节假日特殊显示已移除 -->
+            </view>
+            <view wx:elif="{{!item.shift}}" class="no-shift">
+              <text>未排班</text>
             </view>
           </view>
       </view>

@@ -16,6 +16,7 @@
     "selectedColor": "#3cc51f",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
+    "position": "bottom",
     "list": [
       {
         "pagePath": "pages/plan/plan",

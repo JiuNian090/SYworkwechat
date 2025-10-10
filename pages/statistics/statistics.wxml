@@ -51,10 +51,11 @@
       <text class="summary-value">{{statistics.offDays}} 天</text>
     </view>
     
-    <view class="summary-item">
-      <text class="summary-label">加班时间</text>
-      <text class="summary-value">{{statistics.overtimeHours}} 小时</text>
-    </view>
+    
+  </view>
+
+  <view class="export-section">
+    <button class="export-btn" bindtap="exportToExcel">导出为Excel</button>
   </view>
 
   <view class="shifts-list">
@@ -77,9 +78,5 @@
     <view wx:if="{{shifts.length === 0}}" class="empty-tip">
       所选日期范围内无排班记录
     </view>
-  </view>
-
-  <view class="export-section">
-    <button class="export-btn" bindtap="exportToExcel">导出为Excel</button>
   </view>
 </view>

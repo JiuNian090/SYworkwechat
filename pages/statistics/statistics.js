@@ -10,8 +10,7 @@ Page({
     statistics: {
       totalDays: 0,
       workDays: 0,
-      offDays: 0,
-      overtimeHours: 0
+      offDays: 0
     }
   },
 
@@ -30,6 +29,11 @@ Page({
     }, () => {
       this.calculateStatistics();
     });
+  },
+
+  onShow() {
+    // 页面显示时重新计算统计数据，确保数据实时更新
+    this.calculateStatistics();
   },
 
   formatDate(date) {
@@ -66,7 +70,6 @@ Page({
       let totalHours = 0;
       let workDays = 0;
       let offDays = 0;
-      let overtimeHours = 0;
       
       // 遍历日期范围内的所有排班
       const start = new Date(startDate);
@@ -82,17 +85,15 @@ Page({
           shiftsInRange.push(shift);
           totalHours += parseFloat(allShifts[dateStr].workHours) || 0;
           
-          // 统计白天班、跨夜班和休息日
-      if (allShifts[dateStr].type === '白天班' || allShifts[dateStr].type === '跨夜班') {
+          // 按班次类型统计工作班次和休息日
+      // 工作班次：白天班、跨夜班
+      // 休息日：休息日
+      const shiftType = allShifts[dateStr].type;
+      if (shiftType === '白天班' || shiftType === '跨夜班') {
         workDays++;
-      } else if (allShifts[dateStr].type === '休息日') {
+      } else if (shiftType === '休息日') {
         offDays++;
       }
-          
-          // 统计加班时间（假设超过8小时为加班）
-          if (parseFloat(allShifts[dateStr].workHours) > 8) {
-            overtimeHours += parseFloat(allShifts[dateStr].workHours) - 8;
-          }
         }
       }
       
@@ -102,8 +103,7 @@ Page({
         statistics: {
           totalDays: shiftsInRange.length,
           workDays: workDays,
-          offDays: offDays,
-          overtimeHours: overtimeHours.toFixed(1)
+          offDays: offDays
         }
       });
     } catch (e) {
@@ -129,7 +129,6 @@ Page({
     csvContent += `排班天数,${statistics.totalDays}天\n`;
     csvContent += `工作班次,${statistics.workDays}天\n`;
     csvContent += `休息日,${statistics.offDays}天\n`;
-    csvContent += `加班时间,${statistics.overtimeHours}小时\n`;
     
     // 创建并下载文件
     const fs = wx.getFileSystemManager();

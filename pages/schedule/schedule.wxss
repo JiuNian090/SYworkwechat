@@ -6,7 +6,7 @@
 .btn-primary {
   background: #07c160;
   color: #fff;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   font-size: 32rpx;
   padding: 16rpx 0;
   box-shadow: 0 2rpx 8rpx rgba(7,193,96,0.08);
@@ -29,14 +29,16 @@
 }
 
 .title {
-  font-size: 36rpx;
+  font-size: 48rpx;
   font-weight: bold;
   color: #333;
+  text-align: center;
+  margin: 20rpx 0;
 }
 
 .view-switch {
   display: flex;
-  margin: 30rpx 0;
+  margin: 20rpx 0;
   border: 1rpx solid #07c160;
   border-radius: 10rpx;
   overflow: hidden;
@@ -45,9 +47,10 @@
 .switch-item {
   flex: 1;
   text-align: center;
-  padding: 20rpx;
+  padding: 15rpx;
   background: #fff;
   color: #07c160;
+  font-size: 28rpx;
 }
 
 .switch-item.active {
@@ -70,8 +73,8 @@
 .nav-btn {
   background: #f0f0f0;
   border: none;
-  padding: 10rpx 20rpx;
-  border-radius: 10rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
   font-size: 24rpx;
 }
 
@@ -84,15 +87,15 @@
 .weekdays {
   display: flex;
   background: #f8f8f8;
-  border-radius: 10rpx;
-  margin-bottom: 20rpx;
+  border-radius: 12rpx;
+  margin-bottom: 15rpx;
 }
 
 .weekday {
   flex: 1;
   text-align: center;
-  padding: 20rpx 0;
-  font-size: 28rpx;
+  padding: 12rpx 0;
+  font-size: 24rpx;
   color: #666;
 }
 
@@ -100,14 +103,17 @@
 .week-grid {
   display: flex;
   flex-direction: column;
+  margin-bottom: 20rpx;
 }
 
 .day-cell {
   width: 100%;
-  min-height: 120rpx;
+  min-height: 100rpx;
   border: 1rpx solid #e0e0e0;
   box-sizing: border-box;
   display: flex;
+  margin-bottom: 4rpx;
+  border-radius: 12rpx;
 }
 
 .day-cell.today {
@@ -116,53 +122,100 @@
 }
 
 .day-header {
-  width: 120rpx;
-  padding: 20rpx;
+  width: 80rpx;
+  padding: 8rpx 4rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border-right: 1rpx solid #e0e0e0;
   background: #f8f8f8;
+  border-top-left-radius: 12rpx;
+  border-bottom-left-radius: 12rpx;
 }
 
 .weekday-text {
-  font-size: 24rpx;
+  font-size: 18rpx;
   color: #666;
-  margin-bottom: 10rpx;
+  margin-bottom: 4rpx;
 }
 
 .day-number {
   position: relative;
   top: auto;
   left: auto;
-  font-size: 32rpx;
+  font-size: 26rpx;
   font-weight: bold;
   color: #333;
 }
 
 .day-content {
   flex: 1;
-  padding: 20rpx;
+  padding: 8rpx;
   display: flex;
   align-items: center;
+  justify-content: center;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .shift-info {
   margin-left: 0;
   flex: 1;
+  padding: 8rpx 12rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.shift-name {
+  display: block;
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4rpx;
+}
+
+.shift-time {
+  display: block;
+  font-size: 20rpx;
+  color: #666;
+  margin-top: 0;
+}
+
+.overtime-tag {
+  font-size: 16rpx;
+  padding: 2rpx 6rpx;
+  background: #ff4d4f;
+  color: white;
+  border-radius: 6rpx;
+  margin-left: 8rpx;
+  vertical-align: top;
 }
 
 .no-shift {
   margin-left: 0;
   font-size: 20rpx;
   color: #999;
+  padding: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
 }
 
 /* 月视图 */
 .month-grid {
   border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   overflow: hidden;
 }
 
@@ -170,8 +223,77 @@
   display: flex;
 }
 
+.month-view .day-cell {
+  position: relative;
+  height: 80rpx;
+  padding: 4rpx;
+  display: block;
+}
+
+.month-view .day-number {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  z-index: 1;
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+  text-shadow: 0 0 2rpx rgba(255, 255, 255, 0.8);
+}
+
+.month-view .shift-info {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24rpx 4rpx 4rpx 4rpx;
+  border-radius: 12rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.month-view .shift-name {
+  font-size: 20rpx;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2rpx;
+}
+
+.month-view .overtime-tag {
+  font-size: 14rpx;
+  padding: 1rpx 4rpx;
+  background: #ff4d4f;
+  color: white;
+  border-radius: 6rpx;
+  margin-left: 4rpx;
+}
+
+.month-view .no-shift {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  color: #999;
+}
+
 .day-cell.other-month {
   background: #f8f8f8;
+  color: #ccc;
+}
+
+.month-view .day-cell.other-month .day-number {
   color: #ccc;
 }
 
@@ -203,7 +325,7 @@
 .modal-content {
   background: #fff;
   width: 80%;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 30rpx;
   max-height: 80vh;
   overflow-y: auto;
@@ -229,7 +351,7 @@
 .shift-item {
   padding: 20rpx;
   border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   margin-bottom: 20rpx;
 }
 
@@ -249,7 +371,7 @@
   margin-top: 30rpx;
   padding: 20rpx;
   background: #fff0f0;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -260,7 +382,7 @@
   color: #fff;
   font-size: 24rpx;
   padding: 10rpx 20rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
 }
 
 .empty-tip {
@@ -274,21 +396,4 @@
 .batch-operation {
   margin-top: 30rpx;
   text-align: center;
-}
-
-.shift-name {
-  display: block;
-  font-size: 24rpx;
-  font-weight: bold;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.shift-time {
-  display: block;
-  font-size: 20rpx;
-  color: #666;
-  margin-top: 5rpx;
 }

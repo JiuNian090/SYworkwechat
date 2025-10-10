@@ -29,9 +29,11 @@
 }
 
 .title {
-  font-size: 36rpx;
+  font-size: 48rpx;
   font-weight: bold;
   color: #333;
+  text-align: center;
+  margin: 20rpx 0;
 }
 
 .date-selector {

@@ -205,6 +205,15 @@ Page({
       this.generateWeekDates();
       this.generateMonthDates();
       
+      // 通知统计页面更新数据
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].route === 'pages/statistics/statistics') {
+          pages[i].calculateStatistics();
+          break;
+        }
+      }
+      
       wx.showToast({
         title: '排班成功',
         icon: 'success'
@@ -234,6 +243,15 @@ Page({
       // 更新视图
       this.generateWeekDates();
       this.generateMonthDates();
+      
+      // 通知统计页面更新数据
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].route === 'pages/statistics/statistics') {
+          pages[i].calculateStatistics();
+          break;
+        }
+      }
       
       wx.showToast({
         title: '删除成功',
