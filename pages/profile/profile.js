@@ -5,7 +5,8 @@ Page({
       avatarUrl: '/images/default_avatar.png',
       nickName: '用户'
     },
-    hasLogin: false
+    hasLogin: false,
+    exportFileName: ''
   },
 
   onLoad() {
@@ -115,6 +116,13 @@ Page({
     }
   },
 
+  // 处理文件名输入
+  onFileNameInput(e) {
+    this.setData({
+      exportFileName: e.detail.value
+    });
+  },
+
   
 
   exportData() {
@@ -131,9 +139,13 @@ Page({
       
       const jsonData = JSON.stringify(data, null, 2);
       
+      // 获取自定义文件名
+      const customFileName = this.data.exportFileName;
+      const fileName = customFileName ? customFileName : `sywork_backup_${Date.now()}`;
+      
       // 创建临时文件
       const fs = wx.getFileSystemManager();
-      const filePath = `${wx.env.USER_DATA_PATH}/sywork_backup_${Date.now()}.json`;
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.json`;
       
       fs.writeFile({
         filePath: filePath,
@@ -272,58 +284,66 @@ Page({
     });
     
     try {
+      // 获取所有数据
       const userInfo = wx.getStorageSync('userInfo') || {};
       const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
       const shifts = wx.getStorageSync('shifts') || {};
       
-      // 构建CSV内容
-      let csv = '类型,字段,内容\n';
+      // 构造CSV内容
+      let csvContent = '\uFEFF'; // 添加BOM以支持中文
       
-      // 用户信息
-      Object.keys(userInfo).forEach(key => {
-        // 转义CSV特殊字符
-        const value = String(userInfo[key]).replace(/"/g, '""');
-        csv += `用户信息,${key},"${value}"\n`;
+      // 添加用户信息
+      csvContent += '用户信息\n';
+      csvContent += '昵称,头像URL\n';
+      csvContent += `"${userInfo.nickName || ''}","${userInfo.avatarUrl || ''}"\n\n`;
+      
+      // 添加班次模板
+      csvContent += '班次模板\n';
+      csvContent += '名称,开始时间,结束时间,小时数,分钟数,工作时长,类型,颜色\n';
+      shiftTemplates.forEach(template => {
+        csvContent += `"${template.name || ''}","${template.startTime || ''}","${template.endTime || ''}",${template.hours || 0},${template.minutes || 0},${template.workHours || 0},"${template.type || ''}","${template.color || ''}"\n`;
       });
       
-      // 班次模板
-      shiftTemplates.forEach((tpl, idx) => {
-        Object.keys(tpl).forEach(key => {
-          const value = String(tpl[key]).replace(/"/g, '""');
-          csv += `班次模板${idx+1},${key},"${value}"\n`;
-        });
-      });
+      csvContent += '\n';
       
-      // 排班信息
+      // 添加排班记录
+      csvContent += '排班记录\n';
+      csvContent += '日期,班次名称,开始时间,结束时间,工作时长\n';
       Object.keys(shifts).forEach(date => {
-        const shift = shifts[date];
-        Object.keys(shift).forEach(key => {
-          const value = String(shift[key]).replace(/"/g, '""');
-          csv += `排班,${date}_${key},"${value}"\n`;
-        });
+        const dayShifts = shifts[date];
+        if (Array.isArray(dayShifts)) {
+          dayShifts.forEach(shift => {
+            csvContent += `"${date}","${shift.shiftName || ''}","${shift.startTime || ''}","${shift.endTime || ''}",${shift.workHours || 0}\n`;
+          });
+        }
       });
       
-      // 保存为文件
+      // 获取自定义文件名
+      const customFileName = this.data.exportFileName;
+      const fileName = customFileName ? customFileName : `sywork_backup_${Date.now()}`;
+      
+      // 创建临时文件
       const fs = wx.getFileSystemManager();
-      const filePath = `${wx.env.USER_DATA_PATH}/sywork_backup_${Date.now()}.csv`;
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.csv`;
       
       fs.writeFile({
-        filePath,
-        data: csv,
+        filePath: filePath,
+        data: csvContent,
         encoding: 'utf8',
         success: () => {
+          // 保存文件到本地
           wx.saveFile({
             tempFilePath: filePath,
             success: (res) => {
               wx.hideLoading();
               wx.showToast({
-                title: 'CSV导出成功',
+                title: '导出成功',
                 icon: 'success'
               });
             },
             fail: (err) => {
               wx.hideLoading();
-              console.error('保存CSV文件失败', err);
+              console.error('保存文件失败', err);
               wx.showToast({
                 title: '保存失败',
                 icon: 'none'
@@ -333,7 +353,7 @@ Page({
         },
         fail: (err) => {
           wx.hideLoading();
-          console.error('写入CSV文件失败', err);
+          console.error('写入文件失败', err);
           wx.showToast({
             title: '导出失败',
             icon: 'none'
@@ -344,7 +364,7 @@ Page({
       wx.hideLoading();
       console.error('导出CSV失败', e);
       wx.showToast({
-        title: '导出异常',
+        title: '导出失败',
         icon: 'none'
       });
     }

@@ -4,6 +4,7 @@ Page({
     startDate: '',
     endDate: '',
     totalHours: 0,
+    exportFileName: '',
     shifts: [],
     showExportTip: false,
     // 新增统计数据
@@ -56,6 +57,13 @@ Page({
       endDate: e.detail.value
     }, () => {
       this.calculateStatistics();
+    });
+  },
+
+  // 处理文件名输入
+  onFileNameInput(e) {
+    this.setData({
+      exportFileName: e.detail.value
     });
   },
 
@@ -116,51 +124,81 @@ Page({
   },
 
   exportToExcel() {
-    const { startDate, endDate, shifts, totalHours, statistics } = this.data;
+    const { startDate, endDate, shifts, totalHours, statistics, exportFileName } = this.data;
     
-    // 构造CSV数据
-    let csvContent = '\uFEFF日期,班次名称,开始时间,结束时间,工时(小时),类型\n';
-    shifts.forEach(shift => {
-      csvContent += `${shift.date},${shift.name},${shift.startTime},${shift.endTime},${shift.workHours},${shift.type}\n`;
+    wx.showLoading({
+      title: '正在导出...'
     });
-    csvContent += `\n统计汇总\n`;
-    csvContent += `统计区间,${startDate}至${endDate}\n`;
-    csvContent += `总工时,${totalHours}小时\n`;
-    csvContent += `排班天数,${statistics.totalDays}天\n`;
-    csvContent += `工作班次,${statistics.workDays}天\n`;
-    csvContent += `休息日,${statistics.offDays}天\n`;
     
-    // 创建并下载文件
-    const fs = wx.getFileSystemManager();
-    const filePath = `${wx.env.USER_DATA_PATH}/排班统计_${startDate}_至_${endDate}.csv`;
-    
-    fs.writeFile({
-      filePath: filePath,
-      data: csvContent,
-      encoding: 'utf8',
-      success: () => {
-        wx.shareFileMessage({
-          filePath: filePath,
-          success: () => {
-            wx.showToast({
-              title: '导出成功',
-              icon: 'success'
-            });
-          },
-          fail: () => {
-            wx.showToast({
-              title: '分享失败',
-              icon: 'none'
-            });
-          }
-        });
-      },
-      fail: () => {
-        wx.showToast({
-          title: '导出失败',
-          icon: 'none'
-        });
-      }
-    });
+    try {
+      // 构造CSV内容
+      let csvContent = '\uFEFF'; // 添加BOM以支持中文
+      
+      // 添加标题行
+      csvContent += '排班统计\n';
+      csvContent += '\n';
+      
+      // 添加统计信息
+      csvContent += '统计区间,总工时,排班天数,工作班次,休息日\n';
+      csvContent += `"${startDate}至${endDate}",${totalHours},${statistics.totalDays},${statistics.workDays},${statistics.offDays}\n`;
+      csvContent += '\n';
+      
+      // 添加详细排班信息
+      csvContent += '日期,班次名称,开始时间,结束时间,工时(小时)\n';
+      shifts.forEach(shift => {
+        csvContent += `"${shift.date}","${shift.name}","${shift.startTime}","${shift.endTime}",${shift.workHours}\n`;
+      });
+      
+      // 获取自定义文件名
+      const customFileName = exportFileName;
+      const fileName = customFileName ? customFileName : `排班统计_${startDate}_至_${endDate}`;
+      
+      // 创建临时文件
+      const fs = wx.getFileSystemManager();
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.csv`;
+      
+      fs.writeFile({
+        filePath: filePath,
+        data: csvContent,
+        encoding: 'utf8',
+        success: () => {
+          // 分享文件
+          wx.shareFileMessage({
+            filePath: filePath,
+            fileName: `${fileName}.csv`,
+            success: () => {
+              wx.hideLoading();
+              wx.showToast({
+                title: '导出成功',
+                icon: 'success'
+              });
+            },
+            fail: (err) => {
+              wx.hideLoading();
+              console.error('分享文件失败', err);
+              wx.showToast({
+                title: '导出失败',
+                icon: 'none'
+              });
+            }
+          });
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          console.error('写入文件失败', err);
+          wx.showToast({
+            title: '导出失败',
+            icon: 'none'
+          });
+        }
+      });
+    } catch (e) {
+      wx.hideLoading();
+      console.error('导出失败', e);
+      wx.showToast({
+        title: '导出失败',
+        icon: 'none'
+      });
+    }
   }
 });

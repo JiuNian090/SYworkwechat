@@ -28,6 +28,9 @@
 
   <view class="section">
     <text class="section-title">数据管理</text>
+    <view class="input-item">
+      <input class="filename-input" placeholder="请输入导出文件名(不含扩展名)" value="{{exportFileName}}" bindinput="onFileNameInput"></input>
+    </view>
     <view class="data-actions">
       <button class="action-btn export-btn" bindtap="exportData">导出数据</button>
       <button class="action-btn import-btn" bindtap="importData">导入数据</button>
