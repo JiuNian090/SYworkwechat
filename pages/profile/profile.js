@@ -39,6 +39,13 @@ Page({
   },
 
   onLoad() {
+    // 启用分享功能
+    if (wx.showShareMenu) {
+      wx.showShareMenu({
+        withShareTicket: true,
+        menus: ['shareAppMessage', 'shareTimeline']
+      });
+    }
     // 用户信息相关代码已删除
   },
 
