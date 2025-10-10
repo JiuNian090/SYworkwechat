@@ -35,6 +35,7 @@
       <button class="action-btn import-btn" bindtap="importData">导入数据</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
+      <button class="action-btn share-btn" bindtap="shareExportedFile">分享给好友</button>
       <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
     </view>
   </view>
@@ -44,6 +45,9 @@
     <view class="data-actions">
       <button class="action-btn export-btn" bindtap="exportAllDataToCSV">导出CSV</button>
       <button class="action-btn import-btn" bindtap="importAllDataFromCSV">导入CSV</button>
+    </view>
+    <view class="data-actions" style="margin-top: 20rpx;">
+      <button class="action-btn share-btn" open-type="share">分享应用</button>
     </view>
   </view>
 </view>

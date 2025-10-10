@@ -9,6 +9,8 @@ Page({
     },
     hasLogin: false,
     exportFileName: '',
+    exportedFilePath: '',
+    exportedFileName: '',
     hasUserInfo: false,
     canIUseGetUserProfile: false,
     canIUseNicknameComp: false,
@@ -16,6 +18,35 @@ Page({
     exportSuccess: false,
     exportFail: false,
     loading: false,
+  },
+
+  onShareAppMessage() {
+    return {
+      title: 'SYwork排班管理系统',
+      path: '/pages/plan/plan',
+      imageUrl: '/images/default_avatar.png',
+      success: function(res) {
+        wx.showToast({
+          title: '分享成功',
+          icon: 'success'
+        });
+      },
+      fail: function(err) {
+        console.error('分享失败', err);
+        wx.showToast({
+          title: '分享失败',
+          icon: 'none'
+        });
+      }
+    };
+  },
+
+  onShareTimeline() {
+    return {
+      title: 'SYwork排班管理系统',
+      query: '',
+      imageUrl: '/images/default_avatar.png'
+    };
   },
 
   // 获取用户信息
@@ -142,6 +173,36 @@ Page({
         shifts: wx.getStorageSync('shifts') || {}
       };
       
+      // 添加统计数据
+      const allShifts = data.shifts;
+      let totalHours = 0;
+      let workDays = 0;
+      let offDays = 0;
+      let totalDays = 0;
+      
+      // 计算统计数据
+      Object.keys(allShifts).forEach(date => {
+        const shift = allShifts[date];
+        totalHours += parseFloat(shift.workHours) || 0;
+        totalDays++;
+        
+        // 按班次类型统计工作班次和休息日
+        const shiftType = shift.type;
+        if (shiftType === '白天班' || shiftType === '跨夜班') {
+          workDays++;
+        } else if (shiftType === '休息日') {
+          offDays++;
+        }
+      });
+      
+      // 添加统计数据到导出数据中
+      data.statistics = {
+        totalHours: totalHours.toFixed(1),
+        totalDays: totalDays,
+        workDays: workDays,
+        offDays: offDays
+      };
+      
       const jsonData = JSON.stringify(data, null, 2);
       
       // 获取自定义文件名
@@ -157,24 +218,19 @@ Page({
         data: jsonData,
         encoding: 'utf8',
         success: () => {
-          // 保存文件到本地
-          wx.saveFile({
-            tempFilePath: filePath,
-            success: (res) => {
-              wx.hideLoading();
-              wx.showToast({
-                title: '导出成功',
-                icon: 'success'
-              });
-            },
-            fail: (err) => {
-              wx.hideLoading();
-              console.error('保存文件失败', err);
-              wx.showToast({
-                title: '保存失败',
-                icon: 'none'
-              });
-            }
+          wx.hideLoading();
+          // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
+          this.setData({
+            exportedFilePath: filePath,
+            exportedFileName: fileName
+          });
+          
+          // 显示提示，让用户点击分享按钮
+          wx.showModal({
+            title: '导出成功',
+            content: '数据已导出为JSON文件，请点击下方"分享给好友"按钮将文件发送给好友',
+            showCancel: false,
+            confirmText: '知道了'
           });
         },
         fail: (err) => {
@@ -192,6 +248,51 @@ Page({
       wx.showToast({
         title: '导出失败',
         icon: 'none'
+      });
+    }
+  },
+
+  // 分享导出的文件给好友
+  shareExportedFile() {
+    // 检查是否有导出的文件
+    if (this.data.exportedFilePath && this.data.exportedFileName) {
+      this.shareFile(this.data.exportedFilePath, this.data.exportedFileName);
+    } else {
+      wx.showToast({
+        title: '请先导出数据',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 分享文件给好友
+  shareFile(filePath, fileName) {
+    // 检查是否支持分享文件
+    if (wx.shareFileMessage) {
+      wx.shareFileMessage({
+        filePath: filePath,
+        fileName: `${fileName}.json`,
+        success: () => {
+          wx.showToast({
+            title: '分享成功',
+            icon: 'success'
+          });
+        },
+        fail: (err) => {
+          console.error('分享失败', err);
+          wx.showToast({
+            title: '分享失败',
+            icon: 'none'
+          });
+        }
+      });
+    } else {
+      // 如果不支持分享文件，则提示用户手动发送
+      wx.showModal({
+        title: '提示',
+        content: '当前微信版本不支持直接分享文件，您可以手动发送文件给好友。文件已保存到本地。',
+        showCancel: false,
+        confirmText: '知道了'
       });
     }
   },
@@ -337,8 +438,10 @@ Page({
         encoding: 'utf8',
         success: () => {
           // 保存文件到本地
-          wx.saveFile({
+          const fsm = wx.getFileSystemManager();
+          fsm.saveFile({
             tempFilePath: filePath,
+            filePath: filePath, // 保存到相同路径
             success: (res) => {
               wx.hideLoading();
               wx.showToast({

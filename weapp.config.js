@@ -1,0 +1,51 @@
+module.exports = {
+  projectname: "SYworkwechat",
+  appid: "wxa3fb6745243217ab",
+  setting: {
+    urlCheck: true,
+    es6: true,
+    enhance: true,
+    postcss: true,
+    preloadBackgroundData: false,
+    minified: true,
+    newFeature: false,
+    coverView: true,
+    nodeModules: false,
+    autoAudits: false,
+    showShadowRootInWxmlPanel: true,
+    scopeDataCheck: false,
+    uglifyFileName: false,
+    checkInvalidKey: true,
+    checkSiteMap: true,
+    uploadWithSourceMap: true,
+    compileHotReLoad: false,
+    useMultiFrameRuntime: true,
+    useApiHook: true,
+    babelSetting: {
+      ignore: [],
+      disablePlugins: [],
+      outputPath: ""
+    },
+    enableEngineNative: false,
+    bundle: false,
+    useIsolateContext: true,
+    useCompilerModule: true,
+    userConfirmedUseCompilerModuleSwitch: false,
+    userConfirmedBundleSwitch: false,
+    packNpmManually: false,
+    packNpmRelationList: [],
+    minifyWXSS: true
+  },
+  compileType: "miniprogram",
+  libVersion: "2.31.0",
+  srcMiniprogramRoot: "./",
+  packOptions: {
+    ignore: [],
+    include: []
+  },
+  condition: {},
+  editorSetting: {
+    tabIndent: "insertSpaces",
+    tabSize: 2
+  }
+}
