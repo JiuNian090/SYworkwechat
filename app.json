@@ -8,31 +8,31 @@
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "排班管理系统",
+    "navigationBarTitleText": "SYwork|工时记录系统",
     "navigationBarTextStyle": "black"
-  },
+  },  
   "tabBar": {
     "color": "#7A7E83",
     "selectedColor": "#3cc51f",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
     "position": "bottom",
-    "list": [
+"list": [
       {
         "pagePath": "pages/plan/plan",
-        "text": "计划"
+        "text": "📋计划"
       },
       {
         "pagePath": "pages/schedule/schedule",
-        "text": "排班"
+        "text": "📅排班"
       },
       {
         "pagePath": "pages/statistics/statistics",
-        "text": "统计"
+        "text": "📊统计"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "我的"
+        "text": "👤我的"
       }
     ]
   },
