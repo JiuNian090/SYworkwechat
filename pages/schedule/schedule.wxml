@@ -24,7 +24,7 @@
 
     <!-- 隐藏周视图的星期几显示 -->
     <view class="weekdays" style="display:none;">
-      <view class="weekday" wx:for="{{['日', '一', '二', '三', '四', '五', '六']}}" wx:key="index">
+      <view class="weekday" wx:for="{{['一', '二', '三', '四', '五', '六', '日']}}" wx:key="index">
         {{item}}
       </view>
     </view>
@@ -58,7 +58,7 @@
     </view>
 
     <view class="weekdays">
-      <view class="weekday" wx:for="{{['日', '一', '二', '三', '四', '五', '六']}}" wx:key="index">
+      <view class="weekday" wx:for="{{['一', '二', '三', '四', '五', '六', '日']}}" wx:key="index">
         {{item}}
       </view>
     </view>

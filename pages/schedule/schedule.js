@@ -62,17 +62,19 @@ Page({
     const currentDate = new Date(this.data.currentDate);
     const dayOfWeek = currentDate.getDay(); // 0 is Sunday
     const startDate = new Date(currentDate);
-    startDate.setDate(currentDate.getDate() - dayOfWeek);
+    // 修改为周一作为每周第一天 (周一为1，周日为0)
+    startDate.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
     
     const weekDates = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       const dateStr = this.formatDate(date);
+      // 修改星期几的显示顺序，从周一开始
       weekDates.push({
         date: dateStr,
         day: date.getDate(),
-        weekday: ['日', '一', '二', '三', '四', '五', '六'][date.getDay()],
+        weekday: ['一', '二', '三', '四', '五', '六', '日'][date.getDay() === 0 ? 6 : date.getDay() - 1],
         isToday: dateStr === this.formatDate(new Date()),
         shift: this.data.shifts[dateStr] || null
       });
@@ -92,10 +94,14 @@ Page({
     const lastDay = new Date(year, month + 1, 0);
     
     const startDate = new Date(firstDay);
-    startDate.setDate(firstDay.getDate() - firstDay.getDay());
+    // 修改为周一作为每周第一天
+    const firstDayOfWeek = firstDay.getDay();
+    startDate.setDate(firstDay.getDate() - (firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1));
     
     const endDate = new Date(lastDay);
-    endDate.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+    // 修改为周一作为每周第一天
+    const lastDayOfWeek = lastDay.getDay();
+    endDate.setDate(lastDay.getDate() + (lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek));
     
     const monthDates = [];
     const current = new Date(startDate);
