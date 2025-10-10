@@ -131,41 +131,96 @@ Page({
     });
     
     try {
-      // 构造CSV内容
-      let csvContent = '\uFEFF'; // 添加BOM以支持中文
+      // 引入xlsx库
+      const XLSX = require('xlsx');
       
-      // 添加标题行
-      csvContent += '排班统计\n';
-      csvContent += '\n';
+      // 创建工作簿
+      const workbook = XLSX.utils.book_new();
       
-      // 添加统计信息
-      csvContent += '统计区间,总工时,排班天数,工作班次,休息日\n';
-      csvContent += `"${startDate}至${endDate}",${totalHours},${statistics.totalDays},${statistics.workDays},${statistics.offDays}\n`;
-      csvContent += '\n';
+      // 创建工作表数据
+      const worksheetData = [
+        ['排班统计'],
+        [],
+        ['统计区间', '总工时', '排班天数', '工作班次', '休息日'],
+        [`${startDate}至${endDate}`, totalHours, statistics.totalDays, statistics.workDays, statistics.offDays],
+        [],
+        ['日期', '班次名称', '工时', '班次类型', '开始时间', '结束时间']
+      ];
       
-      // 添加详细排班信息
-      csvContent += '日期,班次名称,开始时间,结束时间,工时(小时)\n';
+      // 添加排班数据
       shifts.forEach(shift => {
-        csvContent += `"${shift.date}","${shift.name}","${shift.startTime}","${shift.endTime}",${shift.workHours}\n`;
+        worksheetData.push([
+          shift.date,
+          shift.name,
+          shift.workHours,
+          shift.type,
+          shift.startTime,
+          shift.endTime
+        ]);
       });
+      
+      // 添加空行和总工时
+      worksheetData.push([]);
+      worksheetData.push(['', '', totalHours, '', '', '']);
+      
+      // 创建工作表
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      
+      // 设置单元格样式居中
+      const range = XLSX.utils.decode_range(worksheet['!ref']);
+      for (let row = range.s.r; row <= range.e.r; row++) {
+        for (let col = range.s.c; col <= range.e.c; col++) {
+          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+          if (!worksheet[cellAddress]) continue;
+          
+          // 设置单元格居中对齐
+          if (!worksheet[cellAddress].s) {
+            worksheet[cellAddress].s = {};
+          }
+          worksheet[cellAddress].s = {
+            alignment: {
+              horizontal: 'center',
+              vertical: 'center'
+            }
+          };
+        }
+      }
+      
+      // 设置列宽
+      worksheet['!cols'] = [
+        { wch: 12 }, // 日期
+        { wch: 15 }, // 班次名称
+        { wch: 10 }, // 工时
+        { wch: 12 }, // 班次类型
+        { wch: 12 }, // 开始时间
+        { wch: 12 }  // 结束时间
+      ];
+      
+      // 将工作表添加到工作簿
+      XLSX.utils.book_append_sheet(workbook, worksheet, '排班统计');
       
       // 获取自定义文件名
       const customFileName = exportFileName;
       const fileName = customFileName ? customFileName : `排班统计_${startDate}_至_${endDate}`;
       
+      // 生成Excel文件
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array'
+      });
+      
       // 创建临时文件
       const fs = wx.getFileSystemManager();
-      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.csv`;
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.xlsx`;
       
       fs.writeFile({
         filePath: filePath,
-        data: csvContent,
-        encoding: 'utf8',
+        data: excelBuffer,
         success: () => {
           // 分享文件
           wx.shareFileMessage({
             filePath: filePath,
-            fileName: `${fileName}.csv`,
+            fileName: `${fileName}.xlsx`,
             success: () => {
               wx.hideLoading();
               wx.showToast({
