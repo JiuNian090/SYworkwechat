@@ -149,6 +149,16 @@ Page({
         shiftTemplates: templates,
         showAddTemplate: false
       });
+      
+      // 通知其他页面更新班次模板
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].route === 'pages/schedule/schedule') {
+          pages[i].loadShiftTemplates();
+          break;
+        }
+      }
+      
       wx.showToast({
         title: '保存成功',
         icon: 'success'
@@ -216,6 +226,16 @@ Page({
         showEditTemplate: false, 
         editIndex: -1 
       });
+      
+      // 通知其他页面更新班次模板
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].route === 'pages/schedule/schedule') {
+          pages[i].loadShiftTemplates();
+          break;
+        }
+      }
+      
       wx.showToast({ title: '编辑成功', icon: 'success' });
     } catch (e) {
       wx.showToast({ title: '编辑失败', icon: 'none' });
@@ -231,6 +251,16 @@ Page({
       this.setData({
         shiftTemplates: templates
       });
+      
+      // 通知其他页面更新班次模板
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].route === 'pages/schedule/schedule') {
+          pages[i].loadShiftTemplates();
+          break;
+        }
+      }
+      
       wx.showToast({
         title: '删除成功',
         icon: 'success'

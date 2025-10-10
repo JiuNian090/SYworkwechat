@@ -348,6 +348,15 @@
   overflow-y: auto;
 }
 
+.shift-picker-container {
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.shift-picker-container button {
+  margin-top: 30rpx;
+}
+
 .shift-item {
   padding: 20rpx;
   border: 1rpx solid #e0e0e0;

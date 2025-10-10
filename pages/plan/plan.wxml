@@ -6,22 +6,22 @@
 
   <view class="content">
     <view class="template-list">
-      <view class="template-item" wx:for="{{shiftTemplates}}" wx:key="index">
-        <view class="template-info">
-          <text class="template-name" style="color:{{item.color}}">{{item.name}}</text>
-          <text class="template-type">{{item.type}}</text>
-        </view>
-        <view class="template-detail">
-          <view>
-            <text>时间: {{item.startTime}} - {{item.endTime}}</text>
+      <view class="template-item" wx:for="{{shiftTemplates}}" wx:key="index" style="background-color:{{item.color}}20">
+        <view class="template-content">
+          <view class="template-left">
+            <view class="template-header">
+              <text class="template-name" style="color:{{item.color}}">{{item.name}}</text>
+              <text class="template-type" style="background-color:{{item.color}}">{{item.type}}</text>
+            </view>
+            <view class="template-details">
+              <text class="work-hours">工时: {{item.workHours}}小时</text>
+              <text class="time-range">时间: {{item.startTime}} - {{item.endTime}}</text>
+            </view>
           </view>
-          <view>
-            <text>工时: {{item.workHours}}小时</text>
+          <view class="template-actions">
+            <button class="edit-btn" bindtap="showEditTemplateModal" data-index="{{index}}">编辑</button>
+            <button class="delete-btn" bindtap="deleteTemplate" data-index="{{index}}">删除</button>
           </view>
-        </view>
-        <view class="template-actions">
-          <button class="edit-btn" bindtap="showEditTemplateModal" data-index="{{index}}">编辑</button>
-          <button class="delete-btn" bindtap="deleteTemplate" data-index="{{index}}">删除</button>
         </view>
       </view>
     </view>

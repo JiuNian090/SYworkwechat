@@ -9,7 +9,8 @@ Page({
     showShiftModal: false,
     selectedDate: '',
     selectedShift: null,
-    shiftTemplates: []
+    shiftTemplates: [],
+    pickerValue: [0]
   },
 
   onLoad() {
@@ -21,6 +22,11 @@ Page({
     this.loadShifts();
     this.generateWeekDates();
     this.generateMonthDates();
+  },
+
+  onShow() {
+    // 页面显示时重新加载班次模板，确保数据同步
+    this.loadShiftTemplates();
   },
 
   loadShiftTemplates() {
@@ -184,9 +190,15 @@ Page({
     });
   },
 
-  assignShift(e) {
-    const templateIndex = e.currentTarget.dataset.index;
-    const template = this.data.shiftTemplates[templateIndex];
+  bindPickerChange(e) {
+    this.setData({
+      pickerValue: e.detail.value
+    });
+  },
+
+  assignShiftFromPicker() {
+    const selectedIndex = this.data.pickerValue[0];
+    const template = this.data.shiftTemplates[selectedIndex];
     const { selectedDate, shifts } = this.data;
     
     const newShifts = {
@@ -226,6 +238,8 @@ Page({
       });
     }
   },
+
+
 
   removeShift(e) {
     const date = e.currentTarget.dataset.date;
