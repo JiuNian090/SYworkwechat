@@ -159,6 +159,16 @@ Page({
     this.generateMonthDates();
   },
 
+  // 添加回到今天的功能
+  goToToday() {
+    const today = new Date();
+    this.setData({
+      currentDate: this.formatDate(today)
+    });
+    this.generateWeekDates();
+    this.generateMonthDates();
+  },
+
   selectDate(e) {
     const date = e.currentTarget.dataset.date;
     this.setData({

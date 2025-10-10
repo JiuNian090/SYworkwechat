@@ -87,9 +87,46 @@ Page({
   },
 
   exportToExcel() {
-    wx.showToast({
-      title: '该功能需要企业版支持',
-      icon: 'none'
+    const { startDate, endDate, shifts, totalHours } = this.data;
+    
+    // 构造CSV数据
+    let csvContent = '\uFEFF日期,班次名称,开始时间,结束时间,工时(小时),类型\n';
+    shifts.forEach(shift => {
+      csvContent += `${shift.date},${shift.name},${shift.startTime},${shift.endTime},${shift.workHours},${shift.type}\n`;
+    });
+    csvContent += `总计,,${startDate}至${endDate},${totalHours}小时\n`;
+    
+    // 创建并下载文件
+    const fs = wx.getFileSystemManager();
+    const filePath = `${wx.env.USER_DATA_PATH}/排班统计_${startDate}_至_${endDate}.csv`;
+    
+    fs.writeFile({
+      filePath: filePath,
+      data: csvContent,
+      encoding: 'utf8',
+      success: () => {
+        wx.shareFileMessage({
+          filePath: filePath,
+          success: () => {
+            wx.showToast({
+              title: '导出成功',
+              icon: 'success'
+            });
+          },
+          fail: () => {
+            wx.showToast({
+              title: '分享失败',
+              icon: 'none'
+            });
+          }
+        });
+      },
+      fail: () => {
+        wx.showToast({
+          title: '导出失败',
+          icon: 'none'
+        });
+      }
     });
   }
 });
