@@ -1,0 +1,143 @@
+/* pages/statistics/statistics.wxss */
+.container {
+  padding: 20rpx;
+}
+
+.header {
+  text-align: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #e0e0e0;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.date-selector {
+  display: flex;
+  justify-content: space-between;
+  margin: 30rpx 0;
+  gap: 20rpx;
+}
+
+.date-item {
+  flex: 1;
+}
+
+.label {
+  display: block;
+  font-size: 28rpx;
+  margin-bottom: 10rpx;
+  color: #333;
+}
+
+.picker {
+  border: 1rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+  text-align: center;
+}
+
+.summary {
+  background: #f8f8f8;
+  border-radius: 10rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.summary-item:last-child {
+  margin-bottom: 0;
+}
+
+.summary-label {
+  font-size: 28rpx;
+  color: #666;
+}
+
+.summary-value {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.summary-value.highlight {
+  color: #07c160;
+  font-size: 32rpx;
+}
+
+.shifts-list {
+  margin: 30rpx 0;
+}
+
+.list-header {
+  padding: 20rpx;
+  background: #f0f0f0;
+  border-radius: 10rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.shift-item {
+  display: flex;
+  padding: 20rpx;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+}
+
+.shift-date {
+  width: 180rpx;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.shift-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.shift-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.shift-time, .shift-hours, .shift-type {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+  padding: 50rpx 0;
+}
+
+.export-section {
+  margin-top: 50rpx;
+  text-align: center;
+}
+
+.export-btn {
+  background: #07c160;
+  color: #fff;
+  font-size: 32rpx;
+  padding: 20rpx 40rpx;
+  border-radius: 10rpx;
+}

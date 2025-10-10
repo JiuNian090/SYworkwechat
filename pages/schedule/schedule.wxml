@@ -1,0 +1,101 @@
+<!-- pages/schedule/schedule.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">排班管理</text>
+  </view>
+
+  <!-- 视图切换 -->
+  <view class="view-switch">
+    <view class="switch-item {{currentView === 'week' ? 'active' : ''}}" data-view="week" bindtap="switchView">
+      周视图
+    </view>
+    <view class="switch-item {{currentView === 'month' ? 'active' : ''}}" data-view="month" bindtap="switchView">
+      月视图
+    </view>
+  </view>
+
+  <!-- 周视图 -->
+  <view wx:if="{{currentView === 'week'}}" class="week-view">
+    <view class="week-header">
+      <button class="nav-btn" bindtap="prevWeek">上一周</button>
+      <text class="current-week">{{currentDate}}</text>
+      <button class="nav-btn" bindtap="nextWeek">下一周</button>
+    </view>
+
+    <view class="weekdays">
+      <view class="weekday" wx:for="{{['日', '一', '二', '三', '四', '五', '六']}}" wx:key="index">
+        {{item}}
+      </view>
+    </view>
+
+    <view class="week-grid">
+      <view class="day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDates}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
+        <text class="day-number">{{item.day}}</text>
+        <view wx:if="{{item.shift}}" class="shift-info">
+          <text class="shift-name">{{item.shift.name}}</text>
+          <text class="shift-time">{{item.shift.startTime}}-{{item.shift.endTime}}</text>
+        </view>
+        <view wx:else class="no-shift">
+          <text>未排班</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 月视图 -->
+  <view wx:if="{{currentView === 'month'}}" class="month-view">
+    <view class="month-header">
+      <button class="nav-btn" bindtap="prevMonth">上一月</button>
+      <text class="current-month">{{currentDate}}</text>
+      <button class="nav-btn" bindtap="nextMonth">下一月</button>
+    </view>
+
+    <view class="weekdays">
+      <view class="weekday" wx:for="{{['日', '一', '二', '三', '四', '五', '六']}}" wx:key="index">
+        {{item}}
+      </view>
+    </view>
+
+    <view class="month-grid">
+      <view class="week-row" wx:for="{{monthDates}}" wx:key="index">
+        <view class="day-cell {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}" 
+              wx:for="{{item}}" wx:key="date">
+          <text class="day-number">{{item.day}}</text>
+          <view wx:if="{{item.shift}}" class="shift-dot"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 排班选择弹窗 -->
+  <view class="modal" wx:if="{{showShiftModal}}">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">为 {{selectedDate}} 排班</text>
+        <icon type="cancel" size="20" bindtap="hideShiftModal" />
+      </view>
+      
+      <view class="shift-list">
+        <view class="shift-item" wx:for="{{shiftTemplates}}" wx:key="index" bindtap="assignShift" data-index="{{index}}">
+          <view class="shift-info">
+            <text class="shift-name">{{item.name}}</text>
+            <text class="shift-type">{{item.type}}</text>
+          </view>
+          <view class="shift-detail">
+            <text>{{item.startTime}} - {{item.endTime}}</text>
+            <text>{{item.workHours}}小时</text>
+          </view>
+        </view>
+      </view>
+      
+      <view wx:if="{{selectedShift}}" class="current-shift">
+        <text>当前排班: {{selectedShift.name}}</text>
+        <button class="remove-btn" bindtap="removeShift" data-date="{{selectedDate}}">移除排班</button>
+      </view>
+      
+      <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
+        暂无班次模板，请先到"计划"页面添加
+      </view>
+    </view>
+  </view>
+</view>

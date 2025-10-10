@@ -1,0 +1,82 @@
+<!-- pages/plan/plan.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">班次模板管理</text>
+  </view>
+
+  <view class="content">
+    <view class="template-list">
+      <view class="template-item" wx:for="{{shiftTemplates}}" wx:key="index">
+        <view class="template-info">
+          <text class="template-name">{{item.name}}</text>
+          <text class="template-type">{{item.type}}</text>
+        </view>
+        <view class="template-detail">
+          <text>{{item.startTime}} - {{item.endTime}}</text>
+          <text>{{item.workHours}}小时</text>
+        </view>
+        <button class="delete-btn" bindtap="deleteTemplate" data-index="{{index}}">删除</button>
+      </view>
+    </view>
+
+    <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
+      暂无班次模板，请添加
+    </view>
+  </view>
+
+  <view class="add-button">
+    <button class="add-btn" bindtap="showAddTemplateModal">添加班次模板</button>
+  </view>
+
+  <!-- 添加模板弹窗 -->
+  <view class="modal" wx:if="{{showAddTemplate}}">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">添加班次模板</text>
+        <icon type="cancel" size="20" bindtap="hideAddTemplateModal" />
+      </view>
+      
+      <view class="form-group">
+        <text class="label">班次名称</text>
+        <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name}}" />
+      </view>
+      
+      <view class="form-group">
+        <text class="label">开始时间</text>
+        <picker mode="time" value="{{newTemplate.startTime}}" bindchange="onTemplateInput" data-field="startTime">
+          <view class="picker">
+            {{newTemplate.startTime}}
+          </view>
+        </picker>
+      </view>
+      
+      <view class="form-group">
+        <text class="label">结束时间</text>
+        <picker mode="time" value="{{newTemplate.endTime}}" bindchange="onTemplateInput" data-field="endTime">
+          <view class="picker">
+            {{newTemplate.endTime}}
+          </view>
+        </picker>
+      </view>
+      
+      <view class="form-group">
+        <text class="label">工时(小时)</text>
+        <input class="input" type="digit" placeholder="请输入工时" bindinput="onWorkHoursChange" value="{{newTemplate.workHours}}" />
+      </view>
+      
+      <view class="form-group">
+        <text class="label">班次类型</text>
+        <picker mode="selector" range="{{shiftTypes}}" bindchange="onTypeChange">
+          <view class="picker">
+            {{newTemplate.type}}
+          </view>
+        </picker>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="cancel-btn" bindtap="hideAddTemplateModal">取消</button>
+        <button class="confirm-btn" bindtap="saveTemplate">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,64 @@
+<!-- pages/statistics/statistics.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">排班统计</text>
+  </view>
+
+  <view class="date-selector">
+    <view class="date-item">
+      <text class="label">开始日期</text>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="picker">
+          {{startDate}}
+        </view>
+      </picker>
+    </view>
+    
+    <view class="date-item">
+      <text class="label">结束日期</text>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="picker">
+          {{endDate}}
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="summary">
+    <view class="summary-item">
+      <text class="summary-label">统计区间</text>
+      <text class="summary-value">{{startDate}} 至 {{endDate}}</text>
+    </view>
+    
+    <view class="summary-item">
+      <text class="summary-label">总工时</text>
+      <text class="summary-value highlight">{{totalHours}} 小时</text>
+    </view>
+  </view>
+
+  <view class="shifts-list">
+    <view class="list-header">
+      <text>排班详情</text>
+    </view>
+    
+    <view class="shift-item" wx:for="{{shifts}}" wx:key="date">
+      <view class="shift-date">
+        {{item.date}}
+      </view>
+      <view class="shift-content">
+        <text class="shift-name">{{item.name}}</text>
+        <text class="shift-time">{{item.startTime}}-{{item.endTime}}</text>
+        <text class="shift-hours">{{item.workHours}}小时</text>
+        <text class="shift-type">{{item.type}}</text>
+      </view>
+    </view>
+    
+    <view wx:if="{{shifts.length === 0}}" class="empty-tip">
+      所选日期范围内无排班记录
+    </view>
+  </view>
+
+  <view class="export-section">
+    <button class="export-btn" bindtap="exportToExcel">导出为Excel</button>
+  </view>
+</view>

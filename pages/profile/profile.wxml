@@ -1,0 +1,53 @@
+<!-- pages/profile/profile.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">个人中心</text>
+  </view>
+
+  <view class="profile-section">
+    <view class="avatar-container">
+      <open-data type="userAvatarUrl" wx:if="{{userInfo.avatarUrl.indexOf('default') === -1}}" class="avatar"></open-data>
+      <image wx:else src="{{userInfo.avatarUrl}}" class="avatar"></image>
+      <button class="change-avatar" bindtap="onChooseAvatar">更换头像</button>
+    </view>
+
+    <view class="nickname-container">
+      <text class="nickname">{{userInfo.nickName}}</text>
+      <button class="edit-nickname" bindtap="editNickname">编辑昵称</button>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">项目介绍</view>
+    <view class="intro-content">
+      <text>这是一个排班管理系统微信小程序，可以帮助用户管理班次模板、进行排班、统计工时以及数据备份恢复等功能。</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">数据管理</view>
+    <view class="data-actions">
+      <button class="action-btn export-btn" bindtap="exportData">导出数据</button>
+      <button class="action-btn import-btn" bindtap="importData">导入数据</button>
+    </view>
+  </view>
+
+  <!-- 编辑昵称弹窗 -->
+  <view class="modal" wx:if="{{showEditModal}}">
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">编辑昵称</text>
+        <icon type="cancel" size="20" bindtap="hideEditModal" />
+      </view>
+      
+      <view class="form-group">
+        <input class="input" placeholder="请输入昵称" bindinput="onNicknameInput" value="{{editUserInfo.nickName}}" />
+      </view>
+      
+      <view class="modal-footer">
+        <button class="cancel-btn" bindtap="hideEditModal">取消</button>
+        <button class="confirm-btn" bindtap="saveNickname">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

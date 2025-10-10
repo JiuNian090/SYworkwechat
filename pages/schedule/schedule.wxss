@@ -1,0 +1,240 @@
+/* pages/schedule/schedule.wxss */
+.container {
+  padding: 20rpx;
+}
+
+.header {
+  text-align: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #e0e0e0;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.view-switch {
+  display: flex;
+  margin: 30rpx 0;
+  border: 1rpx solid #07c160;
+  border-radius: 10rpx;
+  overflow: hidden;
+}
+
+.switch-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  background: #fff;
+  color: #07c160;
+}
+
+.switch-item.active {
+  background: #07c160;
+  color: #fff;
+}
+
+.week-header, .month-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.nav-btn {
+  background: #f0f0f0;
+  border: none;
+  padding: 10rpx 20rpx;
+  border-radius: 10rpx;
+  font-size: 24rpx;
+}
+
+.current-week, .current-month {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.weekdays {
+  display: flex;
+  background: #f8f8f8;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+}
+
+.weekday {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 0;
+  font-size: 28rpx;
+  color: #666;
+}
+
+/* 周视图 */
+.week-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.day-cell {
+  width: 14.28%;
+  aspect-ratio: 1/1;
+  border: 1rpx solid #e0e0e0;
+  padding: 10rpx;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.day-cell.today {
+  background: #e6f4ea;
+  border-color: #07c160;
+}
+
+.day-number {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  font-size: 24rpx;
+  color: #333;
+}
+
+.shift-info {
+  margin-top: 30rpx;
+}
+
+.shift-name {
+  display: block;
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shift-time {
+  display: block;
+  font-size: 20rpx;
+  color: #666;
+  margin-top: 5rpx;
+}
+
+.no-shift {
+  margin-top: 30rpx;
+  font-size: 20rpx;
+  color: #999;
+  text-align: center;
+}
+
+/* 月视图 */
+.month-grid {
+  border: 1rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  overflow: hidden;
+}
+
+.week-row {
+  display: flex;
+}
+
+.day-cell.other-month {
+  background: #f8f8f8;
+  color: #ccc;
+}
+
+.shift-dot {
+  width: 10rpx;
+  height: 10rpx;
+  background: #07c160;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 10rpx;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 弹窗 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  width: 80%;
+  border-radius: 10rpx;
+  padding: 30rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.shift-list {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.shift-item {
+  padding: 20rpx;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+}
+
+.shift-item:last-child {
+  margin-bottom: 0;
+}
+
+.shift-detail {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.current-shift {
+  margin-top: 30rpx;
+  padding: 20rpx;
+  background: #fff0f0;
+  border-radius: 10rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.remove-btn {
+  background: #ff4d4f;
+  color: #fff;
+  font-size: 24rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 10rpx;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #999;
+  font-size: 24rpx;
+  padding: 30rpx 0;
+}

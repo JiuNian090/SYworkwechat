@@ -1,0 +1,47 @@
+{
+  "pages": [
+    "pages/plan/plan",
+    "pages/schedule/schedule",
+    "pages/statistics/statistics",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "排班管理系统",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#3cc51f",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/plan/plan",
+        "iconPath": "images/icon_plan.png",
+        "selectedIconPath": "images/icon_plan_HL.png",
+        "text": "计划"
+      },
+      {
+        "pagePath": "pages/schedule/schedule",
+        "iconPath": "images/icon_schedule.png",
+        "selectedIconPath": "images/icon_schedule_HL.png",
+        "text": "排班"
+      },
+      {
+        "pagePath": "pages/statistics/statistics",
+        "iconPath": "images/icon_statistics.png",
+        "selectedIconPath": "images/icon_statistics_HL.png",
+        "text": "统计"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "iconPath": "images/icon_profile.png",
+        "selectedIconPath": "images/icon_profile_HL.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json"
+}
