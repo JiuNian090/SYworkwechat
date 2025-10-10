@@ -31,9 +31,11 @@
     <view class="week-grid">
       <view class="day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDates}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
         <text class="day-number">{{item.day}}</text>
-        <view wx:if="{{item.shift}}" class="shift-info">
+        <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};border-radius:8rpx;padding:4rpx 8rpx;">
           <text class="shift-name">{{item.shift.name}}</text>
           <text class="shift-time">{{item.shift.startTime}}-{{item.shift.endTime}}</text>
+          <text wx:if="{{item.shift.type === '加班'}}" class="overtime-tag">加班</text>
+          <text wx:if="{{item.shift.type === '节假日'}}" class="holiday-tag">节假日</text>
         </view>
         <view wx:else class="no-shift">
           <text>未排班</text>
@@ -57,12 +59,16 @@
     </view>
 
     <view class="month-grid">
-      <view class="week-row" wx:for="{{monthDates}}" wx:key="index">
-        <view class="day-cell {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}" 
-              wx:for="{{item}}" wx:key="date">
-          <text class="day-number">{{item.day}}</text>
-          <view wx:if="{{item.shift}}" class="shift-dot"></view>
-        </view>
+        <view class="week-row" wx:for="{{monthDates}}" wx:key="index">
+          <view class="day-cell {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}" 
+                wx:for="{{item}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
+            <text class="day-number">{{item.day}}</text>
+            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};border-radius:8rpx;padding:2rpx 6rpx;">
+              <text class="shift-name">{{item.shift.name}}</text>
+              <text wx:if="{{item.shift.type === '加班'}}" class="overtime-tag">加班</text>
+              <text wx:if="{{item.shift.type === '节假日'}}" class="holiday-tag">节假日</text>
+            </view>
+          </view>
       </view>
     </view>
   </view>
@@ -90,6 +96,7 @@
       
       <view wx:if="{{selectedShift}}" class="current-shift">
         <text>当前排班: {{selectedShift.name}}</text>
+        <text wx:if="{{selectedShift.desc}}" class="shift-desc">备注: {{selectedShift.desc}}</text>
         <button class="remove-btn" bindtap="removeShift" data-date="{{selectedDate}}">移除排班</button>
       </view>
       
