@@ -4,19 +4,7 @@
     <text class="title">个人中心</text>
   </view>
 
-  <view class="profile-section">
-    <view class="avatar-container">
-    <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" class="avatar" mode="aspectFill" binderror="onAvatarError"></image>
-    <image wx:else src="/images/default_avatar.png" class="avatar" mode="aspectFill"></image>
-  </view>
-    <view class="nickname-container">
-    <text class="nickname">{{userInfo.nickName}}</text>
-  </view>
-    <!-- 微信登录按钮 -->
-    <view class="login-section" wx:if="{{!hasLogin}}">
-      <button class="login-btn" bindtap="loginWithWeChat">使用微信登录</button>
-    </view>
-  </view>
+
 
   <view class="section">
     <text class="section-title">项目介绍</text>
@@ -43,10 +31,6 @@
   <view class="section">
     <text class="section-title">更多功能</text>
     <view class="data-actions">
-      <button class="action-btn export-btn" bindtap="exportAllDataToCSV">导出CSV</button>
-      <button class="action-btn import-btn" bindtap="importAllDataFromCSV">导入CSV</button>
-    </view>
-    <view class="data-actions" style="margin-top: 20rpx;">
       <button class="action-btn share-btn" open-type="share">分享应用</button>
     </view>
   </view>

@@ -11,8 +11,6 @@ const config = {
   
   // 各个接口的路径
   apiEndpoints: {
-    login: '/auth/login',
-    getUserInfo: '/user/info',
     getSchedule: '/schedule/list',
     submitSchedule: '/schedule/submit',
     getStatistics: '/statistics/data',

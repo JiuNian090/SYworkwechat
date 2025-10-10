@@ -59,33 +59,7 @@ const userInfo = wx.getStorageSync('userInfo');
 wx.setStorageSync('userInfo', userInfo);
 ```
 
-### 2.2 数据导出相关API
 
-**涉及的API：**
-- `wx.getFileSystemManager()` - 获取文件管理器实例
-- `wx.saveFile()` - 保存文件到本地
-- `wx.chooseMessageFile()` - 选择聊天文件
-
-**使用示例：**
-```javascript
-// 导出数据为CSV文件
-const fs = wx.getFileSystemManager();
-const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.csv`;
-
-// 写入文件内容
-fs.writeFileSync(filePath, csvContent, 'utf8');
-
-// 保存文件
-wx.saveFile({
-  tempFilePath: filePath,
-  success: function(res) {
-    wx.showToast({
-      title: '导出成功',
-      icon: 'success'
-    });
-  }
-});
-```
 
 ## 3. 用户登录和信息API
 
