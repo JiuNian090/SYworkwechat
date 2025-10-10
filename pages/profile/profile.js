@@ -610,17 +610,27 @@ Page({
             // 重新加载页面数据
             this.loadUserInfo();
             
-            // 通知其他页面刷新
+            // 通知所有相关页面刷新数据
             const pages = getCurrentPages();
-            if (pages.length > 1) {
-              const prevPage = pages[pages.length - 2];
-              if (prevPage.route === 'pages/plan/plan') {
-                prevPage.loadShiftTemplates && prevPage.loadShiftTemplates();
-              } else if (prevPage.route === 'pages/schedule/schedule') {
-                prevPage.loadShifts && prevPage.loadShifts();
-                prevPage.generateWeekDates && prevPage.generateWeekDates();
-                prevPage.generateMonthDates && prevPage.generateMonthDates();
+            for (let i = 0; i < pages.length; i++) {
+              const page = pages[i];
+              if (page.route === 'pages/plan/plan') {
+                page.loadShiftTemplates && page.loadShiftTemplates();
+              } else if (page.route === 'pages/schedule/schedule') {
+                page.loadShifts && page.loadShifts();
+                page.loadShiftTemplates && page.loadShiftTemplates();
+                page.generateWeekDates && page.generateWeekDates();
+                page.generateMonthDates && page.generateMonthDates();
+              } else if (page.route === 'pages/statistics/statistics') {
+                page.calculateStatistics && page.calculateStatistics();
               }
+            }
+            
+            // 更新全局数据
+            const app = getApp();
+            if (app && app.globalData) {
+              app.globalData.userInfo = null;
+              app.globalData.hasLogin = false;
             }
           } catch (e) {
             wx.hideLoading();
