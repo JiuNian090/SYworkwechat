@@ -320,21 +320,25 @@
   background: #fff;
   width: 80%;
   border-radius: 12rpx;
-  padding: 30rpx;
-  max-height: 80vh;
+  padding: 20rpx;
+  max-height: 70vh;
   overflow-y: auto;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30rpx;
+  margin-bottom: 20rpx;
+  padding-bottom: 15rpx;
+  border-bottom: 1rpx solid #eee;
 }
 
 .modal-title {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: bold;
+  color: #333;
 }
 
 .shift-list {
@@ -344,11 +348,27 @@
 
 .shift-picker-container {
   text-align: center;
-  margin-bottom: 30rpx;
+  margin-bottom: 20rpx;
+  padding: 10rpx;
+  background: #f8f8f8;
+  border-radius: 10rpx;
+}
+
+.shift-picker-container picker-view {
+  width: 100%;
+  height: 200rpx !important;
+}
+
+.shift-picker-container picker-view-column {
+  font-size: 32rpx;
+  font-weight: bold;
 }
 
 .shift-picker-container button {
-  margin-top: 30rpx;
+  margin-top: 20rpx;
+  padding: 12rpx 20rpx;
+  font-size: 28rpx;
+  border-radius: 8rpx;
 }
 
 .shift-item {
@@ -371,21 +391,22 @@
 }
 
 .current-shift {
-  margin-top: 30rpx;
-  padding: 20rpx;
+  margin-top: 20rpx;
+  padding: 15rpx;
   background: #fff0f0;
-  border-radius: 12rpx;
+  border-radius: 10rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 26rpx;
 }
 
 .remove-btn {
   background: #ff4d4f;
   color: #fff;
   font-size: 24rpx;
-  padding: 10rpx 20rpx;
-  border-radius: 12rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
 }
 
 .empty-tip {
