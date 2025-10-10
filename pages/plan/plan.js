@@ -4,20 +4,39 @@ Page({
     shiftTemplates: [],
     showAddTemplate: false,
     showEditTemplate: false,
-    showBatchDelete: false,
     editIndex: -1,
-    selectedTemplates: [],
+    hoursRange: Array.from({length: 25}, (_, i) => i), // 0-24小时
+    minutesRange: Array.from({length: 13}, (_, i) => i * 5), // 0-60分钟，5分钟间隔
     newTemplate: {
       name: '',
       startTime: '09:00',
       endTime: '17:00',
-      workHours: 8,
-      type: '工作日',
-      desc: '',
+      hours: 8,
+      minutes: 0,
+      hoursIndex: 8,
+      minutesIndex: 0,
+      workHours: 8.0,
+      type: '白天班',
       color: '#07c160'
     },
-    shiftTypes: ['工作日', '休息日', '节假日'],
-    colorList: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1']
+    shiftTypes: ['白天班', '跨夜班', '休息日'],
+    colorList: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1'],
+    colorNames: {
+      '#07c160': '绿色',
+      '#faad14': '橙色',
+      '#1890ff': '蓝色',
+      '#ff4d4f': '红色',
+      '#13c2c2': '青色',
+      '#722ed1': '紫色'
+    },
+    colorOptions: [
+      { value: '#07c160', name: '绿色' },
+      { value: '#faad14', name: '橙色' },
+      { value: '#1890ff', name: '蓝色' },
+      { value: '#ff4d4f', name: '红色' },
+      { value: '#13c2c2', name: '青色' },
+      { value: '#722ed1', name: '紫色' }
+    ]
   },
 
   onLoad() {
@@ -42,9 +61,12 @@ Page({
         name: '',
         startTime: '09:00',
         endTime: '17:00',
-        workHours: 8,
-        type: '工作日',
-        desc: '',
+        hours: 8,
+        minutes: 0,
+        hoursIndex: 8,
+        minutesIndex: 0,
+        workHours: 8.0,
+        type: '白天班',
         color: '#07c160'
       }
     });
@@ -64,18 +86,35 @@ Page({
     });
   },
 
-  onWorkHoursChange(e) {
+  onHoursChange(e) {
+    const hoursIndex = e.detail.value;
+    const hours = this.data.hoursRange[hoursIndex];
+    const minutes = this.data.newTemplate.minutes || 0;
+    const workHours = hours + (minutes / 60);
     this.setData({
-      'newTemplate.workHours': parseFloat(e.detail.value) || 0
+      'newTemplate.hoursIndex': hoursIndex,
+      'newTemplate.hours': hours,
+      'newTemplate.workHours': parseFloat(workHours.toFixed(2))
     });
   },
 
-  onDescInput(e) {
-    this.setData({ 'newTemplate.desc': e.detail.value });
+  onMinutesChange(e) {
+    const minutesIndex = e.detail.value;
+    const minutes = this.data.minutesRange[minutesIndex];
+    const hours = this.data.newTemplate.hours || 0;
+    const workHours = hours + (minutes / 60);
+    this.setData({
+      'newTemplate.minutesIndex': minutesIndex,
+      'newTemplate.minutes': minutes,
+      'newTemplate.workHours': parseFloat(workHours.toFixed(2))
+    });
   },
 
+
+
   onColorChange(e) {
-    this.setData({ 'newTemplate.color': this.data.colorList[e.detail.value] });
+    const selectedColor = this.data.colorOptions[e.detail.value];
+    this.setData({ 'newTemplate.color': selectedColor.value });
   },
 
   onTypeChange(e) {
@@ -95,7 +134,14 @@ Page({
       return;
     }
 
-    const templates = [...shiftTemplates, newTemplate];
+    // 确保工时计算正确
+    const workHours = (newTemplate.hours || 0) + ((newTemplate.minutes || 0) / 60);
+    const templateToSave = {
+      ...newTemplate,
+      workHours: parseFloat(workHours.toFixed(2))
+    };
+
+    const templates = [...shiftTemplates, templateToSave];
     
     try {
       wx.setStorageSync('shiftTemplates', templates);
@@ -119,10 +165,27 @@ Page({
   showEditTemplateModal(e) {
     const index = e.currentTarget.dataset.index;
     const tpl = this.data.shiftTemplates[index];
+    
+    // 确保模板包含hours和minutes字段
+    const hours = tpl.hours || Math.floor(tpl.workHours || 0);
+    const minutes = tpl.minutes || Math.round(((tpl.workHours || 0) - Math.floor(tpl.workHours || 0)) * 60);
+    
+    // 计算小时和分钟的索引
+    const hoursIndex = hours;
+    const minutesIndex = minutes / 5; // 因为分钟是5分钟间隔
+    
+    const templateWithTime = {
+      ...tpl,
+      hours: hours,
+      minutes: minutes,
+      hoursIndex: hoursIndex,
+      minutesIndex: minutesIndex
+    };
+    
     this.setData({
       showEditTemplate: true,
       editIndex: index,
-      newTemplate: { ...tpl }
+      newTemplate: templateWithTime
     });
   },
 
@@ -136,8 +199,16 @@ Page({
       wx.showToast({ title: '请输入班次名称', icon: 'none' });
       return;
     }
+    
+    // 确保工时计算正确
+    const workHours = (newTemplate.hours || 0) + ((newTemplate.minutes || 0) / 60);
+    const templateToSave = {
+      ...newTemplate,
+      workHours: parseFloat(workHours.toFixed(2))
+    };
+    
     const templates = [...shiftTemplates];
-    templates[editIndex] = newTemplate;
+    templates[editIndex] = templateToSave;
     try {
       wx.setStorageSync('shiftTemplates', templates);
       this.setData({ 
@@ -148,19 +219,6 @@ Page({
       wx.showToast({ title: '编辑成功', icon: 'success' });
     } catch (e) {
       wx.showToast({ title: '编辑失败', icon: 'none' });
-    }
-  },
-
-  copyTemplate(e) {
-    const index = e.currentTarget.dataset.index;
-    const tpl = { ...this.data.shiftTemplates[index], name: this.data.shiftTemplates[index].name + '_复制' };
-    const templates = [...this.data.shiftTemplates, tpl];
-    try {
-      wx.setStorageSync('shiftTemplates', templates);
-      this.setData({ shiftTemplates: templates });
-      wx.showToast({ title: '复制成功', icon: 'success' });
-    } catch (e) {
-      wx.showToast({ title: '复制失败', icon: 'none' });
     }
   },
 
@@ -184,51 +242,5 @@ Page({
         icon: 'none'
       });
     }
-  },
-
-  showBatchDeleteModal() {
-    this.setData({ showBatchDelete: true, selectedTemplates: [] });
-  },
-
-  toggleSelectTemplate(e) {
-    const index = e.currentTarget.dataset.index;
-    let selected = [...this.data.selectedTemplates];
-    if (selected.includes(index)) {
-      selected = selected.filter(i => i !== index);
-    } else {
-      selected.push(index);
-    }
-    this.setData({ selectedTemplates: selected });
-  },
-
-  selectAllTemplates() {
-    const allIndexes = this.data.shiftTemplates.map((_, index) => index);
-    this.setData({ selectedTemplates: allIndexes });
-  },
-
-  reverseSelectTemplates() {
-    const allIndexes = this.data.shiftTemplates.map((_, index) => index);
-    const selected = allIndexes.filter(index => !this.data.selectedTemplates.includes(index));
-    this.setData({ selectedTemplates: selected });
-  },
-
-  batchDeleteTemplates() {
-    const { shiftTemplates, selectedTemplates } = this.data;
-    const templates = shiftTemplates.filter((_, i) => !selectedTemplates.includes(i));
-    try {
-      wx.setStorageSync('shiftTemplates', templates);
-      this.setData({ 
-        shiftTemplates: templates, 
-        showBatchDelete: false, 
-        selectedTemplates: [] 
-      });
-      wx.showToast({ title: '批量删除成功', icon: 'success' });
-    } catch (e) {
-      wx.showToast({ title: '批量删除失败', icon: 'none' });
-    }
-  },
-
-  hideBatchDeleteModal() {
-    this.setData({ showBatchDelete: false, selectedTemplates: [] });
   }
 });

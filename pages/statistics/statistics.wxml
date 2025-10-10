@@ -42,9 +42,9 @@
     </view>
     
     <view class="summary-item">
-      <text class="summary-label">工作日</text>
-      <text class="summary-value">{{statistics.workDays}} 天</text>
-    </view>
+        <text class="summary-label">工作班次</text>
+        <text class="summary-value">{{statistics.workDays}}天</text>
+      </view>
     
     <view class="summary-item">
       <text class="summary-label">休息日</text>

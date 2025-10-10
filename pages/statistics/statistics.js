@@ -82,12 +82,12 @@ Page({
           shiftsInRange.push(shift);
           totalHours += parseFloat(allShifts[dateStr].workHours) || 0;
           
-          // 统计工作日和休息日
-          if (allShifts[dateStr].type === '工作日') {
-            workDays++;
-          } else if (allShifts[dateStr].type === '休息日' || allShifts[dateStr].type === '节假日') {
-            offDays++;
-          }
+          // 统计白天班、跨夜班和休息日
+      if (allShifts[dateStr].type === '白天班' || allShifts[dateStr].type === '跨夜班') {
+        workDays++;
+      } else if (allShifts[dateStr].type === '休息日') {
+        offDays++;
+      }
           
           // 统计加班时间（假设超过8小时为加班）
           if (parseFloat(allShifts[dateStr].workHours) > 8) {
@@ -127,7 +127,7 @@ Page({
     csvContent += `统计区间,${startDate}至${endDate}\n`;
     csvContent += `总工时,${totalHours}小时\n`;
     csvContent += `排班天数,${statistics.totalDays}天\n`;
-    csvContent += `工作日,${statistics.workDays}天\n`;
+    csvContent += `工作班次,${statistics.workDays}天\n`;
     csvContent += `休息日,${statistics.offDays}天\n`;
     csvContent += `加班时间,${statistics.overtimeHours}小时\n`;
     
