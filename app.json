@@ -17,7 +17,7 @@
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
     "position": "bottom",
-"list": [
+    "list": [
       {
         "pagePath": "pages/plan/plan",
         "text": "📋计划"
@@ -37,12 +37,8 @@
     ]
   },
   "permission": {
-    "filescope.read": {
-      "desc": "用于读取小程序内的文件"
-    },
-    "filescope.write": {
-      "desc": "用于写入小程序内的文件"
+    "scope.writePhotosAlbum": {
+      "desc": "用于保存导出的排班数据文件"
     }
-  },
-  "sitemapLocation": "sitemap.json"
+  }
 }

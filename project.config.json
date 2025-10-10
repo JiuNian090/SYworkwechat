@@ -12,7 +12,16 @@
       "outputPath": ""
     },
     "useCompilerPlugins": false,
-    "minifyWXML": true
+    "minifyWXML": true,
+    "compileWorklet": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "minifyWXSS": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
   },
   "env": {
     "API_KEY": "your_api_key_here",
@@ -24,6 +33,7 @@
     "ignore": [],
     "include": []
   },
-  "appid": "wx88b43e86e8882b02",
-  "editorSetting": {}
+  "appid": "wx0d4971ca2a335914",
+  "editorSetting": {},
+  "libVersion": "3.10.2"
 }
