@@ -57,7 +57,117 @@ const userInfo = wx.getStorageSync('userInfo');
 
 // 保存用户信息
 wx.setStorageSync('userInfo', userInfo);
+
+// 读取排班数据
+const shifts = wx.getStorageSync('shifts') || {};
+
+// 保存排班数据
+wx.setStorageSync('shifts', shifts);
 ```
+
+### 2.2 数据管理API
+用于数据的导出、导入和清空功能，支持将班次模板、排班数据等整合成JSON文件进行备份和迁移。
+
+**导出数据方法：**
+```javascript
+// 导出数据到JSON文件
+exportData() {
+  // 获取本地存储的班次模板和排班数据
+  const data = {
+    shiftTemplates: wx.getStorageSync('shiftTemplates') || [],
+    shifts: wx.getStorageSync('shifts') || {}
+  };
+  
+  // 计算统计数据
+  // ...统计逻辑...
+  
+  // 添加统计数据到导出数据中
+  data.statistics = statisticsData;
+  
+  // 创建JSON文件并分享
+  // ...文件创建和分享逻辑...
+}
+```
+
+**导入数据方法：**
+```javascript
+// 从JSON文件导入数据
+importData() {
+  // 选择JSON文件
+  wx.chooseMessageFile({
+    count: 1,
+    type: 'file',
+    extension: ['json'],
+    success: (res) => {
+      // 读取并解析文件内容
+      // ...文件读取逻辑...
+      
+      // 验证数据格式
+      // ...数据验证逻辑...
+      
+      // 保存数据到本地存储
+      if (data.shiftTemplates) {
+        wx.setStorageSync('shiftTemplates', data.shiftTemplates);
+      }
+      if (data.shifts) {
+        wx.setStorageSync('shifts', data.shifts);
+      }
+      
+      // 刷新相关页面数据
+      // ...页面刷新逻辑...
+    }
+  });
+}
+```
+
+**清空数据方法：**
+```javascript
+// 清空所有相关数据
+clearAllData() {
+  // 清空所有相关的本地存储数据
+  wx.removeStorageSync('shiftTemplates');
+  wx.removeStorageSync('shifts');
+  wx.removeStorageSync('userInfo');
+  // 如果还有其他需要清空的数据，可以在这里添加
+  
+  // 刷新所有相关页面数据
+  const pages = getCurrentPages();
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    if (page.route === 'pages/plan/plan') {
+      // 重新加载班次模板数据（空数组）
+      if (page.loadShiftTemplates) {
+        page.loadShiftTemplates();
+      }
+    } else if (page.route === 'pages/schedule/schedule') {
+      // 重新加载排班数据（空对象）和班次模板
+      if (page.loadShifts) {
+        page.loadShifts();
+      }
+      if (page.loadShiftTemplates) {
+        page.loadShiftTemplates();
+      }
+      // 重新生成日期数据
+      if (page.generateWeekDates) {
+        page.generateWeekDates();
+      }
+      if (page.generateMonthDates) {
+        page.generateMonthDates();
+      }
+    } else if (page.route === 'pages/statistics/statistics') {
+      // 重新计算统计数据（应该为空）
+      if (page.calculateStatistics) {
+        page.calculateStatistics();
+      }
+    }
+  }
+}
+```
+
+**数据结构说明：**
+1. **shiftTemplates（班次模板）**：包含用户创建的所有班次模板，保留排列顺序
+2. **shifts（排班数据）**：包含用户所有的排班记录，以日期为键的键值对结构
+3. **statistics（统计数据）**：根据排班数据实时计算生成的统计信息
 
 
 
