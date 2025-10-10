@@ -6,13 +6,15 @@
 .btn-primary {
   background: #07c160;
   color: #fff;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   font-size: 32rpx;
   padding: 16rpx 0;
   box-shadow: 0 2rpx 8rpx rgba(7,193,96,0.08);
+  transition: all 0.3s ease;
 }
 .btn-primary:active {
   background: #059e4d;
+  transform: translateY(2rpx);
 }
 .modal {
   border-radius: 20rpx;
@@ -20,12 +22,18 @@
 }
 .container {
   padding: 20rpx;
+  background: #f8f8f8;
+  min-height: 100vh;
 }
 
 .header {
   text-align: center;
   padding: 20rpx 0;
   border-bottom: 1rpx solid #e0e0e0;
+  background: #fff;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
 }
 
 .title {
@@ -38,11 +46,18 @@
 
 .profile-section {
   background: #fff;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 40rpx;
   margin: 30rpx 0;
   text-align: center;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1rpx solid #f0f0f0;
+}
+
+.profile-section:hover {
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+  transform: translateY(-4rpx);
 }
 
 .avatar-container {
@@ -55,6 +70,7 @@
   height: 150rpx;
   border-radius: 50%;
   border: 5rpx solid #f0f0f0;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 }
 
 .change-avatar {
@@ -66,6 +82,12 @@
   font-size: 20rpx;
   padding: 5rpx 10rpx;
   border-radius: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.2);
+  transition: all 0.3s ease;
+}
+
+.change-avatar:active {
+  transform: scale(0.95);
 }
 
 .nickname-container {
@@ -78,6 +100,48 @@
   color: #333;
 }
 
+/* 微信登录按钮样式 */
+.login-section {
+  margin-top: 40rpx;
+}
+
+.login-btn {
+  background: #07c160;
+  color: #fff;
+  font-size: 30rpx;
+  padding: 4rpx 16rpx;
+  border-radius: 50rpx;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  font-weight: 500;
+  letter-spacing: 1rpx;
+}
+
+.login-btn::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: rotate(30deg);
+  transition: all 0.6s ease;
+}
+
+.login-btn:hover::after {
+  transform: rotate(30deg) translate(20%, 20%);
+}
+
+.login-btn:active {
+  transform: translateY(4rpx);
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.2);
+  background: #059e4d;
+}
+
 .edit-nickname {
   background: #f0f0f0;
   color: #666;
@@ -85,14 +149,28 @@
   padding: 10rpx 20rpx;
   border-radius: 20rpx;
   margin-top: 20rpx;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.edit-nickname:active {
+  background: #e0e0e0;
+  transform: scale(0.95);
 }
 
 .section {
   background: #fff;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 30rpx;
   margin: 30rpx 0;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1rpx solid #f0f0f0;
+}
+
+.section:hover {
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+  transform: translateY(-4rpx);
 }
 
 .section-title {
@@ -100,6 +178,15 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+}
+
+.section-title::before {
+  content: "●";
+  color: #07c160;
+  margin-right: 12rpx;
+  font-size: 28rpx;
 }
 
 .intro-content {
@@ -117,7 +204,16 @@
   flex: 1;
   font-size: 28rpx;
   padding: 20rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.action-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.05);
 }
 
 .export-btn {
@@ -127,6 +223,11 @@
 
 .import-btn {
   background: #1890ff;
+  color: #fff;
+}
+
+.clear-btn {
+  background: #ff4d4f;
   color: #fff;
 }
 
@@ -146,8 +247,9 @@
 .modal-content {
   background: #fff;
   width: 80%;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 30rpx;
+  box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
@@ -155,36 +257,59 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .modal-title {
   font-size: 36rpx;
   font-weight: bold;
+  color: #333;
 }
 
 .form-group {
   margin-bottom: 30rpx;
 }
 
+.label {
+  display: block;
+  font-size: 28rpx;
+  margin-bottom: 10rpx;
+  color: #333;
+}
+
 .input {
   border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 20rpx;
   font-size: 28rpx;
   width: 100%;
   box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  border-color: #07c160;
+  box-shadow: 0 0 0 2rpx rgba(7, 193, 96, 0.2);
+  outline: none;
 }
 
 .modal-footer {
   display: flex;
   justify-content: space-between;
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
 }
 
 .cancel-btn, .confirm-btn {
   flex: 1;
   margin: 0 10rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   font-size: 28rpx;
+  padding: 16rpx 0;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .cancel-btn {
@@ -192,7 +317,17 @@
   color: #666;
 }
 
+.cancel-btn:active {
+  background: #e0e0e0;
+  transform: translateY(2rpx);
+}
+
 .confirm-btn {
   background: #07c160;
   color: #fff;
+}
+
+.confirm-btn:active {
+  background: #059e4d;
+  transform: translateY(2rpx);
 }

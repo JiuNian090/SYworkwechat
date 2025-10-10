@@ -6,55 +6,42 @@
 
   <view class="profile-section">
     <view class="avatar-container">
-      <open-data type="userAvatarUrl" wx:if="{{userInfo.avatarUrl.indexOf('default') === -1}}" class="avatar"></open-data>
-      <image wx:else src="{{userInfo.avatarUrl}}" class="avatar"></image>
-      <button class="change-avatar" bindtap="onChooseAvatar">更换头像</button>
-    </view>
-
+    <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" class="avatar" mode="aspectFill" binderror="onAvatarError"></image>
+    <image wx:else src="/images/default_avatar.png" class="avatar" mode="aspectFill"></image>
+    <button class="change-avatar" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">更换头像</button>
+  </view>
     <view class="nickname-container">
-      <text class="nickname">{{userInfo.nickName}}</text>
-      <button class="edit-nickname" bindtap="editNickname">编辑昵称</button>
+    <text class="nickname">{{userInfo.nickName}}</text>
+  </view>
+    <!-- 微信登录按钮 -->
+    <view class="login-section" wx:if="{{!hasLogin}}">
+      <button class="login-btn" bindtap="loginWithWeChat">使用微信登录</button>
     </view>
   </view>
 
   <view class="section">
-    <view class="section-title">项目介绍</view>
+    <text class="section-title">项目介绍</text>
     <view class="intro-content">
-      <text>这是一个排班管理系统微信小程序，可以帮助用户管理班次模板、进行排班、统计工时以及数据备份恢复等功能。</text>
+      <text>这是一个便捷的排班管理系统，支持班次模板设置、排班安排和统计功能。\n\n主要功能：\n1. 班次模板管理 - 创建和管理常用班次\n2. 排班安排 - 按周或月查看和编辑排班\n3. 数据统计 - 统计工时和班次情况\n4. 数据导入导出 - 保护您的数据安全</text>
     </view>
   </view>
 
   <view class="section">
-    <view class="section-title">数据管理</view>
+    <text class="section-title">数据管理</text>
     <view class="data-actions">
       <button class="action-btn export-btn" bindtap="exportData">导出数据</button>
       <button class="action-btn import-btn" bindtap="importData">导入数据</button>
     </view>
+    <view class="data-actions" style="margin-top: 20rpx;">
+      <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
+    </view>
+  </view>
+  
+  <view class="section">
+    <text class="section-title">更多功能</text>
     <view class="data-actions">
       <button class="action-btn export-btn" bindtap="exportAllDataToCSV">导出CSV</button>
       <button class="action-btn import-btn" bindtap="importAllDataFromCSV">导入CSV</button>
-    </view>
-    <view class="data-actions">
-      <button class="action-btn" style="background:#ff4d4f;color:#fff;" bindtap="clearAllData">清空数据</button>
-    </view>
-  </view>
-
-  <!-- 编辑昵称弹窗 -->
-  <view class="modal" wx:if="{{showEditModal}}">
-    <view class="modal-content">
-      <view class="modal-header">
-        <text class="modal-title">编辑昵称</text>
-        <icon type="cancel" size="20" bindtap="hideEditModal" />
-      </view>
-      
-      <view class="form-group">
-        <input class="input" placeholder="请输入昵称" bindinput="onNicknameInput" value="{{editUserInfo.nickName}}" />
-      </view>
-      
-      <view class="modal-footer">
-        <button class="cancel-btn" bindtap="hideEditModal">取消</button>
-        <button class="confirm-btn" bindtap="saveNickname">保存</button>
-      </view>
     </view>
   </view>
 </view>

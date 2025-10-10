@@ -116,20 +116,26 @@
   border: 1rpx solid #e0e0e0;
   border-radius: 10rpx;
   margin-bottom: 20rpx;
+  background: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
 }
 
 .shift-date {
   width: 180rpx;
   font-size: 28rpx;
-  color: #333;
+  color: #07c160;
   font-weight: bold;
+  display: flex;
+  align-items: center;
 }
 
 .shift-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 8rpx;
+  padding-left: 20rpx;
+  border-left: 1rpx dashed #e0e0e0;
 }
 
 .shift-name {
@@ -141,6 +147,18 @@
 .shift-time, .shift-hours, .shift-type {
   font-size: 24rpx;
   color: #666;
+}
+
+.shift-time::before {
+  content: "⏰ ";
+}
+
+.shift-hours::before {
+  content: "⏱️ ";
+}
+
+.shift-type::before {
+  content: "🏷️ ";
 }
 
 .empty-tip {
@@ -158,7 +176,7 @@
 .export-btn {
   background: #07c160;
   color: #fff;
-  font-size: 32rpx;
-  padding: 20rpx 40rpx;
+  font-size: 28rpx;
+  padding: 12rpx 30rpx;
   border-radius: 10rpx;
 }
