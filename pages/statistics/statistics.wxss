@@ -40,27 +40,80 @@
   display: flex;
   justify-content: space-between;
   margin: 30rpx 0;
-  gap: 20rpx;
+  background: linear-gradient(180deg, #ffffff, #f8f8f8);
+  padding: 25rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.08);
+  border: 1rpx solid #eee;
+  position: relative;
+}
+
+.date-selector::before {
+  content: "📅";
+  position: absolute;
+  top: -15rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #07c160;
+  color: white;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.4);
 }
 
 .date-item {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.date-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rpx;
+  height: 60rpx;
+  background: #e0e0e0;
 }
 
 .label {
-  display: block;
-  font-size: 28rpx;
+  font-size: 26rpx;
+  color: #666;
   margin-bottom: 10rpx;
-  color: #333;
+  position: relative;
+}
+
+.label::before {
+  content: "📅";
+  margin-right: 10rpx;
 }
 
 .picker {
-  border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
-  padding: 20rpx;
-  font-size: 28rpx;
-  color: #666;
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #07c160;
+  padding: 15rpx 20rpx;
+  background: #f0fff0;
+  border-radius: 12rpx;
+  min-width: 180rpx;
   text-align: center;
+  border: 2rpx solid #e0f0e0;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.picker:active {
+  transform: scale(0.98);
+  box-shadow: 0 1rpx 4rpx rgba(0,0,0,0.1);
 }
 
 .summary {
