@@ -35,24 +35,21 @@
           <text class="weekday-text">{{item.weekday}}</text>
           <text class="day-number">{{item.day}}</text>
         </view>
-        <view class="day-content">
-          <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};">
+        <view class="day-content" wx:if="{{item.shift}}" style="background:{{item.shift.color}}80;">
+          <view class="shift-info">
             <text class="shift-name">{{item.shift.name}}</text>
             <text class="shift-time">{{item.shift.startTime}}-{{item.shift.endTime}}</text>
             <text wx:if="{{item.shift.type === '加班'}}" class="overtime-tag">加班</text>
             <!-- 节假日特殊显示已移除 -->
           </view>
-          <view wx:else class="no-shift">
-            <text>未排班</text>
-          </view>
+        </view>
+        <view class="day-content no-shift" wx:else>
+          <text>未排班</text>
         </view>
       </view>
     </view>
     
-    <!-- 周视图下的批量操作按钮 -->
-    <view class="batch-operation" wx:if="{{currentView === 'week'}}">
-      <button class="btn-primary" bindtap="batchAssignShift">批量排班</button>
-    </view>
+
   </view>
 
   <!-- 月视图 -->
@@ -75,7 +72,7 @@
           <view class="day-cell {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}" 
                 wx:for="{{item}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
             <text class="day-number">{{item.day}}</text>
-            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}};">
+            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}}80;">
               <text class="shift-name">{{item.shift.name}}</text>
               <text wx:if="{{item.shift.type === '加班'}}" class="overtime-tag">加班</text>
               <!-- 节假日特殊显示已移除 -->
@@ -87,10 +84,7 @@
       </view>
     </view>
     
-    <!-- 月视图下的批量操作按钮 -->
-    <view class="batch-operation" wx:if="{{currentView === 'month'}}">
-      <button class="btn-primary" bindtap="batchAssignShift">批量排班</button>
-    </view>
+
   </view>
 
   <!-- 排班选择弹窗 -->

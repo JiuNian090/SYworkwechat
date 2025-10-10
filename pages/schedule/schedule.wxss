@@ -108,7 +108,7 @@
 
 .day-cell {
   width: 100%;
-  min-height: 100rpx;
+  min-height: 120rpx;
   border: 1rpx solid #e0e0e0;
   box-sizing: border-box;
   display: flex;
@@ -151,10 +151,8 @@
 
 .day-content {
   flex: 1;
-  padding: 8rpx;
+  padding: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
   height: 100%;
   box-sizing: border-box;
 }
@@ -210,6 +208,11 @@
   justify-content: center;
   height: 100%;
   text-align: center;
+}
+
+.day-content.no-shift {
+  align-items: center;
+  justify-content: center;
 }
 
 /* 月视图 */
@@ -399,10 +402,4 @@
   color: #999;
   font-size: 24rpx;
   padding: 30rpx 0;
-}
-
-/* 批量操作区域 */
-.batch-operation {
-  margin-top: 30rpx;
-  text-align: center;
 }
