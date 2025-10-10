@@ -165,29 +165,32 @@
 
 .shift-item {
   display: flex;
-  padding: 20rpx;
+  padding: 15rpx;
   border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
-  margin-bottom: 20rpx;
+  border-radius: 8rpx;
+  margin-bottom: 15rpx;
   background: #fff;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+  box-shadow: 0 1rpx 4rpx rgba(0,0,0,0.05);
 }
 
 .shift-date {
-  width: 180rpx;
-  font-size: 28rpx;
+  width: 140rpx;
+  font-size: 24rpx;
   color: #07c160;
   font-weight: bold;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .shift-content {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding-left: 20rpx;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6rpx 15rpx;
+  padding-left: 15rpx;
   border-left: 1rpx dashed #e0e0e0;
 }
 
@@ -195,10 +198,18 @@
   font-size: 28rpx;
   font-weight: bold;
   color: #333;
+  flex: 1 1 100%;
 }
 
 .shift-time, .shift-hours, .shift-type {
-  font-size: 24rpx;
+  font-size: 20rpx;
+  color: #666;
+  flex: 1;
+  min-width: 120rpx;
+}
+
+.shift-time, .shift-hours, .shift-type {
+  font-size: 20rpx;
   color: #666;
 }
 

@@ -73,23 +73,6 @@
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 }
 
-.change-avatar {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background: #07c160;
-  color: #fff;
-  font-size: 20rpx;
-  padding: 5rpx 10rpx;
-  border-radius: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.2);
-  transition: all 0.3s ease;
-}
-
-.change-avatar:active {
-  transform: scale(0.95);
-}
-
 .nickname-container {
   margin-top: 30rpx;
 }

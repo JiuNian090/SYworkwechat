@@ -88,33 +88,7 @@ Page({
     });
   },
 
-  onChooseAvatar(e) {
-    const { avatarUrl } = e.detail;
-    const { userInfo } = this.data;
-    
-    const newUserInfo = {
-      ...userInfo,
-      avatarUrl: avatarUrl
-    };
-    
-    this.setData({
-      userInfo: newUserInfo
-    });
-    
-    try {
-      wx.setStorageSync('userInfo', newUserInfo);
-      wx.showToast({
-        title: '头像更新成功',
-        icon: 'success'
-      });
-    } catch (e) {
-      console.error('保存头像失败', e);
-      wx.showToast({
-        title: '保存失败',
-        icon: 'none'
-      });
-    }
-  },
+
 
   // 处理文件名输入
   onFileNameInput(e) {

@@ -37,7 +37,7 @@
         </view>
         <view class="day-content">
           <text wx:if="{{!item.shift}}" class="no-shift-text">未排班</text>
-          <view wx:if="{{item.shift}}" class="shift-card" style="background-color:{{item.shift.color}}80;">
+          <view wx:if="{{item.shift}}" class="shift-card" style="background-color:{{item.shift.color}}40;">
             <text class="shift-name">{{item.shift.name}}</text>
             <text class="shift-time">{{item.shift.startTime}}-{{item.shift.endTime}}</text>
             <text class="shift-hours">{{item.shift.workHours}}小时</text>
@@ -68,7 +68,7 @@
           <view class="day-cell {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}" 
                 wx:for="{{item}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
             <text class="day-number">{{item.day}}</text>
-            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}}80;">
+            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}}40;">
               <text class="shift-name">{{item.shift.name}}</text>
             </view>
             <view wx:elif="{{!item.shift}}" class="no-shift">

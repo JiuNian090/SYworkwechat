@@ -8,7 +8,6 @@
     <view class="avatar-container">
     <image wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" class="avatar" mode="aspectFill" binderror="onAvatarError"></image>
     <image wx:else src="/images/default_avatar.png" class="avatar" mode="aspectFill"></image>
-    <button class="change-avatar" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">更换头像</button>
   </view>
     <view class="nickname-container">
     <text class="nickname">{{userInfo.nickName}}</text>
