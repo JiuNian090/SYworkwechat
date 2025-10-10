@@ -201,9 +201,20 @@ Page({
     const template = this.data.shiftTemplates[selectedIndex];
     const { selectedDate, shifts } = this.data;
     
+    // 确保班次数据包含所有必要字段，包括工时数
+    const shiftData = {
+      ...template,
+      name: template.name,
+      startTime: template.startTime,
+      endTime: template.endTime,
+      workHours: template.workHours || 0,
+      type: template.type,
+      color: template.color
+    };
+    
     const newShifts = {
       ...shifts,
-      [selectedDate]: template
+      [selectedDate]: shiftData
     };
     
     try {

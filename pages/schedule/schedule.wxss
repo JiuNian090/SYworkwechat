@@ -151,68 +151,61 @@
 
 .day-content {
   flex: 1;
-  padding: 0;
-  display: flex;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.shift-info {
-  margin-left: 0;
-  flex: 1;
-  padding: 8rpx 12rpx;
+  padding: 8rpx;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   height: 100%;
   box-sizing: border-box;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.no-shift-text {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  color: #999;
   text-align: center;
 }
 
+.shift-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  border-radius: 12rpx;
+  margin: 4rpx;
+  box-sizing: border-box;
+  min-height: 100rpx;
+}
+
 .shift-name {
-  display: block;
-  font-size: 24rpx;
+  font-size: 32rpx;
   font-weight: bold;
   color: #333;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4rpx;
+  flex: 1;
+  text-align: left;
+  padding-right: 10rpx;
 }
 
 .shift-time {
-  display: block;
-  font-size: 20rpx;
-  color: #666;
-  margin-top: 0;
-}
-
-.overtime-tag {
-  font-size: 16rpx;
-  padding: 2rpx 6rpx;
-  background: #ff4d4f;
-  color: white;
-  border-radius: 6rpx;
-  margin-left: 8rpx;
-  vertical-align: top;
-}
-
-.no-shift {
-  margin-left: 0;
-  font-size: 20rpx;
-  color: #999;
-  padding: 10rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
   text-align: center;
 }
 
-.day-content.no-shift {
-  align-items: center;
-  justify-content: center;
+.shift-hours {
+  font-size: 28rpx;
+  color: #333;
+  flex: 1;
+  text-align: right;
+  font-weight: bold;
 }
 
 /* 月视图 */
@@ -250,23 +243,21 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 24rpx 4rpx 4rpx 4rpx;
   border-radius: 12rpx;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;
 }
 
 .month-view .shift-name {
-  font-size: 20rpx;
+  font-size: 28rpx;
   font-weight: bold;
   color: #333;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 2rpx;
+  text-align: center;
 }
 
 .month-view .overtime-tag {
