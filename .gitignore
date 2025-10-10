@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Trae AI configuration
+.trae/
+
 # Logs
 logs
 *.log
