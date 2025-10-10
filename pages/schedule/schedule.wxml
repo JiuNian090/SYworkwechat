@@ -43,6 +43,11 @@
         </view>
       </view>
     </view>
+    
+    <!-- 周视图下的批量操作按钮 -->
+    <view class="batch-operation" wx:if="{{currentView === 'week'}}">
+      <button class="btn-primary" bindtap="batchAssignShift">批量排班</button>
+    </view>
   </view>
 
   <!-- 月视图 -->
@@ -72,6 +77,11 @@
             </view>
           </view>
       </view>
+    </view>
+    
+    <!-- 月视图下的批量操作按钮 -->
+    <view class="batch-operation" wx:if="{{currentView === 'month'}}">
+      <button class="btn-primary" bindtap="batchAssignShift">批量排班</button>
     </view>
   </view>
 

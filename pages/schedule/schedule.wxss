@@ -257,3 +257,9 @@
   font-size: 24rpx;
   padding: 30rpx 0;
 }
+
+/* 批量操作区域 */
+.batch-operation {
+  margin-top: 30rpx;
+  text-align: center;
+}

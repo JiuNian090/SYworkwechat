@@ -329,5 +329,31 @@ Page({
         }
       });
     },
+    
+    // 清空所有数据
+    clearAllData() {
+      wx.showModal({
+        title: '确认清空',
+        content: '确定要清空所有数据吗？此操作不可恢复！',
+        success: (res) => {
+          if (res.confirm) {
+            try {
+              wx.clearStorageSync();
+              wx.showToast({
+                title: '数据已清空',
+                icon: 'success'
+              });
+              // 重新加载页面数据
+              this.loadUserInfo();
+            } catch (e) {
+              wx.showToast({
+                title: '清空失败',
+                icon: 'none'
+              });
+            }
+          }
+        }
+      });
+    }
   }
 );

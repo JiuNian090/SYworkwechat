@@ -34,6 +34,27 @@
       <text class="summary-label">总工时</text>
       <text class="summary-value highlight">{{totalHours}} 小时</text>
     </view>
+    
+    <!-- 新增统计项 -->
+    <view class="summary-item">
+      <text class="summary-label">排班天数</text>
+      <text class="summary-value">{{statistics.totalDays}} 天</text>
+    </view>
+    
+    <view class="summary-item">
+      <text class="summary-label">工作日</text>
+      <text class="summary-value">{{statistics.workDays}} 天</text>
+    </view>
+    
+    <view class="summary-item">
+      <text class="summary-label">休息日</text>
+      <text class="summary-value">{{statistics.offDays}} 天</text>
+    </view>
+    
+    <view class="summary-item">
+      <text class="summary-label">加班时间</text>
+      <text class="summary-value">{{statistics.overtimeHours}} 小时</text>
+    </view>
   </view>
 
   <view class="shifts-list">

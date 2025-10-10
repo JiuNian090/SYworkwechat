@@ -30,6 +30,13 @@
       <button class="action-btn export-btn" bindtap="exportData">导出数据</button>
       <button class="action-btn import-btn" bindtap="importData">导入数据</button>
     </view>
+    <view class="data-actions">
+      <button class="action-btn export-btn" bindtap="exportAllDataToCSV">导出CSV</button>
+      <button class="action-btn import-btn" bindtap="importAllDataFromCSV">导入CSV</button>
+    </view>
+    <view class="data-actions">
+      <button class="action-btn" style="background:#ff4d4f;color:#fff;" bindtap="clearAllData">清空数据</button>
+    </view>
   </view>
 
   <!-- 编辑昵称弹窗 -->

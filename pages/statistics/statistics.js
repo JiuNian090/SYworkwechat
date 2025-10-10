@@ -5,7 +5,14 @@ Page({
     endDate: '',
     totalHours: 0,
     shifts: [],
-    showExportTip: false
+    showExportTip: false,
+    // 新增统计数据
+    statistics: {
+      totalDays: 0,
+      workDays: 0,
+      offDays: 0,
+      overtimeHours: 0
+    }
   },
 
   onLoad() {
@@ -57,6 +64,9 @@ Page({
       const allShifts = wx.getStorageSync('shifts') || {};
       const shiftsInRange = [];
       let totalHours = 0;
+      let workDays = 0;
+      let offDays = 0;
+      let overtimeHours = 0;
       
       // 遍历日期范围内的所有排班
       const start = new Date(startDate);
@@ -65,17 +75,36 @@ Page({
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = this.formatDate(d);
         if (allShifts[dateStr]) {
-          shiftsInRange.push({
+          const shift = {
             date: dateStr,
             ...allShifts[dateStr]
-          });
+          };
+          shiftsInRange.push(shift);
           totalHours += parseFloat(allShifts[dateStr].workHours) || 0;
+          
+          // 统计工作日和休息日
+          if (allShifts[dateStr].type === '工作日') {
+            workDays++;
+          } else if (allShifts[dateStr].type === '休息日' || allShifts[dateStr].type === '节假日') {
+            offDays++;
+          }
+          
+          // 统计加班时间（假设超过8小时为加班）
+          if (parseFloat(allShifts[dateStr].workHours) > 8) {
+            overtimeHours += parseFloat(allShifts[dateStr].workHours) - 8;
+          }
         }
       }
       
       this.setData({
         shifts: shiftsInRange,
-        totalHours: totalHours.toFixed(1)
+        totalHours: totalHours.toFixed(1),
+        statistics: {
+          totalDays: shiftsInRange.length,
+          workDays: workDays,
+          offDays: offDays,
+          overtimeHours: overtimeHours.toFixed(1)
+        }
       });
     } catch (e) {
       console.error('计算统计数据失败', e);
@@ -87,14 +116,20 @@ Page({
   },
 
   exportToExcel() {
-    const { startDate, endDate, shifts, totalHours } = this.data;
+    const { startDate, endDate, shifts, totalHours, statistics } = this.data;
     
     // 构造CSV数据
     let csvContent = '\uFEFF日期,班次名称,开始时间,结束时间,工时(小时),类型\n';
     shifts.forEach(shift => {
       csvContent += `${shift.date},${shift.name},${shift.startTime},${shift.endTime},${shift.workHours},${shift.type}\n`;
     });
-    csvContent += `总计,,${startDate}至${endDate},${totalHours}小时\n`;
+    csvContent += `\n统计汇总\n`;
+    csvContent += `统计区间,${startDate}至${endDate}\n`;
+    csvContent += `总工时,${totalHours}小时\n`;
+    csvContent += `排班天数,${statistics.totalDays}天\n`;
+    csvContent += `工作日,${statistics.workDays}天\n`;
+    csvContent += `休息日,${statistics.offDays}天\n`;
+    csvContent += `加班时间,${statistics.overtimeHours}小时\n`;
     
     // 创建并下载文件
     const fs = wx.getFileSystemManager();

@@ -246,5 +246,14 @@ Page({
         icon: 'none'
       });
     }
+  },
+  
+  // 批量排班功能
+  batchAssignShift() {
+    wx.showModal({
+      title: '提示',
+      content: '该功能将在后续版本中实现',
+      showCancel: false
+    });
   }
 });
