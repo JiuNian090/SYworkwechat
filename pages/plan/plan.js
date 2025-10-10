@@ -43,6 +43,11 @@ Page({
     this.loadShiftTemplates();
   },
 
+  onShow() {
+    // 页面显示时重新加载班次模板，确保数据同步
+    this.loadShiftTemplates();
+  },
+
   loadShiftTemplates() {
     try {
       const templates = wx.getStorageSync('shiftTemplates') || [];

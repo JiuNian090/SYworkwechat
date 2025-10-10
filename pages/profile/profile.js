@@ -235,27 +235,53 @@ Page({
                 wx.setStorageSync('shifts', data.shifts);
               }
               
-              wx.hideLoading();
               wx.showToast({
                 title: '导入成功',
                 icon: 'success'
               });
               
-              // 刷新所有相关页面数据
-              const pages = getCurrentPages();
-              for (let i = 0; i < pages.length; i++) {
-                const page = pages[i];
-                if (page.route === 'pages/plan/plan') {
-                  page.loadShiftTemplates && page.loadShiftTemplates();
-                } else if (page.route === 'pages/schedule/schedule') {
-                  page.loadShifts && page.loadShifts();
-                  page.loadShiftTemplates && page.loadShiftTemplates();
-                  page.generateWeekDates && page.generateWeekDates();
-                  page.generateMonthDates && page.generateMonthDates();
-                } else if (page.route === 'pages/statistics/statistics') {
-                  page.calculateStatistics && page.calculateStatistics();
+              // 延迟一段时间确保数据保存完成后再刷新页面
+              setTimeout(() => {
+                // 刷新所有相关页面数据
+                const pages = getCurrentPages();
+                for (let i = 0; i < pages.length; i++) {
+                  const page = pages[i];
+                  if (page.route === 'pages/plan/plan') {
+                    // 重新加载班次模板数据
+                    if (page.loadShiftTemplates) {
+                      page.loadShiftTemplates();
+                    }
+                  } else if (page.route === 'pages/schedule/schedule') {
+                    // 重新加载排班数据和班次模板
+                    if (page.loadShifts) {
+                      page.loadShifts();
+                    }
+                    if (page.loadShiftTemplates) {
+                      page.loadShiftTemplates();
+                    }
+                    // 重新生成日期数据
+                    if (page.generateWeekDates) {
+                      page.generateWeekDates();
+                    }
+                    if (page.generateMonthDates) {
+                      page.generateMonthDates();
+                    }
+                  } else if (page.route === 'pages/statistics/statistics') {
+                    // 重新计算统计数据
+                    if (page.calculateStatistics) {
+                      page.calculateStatistics();
+                    }
+                  }
                 }
-              }
+                
+                // 如果当前在tab页面，也需要刷新当前页面数据
+                if (this.loadUserData && typeof this.loadUserData === 'function') {
+                  this.loadUserData();
+                }
+                
+                // 隐藏loading
+                wx.hideLoading();
+              }, 500);
             } catch (e) {
               wx.hideLoading();
               console.error('解析数据失败', e);
@@ -314,37 +340,43 @@ Page({
               icon: 'success'
             });
             
-            // 通知所有相关页面刷新数据
-            const pages = getCurrentPages();
-            for (let i = 0; i < pages.length; i++) {
-              const page = pages[i];
-              if (page.route === 'pages/plan/plan') {
-                // 重新加载班次模板数据（空数组）
-                if (page.loadShiftTemplates) {
-                  page.loadShiftTemplates();
-                }
-              } else if (page.route === 'pages/schedule/schedule') {
-                // 重新加载排班数据（空对象）和班次模板
-                if (page.loadShifts) {
-                  page.loadShifts();
-                }
-                if (page.loadShiftTemplates) {
-                  page.loadShiftTemplates();
-                }
-                // 重新生成日期数据
-                if (page.generateWeekDates) {
-                  page.generateWeekDates();
-                }
-                if (page.generateMonthDates) {
-                  page.generateMonthDates();
-                }
-              } else if (page.route === 'pages/statistics/statistics') {
-                // 重新计算统计数据（应该为空）
-                if (page.calculateStatistics) {
-                  page.calculateStatistics();
+            // 延迟一段时间确保数据清空完成后再刷新页面
+            setTimeout(() => {
+              // 通知所有相关页面刷新数据
+              const pages = getCurrentPages();
+              for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
+                if (page.route === 'pages/plan/plan') {
+                  // 重新加载班次模板数据（空数组）
+                  if (page.loadShiftTemplates) {
+                    page.loadShiftTemplates();
+                  }
+                } else if (page.route === 'pages/schedule/schedule') {
+                  // 重新加载排班数据（空对象）和班次模板
+                  if (page.loadShifts) {
+                    page.loadShifts();
+                  }
+                  if (page.loadShiftTemplates) {
+                    page.loadShiftTemplates();
+                  }
+                  // 重新生成日期数据
+                  if (page.generateWeekDates) {
+                    page.generateWeekDates();
+                  }
+                  if (page.generateMonthDates) {
+                    page.generateMonthDates();
+                  }
+                } else if (page.route === 'pages/statistics/statistics') {
+                  // 重新计算统计数据（应该为空）
+                  if (page.calculateStatistics) {
+                    page.calculateStatistics();
+                  }
                 }
               }
-            }
+              
+              // 隐藏loading
+              wx.hideLoading();
+            }, 500);
           } catch (e) {
             wx.hideLoading();
             console.error('清空数据失败', e);
@@ -352,11 +384,6 @@ Page({
               title: '清空失败',
               icon: 'none'
             });
-          } finally {
-            // 确保loading状态被隐藏
-            setTimeout(() => {
-              wx.hideLoading();
-            }, 1000);
           }
         }
       }
