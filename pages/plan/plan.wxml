@@ -5,6 +5,13 @@
   </view>
 
   <view class="content">
+    <view class="section-header">
+      <view class="section-title">
+        <icon type="form" size="20" class="title-icon" />
+        班次列表
+      </view>
+      <button class="add-template-btn" bindtap="showAddTemplateModal">添加班次模板</button>
+    </view>
     <view class="template-list">
       <view class="template-item" wx:for="{{shiftTemplates}}" wx:key="index" style="background-color:{{item.color}}20">
         <view class="template-content">
@@ -29,10 +36,6 @@
     <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
       暂无班次模板，请添加
     </view>
-  </view>
-
-  <view class="add-button">
-     <button class="add-btn" bindtap="showAddTemplateModal">添加班次模板</button>
   </view>
 
   <!-- 添加模板弹窗 -->
