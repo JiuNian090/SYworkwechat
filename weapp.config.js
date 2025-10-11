@@ -1,51 +1,40 @@
 module.exports = {
   projectname: "SYworkwechat",
-  appid: "wxa3fb6745243217ab",
+  appid: "wx0d4971ca2a335914", // 与project.config.json保持一致
   setting: {
     urlCheck: true,
-    es6: true,
-    enhance: true,
-    postcss: true,
     preloadBackgroundData: false,
-    minified: true,
     newFeature: false,
     coverView: true,
     nodeModules: false,
     autoAudits: false,
     showShadowRootInWxmlPanel: true,
     scopeDataCheck: false,
-    uglifyFileName: false,
     checkInvalidKey: true,
     checkSiteMap: true,
-    uploadWithSourceMap: true,
     compileHotReLoad: false,
     useMultiFrameRuntime: true,
     useApiHook: true,
-    babelSetting: {
-      ignore: [],
-      disablePlugins: [],
-      outputPath: ""
-    },
     enableEngineNative: false,
     bundle: false,
     useIsolateContext: true,
     useCompilerModule: true,
     userConfirmedUseCompilerModuleSwitch: false,
     userConfirmedBundleSwitch: false,
-    packNpmManually: false,
-    packNpmRelationList: [],
-    minifyWXSS: true
+    useCompilerPlugins: false, // 从project.config.json同步
+    compileWorklet: false, // 从project.config.json同步
+    localPlugins: false, // 从project.config.json同步
+    disableUseStrict: false, // 从project.config.json同步
+    condition: false, // 从project.config.json同步
+    swc: false, // 从project.config.json同步
+    disableSWC: true // 从project.config.json同步
   },
   compileType: "miniprogram",
-  libVersion: "2.31.0",
+  libVersion: "3.10.2", // 与project.config.json保持一致
   srcMiniprogramRoot: "./",
   packOptions: {
     ignore: [],
     include: []
   },
-  condition: {},
-  editorSetting: {
-    tabIndent: "insertSpaces",
-    tabSize: 2
-  }
+  editorSetting: {} // 清空editorSetting，由project.config.json统一管理
 }
