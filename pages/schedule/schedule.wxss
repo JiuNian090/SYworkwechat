@@ -157,7 +157,7 @@
 
 .current-week-highlight {
   color: #fff;
-  border-radius: 12rpx;
+  border-radius: 20rpx;
   padding: 10rpx 20rpx;
   box-shadow: 0 4rpx 8rpx rgba(7, 193, 96, 0.2);
   display: inline-block;
