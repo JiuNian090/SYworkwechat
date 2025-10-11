@@ -183,9 +183,26 @@ Page({
 
   selectDate(e) {
     const date = e.currentTarget.dataset.date;
+    const selectedShift = this.data.shifts[date] || null;
+    
+    // 重置pickerValue为默认值或匹配当前排班的索引
+    let pickerValue = [0];
+    if (selectedShift && this.data.shiftTemplates.length > 0) {
+      // 尝试找到当前排班对应的模板索引
+      const matchingIndex = this.data.shiftTemplates.findIndex(template => 
+        template.name === selectedShift.name && 
+        template.startTime === selectedShift.startTime && 
+        template.endTime === selectedShift.endTime
+      );
+      if (matchingIndex !== -1) {
+        pickerValue = [matchingIndex];
+      }
+    }
+    
     this.setData({
       selectedDate: date,
-      selectedShift: this.data.shifts[date] || null,
+      selectedShift: selectedShift,
+      pickerValue: pickerValue,
       showShiftModal: true
     });
   },
