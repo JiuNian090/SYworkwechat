@@ -102,9 +102,11 @@ Page({
 
   // 格式化周视图标题为"几月 第几周"
   formatWeekTitle(date) {
-    const month = date.getMonth() + 1;
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
+                       '七月', '八月', '九月', '十月', '十一月', '十二月'];
+    const month = date.getMonth();
     const weekNumber = this.getWeekOfMonth(date);
-    return `${month}月 第${weekNumber}周`;
+    return `${monthNames[month]} 第${weekNumber}周`;
   },
 
   // 判断当前显示的周是否为本周
