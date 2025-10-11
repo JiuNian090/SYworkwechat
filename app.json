@@ -4,7 +4,8 @@
     "pages/schedule/schedule",
     "pages/statistics/statistics",
     "pages/profile/profile",
-    "pages/profile/webview/webview"
+    "pages/profile/webview/webview",
+    "pages/profile/webview/donate"
   ],
   "window": {
     "backgroundTextStyle": "light",

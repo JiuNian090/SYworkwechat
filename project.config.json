@@ -21,7 +21,8 @@
     "disableUseStrict": false,
     "condition": false,
     "swc": false,
-    "disableSWC": true
+    "disableSWC": true,
+    "urlCheck": true
   },
   "env": {
     "API_KEY": "your_api_key_here",
@@ -35,5 +36,13 @@
   },
   "appid": "wx0d4971ca2a335914",
   "editorSetting": {},
-  "libVersion": "3.10.2"
+  "libVersion": "3.10.2",
+  "network": {
+    "request": [
+      "https://gongyi.qq.com"
+    ],
+    "webview": [
+      "https://gongyi.qq.com"
+    ]
+  }
 }
