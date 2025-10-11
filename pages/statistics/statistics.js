@@ -132,15 +132,13 @@ Page({
       // 创建CSV内容
       let csvContent = '';
       
-      // 添加标题行
-      csvContent += '排班统计\n\n';
-      
-      // 添加统计摘要
-      csvContent += '统计区间,总工时,排班天数,工作班次,休息日\n';
-      csvContent += `${startDate}至${endDate},${totalHours},${statistics.totalDays},${statistics.workDays},${statistics.offDays}\n\n`;
+      // 添加增强的标题效果
+      csvContent += '"排班统计报表"\n';
+      csvContent += '"=================="\n';
+      csvContent += '"统计时间范围: ' + startDate + ' 至 ' + endDate + '"\n\n';
       
       // 添加表头
-      csvContent += '日期,班次名称,工时,班次类型,开始时间,结束时间\n';
+      csvContent += '"日期","班次名称","工时","班次类型","开始时间","结束时间"\n';
       
       // 添加排班数据
       shifts.forEach(shift => {
@@ -149,7 +147,8 @@ Page({
           if (typeof field === 'string' && (field.includes(',') || field.includes('"'))) {
             return `"${field.replace(/"/g, '""')}"`;
           }
-          return field;
+          // 强制所有字段作为文本处理
+          return `"${field}"`;
         };
         
         csvContent += [
@@ -162,8 +161,15 @@ Page({
         ].join(',') + '\n';
       });
       
-      // 添加总工时行
-      csvContent += '\n,,总工时:,' + totalHours + ',,\n';
+      // 添加空行分隔
+      csvContent += '\n';
+      
+      // 添加总工时行（调整列位置）
+      csvContent += '"总工时",,"' + totalHours + '",,,\n';
+      
+      // 添加统计摘要
+      csvContent += '"统计区间","总工时","排班天数","工作班次","休息日"\n';
+      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + statistics.totalDays + '","' + statistics.workDays + '","' + statistics.offDays + '"\n';
       
       // 获取自定义文件名
       const customFileName = exportFileName;
