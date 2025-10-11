@@ -25,8 +25,11 @@ Page({
   },
 
   onShow() {
-    // 页面显示时重新加载班次模板，确保数据同步
+    // 页面显示时重新加载班次模板和排班数据，确保数据同步
     this.loadShiftTemplates();
+    this.loadShifts();
+    this.generateWeekDates();
+    this.generateMonthDates();
   },
 
   loadShiftTemplates() {
