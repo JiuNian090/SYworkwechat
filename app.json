@@ -8,7 +8,7 @@
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "SYwork|工时记录系统",
+    "navigationBarTitleText": "SYwork",
     "navigationBarTextStyle": "black"
   },  
   "tabBar": {
