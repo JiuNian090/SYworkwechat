@@ -55,7 +55,7 @@
   <view wx:if="{{currentView === 'month'}}" class="month-view">
     <view class="month-header">
       <button class="nav-btn" bindtap="prevMonth">上一月</button>
-      <text class="current-month">{{currentDate}}</text>
+      <text class="current-month">{{currentMonthTitle}}</text>
       <button class="nav-btn" bindtap="nextMonth">下一月</button>
     </view>
 

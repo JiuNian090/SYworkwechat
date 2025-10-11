@@ -93,6 +93,13 @@
   margin-bottom: 20rpx;
 }
 
+.month-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .week-header {
   justify-content: space-between;
   gap: 20rpx;
@@ -108,6 +115,15 @@
   font-weight: 500;
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.month-header .nav-btn:first-child {
+  margin-right: auto;
+}
+
+.month-header .nav-btn:last-child {
+  margin-left: auto;
 }
 
 .nav-btn:active {
@@ -119,10 +135,16 @@
 .current-week, .current-month {
   font-size: 32rpx;
   font-weight: 600;
-  color: #07c160;
+  color: #000000;
   padding: 0 20rpx;
   text-align: center;
   letter-spacing: 2rpx; /* 增加字间距 */
+  white-space: nowrap;
+}
+
+.month-header .current-month {
+  flex: 1;
+  text-align: center;
 }
 
 .week-title-container {
