@@ -6,7 +6,9 @@ Page({
     currentWeekTitle: '',
     currentMonthTitle: '',
     isCurrentWeek: false, // 是否为当前周
+    isCurrentMonth: false, // 是否为当前月
     currentWeekShiftColor: '', // 当前周标题的背景色
+    currentMonthShiftColor: '', // 当前月标题的背景色
     weekDates: [],
     monthDates: [],
     shifts: {},
@@ -20,11 +22,13 @@ Page({
   onLoad() {
     const today = new Date();
     const isCurrentWeek = this.isCurrentWeek(today);
+    const isCurrentMonth = this.isCurrentMonth(today);
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),
       currentMonthTitle: this.formatMonthTitle(today),
-      isCurrentWeek: isCurrentWeek
+      isCurrentWeek: isCurrentWeek,
+      isCurrentMonth: isCurrentMonth
     });
     this.loadShiftTemplates();
     this.loadShifts();
@@ -38,6 +42,12 @@ Page({
     this.loadShifts();
     this.generateWeekDates();
     this.generateMonthDates();
+    // 确保在onShow中也正确初始化当前月份的判断
+    const currentDate = new Date(this.data.currentDate);
+    const isCurrentMonth = this.isCurrentMonth(currentDate);
+    this.setData({
+      isCurrentMonth: isCurrentMonth
+    });
   },
 
   loadShiftTemplates() {
@@ -69,12 +79,13 @@ Page({
     return `${year}-${month}-${day}`;
   },
 
-  // 格式化月份标题为大写月份名称
+  // 格式化月份标题为"年 月"格式
   formatMonthTitle(date) {
+    const year = date.getFullYear();
     const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
                        '七月', '八月', '九月', '十月', '十一月', '十二月'];
     const month = date.getMonth();
-    return monthNames[month];
+    return `${year}年 ${monthNames[month]}`;
   },
 
   // 计算某日期是当月的第几周
@@ -117,6 +128,12 @@ Page({
     return displayWeekMonday.getTime() === currentWeekMonday.getTime();
   },
 
+  // 判断是否为当前月份
+  isCurrentMonth(date) {
+    const today = new Date();
+    return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth();
+  },
+
   // 获取某日期所在周的周一日期
   getMondayOfWeek(date) {
     const day = date.getDay();
@@ -149,6 +166,36 @@ Page({
     }
     
     // 如果本周都没有排班，返回默认绿色（更浅一些）
+    return this.lightenColor('#07c160');
+  },
+
+  // 获取当前月的班次颜色（根据本月内班次颜色决定）
+  getMonthShiftColor(monthDates) {
+    // 如果是当前月，获取今天班次的颜色
+    const today = new Date();
+    const todayStr = this.formatDate(today);
+    
+    // 查找今天是否有排班
+    for (let i = 0; i < monthDates.length; i++) {
+      const week = monthDates[i];
+      for (let j = 0; j < week.length; j++) {
+        if (week[j].date === todayStr && week[j].shift) {
+          return this.lightenColor(week[j].shift.color);
+        }
+      }
+    }
+    
+    // 如果今天没有排班，查找本月其他天的班次颜色
+    for (let i = 0; i < monthDates.length; i++) {
+      const week = monthDates[i];
+      for (let j = 0; j < week.length; j++) {
+        if (week[j].shift) {
+          return this.lightenColor(week[j].shift.color);
+        }
+      }
+    }
+    
+    // 如果本月都没有排班，返回默认绿色（更浅一些）
     return this.lightenColor('#07c160');
   },
 
@@ -244,8 +291,17 @@ Page({
       monthDates.push(week);
     }
     
+    // 获取当前月的班次颜色
+    const monthShiftColor = this.getMonthShiftColor(monthDates);
+    
+    // 判断是否为当前月
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+    
     this.setData({
-      monthDates: monthDates
+      monthDates: monthDates,
+      currentMonthShiftColor: monthShiftColor,
+      isCurrentMonth: isCurrentMonth
     });
   },
 
@@ -254,6 +310,20 @@ Page({
     this.setData({
       currentView: view
     });
+    
+    // 当切换到月视图时，确保当前月份判断正确
+    if (view === 'month') {
+      const currentDate = new Date(this.data.currentDate);
+      const isCurrentMonth = this.isCurrentMonth(currentDate);
+      const monthDates = this.data.monthDates;
+      if (monthDates && monthDates.length > 0) {
+        const monthShiftColor = this.getMonthShiftColor(monthDates);
+        this.setData({
+          isCurrentMonth: isCurrentMonth,
+          currentMonthShiftColor: monthShiftColor
+        });
+      }
+    }
   },
 
   prevWeek() {
@@ -283,9 +353,11 @@ Page({
   prevMonth() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setMonth(currentDate.getMonth() - 1);
+    const isCurrentMonth = this.isCurrentMonth(currentDate);
     this.setData({
       currentDate: this.formatDate(currentDate),
-      currentMonthTitle: this.formatMonthTitle(currentDate)
+      currentMonthTitle: this.formatMonthTitle(currentDate),
+      isCurrentMonth: isCurrentMonth
     });
     this.generateMonthDates();
   },
@@ -293,9 +365,11 @@ Page({
   nextMonth() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setMonth(currentDate.getMonth() + 1);
+    const isCurrentMonth = this.isCurrentMonth(currentDate);
     this.setData({
       currentDate: this.formatDate(currentDate),
-      currentMonthTitle: this.formatMonthTitle(currentDate)
+      currentMonthTitle: this.formatMonthTitle(currentDate),
+      isCurrentMonth: isCurrentMonth
     });
     this.generateMonthDates();
   },
@@ -304,11 +378,13 @@ Page({
   goToToday() {
     const today = new Date();
     const isCurrentWeek = this.isCurrentWeek(today);
+    const isCurrentMonth = this.isCurrentMonth(today);
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),
       currentMonthTitle: this.formatMonthTitle(today),
-      isCurrentWeek: isCurrentWeek
+      isCurrentWeek: isCurrentWeek,
+      isCurrentMonth: isCurrentMonth
     });
     this.generateWeekDates();
     this.generateMonthDates();

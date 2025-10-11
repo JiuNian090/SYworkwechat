@@ -96,7 +96,6 @@
 .month-header {
   width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -116,14 +115,31 @@
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   flex-shrink: 0;
+  width: auto;
 }
 
 .month-header .nav-btn:first-child {
+  /* 上一月按钮靠左 */
   margin-right: auto;
 }
 
 .month-header .nav-btn:last-child {
+  /* 下一月按钮靠右 */
   margin-left: auto;
+}
+
+.month-title-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  margin: 0 10rpx;
+}
+
+.month-header .current-month {
+  flex: none;
+  text-align: center;
 }
 
 .nav-btn:active {
@@ -143,7 +159,7 @@
 }
 
 .month-header .current-month {
-  flex: 1;
+  flex: none;
   text-align: center;
 }
 
@@ -164,6 +180,22 @@
   min-width: auto;
   text-align: center;
   white-space: nowrap;
+}
+
+.current-month-highlight {
+  color: #fff;
+  border-radius: 20rpx;
+  padding: 8rpx 16rpx;
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  min-width: auto;
+  width: auto;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 36rpx;
+  font-weight: 600;
+  letter-spacing: 2rpx;
+  margin: 0 auto;
 }
 
 .weekdays {
