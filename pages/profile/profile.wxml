@@ -23,10 +23,10 @@
     </view>
     <view class="data-actions">
       <button class="action-btn export-btn" bindtap="exportData">导出数据</button>
-      <button class="action-btn import-btn" bindtap="importData">导入数据</button>
+      <button class="action-btn share-btn" bindtap="shareExportedFile">分享数据</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
-      <button class="action-btn share-btn" bindtap="shareExportedFile">分享数据</button>
+      <button class="action-btn import-btn" bindtap="importData">导入数据</button>
       <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
     </view>
     <view class="usage-guide">
