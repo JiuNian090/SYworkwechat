@@ -7,6 +7,7 @@ Page({
     exportFileName: '',
     lastExportedFilePath: '', // 用于存储上次导出的文件路径
     shifts: [], // 用于存储排班数据
+    selectedQuickBtn: 'thisWeek', // 用于跟踪当前选中的快速选择按钮
     statistics: {
       totalDays: 0,
       workDays: 0,
@@ -90,7 +91,8 @@ Page({
     const range = this.getLastWeekRange();
     this.setData({
       startDate: range.startDate,
-      endDate: range.endDate
+      endDate: range.endDate,
+      selectedQuickBtn: 'lastWeek'
     });
     this.calculateStatistics();
   },
@@ -99,7 +101,8 @@ Page({
     const range = this.getThisWeekRange();
     this.setData({
       startDate: range.startDate,
-      endDate: range.endDate
+      endDate: range.endDate,
+      selectedQuickBtn: 'thisWeek'
     });
     this.calculateStatistics();
   },
@@ -108,7 +111,8 @@ Page({
     const range = this.getNextWeekRange();
     this.setData({
       startDate: range.startDate,
-      endDate: range.endDate
+      endDate: range.endDate,
+      selectedQuickBtn: 'nextWeek'
     });
     this.calculateStatistics();
   },
@@ -117,7 +121,8 @@ Page({
     const range = this.getThisMonthRange();
     this.setData({
       startDate: range.startDate,
-      endDate: range.endDate
+      endDate: range.endDate,
+      selectedQuickBtn: 'thisMonth'
     });
     this.calculateStatistics();
   },

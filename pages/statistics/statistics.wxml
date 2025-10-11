@@ -26,10 +26,10 @@
 
   <!-- 添加快速选择按钮 -->
   <view class="quick-select-buttons">
-    <button class="quick-btn" bindtap="selectLastWeek">上周</button>
-    <button class="quick-btn" bindtap="selectThisWeek">本周</button>
-    <button class="quick-btn" bindtap="selectNextWeek">下周</button>
-    <button class="quick-btn" bindtap="selectThisMonth">本月</button>
+    <button class="quick-btn {{selectedQuickBtn === 'lastWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectLastWeek">上周</button>
+    <button class="quick-btn {{selectedQuickBtn === 'thisWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectThisWeek">本周</button>
+    <button class="quick-btn {{selectedQuickBtn === 'nextWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectNextWeek">下周</button>
+    <button class="quick-btn {{selectedQuickBtn === 'thisMonth' ? 'quick-btn-selected' : ''}}" bindtap="selectThisMonth">本月</button>
   </view>
 
   <view class="summary">
