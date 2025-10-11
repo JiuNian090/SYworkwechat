@@ -147,22 +147,22 @@
 }
 
 .export-btn {
-  background: linear-gradient(135deg, #1890ff, #0050b3);
+  background: #1890ff;
   color: #fff;
 }
 
 .import-btn {
-  background: linear-gradient(135deg, #52c41a, #237804);
+  background: #52c41a;
   color: #fff;
 }
 
 .share-btn {
-  background: linear-gradient(135deg, #fa8c16, #d46b08);
+  background: #fa8c16;
   color: #fff;
 }
 
 .clear-btn {
-  background: linear-gradient(135deg, #ff4d4f, #cf1322);
+  background: #ff4d4f;
   color: #fff;
 }
 

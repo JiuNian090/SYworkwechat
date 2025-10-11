@@ -34,10 +34,6 @@
   transition: opacity 0.3s ease;
 }
 
-.quick-btn:hover::after {
-  opacity: 1;
-}
-
 .quick-btn:active {
   background: linear-gradient(180deg, #f0f0f0, #e0e0e0);
   transform: scale(0.98);
