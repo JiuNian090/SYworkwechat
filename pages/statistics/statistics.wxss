@@ -19,6 +19,7 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  padding: 2rpx 0;
 }
 
 .quick-btn::after {
@@ -51,6 +52,14 @@
 .quick-btn:last-child {
   border-top-right-radius: 12rpx;
   border-bottom-right-radius: 12rpx;
+}
+
+.quick-btn-selected {
+  background: linear-gradient(180deg, #07c160, #059e4d);
+  color: #ffffff;
+  border-color: #07c160;
+  transform: scale(1);
+  box-shadow: 0 1rpx 1rpx rgba(7, 193, 96, 0.1);
 }
 
 /* pages/statistics/statistics.wxss */
