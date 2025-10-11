@@ -123,15 +123,15 @@
 }
 
 .edit-btn, .delete-btn {
-  padding: 4rpx 16rpx;
-  border-radius: 24rpx;
-  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
   border: none;
-  min-width: 60rpx;
+  min-width: 70rpx;
   text-align: center;
   transition: all 0.3s ease;
-  font-weight: 600;
-  box-shadow: none;
+  font-weight: 500;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
 }
 
 .edit-btn {
@@ -142,7 +142,8 @@
 
 .edit-btn:active {
   background-color: #91d5ff;
-  box-shadow: none;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.15);
+  transform: translateY(1rpx);
 }
 
 .delete-btn {
@@ -153,7 +154,8 @@
 
 .delete-btn:active {
   background-color: #ff9c9c;
-  box-shadow: none;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.15);
+  transform: translateY(1rpx);
 }
 
 .select-checkbox {
@@ -225,16 +227,17 @@
   background: #07c160;
   color: #fff;
   font-size: 36rpx;
-  border-radius: 18rpx;
-  padding: 4rpx 0;
-  font-weight: 600;
-  box-shadow: 0 6rpx 18rpx rgba(7, 193, 96, 0.25);
+  border-radius: 16rpx;
+  padding: 8rpx 0;
+  font-weight: 500;
+  box-shadow: 0 6rpx 18rpx rgba(7, 193, 96, 0.3);
   transition: all 0.3s ease;
+  border: none;
 }
 
 .add-btn:active {
   background: #059e4d;
-  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.2);
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.25);
   transform: translateY(2rpx);
 }
 
@@ -244,7 +247,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -253,9 +256,12 @@
 
 .modal-content {
   background: #fff;
-  width: 80%;
-  border-radius: 10rpx;
-  padding: 30rpx;
+  width: 85%;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.2);
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .modal-header {
@@ -263,11 +269,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .modal-title {
   font-size: 36rpx;
-  font-weight: bold;
+  font-weight: 600;
+  color: #333;
 }
 
 .form-group {
@@ -277,60 +286,105 @@
 .label {
   display: block;
   font-size: 28rpx;
-  margin-bottom: 10rpx;
+  margin-bottom: 12rpx;
   color: #333;
+  font-weight: 500;
 }
 
 .input {
   border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 20rpx;
   font-size: 28rpx;
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  border-color: #07c160;
+  box-shadow: 0 0 0 2rpx rgba(7, 193, 96, 0.2);
+  outline: none;
 }
 
 .picker {
   border: 1rpx solid #e0e0e0;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   padding: 20rpx;
   font-size: 28rpx;
   color: #666;
+  transition: all 0.3s ease;
+}
+
+.picker:focus {
+  border-color: #07c160;
+  box-shadow: 0 0 0 2rpx rgba(7, 193, 96, 0.2);
+  outline: none;
 }
 
 .select-all-btn, .reverse-select-btn {
   background: #1890ff;
   color: #fff;
-  border-radius: 8rpx;
-  padding: 12rpx 24rpx;
+  border-radius: 12rpx;
+  padding: 16rpx 24rpx;
   font-size: 26rpx;
   margin-right: 20rpx;
   font-weight: 500;
+  box-shadow: 0 4rpx 12rpx rgba(24, 144, 255, 0.3);
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.select-all-btn:active, .reverse-select-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 2rpx 8rpx rgba(24, 144, 255, 0.25);
 }
 
 .reverse-select-btn {
   background: #faad14;
+  box-shadow: 0 4rpx 12rpx rgba(250, 173, 20, 0.3);
+}
+
+.reverse-select-btn:active {
+  box-shadow: 0 2rpx 8rpx rgba(250, 173, 20, 0.25);
 }
 
 .modal-footer {
   display: flex;
   justify-content: space-between;
   margin-top: 20rpx;
+  gap: 20rpx;
 }
 
 .cancel-btn, .confirm-btn {
   flex: 1;
-  margin: 0 10rpx;
-  border-radius: 10rpx;
+  border-radius: 12rpx;
   font-size: 28rpx;
+  padding: 16rpx 0;
+  text-align: center;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
 .cancel-btn {
-  background: #f0f0f0;
+  background: #f5f5f5;
   color: #666;
+  border: 1rpx solid #e0e0e0;
+}
+
+.cancel-btn:active {
+  background: #e0e0e0;
+  transform: translateY(1rpx);
 }
 
 .confirm-btn {
   background: #07c160;
   color: #fff;
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+}
+
+.confirm-btn:active {
+  background: #059e4d;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.25);
+  transform: translateY(1rpx);
 }
 
 .empty-tip {
