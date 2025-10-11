@@ -28,12 +28,14 @@ Page({
     const now = new Date();
     const start = new Date(now);
     const end = new Date(now);
-    
-    // 计算上周一
-    start.setDate(now.getDate() - now.getDay() - 6);
-    // 计算上周末(周日)
-    end.setDate(now.getDate() - now.getDay());
-    
+
+    // 计算上周一（周一为一周第一天）
+    const day = now.getDay();
+    const diff = day === 0 ? 6 : day - 1; // 如果是周日，则上周一是6天前；否则是day-1天前
+    start.setDate(now.getDate() - diff - 7);
+    // 计算上周日
+    end.setDate(now.getDate() - diff - 1);
+
     return {
       startDate: this.formatDate(start),
       endDate: this.formatDate(end)
@@ -45,12 +47,14 @@ Page({
     const now = new Date();
     const start = new Date(now);
     const end = new Date(now);
-    
-    // 计算本周一
-    start.setDate(now.getDate() - now.getDay() + 1);
-    // 计算本周末(周日)
-    end.setDate(now.getDate() - now.getDay() + 7);
-    
+
+    // 计算本周一（周一为一周第一天）
+    const day = now.getDay();
+    const diff = day === 0 ? 6 : day - 1; // 如果是周日，则本周一是6天前；否则是day-1天前
+    start.setDate(now.getDate() - diff);
+    // 计算本周日
+    end.setDate(start.getDate() + 6);
+
     return {
       startDate: this.formatDate(start),
       endDate: this.formatDate(end)
@@ -62,12 +66,14 @@ Page({
     const now = new Date();
     const start = new Date(now);
     const end = new Date(now);
-    
-    // 计算下周一
-    start.setDate(now.getDate() - now.getDay() + 8);
-    // 计算下周末(周日)
-    end.setDate(now.getDate() - now.getDay() + 14);
-    
+
+    // 计算下周一（周一为一周第一天）
+    const day = now.getDay();
+    const diff = day === 0 ? 6 : day - 1; // 如果是周日，则本周一是6天前；否则是day-1天前
+    start.setDate(now.getDate() - diff + 7);
+    // 计算下周日
+    end.setDate(start.getDate() + 6);
+
     return {
       startDate: this.formatDate(start),
       endDate: this.formatDate(end)
