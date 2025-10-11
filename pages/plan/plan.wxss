@@ -218,15 +218,15 @@
   bottom: 40rpx;
   left: 50%;
   transform: translateX(-50%);
-  width: 70%;
+  width: 40%;
 }
 
 .add-btn {
   background: #07c160;
   color: #fff;
-  font-size: 32rpx;
-  border-radius: 16rpx;
-  padding: 18rpx 0;
+  font-size: 36rpx;
+  border-radius: 18rpx;
+  padding: 4rpx 0;
   font-weight: 600;
   box-shadow: 0 6rpx 18rpx rgba(7, 193, 96, 0.25);
   transition: all 0.3s ease;
