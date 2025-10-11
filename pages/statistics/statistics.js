@@ -235,7 +235,8 @@ Page({
         
         csvContent += [
           escapeField(shift.date),
-          escapeField(shift.name),
+          // 在前添加单引号确保Excel将其识别为纯文本而不是日期
+          escapeField(`'${shift.name}`),
           escapeField(shift.workHours),
           escapeField(shift.type),
           escapeField(shift.startTime),
