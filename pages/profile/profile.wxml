@@ -41,7 +41,13 @@
   <view class="section">
     <text class="section-title">更多功能</text>
     <view class="data-actions">
-      <button class="action-btn share-btn" open-type="share">分享应用</button>
+      <button class="action-btn contact-btn" bindtap="contactAuthor">联系作者</button>
+    </view>
+    <view class="data-actions" style="margin-top: 20rpx;">
+      <button class="action-btn donate-btn" bindtap="donate">捐赠支持</button>
+    </view>
+    <view class="data-actions" style="margin-top: 20rpx;">
+      <button class="action-btn support-btn" bindtap="supportAuthor">支持作者</button>
     </view>
   </view>
 </view>

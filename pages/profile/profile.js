@@ -11,41 +11,9 @@ Page({
     loading: false,
   },
 
-  onShareAppMessage() {
-    return {
-      title: 'SYwork排班管理系统',
-      path: '/pages/plan/plan',
-      success: function(res) {
-        wx.showToast({
-          title: '分享成功',
-          icon: 'success'
-        });
-      },
-      fail: function(err) {
-        console.error('分享失败', err);
-        wx.showToast({
-          title: '分享失败',
-          icon: 'none'
-        });
-      }
-    };
-  },
 
-  onShareTimeline() {
-    return {
-      title: 'SYwork排班管理系统',
-      query: ''
-    };
-  },
 
   onLoad() {
-    // 启用分享功能
-    if (wx.showShareMenu) {
-      wx.showShareMenu({
-        withShareTicket: true,
-        menus: ['shareAppMessage', 'shareTimeline']
-      });
-    }
     // 用户信息相关代码已删除
   },
 
@@ -55,6 +23,13 @@ Page({
 
   loadUserInfo() {
     // 用户信息相关代码已删除
+  },
+
+  // 支持作者
+  supportAuthor: function() {
+    wx.navigateTo({
+      url: '/pages/profile/webview/webview?url=https://github.com/JiuNian090/workcum/blob/main/public%2Freword.png'
+    });
   },
 
 
@@ -355,7 +330,7 @@ Page({
             wx.showToast({
               title: '数据已清空',
               icon: 'success'
-            });
+              });
             
             // 延迟一段时间确保数据清空完成后再刷新页面
             setTimeout(() => {
@@ -402,6 +377,63 @@ Page({
               icon: 'none'
             });
           }
+        }
+      }
+    });
+  },
+
+  // 联系作者功能
+  contactAuthor() {
+    wx.showModal({
+      title: '联系作者',
+      content: '是否要发送邮件给jiunian929@gmail.com？',
+      confirmText: '确定',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          // 使用微信小程序的邮件功能
+          if (wx.canIUse('openEmail')) {
+            wx.openEmail({
+              recipients: ['jiunian929@gmail.com'],
+              subject: '关于SYwork排班管理系统',
+              body: '您好，我在使用SYwork排班管理系统时遇到了一些问题，希望能得到您的帮助。'
+            });
+          } else {
+            // 如果不支持openEmail，则提示用户手动发送邮件
+            wx.setClipboardData({
+              data: 'jiunian929@gmail.com',
+              success: () => {
+                wx.showToast({
+                  title: '邮箱已复制',
+                  icon: 'success'
+                });
+                wx.showModal({
+                  title: '提示',
+                  content: '您的微信版本不支持直接发送邮件，邮箱地址已复制到剪贴板，请您手动发送邮件至jiunian929@gmail.com',
+                  showCancel: false,
+                  confirmText: '知道了'
+                });
+              }
+            });
+          }
+        }
+      }
+    });
+  },
+
+  // 捐赠支持功能
+  donate() {
+    wx.showModal({
+      title: '捐赠支持',
+      content: '即将跳转到腾讯乐捐平台，感谢您的支持！',
+      confirmText: '确认',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) {
+          // 直接跳转到webview页面并加载捐赠网址
+          wx.navigateTo({
+            url: '/pages/profile/webview/webview?url=https://gongyi.qq.com/succor/'
+          });
         }
       }
     });
