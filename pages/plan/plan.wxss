@@ -132,28 +132,28 @@
   transition: all 0.3s ease;
   font-weight: 600;
   box-shadow: none;
-  background: #f0f0f0;
-  color: #666;
 }
 
 .edit-btn {
-  background-color: #e6f7ff;
-  color: #1890ff;
-  border: 1rpx solid #91d5ff;
+  background-color: #bae7ff;
+  color: #096dd9;
+  border: 1rpx solid #40a9ff;
 }
 
 .edit-btn:active {
-  background-color: #bae7ff;
+  background-color: #91d5ff;
+  box-shadow: none;
 }
 
 .delete-btn {
-  background-color: #fff2f0;
-  color: #ff4d4f;
-  border: 1rpx solid #ffccc7;
+  background-color: #ffccc7;
+  color: #cf1322;
+  border: 1rpx solid #ff7875;
 }
 
 .delete-btn:active {
-  background-color: #ffccc7;
+  background-color: #ff9c9c;
+  box-shadow: none;
 }
 
 .select-checkbox {
