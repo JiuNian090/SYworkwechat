@@ -28,7 +28,7 @@ Page({
   // 支持作者
   supportAuthor: function() {
     wx.navigateTo({
-      url: '/pages/profile/webview/webview?url=https://github.com/JiuNian090/workcum/blob/main/public%2Freword.png'
+      url: '/pages/profile/webview/webview?url=https://github.com/JiuNian090/workcum/blob/main/public/reward.png'
     });
   },
 
