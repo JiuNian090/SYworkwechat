@@ -106,9 +106,9 @@
 
 .action-btn {
   flex: 1;
-  font-size: 28rpx;
-  padding: 20rpx;
-  border-radius: 12rpx;
+  font-size: 24rpx;
+  padding: 6rpx;
+  border-radius: 8rpx;
   transition: all 0.3s ease;
   text-align: center;
   font-weight: 500;
@@ -254,4 +254,12 @@
 .confirm-btn:active {
   background: #059e4d;
   transform: translateY(2rpx);
+}
+
+/* 使用说明样式 */
+.usage-guide {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-top: 20rpx;
 }
