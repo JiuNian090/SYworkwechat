@@ -4,6 +4,7 @@ Page({
     currentView: 'week', // week 或 month
     currentDate: '',
     currentWeekTitle: '',
+    currentMonthTitle: '',
     isCurrentWeek: false, // 是否为当前周
     currentWeekShiftColor: '', // 当前周标题的背景色
     weekDates: [],
@@ -22,6 +23,7 @@ Page({
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),
+      currentMonthTitle: this.formatMonthTitle(today),
       isCurrentWeek: isCurrentWeek
     });
     this.loadShiftTemplates();
@@ -65,6 +67,14 @@ Page({
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  },
+
+  // 格式化月份标题为大写月份名称
+  formatMonthTitle(date) {
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
+                       '七月', '八月', '九月', '十月', '十一月', '十二月'];
+    const month = date.getMonth();
+    return monthNames[month];
   },
 
   // 计算某日期是当月的第几周
@@ -272,7 +282,8 @@ Page({
     const currentDate = new Date(this.data.currentDate);
     currentDate.setMonth(currentDate.getMonth() - 1);
     this.setData({
-      currentDate: this.formatDate(currentDate)
+      currentDate: this.formatDate(currentDate),
+      currentMonthTitle: this.formatMonthTitle(currentDate)
     });
     this.generateMonthDates();
   },
@@ -281,7 +292,8 @@ Page({
     const currentDate = new Date(this.data.currentDate);
     currentDate.setMonth(currentDate.getMonth() + 1);
     this.setData({
-      currentDate: this.formatDate(currentDate)
+      currentDate: this.formatDate(currentDate),
+      currentMonthTitle: this.formatMonthTitle(currentDate)
     });
     this.generateMonthDates();
   },
@@ -293,6 +305,7 @@ Page({
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),
+      currentMonthTitle: this.formatMonthTitle(today),
       isCurrentWeek: isCurrentWeek
     });
     this.generateWeekDates();
