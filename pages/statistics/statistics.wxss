@@ -397,16 +397,18 @@
   height: 80rpx;
   padding: 0 20rpx;
   border: 2rpx solid #07c160;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   font-size: 28rpx;
   box-sizing: border-box;
   line-height: 80rpx;
   background-color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.1);
   transition: all 0.3s ease;
 }
 
 .filename-input:focus {
-  border-color: #1890ff;
+  border-color: #07c160;
+  box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.3);
   outline: none;
 }
 
