@@ -148,11 +148,20 @@
   width: 100%;
   height: 80rpx;
   padding: 0 20rpx;
-  border: 1rpx solid #ddd;
-  border-radius: 10rpx;
+  border: 2rpx solid #07c160;
+  border-radius: 12rpx;
   font-size: 28rpx;
   box-sizing: border-box;
   line-height: 80rpx;
+  background-color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.1);
+  transition: all 0.3s ease;
+}
+
+.filename-input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 4rpx rgba(24, 144, 255, 0.2);
+  outline: none;
 }
 
 .modal {
