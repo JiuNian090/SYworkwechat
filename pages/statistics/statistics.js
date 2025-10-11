@@ -348,18 +348,8 @@ Page({
   },
 
   onLoad() {
-    // 页面加载时设置默认日期范围为最近7天
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - 6); // 最近7天，包括今天
-    
-    this.setData({
-      startDate: this.formatDate(start),
-      endDate: this.formatDate(end)
-    });
-    
-    // 计算初始统计数据
-    this.calculateStatistics();
+    // 页面加载时默认选定本周
+    this.selectThisWeek();
   },
   
   onShow() {
