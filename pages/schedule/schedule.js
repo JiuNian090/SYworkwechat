@@ -3,6 +3,9 @@ Page({
   data: {
     currentView: 'week', // week 或 month
     currentDate: '',
+    currentWeekTitle: '',
+    isCurrentWeek: false, // 是否为当前周
+    currentWeekShiftColor: '', // 当前周标题的背景色
     weekDates: [],
     monthDates: [],
     shifts: {},
@@ -15,8 +18,11 @@ Page({
 
   onLoad() {
     const today = new Date();
+    const isCurrentWeek = this.isCurrentWeek(today);
     this.setData({
-      currentDate: this.formatDate(today)
+      currentDate: this.formatDate(today),
+      currentWeekTitle: this.formatWeekTitle(today),
+      isCurrentWeek: isCurrentWeek
     });
     this.loadShiftTemplates();
     this.loadShifts();
@@ -61,6 +67,101 @@ Page({
     return `${year}-${month}-${day}`;
   },
 
+  // 计算某日期是当月的第几周
+  getWeekOfMonth(date) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    // 获取当月第一天
+    const firstDayOfMonth = new Date(year, month, 1);
+    // 获取当月第一天是星期几（0-6，0表示周日）
+    const firstDayWeek = firstDayOfMonth.getDay();
+    // 计算第一天所在周的周一日期
+    const firstMonday = new Date(firstDayOfMonth);
+    firstMonday.setDate(firstDayOfMonth.getDate() - ((firstDayWeek + 6) % 7));
+    
+    // 计算当前日期所在周的周一日期
+    const currentDay = date.getDate();
+    const currentWeekMonday = new Date(firstDayOfMonth);
+    currentWeekMonday.setDate(firstDayOfMonth.getDate() + currentDay - 1 - ((date.getDay() + 6) % 7));
+    
+    // 计算当前周是当月的第几周
+    const weekNumber = Math.ceil((currentWeekMonday - firstMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
+    
+    return weekNumber;
+  },
+
+  // 格式化周视图标题为"几月 第几周"
+  formatWeekTitle(date) {
+    const month = date.getMonth() + 1;
+    const weekNumber = this.getWeekOfMonth(date);
+    return `${month}月 第${weekNumber}周`;
+  },
+
+  // 判断当前显示的周是否为本周
+  isCurrentWeek(displayDate) {
+    const today = new Date();
+    const displayWeekMonday = this.getMondayOfWeek(displayDate);
+    const currentWeekMonday = this.getMondayOfWeek(today);
+    return displayWeekMonday.getTime() === currentWeekMonday.getTime();
+  },
+
+  // 获取某日期所在周的周一日期
+  getMondayOfWeek(date) {
+    const day = date.getDay();
+    const monday = new Date(date);
+    // 计算周一日期（周一为每周第一天）
+    monday.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
+    // 设置时间为00:00:00，避免时间差异影响比较
+    monday.setHours(0, 0, 0, 0);
+    return monday;
+  },
+
+  // 获取当前周的班次颜色（根据本周内班次颜色决定）
+  getWeekShiftColor(weekDates) {
+    // 如果是当前周，获取今天班次的颜色
+    const today = new Date();
+    const todayStr = this.formatDate(today);
+    
+    // 查找今天是否有排班
+    for (let i = 0; i < weekDates.length; i++) {
+      if (weekDates[i].date === todayStr && weekDates[i].shift) {
+        return this.lightenColor(weekDates[i].shift.color);
+      }
+    }
+    
+    // 如果今天没有排班，查找本周其他天的班次颜色
+    for (let i = 0; i < weekDates.length; i++) {
+      if (weekDates[i].shift) {
+        return this.lightenColor(weekDates[i].shift.color);
+      }
+    }
+    
+    // 如果本周都没有排班，返回默认绿色（更浅一些）
+    return this.lightenColor('#07c160');
+  },
+
+  // 颜色变浅函数
+  lightenColor(color) {
+    // 如果是十六进制颜色值
+    if (color.startsWith('#')) {
+      // 将十六进制转换为RGB
+      let r = parseInt(color.slice(1, 3), 16);
+      let g = parseInt(color.slice(3, 5), 16);
+      let b = parseInt(color.slice(5, 7), 16);
+      
+      // 将颜色值变得更浅（增加亮度，但不要超过240）
+      r = Math.min(240, Math.floor((240 + r) / 2));
+      g = Math.min(240, Math.floor((240 + g) / 2));
+      b = Math.min(240, Math.floor((240 + b) / 2));
+      
+      // 转换回十六进制
+      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+    
+    // 如果不是十六进制颜色值，直接返回原值
+    return color;
+  },
+
   generateWeekDates() {
     const currentDate = new Date(this.data.currentDate);
     const dayOfWeek = currentDate.getDay(); // 0 is Sunday
@@ -84,8 +185,12 @@ Page({
       });
     }
     
+    // 获取当前周的班次颜色
+    const weekShiftColor = this.getWeekShiftColor(weekDates);
+    
     this.setData({
-      weekDates: weekDates
+      weekDates: weekDates,
+      currentWeekShiftColor: weekShiftColor
     });
   },
 
@@ -142,8 +247,11 @@ Page({
   prevWeek() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setDate(currentDate.getDate() - 7);
+    const isCurrentWeek = this.isCurrentWeek(currentDate);
     this.setData({
-      currentDate: this.formatDate(currentDate)
+      currentDate: this.formatDate(currentDate),
+      currentWeekTitle: this.formatWeekTitle(currentDate),
+      isCurrentWeek: isCurrentWeek
     });
     this.generateWeekDates();
   },
@@ -151,8 +259,11 @@ Page({
   nextWeek() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setDate(currentDate.getDate() + 7);
+    const isCurrentWeek = this.isCurrentWeek(currentDate);
     this.setData({
-      currentDate: this.formatDate(currentDate)
+      currentDate: this.formatDate(currentDate),
+      currentWeekTitle: this.formatWeekTitle(currentDate),
+      isCurrentWeek: isCurrentWeek
     });
     this.generateWeekDates();
   },
@@ -178,8 +289,11 @@ Page({
   // 添加回到今天的功能
   goToToday() {
     const today = new Date();
+    const isCurrentWeek = this.isCurrentWeek(today);
     this.setData({
-      currentDate: this.formatDate(today)
+      currentDate: this.formatDate(today),
+      currentWeekTitle: this.formatWeekTitle(today),
+      isCurrentWeek: isCurrentWeek
     });
     this.generateWeekDates();
     this.generateMonthDates();
