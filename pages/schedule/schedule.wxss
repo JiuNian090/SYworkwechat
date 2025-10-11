@@ -108,7 +108,7 @@
 
 .day-cell {
   width: 100%;
-  min-height: 140rpx;
+  min-height: 130rpx;
   border: 1rpx solid #e0e0e0;
   box-sizing: border-box;
   display: flex;
@@ -178,7 +178,7 @@
   border-radius: 12rpx;
   margin: 4rpx;
   box-sizing: border-box;
-  min-height: 140rpx;
+  min-height: 130rpx;
 }
 
 .shift-name {
