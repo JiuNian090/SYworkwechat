@@ -132,42 +132,48 @@
 }
 
 .template-name {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #333;
-  display: flex;
-  align-items: center;
-  line-height: 1.4;
-  margin-right: 20rpx;
-}
+    font-size: 32rpx;
+    font-weight: 700;
+    color: #333;
+    display: flex;
+    align-items: center;
+    line-height: 1.3;
+    margin-right: 16rpx;
+  }
 
 .template-name::before {
-  content: "●";
-  margin-right: 16rpx;
-  font-size: 28rpx;
-}
+    content: "●";
+    margin-right: 16rpx;
+    font-size: 28rpx;
+  }
+
+.template-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12rpx;
+  }
 
 .template-type {
-  font-size: 26rpx;
-  color: #fff;
-  padding: 6rpx 20rpx;
-  border-radius: 24rpx;
-  font-weight: 600;
-  box-shadow: 0 3rpx 10rpx rgba(24, 144, 255, 0.2);
-  white-space: nowrap;
-}
+    font-size: 22rpx;
+    color: #fff;
+    padding: 4rpx 16rpx;
+    border-radius: 20rpx;
+    font-weight: 600;
+    box-shadow: 0 2rpx 8rpx rgba(24, 144, 255, 0.2);
+    white-space: nowrap;
+  }
 
 .template-details {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
+    display: flex;
+    flex-direction: column;
+    gap: 6rpx;
+  }
 
 .work-hours, .time-range {
-  font-size: 28rpx;
-  color: #666;
-  line-height: 1.5;
-}
+    font-size: 24rpx;
+    color: #666;
+    line-height: 1.4;
+  }
 
 .template-actions {
   display: flex;
@@ -179,8 +185,8 @@
 }
 
 .edit-btn, .delete-btn {
-  padding: 2rpx 20rpx;
-  border-radius: 12rpx;
+  padding: 0rpx 20rpx;
+  border-radius: 30rpx;
   font-size: 26rpx;
   border: none;
   min-width: 80rpx;
@@ -188,6 +194,8 @@
   transition: all 0.3s ease;
   font-weight: 500;
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
+  height: 50rpx;
+  line-height: 50rpx;
 }
 
 .edit-btn {
