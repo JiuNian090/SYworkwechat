@@ -3,23 +3,21 @@ Page({
   data: {
     startDate: '',
     endDate: '',
-    totalHours: 0,
-    exportFileName: '',
     shifts: [],
-    showExportTip: false,
-    // 新增统计数据
+    totalHours: 0,
     statistics: {
       totalDays: 0,
       workDays: 0,
       offDays: 0
-    }
+    },
+    exportFileName: '',
+    lastExportedFilePath: '' // 保存上次导出的文件路径
   },
 
   onLoad() {
-    // 初始化日期范围为最近7天
     const today = new Date();
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(today.getDate() - 7);
+    sevenDaysAgo.setDate(today.getDate() - 6);
     
     const startDate = this.formatDate(sevenDaysAgo);
     const endDate = this.formatDate(today);
@@ -123,7 +121,7 @@ Page({
     }
   },
 
-  exportToExcel() {
+  exportToCSV() {
     const { startDate, endDate, shifts, totalHours, statistics, exportFileName } = this.data;
     
     wx.showLoading({
@@ -131,111 +129,64 @@ Page({
     });
     
     try {
-      // 引入xlsx库
-      const XLSX = require('xlsx');
+      // 创建CSV内容
+      let csvContent = '';
       
-      // 创建工作簿
-      const workbook = XLSX.utils.book_new();
+      // 添加标题行
+      csvContent += '排班统计\n\n';
       
-      // 创建工作表数据
-      const worksheetData = [
-        ['排班统计'],
-        [],
-        ['统计区间', '总工时', '排班天数', '工作班次', '休息日'],
-        [`${startDate}至${endDate}`, totalHours, statistics.totalDays, statistics.workDays, statistics.offDays],
-        [],
-        ['日期', '班次名称', '工时', '班次类型', '开始时间', '结束时间']
-      ];
+      // 添加统计摘要
+      csvContent += '统计区间,总工时,排班天数,工作班次,休息日\n';
+      csvContent += `${startDate}至${endDate},${totalHours},${statistics.totalDays},${statistics.workDays},${statistics.offDays}\n\n`;
+      
+      // 添加表头
+      csvContent += '日期,班次名称,工时,班次类型,开始时间,结束时间\n';
       
       // 添加排班数据
       shifts.forEach(shift => {
-        worksheetData.push([
-          shift.date,
-          shift.name,
-          shift.workHours,
-          shift.type,
-          shift.startTime,
-          shift.endTime
-        ]);
+        // 转义包含逗号或引号的字段
+        const escapeField = (field) => {
+          if (typeof field === 'string' && (field.includes(',') || field.includes('"'))) {
+            return `"${field.replace(/"/g, '""')}"`;
+          }
+          return field;
+        };
+        
+        csvContent += [
+          escapeField(shift.date),
+          escapeField(shift.name),
+          escapeField(shift.workHours),
+          escapeField(shift.type),
+          escapeField(shift.startTime),
+          escapeField(shift.endTime)
+        ].join(',') + '\n';
       });
       
-      // 添加空行和总工时
-      worksheetData.push([]);
-      worksheetData.push(['', '', totalHours, '', '', '']);
-      
-      // 创建工作表
-      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-      
-      // 设置单元格样式居中
-      const range = XLSX.utils.decode_range(worksheet['!ref']);
-      for (let row = range.s.r; row <= range.e.r; row++) {
-        for (let col = range.s.c; col <= range.e.c; col++) {
-          const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
-          if (!worksheet[cellAddress]) continue;
-          
-          // 设置单元格居中对齐
-          if (!worksheet[cellAddress].s) {
-            worksheet[cellAddress].s = {};
-          }
-          worksheet[cellAddress].s = {
-            alignment: {
-              horizontal: 'center',
-              vertical: 'center'
-            }
-          };
-        }
-      }
-      
-      // 设置列宽
-      worksheet['!cols'] = [
-        { wch: 12 }, // 日期
-        { wch: 15 }, // 班次名称
-        { wch: 10 }, // 工时
-        { wch: 12 }, // 班次类型
-        { wch: 12 }, // 开始时间
-        { wch: 12 }  // 结束时间
-      ];
-      
-      // 将工作表添加到工作簿
-      XLSX.utils.book_append_sheet(workbook, worksheet, '排班统计');
+      // 添加总工时行
+      csvContent += '\n,,总工时:,' + totalHours + ',,\n';
       
       // 获取自定义文件名
       const customFileName = exportFileName;
       const fileName = customFileName ? customFileName : `排班统计_${startDate}_至_${endDate}`;
       
-      // 生成Excel文件
-      const excelBuffer = XLSX.write(workbook, {
-        bookType: 'xlsx',
-        type: 'array'
-      });
-      
       // 创建临时文件
       const fs = wx.getFileSystemManager();
-      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.xlsx`;
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.csv`;
       
       fs.writeFile({
         filePath: filePath,
-        data: excelBuffer,
+        data: csvContent,
+        encoding: 'utf8',
         success: () => {
-          // 分享文件
-          wx.shareFileMessage({
-            filePath: filePath,
-            fileName: `${fileName}.xlsx`,
-            success: () => {
-              wx.hideLoading();
-              wx.showToast({
-                title: '导出成功',
-                icon: 'success'
-              });
-            },
-            fail: (err) => {
-              wx.hideLoading();
-              console.error('分享文件失败', err);
-              wx.showToast({
-                title: '导出失败',
-                icon: 'none'
-              });
-            }
+          // 保存文件路径到data中
+          this.setData({
+            lastExportedFilePath: filePath
+          });
+          
+          wx.hideLoading();
+          wx.showToast({
+            title: '导出成功',
+            icon: 'success'
           });
         },
         fail: (err) => {
@@ -255,5 +206,47 @@ Page({
         icon: 'none'
       });
     }
+  },
+
+  shareCSV() {
+    const { lastExportedFilePath, exportFileName, startDate, endDate } = this.data;
+    
+    // 如果没有导出过文件，提示用户先导出
+    if (!lastExportedFilePath) {
+      wx.showToast({
+        title: '请先导出文件',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    wx.showLoading({
+      title: '正在分享...'
+    });
+    
+    // 获取文件名
+    const customFileName = exportFileName;
+    const fileName = customFileName ? customFileName : `排班统计_${startDate}_至_${endDate}`;
+    
+    // 分享文件
+    wx.shareFileMessage({
+      filePath: lastExportedFilePath,
+      fileName: `${fileName}.csv`,
+      success: () => {
+        wx.hideLoading();
+        wx.showToast({
+          title: '分享成功',
+          icon: 'success'
+        });
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('分享文件失败', err);
+        wx.showToast({
+          title: '分享失败',
+          icon: 'none'
+        });
+      }
+    });
   }
 });

@@ -58,7 +58,10 @@
     <view class="input-item">
       <input class="filename-input" placeholder="请输入导出文件名(不含扩展名)" value="{{exportFileName}}" bindinput="onFileNameInput"></input>
     </view>
-    <button class="export-btn" bindtap="exportToExcel">导出为Excel文件</button>
+    <view class="button-group">
+      <button class="export-btn" bindtap="exportToCSV">导出为CSV文件</button>
+      <button class="share-btn" bindtap="shareCSV">分享CSV文件</button>
+    </view>
   </view>
 
   <view class="shifts-list">

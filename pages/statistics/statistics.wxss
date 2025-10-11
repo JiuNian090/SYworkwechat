@@ -239,16 +239,6 @@
   margin: 20rpx 0;
 }
 
-.export-btn {
-  width: 100%;
-  background-color: #007aff;
-  color: white;
-  border: none;
-  padding: 15rpx;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-}
-
 .input-item {
   margin-bottom: 20rpx;
 }
@@ -262,4 +252,24 @@
   font-size: 28rpx;
   box-sizing: border-box;
   line-height: 80rpx;
+}
+
+.button-group {
+  display: flex;
+  gap: 20rpx;
+}
+
+.export-btn, .share-btn {
+  flex: 1;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  padding: 15rpx;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.share-btn {
+  background-color: #34c759;
 }
