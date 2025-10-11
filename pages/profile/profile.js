@@ -432,7 +432,7 @@ Page({
         if (res.confirm) {
           // 使用独立的捐赠webview页面打开捐赠网址
           wx.navigateTo({
-            url: '/pages/profile/webview/donate?url=' + encodeURIComponent('https://gongyi.qq.com/succor/project_list.htm')
+            url: '/pages/profile/webview/donate?url=' + encodeURIComponent('https://gongyi.qq.com/')
           });
         }
       }
