@@ -430,9 +430,9 @@ Page({
       cancelText: '取消',
       success: (res) => {
         if (res.confirm) {
-          // 直接跳转到webview页面并加载捐赠网址
+          // 使用webview打开捐赠网址
           wx.navigateTo({
-            url: '/pages/profile/webview/webview?url=https://gongyi.qq.com/succor/'
+            url: '/pages/profile/webview/webview?url=' + encodeURIComponent('https://gongyi.qq.com/succor/')
           });
         }
       }
