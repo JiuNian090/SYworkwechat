@@ -360,5 +360,10 @@ Page({
     
     // 计算初始统计数据
     this.calculateStatistics();
+  },
+  
+  onShow() {
+    // 页面显示时重新计算统计数据，确保数据同步
+    this.calculateStatistics();
   }
 });
