@@ -17,5 +17,13 @@
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": true,
     "bigPackageSizeSupport": false
+  },
+  "network": {
+    "request": [
+      "https://gongyi.qq.com"
+    ],
+    "webview": [
+      "https://gongyi.qq.com"
+    ]
   }
 }
