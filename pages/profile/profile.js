@@ -215,7 +215,17 @@ Page({
       count: 1,
       type: 'file',
       extension: ['json'],
+      // 提示用户选择JSON文件，提高用户体验
       success: (res) => {
+        // 额外验证文件扩展名，确保是JSON文件
+        const fileName = res.tempFiles[0].name;
+        if (!fileName.toLowerCase().endsWith('.json')) {
+          wx.showToast({
+            title: '请选择JSON格式文件',
+            icon: 'none'
+          });
+          return;
+        }
         wx.showLoading({
           title: '正在导入...'
         });
