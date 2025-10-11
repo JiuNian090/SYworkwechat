@@ -149,7 +149,7 @@
 
 .day-cell {
   width: 100%;
-  min-height: 140rpx;
+  min-height: 120rpx;
   border: 1rpx solid #e0e0e0;
   box-sizing: border-box;
   display: flex;
@@ -166,13 +166,10 @@
 }
 
 .day-cell.today {
-  background: #e6f4ea;
-  border-color: #07c160;
   box-shadow: 0 2rpx 12rpx rgba(7, 193, 96, 0.15);
 }
 
 .day-cell.today .day-header {
-  background: #07c160;
   color: #fff;
 }
 
@@ -190,18 +187,16 @@
 }
 
 .weekday-text {
-  font-size: 18rpx;
-  color: #666;
-  margin-bottom: 4rpx;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 8rpx;
 }
 
 .day-number {
-  position: relative;
-  top: auto;
-  left: auto;
-  font-size: 26rpx;
-  font-weight: bold;
-  color: #333;
+  font-size: 20rpx;
+  font-weight: normal;
+  color: #666;
 }
 
 .day-content {
@@ -266,10 +261,10 @@
 
 .shift-hours {
   font-size: 28rpx;
-  color: #07c160;
+  color: #000;
   flex: 1;
   text-align: right;
-  font-weight: 600;
+  font-weight: bold;
 }
 
 /* 月视图 */

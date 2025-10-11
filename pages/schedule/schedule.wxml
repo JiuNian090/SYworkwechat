@@ -30,10 +30,10 @@
     </view>
 
     <view class="week-grid">
-      <view class="day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDates}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
-        <view class="day-header">
+      <view class="day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDates}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + '40;' : 'background:#e6f4ea;') : ''}}">
+        <view class="day-header" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + ';' : 'background:#07c160;') : ''}}">
           <text class="weekday-text">{{item.weekday}}</text>
-          <text class="day-number">{{item.day}}</text>
+          <text class="day-number">{{item.month}}/{{item.day}}</text>
         </view>
         <view class="day-content">
           <text wx:if="{{!item.shift}}" class="no-shift-text">未排班</text>
