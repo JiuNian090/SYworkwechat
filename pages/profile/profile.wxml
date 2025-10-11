@@ -4,8 +4,6 @@
     <text class="title">个人中心</text>
   </view>
 
-
-
   <view class="section">
     <text class="section-title">项目介绍</text>
     <view class="intro-content">
