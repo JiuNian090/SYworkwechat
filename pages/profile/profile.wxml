@@ -41,13 +41,13 @@
   <view class="section">
     <text class="section-title">更多功能</text>
     <view class="data-actions">
-      <button class="action-btn contact-btn" bindtap="contactAuthor">联系作者</button>
+      <button class="action-btn contact-btn" bindtap="contactAuthor">联系乐乐</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
       <button class="action-btn donate-btn" bindtap="donate">捐赠支持</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
-      <button class="action-btn support-btn" bindtap="supportAuthor">支持作者</button>
+      <button class="action-btn support-btn" bindtap="supportAuthor">支持乐乐</button>
     </view>
   </view>
 </view>
