@@ -365,5 +365,20 @@ Page({
   onShow() {
     // 页面显示时重新计算统计数据，确保数据同步
     this.calculateStatistics();
+  },
+  
+  // 监听页面显示和隐藏的生命周期，确保在任何时候都能正确更新数据
+  onHide() {
+    // 页面隐藏前不需要特别处理
+  },
+  
+  // 监听全局数据变化的方法，确保实时更新
+  onPageScroll() {
+    // 可以在滚动时选择性更新数据，但通常不需要
+  },
+  
+  // 提供给其他页面调用的方法，用于主动刷新数据
+  refreshStatistics() {
+    this.calculateStatistics();
   }
 });

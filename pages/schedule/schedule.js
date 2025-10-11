@@ -258,7 +258,13 @@ Page({
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
         if (pages[i].route === 'pages/statistics/statistics') {
-          pages[i].calculateStatistics();
+          // 使用专门的刷新方法，而不是直接调用计算方法
+          if (pages[i].refreshStatistics) {
+            pages[i].refreshStatistics();
+          } else if (pages[i].calculateStatistics) {
+            // 兼容旧版本
+            pages[i].calculateStatistics();
+          }
           break;
         }
       }
@@ -299,7 +305,13 @@ Page({
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
         if (pages[i].route === 'pages/statistics/statistics') {
-          pages[i].calculateStatistics();
+          // 使用专门的刷新方法，而不是直接调用计算方法
+          if (pages[i].refreshStatistics) {
+            pages[i].refreshStatistics();
+          } else if (pages[i].calculateStatistics) {
+            // 兼容旧版本
+            pages[i].calculateStatistics();
+          }
           break;
         }
       }
