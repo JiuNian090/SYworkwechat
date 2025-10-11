@@ -8,18 +8,31 @@
 
 .quick-btn {
   flex: 1;
-  background-color: #f0f0f0;
-  border: 1rpx solid #ddd;
-  border-radius: 8rpx;
-  padding: 15rpx 10rpx;
-  font-size: 24rpx;
+  background-color: #f8f8f8;
+  border: none;
+  border-radius: 0;
+  padding: 8rpx 4rpx;
+  font-size: 28rpx;
   color: #333;
   text-align: center;
+  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
 }
 
 .quick-btn:active {
   background-color: #e0e0e0;
   transform: scale(0.98);
+  box-shadow: 0 1rpx 2rpx rgba(0,0,0,0.1);
+}
+
+.quick-btn:first-child {
+  border-top-left-radius: 8rpx;
+  border-bottom-left-radius: 8rpx;
+}
+
+.quick-btn:last-child {
+  border-top-right-radius: 8rpx;
+  border-bottom-right-radius: 8rpx;
 }
 
 /* pages/statistics/statistics.wxss */
