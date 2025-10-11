@@ -24,6 +24,14 @@
     </view>
   </view>
 
+  <!-- 添加快速选择按钮 -->
+  <view class="quick-select-buttons">
+    <button class="quick-btn" bindtap="selectLastWeek">上周</button>
+    <button class="quick-btn" bindtap="selectThisWeek">本周</button>
+    <button class="quick-btn" bindtap="selectNextWeek">下周</button>
+    <button class="quick-btn" bindtap="selectThisMonth">本月</button>
+  </view>
+
   <view class="summary">
     <view class="summary-item">
       <text class="summary-label">统计区间</text>

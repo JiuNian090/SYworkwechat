@@ -3,38 +3,18 @@ Page({
   data: {
     startDate: '',
     endDate: '',
-    shifts: [],
     totalHours: 0,
+    exportFileName: '',
+    lastExportedFilePath: '', // 用于存储上次导出的文件路径
+    shifts: [], // 用于存储排班数据
     statistics: {
       totalDays: 0,
       workDays: 0,
       offDays: 0
-    },
-    exportFileName: '',
-    lastExportedFilePath: '' // 保存上次导出的文件路径
+    }
   },
 
-  onLoad() {
-    const today = new Date();
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(today.getDate() - 6);
-    
-    const startDate = this.formatDate(sevenDaysAgo);
-    const endDate = this.formatDate(today);
-    
-    this.setData({
-      startDate,
-      endDate
-    }, () => {
-      this.calculateStatistics();
-    });
-  },
-
-  onShow() {
-    // 页面显示时重新计算统计数据，确保数据实时更新
-    this.calculateStatistics();
-  },
-
+  // 日期格式化函数
   formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -42,34 +22,135 @@ Page({
     return `${year}-${month}-${day}`;
   },
 
+  // 获取上周日期范围
+  getLastWeekRange() {
+    const now = new Date();
+    const start = new Date(now);
+    const end = new Date(now);
+    
+    // 计算上周一
+    start.setDate(now.getDate() - now.getDay() - 6);
+    // 计算上周末(周日)
+    end.setDate(now.getDate() - now.getDay());
+    
+    return {
+      startDate: this.formatDate(start),
+      endDate: this.formatDate(end)
+    };
+  },
+
+  // 获取本周日期范围
+  getThisWeekRange() {
+    const now = new Date();
+    const start = new Date(now);
+    const end = new Date(now);
+    
+    // 计算本周一
+    start.setDate(now.getDate() - now.getDay() + 1);
+    // 计算本周末(周日)
+    end.setDate(now.getDate() - now.getDay() + 7);
+    
+    return {
+      startDate: this.formatDate(start),
+      endDate: this.formatDate(end)
+    };
+  },
+
+  // 获取下周日期范围
+  getNextWeekRange() {
+    const now = new Date();
+    const start = new Date(now);
+    const end = new Date(now);
+    
+    // 计算下周一
+    start.setDate(now.getDate() - now.getDay() + 8);
+    // 计算下周末(周日)
+    end.setDate(now.getDate() - now.getDay() + 14);
+    
+    return {
+      startDate: this.formatDate(start),
+      endDate: this.formatDate(end)
+    };
+  },
+
+  // 获取本月日期范围
+  getThisMonthRange() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    
+    return {
+      startDate: this.formatDate(start),
+      endDate: this.formatDate(end)
+    };
+  },
+
+  // 快速选择按钮事件处理函数
+  selectLastWeek() {
+    const range = this.getLastWeekRange();
+    this.setData({
+      startDate: range.startDate,
+      endDate: range.endDate
+    });
+    this.calculateStatistics();
+  },
+
+  selectThisWeek() {
+    const range = this.getThisWeekRange();
+    this.setData({
+      startDate: range.startDate,
+      endDate: range.endDate
+    });
+    this.calculateStatistics();
+  },
+
+  selectNextWeek() {
+    const range = this.getNextWeekRange();
+    this.setData({
+      startDate: range.startDate,
+      endDate: range.endDate
+    });
+    this.calculateStatistics();
+  },
+
+  selectThisMonth() {
+    const range = this.getThisMonthRange();
+    this.setData({
+      startDate: range.startDate,
+      endDate: range.endDate
+    });
+    this.calculateStatistics();
+  },
+
+  // 开始日期变更事件
   onStartDateChange(e) {
     this.setData({
       startDate: e.detail.value
-    }, () => {
-      this.calculateStatistics();
     });
+    this.calculateStatistics();
   },
 
+  // 结束日期变更事件
   onEndDateChange(e) {
     this.setData({
       endDate: e.detail.value
-    }, () => {
-      this.calculateStatistics();
     });
+    this.calculateStatistics();
   },
-
-  // 处理文件名输入
+  
+  // 文件名输入事件
   onFileNameInput(e) {
     this.setData({
       exportFileName: e.detail.value
     });
   },
 
+  // 计算统计数据
   calculateStatistics() {
     const { startDate, endDate } = this.data;
-    
+
     if (!startDate || !endDate) return;
-    
+
     try {
       const allShifts = wx.getStorageSync('shifts') || {};
       const shiftsInRange = [];
@@ -92,14 +173,14 @@ Page({
           totalHours += parseFloat(allShifts[dateStr].workHours) || 0;
           
           // 按班次类型统计工作班次和休息日
-      // 工作班次：白天班、跨夜班
-      // 休息日：休息日
-      const shiftType = allShifts[dateStr].type;
-      if (shiftType === '白天班' || shiftType === '跨夜班') {
-        workDays++;
-      } else if (shiftType === '休息日') {
-        offDays++;
-      }
+          // 工作班次：白天班、跨夜班
+          // 休息日：休息日
+          const shiftType = allShifts[dateStr].type;
+          if (shiftType === '白天班' || shiftType === '跨夜班') {
+            workDays++;
+          } else if (shiftType === '休息日') {
+            offDays++;
+          }
         }
       }
       
@@ -121,13 +202,14 @@ Page({
     }
   },
 
+  // 导出为CSV文件
   exportToCSV() {
     const { startDate, endDate, shifts, totalHours, statistics, exportFileName } = this.data;
-    
+
     wx.showLoading({
       title: '正在导出...'
     });
-    
+
     try {
       // 创建CSV内容
       let csvContent = '';
@@ -214,6 +296,7 @@ Page({
     }
   },
 
+  // 分享CSV文件
   shareCSV() {
     const { lastExportedFilePath, exportFileName, startDate, endDate } = this.data;
     
@@ -254,5 +337,20 @@ Page({
         });
       }
     });
+  },
+
+  onLoad() {
+    // 页面加载时设置默认日期范围为最近7天
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 6); // 最近7天，包括今天
+    
+    this.setData({
+      startDate: this.formatDate(start),
+      endDate: this.formatDate(end)
+    });
+    
+    // 计算初始统计数据
+    this.calculateStatistics();
   }
 });

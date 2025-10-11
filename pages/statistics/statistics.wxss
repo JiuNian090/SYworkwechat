@@ -1,3 +1,27 @@
+/* 添加快速选择按钮样式 */
+.quick-select-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin: 20rpx 0;
+  gap: 10rpx;
+}
+
+.quick-btn {
+  flex: 1;
+  background-color: #f0f0f0;
+  border: 1rpx solid #ddd;
+  border-radius: 8rpx;
+  padding: 15rpx 10rpx;
+  font-size: 24rpx;
+  color: #333;
+  text-align: center;
+}
+
+.quick-btn:active {
+  background-color: #e0e0e0;
+  transform: scale(0.98);
+}
+
 /* pages/statistics/statistics.wxss */
 /* 主色变量和统一按钮样式 */
 .main-color {
