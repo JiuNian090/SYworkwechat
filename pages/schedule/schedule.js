@@ -77,6 +77,7 @@ Page({
       weekDates.push({
         date: dateStr,
         day: date.getDate(),
+        month: date.getMonth() + 1, // 添加月份信息
         weekday: ['一', '二', '三', '四', '五', '六', '日'][date.getDay() === 0 ? 6 : date.getDay() - 1],
         isToday: dateStr === this.formatDate(new Date()),
         shift: this.data.shifts[dateStr] || null
