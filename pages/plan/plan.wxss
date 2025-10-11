@@ -45,8 +45,8 @@
   position: relative;
   background: #fff;
   border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 24rpx;
+  padding: 16rpx;
+  margin-bottom: 20rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 1rpx solid #f0f0f0;
@@ -123,11 +123,11 @@
 }
 
 .edit-btn, .delete-btn {
-  padding: 8rpx 20rpx;
+  padding: 2rpx 20rpx;
   border-radius: 12rpx;
   font-size: 26rpx;
   border: none;
-  min-width: 70rpx;
+  min-width: 80rpx;
   text-align: center;
   transition: all 0.3s ease;
   font-weight: 500;
@@ -220,17 +220,17 @@
   bottom: 40rpx;
   left: 50%;
   transform: translateX(-50%);
-  width: 40%;
+  width: 30%;
 }
 
 .add-btn {
   background: #07c160;
   color: #fff;
-  font-size: 36rpx;
-  border-radius: 16rpx;
-  padding: 8rpx 0;
+  font-size: 32rpx;
+  border-radius: 12rpx;
+  padding: 6rpx 0;
   font-weight: 500;
-  box-shadow: 0 6rpx 18rpx rgba(7, 193, 96, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
   transition: all 0.3s ease;
   border: none;
 }
