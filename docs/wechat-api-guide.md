@@ -10,9 +10,6 @@
 // utils/api.js 中已封装
 const api = require('../../utils/api.js');
 
-// GET请求
-const userInfo = await api.get('/user/info');
-
 // POST请求
 const result = await api.post('/schedule/submit', {
   date: '2023-06-15',
@@ -33,7 +30,6 @@ const result = await api.post('/schedule/submit', {
    globalData: {
      // API配置信息
      config: {
-       apiKey: 'your_api_key_here', // 请替换为实际的API密钥
        baseURL: 'https://your-api-domain.com/api' // 请替换为实际的API基础URL
      }
    }
@@ -52,11 +48,7 @@ const templates = wx.getStorageSync('shiftTemplates') || [];
 // 保存班次模板
 wx.setStorageSync('shiftTemplates', templates);
 
-// 读取用户信息
-const userInfo = wx.getStorageSync('userInfo');
 
-// 保存用户信息
-wx.setStorageSync('userInfo', userInfo);
 
 // 读取排班数据
 const shifts = wx.getStorageSync('shifts') || {};
@@ -203,7 +195,6 @@ clearAllData() {
   // 清空所有相关的本地存储数据
   wx.removeStorageSync('shiftTemplates');
   wx.removeStorageSync('shifts');
-  wx.removeStorageSync('userInfo');
   // 如果还有其他需要清空的数据，可以在这里添加
   
   // 刷新所有相关页面数据
@@ -247,34 +238,7 @@ clearAllData() {
 
 
 
-## 3. 用户登录和信息API
 
-### 3.1 微信登录流程
-当前项目中已实现基础的登录框架，但需要完善实际的登录逻辑。
-
-**涉及的API：**
-- `wx.login()` - 获取登录凭证code
-- `wx.getUserProfile()` - 获取用户基本信息（推荐）
-- `wx.getUserInfo()` - 获取用户信息（已废弃推荐使用getUserProfile）
-
-**建议实现流程：**
-1. 用户点击登录按钮触发登录
-2. 调用`wx.login()`获取code
-3. 将code发送到后端服务器换取session_key和openid
-4. 调用`wx.getUserProfile()`获取用户基本信息
-5. 将用户信息和登录状态保存到本地存储
-
-### 3.2 当前项目登录实现
-```javascript
-// app.js 中的基础登录方法
-loginWithWeChat(callback) {
-  // 提示用户需要通过界面按钮触发登录
-  wx.showToast({
-    title: '请通过界面按钮登录',
-    icon: 'none'
-  });
-  callback && callback(null);
-}
 ```
 
 ## 4. 界面交互API
@@ -357,14 +321,7 @@ wx.showModal({
    - uploadFile合法域名
    - downloadFile合法域名
 
-### 6.2 API密钥配置
-1. 修改`app.js`中的`globalData.config`：
-   ```javascript
-   config: {
-     apiKey: '实际的API密钥',
-     baseURL: '实际的API基础URL'
-   }
-   ```
+
 
 ### 6.3 文件系统权限
 已默认配置，无需额外操作。
