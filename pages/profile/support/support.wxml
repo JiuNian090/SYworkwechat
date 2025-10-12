@@ -1,30 +1,23 @@
 <!-- pages/profile/support/support.wxml -->
 <view class="container">
   <view class="header">
-    <view class="header-content">
-      <view class="icon-container" bindtap="goHome">
-        <text class="home-emoji">🏠</text>
-      </view>
-      <text class="title">支持作者</text>
-    </view>
+    <text class="title">支持作者</text>
   </view>
 
-  <view class="section">
-    <view class="content">
-      <text class="description">如果您觉得这个小程序对您有帮助，欢迎通过以下方式支持作者：</text>
-      
-      <view class="reward-section">
-        <image class="reward-image" src="/image/reward.png" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
-        <text class="image-tip">长按保存图片后使用微信扫码赞赏</text>
-      </view>
-      
-      <view class="support-info">
-        <text class="info-text">您的支持是我持续开发和维护的动力，感谢每一位用户的鼓励！</text>
-      </view>
+  <view class="content">
+    <text class="description">如果您觉得这款排班系统对您有帮助，请思语小姐姐或者乐乐喝杯咖啡吧！您的支持是我持续开发和维护的动力。</text>
+    <view class="divider"></view>
+
+    <!-- 微信赞赏码 -->
+    <view class="qr-section">
+      <text class="section-title">微信赞赏</text>
+      <image 
+        src="/image/reward.png" 
+        class="qr-image"
+        show-menu-by-longpress="{{true}}"
+        bindlongpress="onImageLongPress">
+      </image>
+      <text class="hint">长按识别或保存二维码</text>
     </view>
-  </view>
-  
-  <!-- 操作按钮区域 -->
-  <view class="button-container">
   </view>
 </view>
