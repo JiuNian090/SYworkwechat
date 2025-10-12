@@ -1,0 +1,22 @@
+<!-- pages/profile/support/support.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">支持作者</text>
+  </view>
+
+  <view class="section">
+    <view class="content">
+      <text class="description">如果您觉得这个小程序对您有帮助，欢迎通过以下方式支持作者：</text>
+      
+      <view class="reward-section">
+        <text class="section-title">赞赏码</text>
+        <image class="reward-image" src="/image/reward.png" mode="widthFix"></image>
+        <text class="image-tip">长按保存图片后使用微信扫码赞赏</text>
+      </view>
+      
+      <view class="support-info">
+        <text class="info-text">您的支持是我持续开发和维护的动力，感谢每一位用户的鼓励！</text>
+      </view>
+    </view>
+  </view>
+</view>

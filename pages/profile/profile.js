@@ -22,7 +22,7 @@ Page({
   // 支持作者
   supportAuthor: function() {
     wx.navigateTo({
-      url: '/pages/profile/webview/webview?url=https://github.com/JiuNian090/workcum/blob/main/public/reward.png'
+      url: '/pages/profile/support/support'
     });
   },
 
@@ -418,14 +418,28 @@ Page({
   donate() {
     wx.showModal({
       title: '捐赠支持',
-      content: '即将跳转到腾讯乐捐平台，感谢您的支持！',
+      content: '即将跳转到腾讯公益小程序，感谢您的支持！',
       confirmText: '确认',
       cancelText: '取消',
       success: (res) => {
         if (res.confirm) {
-          // 使用独立的捐赠webview页面打开捐赠网址
-          wx.navigateTo({
-            url: '/pages/profile/webview/donate?url=' + encodeURIComponent('https://gongyi.qq.com/')
+          // 跳转到腾讯公益小程序
+          wx.navigateToMiniProgram({
+            appId: 'wxfdcee92a299bcaf1', // 腾讯公益小程序的appId
+            path: 'tKUOWaEQmgv5gId', // 小程序路径
+            extraData: {
+              from: 'SYwork排班管理系统'
+            },
+            success: (res) => {
+              console.log('跳转到腾讯公益小程序成功', res);
+            },
+            fail: (err) => {
+              console.error('跳转到腾讯公益小程序失败', err);
+              wx.showToast({
+                title: '跳转失败，请稍后重试',
+                icon: 'none'
+              });
+            }
           });
         }
       }

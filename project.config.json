@@ -38,11 +38,7 @@
   "editorSetting": {},
   "libVersion": "3.10.2",
   "network": {
-    "request": [
-      "https://gongyi.qq.com"
-    ],
-    "webview": [
-      "https://gongyi.qq.com"
-    ]
+    "request": [],
+    "webview": []
   }
 }
