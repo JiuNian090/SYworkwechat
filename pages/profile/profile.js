@@ -444,5 +444,21 @@ Page({
         }
       }
     });
+  },
+
+  // 好友分享功能
+  onShareAppMessage() {
+    return {
+      title: 'SYwork排班管理系统 - 个人中心',
+      path: '/pages/profile/profile'
+    };
+  },
+
+  // 朋友圈分享功能
+  onShareTimeline() {
+    return {
+      title: 'SYwork排班管理系统 - 个人中心',
+      query: 'page=profile'
+    };
   }
 });

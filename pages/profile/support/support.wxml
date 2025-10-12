@@ -5,7 +5,7 @@
   </view>
 
   <view class="content">
-    <text class="description">如果您觉得这款排班系统对您有帮助，请思语小姐姐或者乐乐喝杯咖啡吧！您的支持是我持续开发和维护的动力。</text>
+    <text class="description">如果您觉得这款排班系统对您有帮助，可以请思语小姐姐或者乐乐小哥哥喝杯咖啡吧！您的支持是我持续开发和维护的动力。</text>
     <view class="divider"></view>
 
     <!-- 微信赞赏码 -->

@@ -277,5 +277,21 @@ Page({
         icon: 'none'
       });
     }
+  },
+
+  onShareAppMessage() {
+    return {
+      title: 'SYwork排班管理系统 - 计划页面',
+      path: '/pages/plan/plan',
+      imageUrl: '' // 可以设置自定义分享图片
+    };
+  },
+
+  onShareTimeline() {
+    return {
+      title: 'SYwork排班管理系统 - 计划页面',
+      query: '',
+      imageUrl: '' // 可以设置自定义分享图片
+    };
   }
 });

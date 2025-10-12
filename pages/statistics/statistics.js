@@ -381,5 +381,21 @@ Page({
   // 提供给其他页面调用的方法，用于主动刷新数据
   refreshStatistics() {
     this.calculateStatistics();
+  },
+
+  // 好友分享功能
+  onShareAppMessage() {
+    return {
+      title: 'SYwork排班管理系统 - 统计页面',
+      path: '/pages/statistics/statistics'
+    };
+  },
+
+  // 朋友圈分享功能
+  onShareTimeline() {
+    return {
+      title: 'SYwork排班管理系统 - 统计页面',
+      query: 'page=statistics'
+    };
   }
 });

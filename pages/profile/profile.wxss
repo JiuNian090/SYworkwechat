@@ -313,3 +313,15 @@
   background: #f9f9f9;
   border-radius: 12rpx;
 }
+
+.guide-item {
+  margin-bottom: 10rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.highlight {
+  color: #fa8c16;
+  font-weight: bold;
+  margin-top: 5rpx;
+}
