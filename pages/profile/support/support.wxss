@@ -6,17 +6,32 @@
 }
 
 .header {
-  text-align: center;
   padding: 20rpx 0;
   border-bottom: 1rpx solid #e0e0e0;
+  background-color: #fff;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  padding: 0 20rpx;
+}
+
+.icon-container {
+  margin-right: 20rpx;
+  padding: 10rpx;
+}
+
+.home-emoji {
+  font-size: 36rpx;
 }
 
 .title {
   font-size: 48rpx;
   font-weight: bold;
   color: #000000;
+  flex: 1;
   text-align: center;
-  margin: 20rpx 0;
 }
 
 .section {
@@ -81,4 +96,20 @@
   color: #4a90e2;
   line-height: 1.6;
   display: block;
+}
+
+/* 操作按钮区域 */
+.button-container {
+  display: flex;
+  justify-content: center;
+  padding: 20rpx 0;
+  margin-top: 30rpx;
+}
+
+.action-button::after {
+  border: none;
+}
+
+.action-button:active {
+  opacity: 0.8;
 }

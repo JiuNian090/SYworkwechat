@@ -1,7 +1,12 @@
 <!-- pages/profile/support/support.wxml -->
 <view class="container">
   <view class="header">
-    <text class="title">支持作者</text>
+    <view class="header-content">
+      <view class="icon-container" bindtap="goHome">
+        <text class="home-emoji">🏠</text>
+      </view>
+      <text class="title">支持作者</text>
+    </view>
   </view>
 
   <view class="section">
@@ -18,5 +23,9 @@
         <text class="info-text">您的支持是我持续开发和维护的动力，感谢每一位用户的鼓励！</text>
       </view>
     </view>
+  </view>
+  
+  <!-- 操作按钮区域 -->
+  <view class="button-container">
   </view>
 </view>

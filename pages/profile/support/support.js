@@ -19,5 +19,12 @@ Page({
     return {
       title: 'SYwork排班管理系统'
     };
+  },
+
+  // 回到首页
+  goHome: function() {
+    wx.switchTab({
+      url: '/pages/plan/plan'
+    });
   }
 });
