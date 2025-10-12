@@ -1,4 +1,0 @@
-<!-- pages/profile/webview/donate.wxml -->
-<view class="container">
-  <web-view src="{{url}}"></web-view>
-</view>
