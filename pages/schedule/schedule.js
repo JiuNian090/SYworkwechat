@@ -534,6 +534,20 @@ Page({
       });
     }
   },
-  
 
+  // 好友分享功能
+  onShareAppMessage() {
+    return {
+      title: 'SYwork排班管理系统 - 排班页面',
+      path: '/pages/schedule/schedule'
+    };
+  },
+
+  // 朋友圈分享功能
+  onShareTimeline() {
+    return {
+      title: 'SYwork排班管理系统 - 排班页面',
+      query: 'page=schedule'
+    };
+  }
 });

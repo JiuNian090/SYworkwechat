@@ -7,12 +7,12 @@
   <view class="section">
     <text class="section-title">项目介绍</text>
     <view class="intro-content">
-      <text>这是一个为思语小姐姐创建的便捷的排班管理系统，功能正在逐步完善，如有问题反馈欢迎点击下方的联系乐乐。
-      \n主要功能：
-      1. 班次模板管理 - 创建和管理常用班次
-      2. 排班安排 - 按周或月查看和编辑排班
-      3. 数据统计 - 统计工时和班次情况，导出CSV，用Excel/WPS打开可以查看统计。
-      4. 数据管理 - 建议经常备份，导出后可快速分享</text>
+      <text>这是一个为思语小姐姐创建的便捷工时/排班管理系统，功能正在逐步完善，若您觉得好用，可以分享此小程序也可以支持作者！如有问题反馈欢迎点击下方的联系乐乐。
+       <text class="highlight">主要功能：</text>
+      1. 班次管理：创建和管理常用班次
+      2. 排班安排：按周或月查看和编辑排班
+      3. 数据统计：统计工时和班次情况，导出CSV，用Excel/WPS打开可以查看统计。
+      4. 数据管理：建议经常备份，导出后可快速分享</text>
     </view>
   </view>
 
@@ -30,11 +30,22 @@
       <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
     </view>
     <view class="usage-guide">
-      <text>使用说明：
-1. 导出数据：输入自定义文件名后点击导出，可暂存数据到剪贴板。
-2. 分享数据：导出后可快速分享给好友（例如；只完成班次模板后分享给同事）
-3. 导入数据：选择好友通过微信分享给你的json文件。
-4. 清空数据：请谨慎操作，此操作不可恢复</text>
+      <text>使用说明：</text>
+      <view class="guide-item">
+        <text>1. 导出数据：输入自定义文件名后点击导出，可暂存数据文件到剪贴板。</text>
+        <text class="highlight">(可以自创排班模板，输入文件名"班次模板")</text>
+      </view>
+      <view class="guide-item">
+        <text>2. 分享数据：导出后可快速分享给好友</text>
+        <text class="highlight">(显示导出成功后，点击分享数据可以把”模板”发给同事)</text>
+      </view>
+      <view class="guide-item">
+        <text>3. 导入数据：选择好友通过微信分享给你的json文件，“班次模板”。</text>
+        <text class="highlight">(点击导入，选择同事聊天，找到刚刚分享给你的json文件，即可导入到本地)</text>
+      </view>
+      <view class="guide-item">
+        <text>4. 清空数据：请谨慎操作，此操作不可恢复</text>
+      </view>
     </view>
   </view>
   
