@@ -22,9 +22,6 @@ const api = require('../../utils/api.js');
 
 ### GET请求
 ```javascript
-// 获取用户信息
-const userInfo = await api.get('/user/info');
-
 // 带参数的GET请求
 const scheduleData = await api.get('/schedule/list', {
   startDate: '2023-01-01',
@@ -45,9 +42,10 @@ const result = await api.post('/schedule/submit', {
 ### PUT请求
 ```javascript
 // 更新数据
-const result = await api.put('/user/info', {
-  name: '张三',
-  email: 'zhangsan@example.com'
+const result = await api.put('/schedule/update', {
+  id: '123',
+  hours: 8,
+  description: '项目开发'
 });
 ```
 

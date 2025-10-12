@@ -17,13 +17,7 @@ Page({
     // 用户信息相关代码已删除
   },
 
-  onShow() {
-    // 用户信息相关代码已删除
-  },
 
-  loadUserInfo() {
-    // 用户信息相关代码已删除
-  },
 
   // 支持作者
   supportAuthor: function() {
@@ -324,7 +318,6 @@ Page({
             // 清空所有相关的本地存储数据
             wx.removeStorageSync('shiftTemplates');
             wx.removeStorageSync('shifts');
-            wx.removeStorageSync('userInfo');
             // 如果还有其他需要清空的数据，可以在这里添加
             
             wx.showToast({

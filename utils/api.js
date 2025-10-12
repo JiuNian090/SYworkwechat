@@ -4,39 +4,16 @@ const config = require('../config.js');
 class ApiClient {
   constructor() {
     this.baseURL = config.baseURL;
-    this.apiKey = config.apiKey;
-  }
-
-  // 获取当前的API配置
-  getConfig() {
-    // 优先使用config.js中的配置，如果没有则尝试从全局获取
-    if (config.apiKey) {
-      return config;
-    }
-    
-    // 从全局应用实例获取配置
-    if (typeof getApp !== 'undefined') {
-      const app = getApp();
-      if (app && app.globalData && app.globalData.config) {
-        return app.globalData.config;
-      }
-    }
-    
-    // 返回默认配置
-    return config;
   }
 
   // 通用请求方法
   async request(endpoint, options = {}) {
-    const currentConfig = this.getConfig();
-    const url = `${currentConfig.baseURL}${endpoint}`;
+    const url = `${this.baseURL}${endpoint}`;
     
     const defaultOptions = {
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${currentConfig.apiKey}`
-      },
-      timeout: currentConfig.timeout
+        'Content-Type': 'application/json'
+      }
     };
 
     const mergedOptions = {
