@@ -14,7 +14,7 @@
       <text class="description">如果您觉得这个小程序对您有帮助，欢迎通过以下方式支持作者：</text>
       
       <view class="reward-section">
-        <image class="reward-image" src="/image/reward.png" mode="widthFix"></image>
+        <image class="reward-image" src="/image/reward.png" mode="widthFix" show-menu-by-longpress="{{true}}"></image>
         <text class="image-tip">长按保存图片后使用微信扫码赞赏</text>
       </view>
       
