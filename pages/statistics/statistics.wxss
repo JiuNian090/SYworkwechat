@@ -446,3 +446,16 @@
   background: #27ae60;
   transform: scale(0.98);
 }
+
+.usage-guide {
+  margin-top: 20rpx;
+  padding: 10rpx 0;
+}
+
+.usage-guide-text {
+  font-size: 24rpx;
+  color: #999999;
+  line-height: 1.4;
+  text-align: justify;
+  text-indent: 2em;
+}
