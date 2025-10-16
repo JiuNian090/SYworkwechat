@@ -19,7 +19,7 @@
     "minifyWXSS": true,
     "localPlugins": false,
     "disableUseStrict": false,
-    "condition": false,
+    "condition": true,
     "swc": false,
     "disableSWC": true,
     "urlCheck": true
@@ -29,7 +29,9 @@
     "API_BASE_URL": "https://your-api-domain.com/api"
   },
   "compileType": "miniprogram",
-  "simulatorPluginLibVersion": {},
+  "simulatorPluginLibVersion": {
+    "wxext14566970e7e9f62": "2.27.3"
+  },
   "packOptions": {
     "ignore": [],
     "include": []
@@ -40,5 +42,6 @@
   "network": {
     "request": [],
     "webview": []
-  }
+  },
+  "projectArchitecture": "multiPlatform"
 }
