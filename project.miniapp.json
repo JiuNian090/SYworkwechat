@@ -9,7 +9,7 @@
   },
   "mini-android": {
     "resourcePath": "miniapp/android/nativeResources",
-    "sdkVersion": "1.6.22",
+    "sdkVersion": "1.6.23",
     "toolkitVersion": "0.11.0",
     "useExtendedSdk": {
       "media": false,

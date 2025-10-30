@@ -61,6 +61,17 @@ Page({
     }
   },
 
+  // 当班次模板更新时调用此方法
+  onShiftTemplatesUpdate(templates) {
+    this.setData({
+      shiftTemplates: templates
+    });
+    
+    // 更新视图以反映模板变化
+    this.generateWeekDates();
+    this.generateMonthDates();
+  },
+
   loadShifts() {
     try {
       const shifts = wx.getStorageSync('shifts') || {};
