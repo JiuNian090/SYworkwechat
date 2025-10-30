@@ -663,7 +663,7 @@
   transform: translateY(-50%);
   border-radius: 16rpx;
   background: rgba(7, 193, 96, 0.03);
-  border: 1rpx solid rgba(7, 193, 96, 0.1);
+  /* 移除透明的绿色边框 */
   box-shadow: 0 0 8rpx rgba(7, 193, 96, 0.05) inset, 0 0 12rpx rgba(7, 193, 96, 0.05);
   pointer-events: none;
   opacity: 0.6;
