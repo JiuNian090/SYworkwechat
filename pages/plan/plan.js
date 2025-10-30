@@ -155,11 +155,13 @@ Page({
         showAddTemplate: false
       });
       
-      // 通知其他页面更新班次模板
+      // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
         if (pages[i].route === 'pages/schedule/schedule') {
-          pages[i].loadShiftTemplates();
+          if (pages[i].onShiftTemplatesUpdate) {
+            pages[i].onShiftTemplatesUpdate(templates);
+          }
           break;
         }
       }
@@ -168,6 +170,33 @@ Page({
         title: '保存成功',
         icon: 'success'
       });
+    } catch (e) {
+      console.error('保存班次模板失败', e);
+      wx.showToast({
+        title: '保存失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  saveTemplates() {
+    try {
+      wx.setStorageSync('shiftTemplates', this.data.shiftTemplates);
+      wx.showToast({
+        title: '保存成功',
+        icon: 'success'
+      });
+      
+      // 通知排班页面模板已更新
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].route === 'pages/schedule/schedule') {
+          if (pages[i].onShiftTemplatesUpdate) {
+            pages[i].onShiftTemplatesUpdate(this.data.shiftTemplates);
+          }
+          break;
+        }
+      }
     } catch (e) {
       console.error('保存班次模板失败', e);
       wx.showToast({
@@ -232,11 +261,13 @@ Page({
         editIndex: -1 
       });
       
-      // 通知其他页面更新班次模板
+      // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
         if (pages[i].route === 'pages/schedule/schedule') {
-          pages[i].loadShiftTemplates();
+          if (pages[i].onShiftTemplatesUpdate) {
+            pages[i].onShiftTemplatesUpdate(templates);
+          }
           break;
         }
       }
@@ -257,11 +288,13 @@ Page({
         shiftTemplates: templates
       });
       
-      // 通知其他页面更新班次模板
+      // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
         if (pages[i].route === 'pages/schedule/schedule') {
-          pages[i].loadShiftTemplates();
+          if (pages[i].onShiftTemplatesUpdate) {
+            pages[i].onShiftTemplatesUpdate(templates);
+          }
           break;
         }
       }
