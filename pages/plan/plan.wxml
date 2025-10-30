@@ -57,9 +57,30 @@
         </view>
         <view class="form-group">
           <text class="label">颜色</text>
-          <picker mode="selector" range="{{colorOptions}}" range-key="name" bindchange="onColorChange">
-            <view class="picker" style="color:{{newTemplate.color}}">{{colorNames[newTemplate.color]}}</view>
-          </picker>
+          <!-- 颜色条选择器 -->
+          <view class="color-bar-container">
+            <view class="selected-color-display" style="background-color:{{newTemplate.color}}; color: {{isLightColor(newTemplate.color) ? '#000' : '#fff'}}">
+              {{newTemplate.color}}
+            </view>
+            <view class="color-bar">
+              <!-- 使用渐变背景创建颜色条 -->
+              <view 
+                class="color-slider" 
+                style="background: linear-gradient(to right, 
+                  #ff0000 0%, 
+                  #ffff00 17%, 
+                  #00ff00 33%, 
+                  #00ffff 50%, 
+                  #0000ff 67%, 
+                  #ff00ff 83%, 
+                  #ff0000 100%);"
+                bindtap="onColorBarTap"
+                bindtouchmove="onColorBarMove"
+              ></view>
+              <!-- 滑块指示器 -->
+              <view class="slider-indicator" style="left: {{colorBarPosition}}%"></view>
+            </view>
+          </view>
         </view>
         <view class="form-group">
           <text class="label">开始时间 - 结束时间</text>
@@ -111,9 +132,30 @@
         </view>
         <view class="form-group">
           <text class="label">颜色</text>
-          <picker mode="selector" range="{{colorOptions}}" range-key="name" bindchange="onColorChange">
-            <view class="picker" style="color:{{newTemplate.color}}">{{colorNames[newTemplate.color]}}</view>
-          </picker>
+          <!-- 颜色条选择器 -->
+          <view class="color-bar-container">
+            <view class="selected-color-display" style="background-color:{{editTemplate.color}}; color: {{isLightColor(editTemplate.color) ? '#000' : '#fff'}}">
+              {{editTemplate.color}}
+            </view>
+            <view class="color-bar">
+              <!-- 使用渐变背景创建颜色条 -->
+              <view 
+                class="color-slider" 
+                style="background: linear-gradient(to right, 
+                  #ff0000 0%, 
+                  #ffff00 17%, 
+                  #00ff00 33%, 
+                  #00ffff 50%, 
+                  #0000ff 67%, 
+                  #ff00ff 83%, 
+                  #ff0000 100%);"
+                bindtap="onEditColorBarTap"
+                bindtouchmove="onEditColorBarMove"
+              ></view>
+              <!-- 滑块指示器 -->
+              <view class="slider-indicator" style="left: {{editColorBarPosition}}%"></view>
+            </view>
+          </view>
         </view>
         <view class="form-group">
           <text class="label">开始时间 - 结束时间</text>
