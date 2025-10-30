@@ -433,6 +433,11 @@ Page({
     });
   },
 
+  stopPropagation(e) {
+    // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
+    console.log('阻止事件冒泡');
+  },
+
   bindPickerChange(e) {
     this.setData({
       pickerValue: e.detail.value

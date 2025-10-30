@@ -86,22 +86,23 @@
   </view>
 
   <!-- 排班选择弹窗 -->
-  <view class="modal" wx:if="{{showShiftModal}}">
-    <view class="modal-content">
+  <view class="modal" wx:if="{{showShiftModal}}" bindtap="hideShiftModal">
+    <view class="modal-content" bindtap="stopPropagation">
       <view class="modal-header">
         <text class="modal-title">为 {{selectedDate}} 排班</text>
-        <icon type="cancel" size="20" bindtap="hideShiftModal" />
+        <icon type="clear" size="24" color="#999" bindtap="hideShiftModal" />
       </view>
       
       <view wx:if="{{shiftTemplates.length > 0}}" class="shift-picker-container">
-        <picker-view indicator-style="height: 40px;" style="width: 100%; height: 200px;" value="{{pickerValue}}" bindchange="bindPickerChange">
+        <view class="shift-picker-indicator"></view>
+        <picker-view indicator-style="height: 50px;" style="width: 100%; height: 220px;" value="{{pickerValue}}" bindchange="bindPickerChange">
           <picker-view-column>
-            <view wx:for="{{shiftTemplates}}" wx:key="index" style="line-height: 40px; text-align: center; font-size: 32rpx; font-weight: bold; padding: 0 20rpx;">
+            <view wx:for="{{shiftTemplates}}" wx:key="index" style="line-height: 50px; text-align: center; font-size: 36rpx; font-weight: 600; padding: 0 20rpx;">
               <text>{{item.name}}</text>
             </view>
           </picker-view-column>
         </picker-view>
-        <button class="btn-primary" bindtap="assignShiftFromPicker">确定</button>
+        <button class="shift-picker-btn" bindtap="assignShiftFromPicker">确定排班</button>
       </view>
       
       <view wx:if="{{selectedShift}}" class="current-shift">
