@@ -506,9 +506,46 @@ Page({
 
   // 颜色条选择功能相关方法
   getColorFromPosition(position) {
-    // 根据位置计算颜色（0-100%）
-    const hue = (position / 100) * 360;
-    return this.hslToRgb(hue, 100, 50);
+    // 定义颜色条的渐变色标（与wxml中的渐变保持一致）
+    const colorStops = [
+      { position: 0, color: [255, 0, 0] },      // #ff0000 红色
+      { position: 17, color: [255, 255, 0] },   // #ffff00 黄色
+      { position: 33, color: [0, 204, 0] },     // #00cc00 深绿色（修改后的绿色）
+      { position: 50, color: [0, 204, 204] },   // #00cccc 深青色（修改后的天蓝色）
+      { position: 67, color: [0, 0, 255] },     // #0000ff 蓝色
+      { position: 83, color: [255, 0, 255] },   // #ff00ff 紫色
+      { position: 100, color: [255, 0, 0] }     // #ff0000 红色（回到红色）
+    ];
+    
+    // 确保位置在0-100范围内
+    position = Math.max(0, Math.min(100, position));
+    
+    // 找到相邻的两个色标
+    let leftStop = colorStops[0];
+    let rightStop = colorStops[colorStops.length - 1];
+    
+    for (let i = 0; i < colorStops.length - 1; i++) {
+      if (position >= colorStops[i].position && position <= colorStops[i + 1].position) {
+        leftStop = colorStops[i];
+        rightStop = colorStops[i + 1];
+        break;
+      }
+    }
+    
+    // 计算插值比例
+    const range = rightStop.position - leftStop.position;
+    const ratio = range === 0 ? 0 : (position - leftStop.position) / range;
+    
+    // 在两个色标之间进行线性插值
+    const r = Math.round(leftStop.color[0] + (rightStop.color[0] - leftStop.color[0]) * ratio);
+    const g = Math.round(leftStop.color[1] + (rightStop.color[1] - leftStop.color[1]) * ratio);
+    const b = Math.round(leftStop.color[2] + (rightStop.color[2] - leftStop.color[2]) * ratio);
+    
+    // 转换为十六进制颜色值
+    return '#' + [r, g, b].map(x => {
+      const hex = x.toString(16);
+      return hex.length === 1 ? '0' + hex : hex;
+    }).join('');
   },
 
   /**
