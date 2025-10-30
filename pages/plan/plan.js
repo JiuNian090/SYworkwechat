@@ -279,6 +279,9 @@ Page({
     // 查找班次类型索引
     const typeIndex = this.data.shiftTypes.indexOf(tpl.type);
     
+    // 计算颜色在颜色条上的位置
+    const editColorBarPosition = this.getColorBarPositionFromColor(tpl.color);
+    
     const templateWithTime = {
       ...tpl,
       hours: hours,
@@ -291,7 +294,8 @@ Page({
     this.setData({
       showEditTemplate: true,
       editIndex: index,
-      editTemplate: templateWithTime
+      editTemplate: templateWithTime,
+      editColorBarPosition: editColorBarPosition
     });
   },
 
@@ -505,6 +509,60 @@ Page({
     // 根据位置计算颜色（0-100%）
     const hue = (position / 100) * 360;
     return this.hslToRgb(hue, 100, 50);
+  },
+
+  /**
+   * 根据颜色值计算在颜色条上的位置
+   * @param {string} color 十六进制颜色值
+   * @returns {number} 位置百分比 (0-100)
+   */
+  getColorBarPositionFromColor(color) {
+    // 如果颜色不在预设颜色中，计算其在颜色条上的位置
+    if (!color || !color.startsWith('#') || color.length !== 7) {
+      return 50; // 默认位置
+    }
+    
+    // 尝试匹配预设颜色
+    const presetColors = this.data.presetColors;
+    const index = presetColors.indexOf(color);
+    if (index >= 0) {
+      // 如果是预设颜色，均匀分布在颜色条上
+      return (index / (presetColors.length - 1)) * 100;
+    }
+    
+    // 对于自定义颜色，尝试计算其色相值
+    try {
+      // 移除 # 符号
+      const hex = color.replace('#', '');
+      
+      // 解析RGB值
+      const r = parseInt(hex.substr(0, 2), 16) / 255;
+      const g = parseInt(hex.substr(2, 2), 16) / 255;
+      const b = parseInt(hex.substr(4, 2), 16) / 255;
+      
+      // 转换为HSL
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h;
+      
+      if (max === min) {
+        h = 0; // 灰色
+      } else {
+        const d = max - min;
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      
+      // 转换为位置百分比
+      return h * 100;
+    } catch (e) {
+      console.error('计算颜色位置失败', e);
+      return 50; // 默认位置
+    }
   },
 
   onColorBarTap(e) {
