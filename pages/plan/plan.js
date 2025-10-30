@@ -19,6 +19,18 @@ Page({
       type: '白天班',
       color: '#07c160'
     },
+    editTemplate: {
+      name: '',
+      startTime: '09:00',
+      endTime: '17:00',
+      hours: 8,
+      minutes: 0,
+      hoursIndex: 8,
+      minutesIndex: 0,
+      workHours: 8.0,
+      typeIndex: 0,
+      color: '#07c160'
+    },
     shiftTypes: ['白天班', '跨夜班', '休息日'],
     colorList: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1'],
     colorNames: {
@@ -76,7 +88,7 @@ Page({
         hoursIndex: 8,
         minutesIndex: 0,
         workHours: 8.0,
-        type: '白天班',
+        typeIndex: 0,
         color: '#07c160'
       }
     });
@@ -96,6 +108,14 @@ Page({
     });
   },
 
+  onEditTemplateInput(e) {
+    const field = e.currentTarget.dataset.field;
+    const value = e.detail.value;
+    this.setData({
+      [`editTemplate.${field}`]: value
+    });
+  },
+
   onHoursChange(e) {
     const hoursIndex = e.detail.value;
     const hours = this.data.hoursRange[hoursIndex];
@@ -105,6 +125,18 @@ Page({
       'newTemplate.hoursIndex': hoursIndex,
       'newTemplate.hours': hours,
       'newTemplate.workHours': parseFloat(workHours.toFixed(2))
+    });
+  },
+
+  onEditHoursChange(e) {
+    const hoursIndex = e.detail.value;
+    const hours = this.data.hoursRange[hoursIndex];
+    const minutes = this.data.editTemplate.minutes || 0;
+    const workHours = hours + (minutes / 60);
+    this.setData({
+      'editTemplate.hoursIndex': hoursIndex,
+      'editTemplate.hours': hours,
+      'editTemplate.workHours': parseFloat(workHours.toFixed(2))
     });
   },
 
@@ -120,6 +152,18 @@ Page({
     });
   },
 
+  onEditMinutesChange(e) {
+    const minutesIndex = e.detail.value;
+    const minutes = this.data.minutesRange[minutesIndex];
+    const hours = this.data.editTemplate.hours || 0;
+    const workHours = hours + (minutes / 60);
+    this.setData({
+      'editTemplate.minutesIndex': minutesIndex,
+      'editTemplate.minutes': minutes,
+      'editTemplate.workHours': parseFloat(workHours.toFixed(2))
+    });
+  },
+
 
 
   onColorChange(e) {
@@ -129,7 +173,13 @@ Page({
 
   onTypeChange(e) {
     this.setData({
-      'newTemplate.type': this.data.shiftTypes[e.detail.value]
+      'newTemplate.typeIndex': e.detail.value
+    });
+  },
+
+  onEditTypeChange(e) {
+    this.setData({
+      'editTemplate.typeIndex': e.detail.value
     });
   },
 
@@ -146,8 +196,11 @@ Page({
 
     // 确保工时计算正确
     const workHours = (newTemplate.hours || 0) + ((newTemplate.minutes || 0) / 60);
+    // 获取班次类型
+    const type = this.data.shiftTypes[newTemplate.typeIndex] || '白天班';
     const templateToSave = {
       ...newTemplate,
+      type: type,
       workHours: parseFloat(workHours.toFixed(2))
     };
 
@@ -223,18 +276,22 @@ Page({
     const hoursIndex = hours;
     const minutesIndex = minutes / 5; // 因为分钟是5分钟间隔
     
+    // 查找班次类型索引
+    const typeIndex = this.data.shiftTypes.indexOf(tpl.type);
+    
     const templateWithTime = {
       ...tpl,
       hours: hours,
       minutes: minutes,
       hoursIndex: hoursIndex,
-      minutesIndex: minutesIndex
+      minutesIndex: minutesIndex,
+      typeIndex: typeIndex >= 0 ? typeIndex : 0
     };
     
     this.setData({
       showEditTemplate: true,
       editIndex: index,
-      newTemplate: templateWithTime
+      editTemplate: templateWithTime
     });
   },
 
@@ -243,16 +300,19 @@ Page({
   },
 
   saveEditTemplate() {
-    const { newTemplate, shiftTemplates, editIndex } = this.data;
-    if (!newTemplate.name) {
+    const { editTemplate, shiftTemplates, editIndex } = this.data;
+    if (!editTemplate.name) {
       wx.showToast({ title: '请输入班次名称', icon: 'none' });
       return;
     }
     
     // 确保工时计算正确
-    const workHours = (newTemplate.hours || 0) + ((newTemplate.minutes || 0) / 60);
+    const workHours = (editTemplate.hours || 0) + ((editTemplate.minutes || 0) / 60);
+    // 获取班次类型
+    const type = this.data.shiftTypes[editTemplate.typeIndex] || '白天班';
     const templateToSave = {
-      ...newTemplate,
+      ...editTemplate,
+      type: type,
       workHours: parseFloat(workHours.toFixed(2))
     };
     

@@ -213,11 +213,16 @@ Page({
   // 颜色变浅函数
   lightenColor(color) {
     // 如果是十六进制颜色值
-    if (color.startsWith('#')) {
+    if (color && color.startsWith('#') && color.length === 7) {
       // 将十六进制转换为RGB
       let r = parseInt(color.slice(1, 3), 16);
       let g = parseInt(color.slice(3, 5), 16);
       let b = parseInt(color.slice(5, 7), 16);
+      
+      // 检查解析是否成功
+      if (isNaN(r) || isNaN(g) || isNaN(b)) {
+        return color; // 如果解析失败，返回原值
+      }
       
       // 将颜色值变得更浅（增加亮度，但不要超过240）
       r = Math.min(240, Math.floor((240 + r) / 2));
@@ -229,7 +234,7 @@ Page({
     }
     
     // 如果不是十六进制颜色值，直接返回原值
-    return color;
+    return color || '#07c160'; // 如果颜色值为空，返回默认绿色
   },
 
   generateWeekDates() {
