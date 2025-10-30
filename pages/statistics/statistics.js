@@ -33,8 +33,8 @@ Page({
     const day = now.getDay();
     const diff = day === 0 ? 6 : day - 1; // 如果是周日，则上周一是6天前；否则是day-1天前
     start.setDate(now.getDate() - diff - 7);
-    // 计算上周日
-    end.setDate(now.getDate() - diff - 1);
+    // 计算上周日（正确处理跨月份情况）
+    end.setTime(start.getTime() + 6 * 24 * 60 * 60 * 1000); // 通过时间戳加6天，避免月份计算问题
 
     return {
       startDate: this.formatDate(start),
@@ -52,8 +52,8 @@ Page({
     const day = now.getDay();
     const diff = day === 0 ? 6 : day - 1; // 如果是周日，则本周一是6天前；否则是day-1天前
     start.setDate(now.getDate() - diff);
-    // 计算本周日
-    end.setDate(start.getDate() + 6);
+    // 计算本周日（正确处理跨月份情况）
+    end.setTime(start.getTime() + 6 * 24 * 60 * 60 * 1000); // 通过时间戳加6天，避免月份计算问题
 
     return {
       startDate: this.formatDate(start),
@@ -71,8 +71,8 @@ Page({
     const day = now.getDay();
     const diff = day === 0 ? 6 : day - 1; // 如果是周日，则本周一是6天前；否则是day-1天前
     start.setDate(now.getDate() - diff + 7);
-    // 计算下周日
-    end.setDate(start.getDate() + 6);
+    // 计算下周日（正确处理跨月份情况）
+    end.setTime(start.getTime() + 6 * 24 * 60 * 60 * 1000); // 通过时间戳加6天，避免月份计算问题
 
     return {
       startDate: this.formatDate(start),
