@@ -67,6 +67,47 @@ Page({
       shiftTemplates: templates
     });
     
+    // 更新已有的排班数据，确保颜色与模板一致
+    const updatedShifts = {...this.data.shifts};
+    let shiftsChanged = false;
+    
+    // 遍历所有已有的排班数据
+    for (const date in updatedShifts) {
+      const shift = updatedShifts[date];
+      // 查找匹配的模板（根据名称、开始时间和结束时间）
+      const matchingTemplate = templates.find(template => 
+        template.name === shift.name && 
+        template.startTime === shift.startTime && 
+        template.endTime === shift.endTime
+      );
+      
+      // 如果找到了匹配的模板且颜色不同，则更新颜色
+      if (matchingTemplate && matchingTemplate.color !== shift.color) {
+        updatedShifts[date] = {
+          ...shift,
+          color: matchingTemplate.color
+        };
+        shiftsChanged = true;
+      }
+      // 如果没有找到匹配的模板，说明模板已被删除，但保留排班数据
+      else if (!matchingTemplate) {
+        // 保留排班数据，不做任何处理
+        // 这样可以确保删除模板时不会影响已有的排班
+      }
+    }
+    
+    // 如果排班数据有变化，则更新存储和视图
+    if (shiftsChanged) {
+      try {
+        wx.setStorageSync('shifts', updatedShifts);
+        this.setData({
+          shifts: updatedShifts
+        });
+      } catch (e) {
+        console.error('更新排班数据失败', e);
+      }
+    }
+    
     // 更新视图以反映模板变化
     this.generateWeekDates();
     this.generateMonthDates();

@@ -78,7 +78,7 @@
                 bindtouchmove="onColorBarMove"
               ></view>
               <!-- 滑块指示器 -->
-              <view class="slider-indicator" style="left: {{colorBarPosition}}"></view>
+              <view class="slider-indicator" style="left: {{colorBarPosition}}%"></view>
             </view>
           </view>
         </view>
@@ -153,7 +153,7 @@
                 bindtouchmove="onEditColorBarMove"
               ></view>
               <!-- 滑块指示器 -->
-              <view class="slider-indicator" style="left: {{editColorBarPosition}}"></view>
+              <view class="slider-indicator" style="left: {{editColorBarPosition}}%"></view>
             </view>
           </view>
         </view>

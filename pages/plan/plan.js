@@ -349,6 +349,7 @@ Page({
 
   deleteTemplate(e) {
     const index = e.currentTarget.dataset.index;
+    const templateToDelete = this.data.shiftTemplates[index];
     const templates = this.data.shiftTemplates.filter((_, i) => i !== index);
     
     try {
