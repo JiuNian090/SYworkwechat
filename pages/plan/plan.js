@@ -52,12 +52,82 @@ Page({
     // 自定义颜色选择器相关属性
     hue: 120,
     presetColors: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1', '#000000', '#ffffff'],
-    colorBarPosition: 50, // 添加颜色条位置数据
-    editColorBarPosition: 50 // 添加编辑颜色条位置数据
+    colorBarPosition: 50, // 添加颜色条位置数据（百分比）
+    editColorBarPosition: 50, // 添加编辑颜色条位置数据（百分比）
+    colorBarPositionPx: 0, // 添加颜色条位置数据（像素值）
+    editColorBarPositionPx: 0 // 添加编辑颜色条位置数据（像素值）
   },
 
   onLoad() {
     this.loadShiftTemplates();
+    this.initColorBarPosition();
+  },
+
+  /**
+   * 初始化颜色条位置像素值
+   */
+  initColorBarPosition() {
+    // 延迟执行以确保DOM已渲染
+    setTimeout(() => {
+      const query = wx.createSelectorQuery();
+      query.select('.color-bar').boundingClientRect();
+      query.exec((res) => {
+        if (res[0]) {
+          const barWidth = res[0].width;
+          // 初始化添加模板的颜色条位置
+          const positionPx = (this.data.colorBarPosition / 100) * barWidth;
+          // 初始化编辑模板的颜色条位置
+          const editPositionPx = (this.data.editColorBarPosition / 100) * barWidth;
+          
+          this.setData({
+            colorBarPositionPx: positionPx,
+            editColorBarPositionPx: editPositionPx
+          });
+        }
+      });
+    }, 500);
+  },
+
+  /**
+   * 更新添加模板颜色条位置像素值
+   */
+  updateColorBarPositionPx() {
+    // 延迟执行以确保DOM已渲染
+    setTimeout(() => {
+      const query = wx.createSelectorQuery();
+      query.select('.color-bar').boundingClientRect();
+      query.exec((res) => {
+        if (res[0]) {
+          const barWidth = res[0].width;
+          const positionPx = (this.data.colorBarPosition / 100) * barWidth;
+          
+          this.setData({
+            colorBarPositionPx: positionPx
+          });
+        }
+      });
+    }, 100);
+  },
+
+  /**
+   * 更新编辑模板颜色条位置像素值
+   */
+  updateEditColorBarPositionPx() {
+    // 延迟执行以确保DOM已渲染
+    setTimeout(() => {
+      const query = wx.createSelectorQuery();
+      query.select('.color-bar').boundingClientRect();
+      query.exec((res) => {
+        if (res[0]) {
+          const barWidth = res[0].width;
+          const positionPx = (this.data.editColorBarPosition / 100) * barWidth;
+          
+          this.setData({
+            editColorBarPositionPx: positionPx
+          });
+        }
+      });
+    }, 100);
   },
 
   onShow() {
@@ -92,6 +162,9 @@ Page({
         color: '#07c160'
       }
     });
+    
+    // 更新颜色条位置像素值
+    this.updateColorBarPositionPx();
   },
 
   hideAddTemplateModal() {
@@ -297,6 +370,9 @@ Page({
       editTemplate: templateWithTime,
       editColorBarPosition: editColorBarPosition
     });
+    
+    // 更新颜色条位置像素值
+    this.updateEditColorBarPositionPx();
   },
 
   hideEditTemplateModal() {
@@ -613,9 +689,12 @@ Page({
         const tapX = e.detail.x - res[0].left;
         const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
         const color = this.getColorFromPosition(position);
+        // 计算像素位置
+        const positionPx = (position / 100) * barWidth;
         
         this.setData({
           colorBarPosition: position,
+          colorBarPositionPx: positionPx,
           'newTemplate.color': color
         });
       }
@@ -632,9 +711,12 @@ Page({
         const tapX = e.touches[0].clientX - res[0].left;
         const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
         const color = this.getColorFromPosition(position);
+        // 计算像素位置
+        const positionPx = (position / 100) * barWidth;
         
         this.setData({
           colorBarPosition: position,
+          colorBarPositionPx: positionPx,
           'newTemplate.color': color
         });
       }
@@ -651,9 +733,12 @@ Page({
         const tapX = e.detail.x - res[0].left;
         const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
         const color = this.getColorFromPosition(position);
+        // 计算像素位置
+        const positionPx = (position / 100) * barWidth;
         
         this.setData({
           editColorBarPosition: position,
+          editColorBarPositionPx: positionPx,
           'editTemplate.color': color
         });
       }
@@ -670,9 +755,12 @@ Page({
         const tapX = e.touches[0].clientX - res[0].left;
         const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
         const color = this.getColorFromPosition(position);
+        // 计算像素位置
+        const positionPx = (position / 100) * barWidth;
         
         this.setData({
           editColorBarPosition: position,
+          editColorBarPositionPx: positionPx,
           'editTemplate.color': color
         });
       }
