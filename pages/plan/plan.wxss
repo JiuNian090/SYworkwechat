@@ -474,12 +474,28 @@
   padding: 20rpx 0;
 }
 
-.selected-color-display {
-  padding: 20rpx;
-  border-radius: 10rpx;
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 20rpx;
+.label-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.color-indicator {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  margin-left: 20rpx;
+  border: 2rpx solid #e0e0e0;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.color-circle {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  margin-left: 20rpx;
+  border: 2rpx solid #e0e0e0;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.15);
 }
 
 .color-bar {
