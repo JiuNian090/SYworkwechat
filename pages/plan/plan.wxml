@@ -66,14 +66,7 @@
               <!-- 使用渐变背景创建颜色条 -->
               <view 
                 class="color-slider" 
-                style="background: linear-gradient(to right, 
-                  #ff0000 0%, 
-                  #ffff00 17%, 
-                  #00cc00 33%, 
-                  #00cccc 50%, 
-                  #0000ff 67%, 
-                  #ff00ff 83%, 
-                  #ff0000 100%);"
+                style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00cc00 33%, #00cccc 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);"
                 bindtap="onColorBarTap"
                 bindtouchmove="onColorBarMove"
               ></view>
@@ -141,14 +134,7 @@
               <!-- 使用渐变背景创建颜色条 -->
               <view 
                 class="color-slider" 
-                style="background: linear-gradient(to right, 
-                  #ff0000 0%, 
-                  #ffff00 17%, 
-                  #00cc00 33%, 
-                  #00cccc 50%, 
-                  #0000ff 67%, 
-                  #ff00ff 83%, 
-                  #ff0000 100%);"
+                style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00cc00 33%, #00cccc 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);"
                 bindtap="onEditColorBarTap"
                 bindtouchmove="onEditColorBarMove"
               ></view>
