@@ -374,7 +374,7 @@ Page({
   contactAuthor() {
     wx.showModal({
       title: '联系作者',
-      content: '是否要发送邮件给jiunian929@gmail.com？',
+      content: '是否要发送邮件给qiuqile@petalmail.com？',
       confirmText: '确定',
       cancelText: '取消',
       success: (res) => {
@@ -382,14 +382,14 @@ Page({
           // 使用微信小程序的邮件功能
           if (wx.canIUse('openEmail')) {
             wx.openEmail({
-              recipients: ['jiunian929@gmail.com'],
+              recipients: ['qiuqile@petalmail.com'],
               subject: '关于SYwork排班管理系统',
               body: '您好，我在使用SYwork排班管理系统时遇到了一些问题，希望能得到您的帮助。'
             });
           } else {
             // 如果不支持openEmail，则提示用户手动发送邮件
             wx.setClipboardData({
-              data: 'jiunian929@gmail.com',
+              data: 'qiuqile@petalmail.com',
               success: () => {
                 wx.showToast({
                   title: '邮箱已复制',
@@ -397,7 +397,7 @@ Page({
                 });
                 wx.showModal({
                   title: '提示',
-                  content: '您的微信版本不支持直接发送邮件，邮箱地址已复制到剪贴板，请您手动发送邮件至jiunian929@gmail.com',
+                  content: '您的微信版本不支持直接发送邮件，邮箱地址已复制到剪贴板，请您手动发送邮件至qiuqile@petalmail.com',
                   showCancel: false,
                   confirmText: '知道了'
                 });
