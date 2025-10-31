@@ -58,7 +58,7 @@
       <button class="action-btn donate-btn" bindtap="donate">捐赠支持</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
-      <button class="action-btn support-btn" bindtap="supportAuthor">支持乐乐</button>
+      <text>如果您觉得这款排班系统对您有帮助，请分享给更多需要的同事！您的支持是我持续开发和维护的动力。</text>
     </view>
   </view>
 </view>
