@@ -173,10 +173,7 @@
   color: #fff;
 }
 
-.support-btn {
-  background: #722ed1;
-  color: #fff;
-}
+
 
 .input-item {
   margin-bottom: 20rpx;

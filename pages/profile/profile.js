@@ -19,12 +19,7 @@ Page({
 
 
 
-  // 支持作者
-  supportAuthor: function() {
-    wx.navigateTo({
-      url: '/pages/profile/support/support'
-    });
-  },
+  
 
 
 
