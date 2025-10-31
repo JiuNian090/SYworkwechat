@@ -50,7 +50,7 @@
   </view>
   
   <view class="section">
-    <text class="section-title">更多功能</text>
+    <text class="section-title">更多</text>
     <view class="data-actions">
       <button class="action-btn contact-btn" bindtap="contactAuthor">联系乐乐</button>
     </view>

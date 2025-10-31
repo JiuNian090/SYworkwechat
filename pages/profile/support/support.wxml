@@ -5,19 +5,6 @@
   </view>
 
   <view class="content">
-    <text class="description">如果您觉得这款排班系统对您有帮助，可以请思语小姐姐或者乐乐小哥哥喝杯咖啡吧！您的支持是我持续开发和维护的动力。</text>
-    <view class="divider"></view>
-
-    <!-- 微信赞赏码 -->
-    <view class="qr-section">
-      <text class="section-title">微信赞赏</text>
-      <image 
-        src="/image/reward.png" 
-        class="qr-image"
-        show-menu-by-longpress="{{true}}"
-        bindlongpress="onImageLongPress">
-      </image>
-      <text class="hint">长按识别或保存二维码</text>
-    </view>
+    <text class="description">如果您觉得这款排班系统对您有帮助，请分享给更多需要的同事！您的支持是我持续开发和维护的动力。</text>
   </view>
 </view>
