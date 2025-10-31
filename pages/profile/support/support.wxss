@@ -1,0 +1,159 @@
+/* support.wxss - 支持页面样式 */
+.support-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20rpx;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin: 40rpx 0;
+}
+
+.page-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 联系信息卡片 */
+.contact-card {
+  background: white;
+  border-radius: 16rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 联系项目 */
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  transition: background-color 0.3s;
+}
+
+.contact-item:active {
+  background-color: #f8f8f8;
+}
+
+.contact-item:last-child {
+  border-bottom: none;
+}
+
+.contact-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+  width: 60rpx;
+  text-align: center;
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-label {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 8rpx;
+}
+
+.contact-value {
+  display: block;
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.contact-arrow {
+  font-size: 36rpx;
+  color: #ccc;
+}
+
+/* 服务时间 */
+.service-time {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.time-title {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.time-content {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 常见问题 */
+.faq-section {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.faq-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.faq-item {
+  margin-bottom: 30rpx;
+}
+
+.faq-item:last-child {
+  margin-bottom: 0;
+}
+
+.faq-question {
+  display: block;
+  font-size: 28rpx;
+  color: #1890ff;
+  font-weight: 500;
+  margin-bottom: 10rpx;
+}
+
+.faq-answer {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .support-container {
+    padding: 15rpx;
+  }
+  
+  .contact-item {
+    padding: 20rpx;
+  }
+  
+  .contact-icon {
+    font-size: 40rpx;
+    margin-right: 15rpx;
+  }
+}
