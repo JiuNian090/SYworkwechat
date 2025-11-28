@@ -4,25 +4,49 @@
     <text class="title">个人中心</text>
   </view>
 
+  <view class="section user-section">
+    <view class="user-info" bindtap="showUsernameModal">
+      <view class="avatar">
+        <text class="avatar-text">{{avatarText}}</text>
+      </view>
+      <view class="user-details">
+        <text class="username-display">{{username || '点击自定义用户名'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 用户名设置弹窗 -->
+  <view class="modal-mask" wx:if="{{showUsernameModal}}" bindtap="hideUsernameModal"></view>
+  <view class="modal-container" wx:if="{{showUsernameModal}}">
+    <view class="modal-header">
+      <text class="modal-title">设置用户名</text>
+      <button class="modal-close-btn" bindtap="hideUsernameModal">×</button>
+    </view>
+    <view class="modal-content">
+      <view class="modal-input-group">
+        <input class="modal-input" placeholder="请输入用户名" value="{{tempUsername}}" bindinput="onTempUsernameInput"></input>
+      </view>
+      <view class="modal-hint">
+        <text>用户名将用于导出文件名</text>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn cancel-btn" bindtap="hideUsernameModal">取消</button>
+      <button class="modal-btn confirm-btn" bindtap="confirmUsername">确定</button>
+    </view>
+  </view>
+
   <view class="section">
     <text class="section-title">项目介绍</text>
     <view class="intro-content">
-      <text>这是一个为思语小姐姐创建的便捷工时/排班管理系统，功能正在逐步完善，若您觉得好用，可以分享此小程序也可以支持作者！如有问题反馈欢迎点击下方的联系乐乐。
-       <text class="highlight">主要功能：</text>
-      1. 班次管理：创建和管理常用班次
-      2. 排班安排：按周或月查看和编辑排班
-      3. 数据统计：统计工时和班次情况。
-      4. 数据管理：建议经常备份，导出后可快速分享</text>
+      <text>这是一个为思语小姐姐创建的便捷工时/排班管理系统，功能正在逐步完善，若您觉得好用，可以分享此小程序也可以支持作者！如有问题反馈欢迎点击下方的联系乐乐。</text>
     </view>
   </view>
 
   <view class="section">
     <text class="section-title">数据管理</text>
-    <view class="input-item">
-      <input class="filename-input" placeholder="请输入导出文件名(不含扩展名)" value="{{exportFileName}}" bindinput="onFileNameInput"></input>
-    </view>
     <view class="data-actions">
-      <button class="action-btn export-btn" bindtap="exportData">导出数据</button>
+      <button class="action-btn export-btn" bindtap="showFileNameModal">导出数据</button>
       <button class="action-btn share-btn" bindtap="shareExportedFile">分享数据</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
@@ -32,7 +56,7 @@
     <view class="usage-guide">
       <text>使用说明：</text>
       <view class="guide-item">
-        <text>1. 导出数据：输入自定义文件名后点击导出，可暂存数据文件到剪贴板。</text>
+        <text>1. 导出数据：点击导出数据，在弹窗中输入自定义文件名后点击确定，可暂存数据文件到剪贴板。</text>
         <text class="highlight">(可以自创排班模板，输入文件名"班次模板")</text>
       </view>
       <view class="guide-item">
@@ -46,6 +70,24 @@
       <view class="guide-item">
         <text>4. 清空数据：请谨慎操作，此操作不可恢复</text>
       </view>
+    </view>
+  </view>
+
+  <!-- 文件名设置弹窗 -->
+  <view class="modal-mask" wx:if="{{showFileNameModal}}" bindtap="hideFileNameModal"></view>
+  <view class="modal-container" wx:if="{{showFileNameModal}}">
+    <view class="modal-header">
+      <text class="modal-title">设置导出文件名</text>
+      <button class="modal-close-btn" bindtap="hideFileNameModal">×</button>
+    </view>
+    <view class="modal-content">
+      <view class="modal-input-group">
+        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput"></input>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn cancel-btn" bindtap="hideFileNameModal">取消</button>
+      <button class="modal-btn confirm-btn" bindtap="confirmExport">确定导出</button>
     </view>
   </view>
   

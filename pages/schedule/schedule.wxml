@@ -48,6 +48,17 @@
       </view>
     </view>
     
+    <!-- 本周工时统计 -->
+    <view class="week-statistics">
+      <view class="stat-item">
+        <text class="stat-label">本周工时：</text>
+        <text class="stat-value">{{weekTotalHours}} 小时</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">{{differenceType}}：</text>
+        <text class="stat-value {{differenceType === '超额' ? 'overtime' : 'shortage'}}">{{differenceValue}} 小时</text>
+      </view>
+    </view>
 
   </view>
 

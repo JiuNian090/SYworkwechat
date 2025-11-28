@@ -16,19 +16,27 @@ Page({
     selectedDate: '',
     selectedShift: null,
     shiftTemplates: [],
-    pickerValue: [0]
+    pickerValue: [0],
+    weekTotalHours: 0, // 本周总工时
+    weekDifference: 0, // 本周工时差额/超额
+    differenceType: '', // 差额类型：超额或差额
+    differenceValue: '0.0', // 差额值，显示为绝对值
+    customWeeklyHours: 35 // 自定义每周标准工时，默认35小时
   },
 
   onLoad() {
     const today = new Date();
     const isCurrentWeek = this.isCurrentWeek(today);
     const isCurrentMonth = this.isCurrentMonth(today);
+    // 读取自定义每周标准工时
+    const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),
       currentMonthTitle: this.formatMonthTitle(today),
       isCurrentWeek: isCurrentWeek,
-      isCurrentMonth: isCurrentMonth
+      isCurrentMonth: isCurrentMonth,
+      customWeeklyHours: customWeeklyHours
     });
     this.loadShiftTemplates();
     this.loadShifts();
@@ -38,6 +46,11 @@ Page({
 
   onShow() {
     // 页面显示时重新加载班次模板和排班数据，确保数据同步
+    // 读取自定义每周标准工时
+    const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
+    this.setData({
+      customWeeklyHours: customWeeklyHours
+    });
     this.loadShiftTemplates();
     this.loadShifts();
     this.generateWeekDates();
@@ -304,9 +317,28 @@ Page({
     // 获取当前周的班次颜色
     const weekShiftColor = this.getWeekShiftColor(weekDates);
     
+    // 计算本周总工时
+    let weekTotalHours = 0;
+    weekDates.forEach(day => {
+      if (day.shift) {
+        weekTotalHours += parseFloat(day.shift.workHours) || 0;
+      }
+    });
+    
+    // 计算本周工时差额/超额
+    const weekDifference = weekTotalHours - this.data.customWeeklyHours;
+    
+    // 计算差额类型和显示值
+    const differenceType = weekDifference >= 0 ? '超额' : '差额';
+    const differenceValue = Math.abs(weekDifference).toFixed(1);
+    
     this.setData({
       weekDates: weekDates,
-      currentWeekShiftColor: weekShiftColor
+      currentWeekShiftColor: weekShiftColor,
+      weekTotalHours: weekTotalHours.toFixed(1),
+      weekDifference: weekDifference,
+      differenceType: differenceType,
+      differenceValue: differenceValue
     });
   },
 
@@ -495,15 +527,24 @@ Page({
     const template = this.data.shiftTemplates[selectedIndex];
     const { selectedDate, shifts } = this.data;
     
+    // 检查template是否存在
+    if (!template) {
+      wx.showToast({
+        title: '请先选择有效的班次模板',
+        icon: 'none'
+      });
+      return;
+    }
+    
     // 确保班次数据包含所有必要字段，包括工时数
     const shiftData = {
       ...template,
-      name: template.name,
-      startTime: template.startTime,
-      endTime: template.endTime,
+      name: template.name || '未命名班次',
+      startTime: template.startTime || '00:00',
+      endTime: template.endTime || '00:00',
       workHours: template.workHours || 0,
-      type: template.type,
-      color: template.color
+      type: template.type || '其他',
+      color: template.color || '#07c160'
     };
     
     const newShifts = {

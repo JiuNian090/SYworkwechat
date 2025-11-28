@@ -54,6 +54,77 @@
   transform: scale(1);
 }
 
+/* 自定义每周标准工时样式 */
+.custom-hours-setting {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 25rpx;
+  margin: 20rpx 0;
+  border: 1rpx solid #eee;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.custom-hours-label {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.custom-hours-label::before {
+  content: "⚙️";
+  margin-right: 10rpx;
+  font-size: 30rpx;
+}
+
+.custom-hours-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 400rpx;
+}
+
+.custom-hours-input {
+  flex: 1;
+  height: 80rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid #07c160;
+  border-radius: 16rpx 0 0 16rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  line-height: 80rpx;
+  background-color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+}
+
+.custom-hours-input:focus {
+  border-color: #07c160;
+  box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.3);
+  outline: none;
+}
+
+.custom-hours-unit {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+  background: #07c160;
+  color: white;
+  font-size: 28rpx;
+  font-weight: bold;
+  border-radius: 0 16rpx 16rpx 0;
+  box-sizing: border-box;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.1);
+}
+
 /* pages/statistics/statistics.wxss */
 /* 主色变量和统一按钮样式 */
 .main-color {
@@ -458,4 +529,205 @@
   line-height: 1.4;
   text-align: justify;
   text-indent: 2em;
+}
+
+/* 工时差额样式 */
+.summary-value.overtime {
+  color: #ff4d4f;
+  background: #fff2f0;
+  border: 1rpx solid #ffccc7;
+}
+
+.summary-value.shortage {
+  color: #1890ff;
+  background: #e6f7ff;
+  border: 1rpx solid #91d5ff;
+}
+
+/* 标准工时标签带设置按钮样式 */
+.standard-hours-label-with-setting {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+/* 标准工时带设置按钮样式 */
+.standard-hours-with-setting {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.setting-btn {
+  width: 60rpx;
+  height: 60rpx;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  font-size: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.setting-btn:active {
+  background: #f0f0f0;
+  transform: scale(0.95);
+}
+
+/* 弹窗样式 */
+.modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 20rpx;
+  width: 80%;
+  max-width: 500rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid #eee;
+  background: #f8f8f8;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-close-btn {
+  width: 60rpx;
+  height: 60rpx;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  font-size: 40rpx;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.modal-close-btn:active {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-content {
+  padding: 40rpx 30rpx;
+}
+
+.modal-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.modal-input {
+  flex: 1;
+  height: 80rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid #07c160;
+  border-radius: 16rpx 0 0 16rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  line-height: 80rpx;
+  background-color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+}
+
+.modal-input:focus {
+  border-color: #07c160;
+  box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.3);
+  outline: none;
+}
+
+.modal-input-unit {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+  background: #07c160;
+  color: white;
+  font-size: 28rpx;
+  font-weight: bold;
+  border-radius: 0 16rpx 16rpx 0;
+  box-sizing: border-box;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20rpx;
+  padding: 20rpx 30rpx;
+  border-top: 1rpx solid #eee;
+  background: #f8f8f8;
+}
+
+.modal-btn {
+  padding: 15rpx 30rpx;
+  border: none;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  min-width: 120rpx;
+}
+
+.cancel-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.cancel-btn:active {
+  background: #e0e0e0;
+}
+
+.confirm-btn {
+  background: #07c160;
+  color: white;
+}
+
+.confirm-btn:active {
+  background: #059e4d;
+}
+
+/* 标准工时带设置按钮样式 */
+.standard-hours-with-setting {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
 }
