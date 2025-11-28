@@ -59,23 +59,49 @@
       <text class="summary-value">{{statistics.offDays}} 天</text>
     </view>
     
+    <view class="summary-item">
+      <view class="standard-hours-label-with-setting">
+        <text class="summary-label">标准工时</text>
+        <button class="setting-btn" bindtap="showCustomHoursModal">⚙️</button>
+      </view>
+      <text class="summary-value">{{standardHours}} 小时</text>
+    </view>
     
+    <view class="summary-item">
+      <text class="summary-label">工时差额</text>
+      <text class="summary-value {{hourDifference >= 0 ? 'overtime' : 'shortage'}}">{{differenceText}}</text>
+    </view>
   </view>
 
   <view class="export-section">
-    <view class="input-item">
-      <input class="filename-input" placeholder="请输入导出文件名(不含扩展名)" value="{{exportFileName}}" bindinput="onFileNameInput"></input>
-    </view>
     <view class="button-group">
-      <button class="export-btn" bindtap="exportToCSV">导出为CSV文件</button>
-      <button class="share-btn" bindtap="shareCSV">分享CSV文件</button>
+      <button class="export-btn" bindtap="showFileNameModal">导出报表</button>
+      <button class="share-btn" bindtap="shareCSV">分享报表</button>
     </view>
     <view class="usage-guide">
       <text class="usage-guide-text">使用说明：
-        1. 输入文件名可以按照（姓名+日期范围），点击导出CSV文件;
-        2. 出现导出成功提示后，点击分享，可以分享给自己;
+        1. 点击导出报表，在弹窗中输入文件名（可按姓名+日期范围）;
+        2. 出现导出成功提示后，点击分享报表，可以分享给自己;
         3. 在聊天界面点击CSV，选择用WPS打开，即可生成报表！
         4. 下面排班详情会显示选定日期内的所有排班!</text>
+    </view>
+  </view>
+
+  <!-- 文件名设置弹窗 -->
+  <view class="modal-mask" wx:if="{{showFileNameModal}}" bindtap="hideFileNameModal"></view>
+  <view class="modal-container" wx:if="{{showFileNameModal}}">
+    <view class="modal-header">
+      <text class="modal-title">设置导出文件名</text>
+      <button class="modal-close-btn" bindtap="hideFileNameModal">×</button>
+    </view>
+    <view class="modal-content">
+      <view class="modal-input-group">
+        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput"></input>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn cancel-btn" bindtap="hideFileNameModal">取消</button>
+      <button class="modal-btn confirm-btn" bindtap="confirmExport">确定导出</button>
     </view>
   </view>
 
@@ -98,6 +124,25 @@
     
     <view wx:if="{{shifts.length === 0}}" class="empty-tip">
       所选日期范围内无排班记录
+    </view>
+  </view>
+
+  <!-- 自定义每周标准工时弹窗 -->
+  <view class="modal-mask" wx:if="{{showModal}}" bindtap="hideCustomHoursModal"></view>
+  <view class="modal-container" wx:if="{{showModal}}">
+    <view class="modal-header">
+      <text class="modal-title">设置每周标准工时</text>
+      <button class="modal-close-btn" bindtap="hideCustomHoursModal">×</button>
+    </view>
+    <view class="modal-content">
+      <view class="modal-input-group">
+        <input class="modal-input" type="number" placeholder="请输入每周标准工时" value="{{tempCustomWeeklyHours}}" bindinput="onTempCustomHoursChange" min="0" step="0.5"></input>
+        <text class="modal-input-unit">小时</text>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn cancel-btn" bindtap="hideCustomHoursModal">取消</button>
+      <button class="modal-btn confirm-btn" bindtap="confirmCustomHours">确定</button>
     </view>
   </view>
 </view>

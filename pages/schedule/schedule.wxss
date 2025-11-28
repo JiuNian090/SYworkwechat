@@ -781,3 +781,50 @@
   font-size: 24rpx;
   padding: 30rpx 0;
 }
+
+/* 本周工时统计样式 */
+.week-statistics {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: white;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-top: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  border: 1rpx solid #eee;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.stat-label {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: bold;
+}
+
+.stat-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  background: #f0fff0;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid #d0f0d0;
+}
+
+.stat-value.overtime {
+  color: #ff4d4f;
+  background: #fff2f0;
+  border: 1rpx solid #ffccc7;
+}
+
+.stat-value.shortage {
+  color: #1890ff;
+  background: #e6f7ff;
+  border: 1rpx solid #91d5ff;
+}

@@ -4,10 +4,19 @@ Page({
     startDate: '',
     endDate: '',
     totalHours: 0,
+    standardHours: 0,
+    hourDifference: 0,
+    differenceText: '',
+    customWeeklyHours: 35, // 自定义每周标准工时，默认35小时   dailyStandardHours: 5, // 每天标准工时，根据customWeeklyHours计算
+    showModal: false, // 控制每周标准工时弹窗显示/隐藏
+    tempCustomWeeklyHours: 35, // 临时存储用户输入的每周标准工时
     exportFileName: '',
     lastExportedFilePath: '', // 用于存储上次导出的文件路径
     shifts: [], // 用于存储排班数据
     selectedQuickBtn: 'thisWeek', // 用于跟踪当前选中的快速选择按钮
+    showFileNameModal: false, // 控制文件名设置弹窗显示/隐藏
+    tempFileName: '', // 临时存储用户输入的文件名
+    defaultFileNameHint: '', // 默认文件名提示
     statistics: {
       totalDays: 0,
       workDays: 0,
@@ -149,16 +158,89 @@ Page({
     this.calculateStatistics();
   },
   
-  // 文件名输入事件
-  onFileNameInput(e) {
+  // 显示文件名设置弹窗
+  showFileNameModal() {
+    // 设置默认文件名提示：用户名+排班统计
+    const username = wx.getStorageSync('username') || '未命名用户';
+    const defaultFileNameHint = `${username}+排班统计`;
+    
     this.setData({
-      exportFileName: e.detail.value
+      tempFileName: '',
+      defaultFileNameHint: defaultFileNameHint,
+      showFileNameModal: true
     });
+  },
+
+  // 隐藏文件名设置弹窗
+  hideFileNameModal() {
+    this.setData({
+      showFileNameModal: false
+    });
+  },
+
+  // 处理临时文件名输入
+  onTempFileNameInput(e) {
+    this.setData({
+      tempFileName: e.detail.value
+    });
+  },
+
+  // 确认导出
+  confirmExport() {
+    // 获取用户输入的文件名
+    const customFileName = this.data.tempFileName;
+    
+    // 隐藏弹窗
+    this.hideFileNameModal();
+    
+    // 调用导出数据方法
+    this.exportToCSV(customFileName);
+  },
+
+  // 显示自定义每周标准工时弹窗
+  showCustomHoursModal() {
+    this.setData({
+      tempCustomWeeklyHours: this.data.customWeeklyHours,
+      showModal: true
+    });
+  },
+
+  // 隐藏自定义每周标准工时弹窗
+  hideCustomHoursModal() {
+    this.setData({
+      showModal: false
+    });
+  },
+
+  // 临时存储用户输入的每周标准工时
+  onTempCustomHoursChange(e) {
+    const tempCustomWeeklyHours = e.detail.value;
+    this.setData({
+      tempCustomWeeklyHours: tempCustomWeeklyHours
+    });
+  },
+
+  // 确认自定义每周标准工时设置
+  confirmCustomHours() {
+    const customWeeklyHours = parseFloat(this.data.tempCustomWeeklyHours) || 35;
+    const dailyStandardHours = customWeeklyHours / 7;
+    
+    this.setData({
+      customWeeklyHours: customWeeklyHours,
+      dailyStandardHours: dailyStandardHours,
+      showModal: false
+    });
+    
+    // 保存到本地存储
+    wx.setStorageSync('customWeeklyHours', customWeeklyHours);
+    
+    // 重新计算统计数据
+    this.calculateStatistics();
   },
 
   // 计算统计数据
   calculateStatistics() {
-    const { startDate, endDate } = this.data;
+    const { startDate, endDate, customWeeklyHours, dailyStandardHours } = this.data;
 
     if (!startDate || !endDate) return;
 
@@ -172,6 +254,9 @@ Page({
       // 遍历日期范围内的所有排班
       const start = new Date(startDate);
       const end = new Date(endDate);
+      
+      // 计算统计周期内的天数
+      const dayCount = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
       
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = this.formatDate(d);
@@ -195,9 +280,37 @@ Page({
         }
       }
       
+      // 计算标准工时和工时差额
+      let standardHours = 0;
+      
+      // 根据统计类型计算标准工时
+      if (dayCount === 7) {
+        // 整周统计（上周、本周、下周）：使用自定义每周标准工时
+        standardHours = customWeeklyHours;
+      } else {
+        // 自定义日期范围或本月统计：使用自定义每天标准工时
+        standardHours = dayCount * dailyStandardHours;
+      }
+      
+      // 计算工时差额
+      const hourDifference = totalHours - standardHours;
+      
+      // 生成差额文本描述
+      let differenceText = '';
+      if (hourDifference > 0) {
+        differenceText = `超额 ${hourDifference.toFixed(1)} 小时`;
+      } else if (hourDifference < 0) {
+        differenceText = `差额 ${hourDifference.toFixed(1)} 小时`;
+      } else {
+        differenceText = '工时正好';
+      }
+      
       this.setData({
         shifts: shiftsInRange,
         totalHours: totalHours.toFixed(1),
+        standardHours: standardHours.toFixed(1),
+        hourDifference: hourDifference.toFixed(1),
+        differenceText: differenceText,
         statistics: {
           totalDays: shiftsInRange.length,
           workDays: workDays,
@@ -214,8 +327,8 @@ Page({
   },
 
   // 导出为CSV文件
-  exportToCSV() {
-    const { startDate, endDate, shifts, totalHours, statistics, exportFileName } = this.data;
+  exportToCSV(customFileName) {
+    const { startDate, endDate, shifts, totalHours, standardHours, hourDifference, statistics, customWeeklyHours } = this.data;
 
     wx.showLoading({
       title: '正在导出...'
@@ -228,7 +341,8 @@ Page({
       // 添加增强的标题效果
       csvContent += '"排班统计报表"\n';
       csvContent += '"=================="\n';
-      csvContent += '"统计时间范围: ' + startDate + ' 至 ' + endDate + '"\n\n';
+      csvContent += '"统计时间范围: ' + startDate + ' 至 ' + endDate + '"\n';
+      csvContent += '"每周标准工时: ' + customWeeklyHours + ' 小时"\n\n';
       
       // 添加表头
       csvContent += '"日期","班次名称","工时","班次类型","开始时间","结束时间"\n';
@@ -269,12 +383,14 @@ Page({
       csvContent += '\n';
       
       // 添加统计摘要
-      csvContent += '"统计区间","总工时","排班天数","工作班次","休息日"\n';
-      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + statistics.totalDays + '","' + statistics.workDays + '","' + statistics.offDays + '"\n';
+      csvContent += '"统计区间","总工时","标准工时","工时差额","排班天数","工作班次","休息日"\n';
+      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + standardHours + '","' + hourDifference + '","' + statistics.totalDays + '","' + statistics.workDays + '","' + statistics.offDays + '"\n';
       
-      // 获取自定义文件名
-      const customFileName = exportFileName;
-      const fileName = customFileName ? customFileName : `排班统计_${startDate}_至_${endDate}`;
+      // 获取用户名
+      const username = wx.getStorageSync('username') || '未命名用户';
+      
+      // 生成默认文件名：用户名+时间段
+      const fileName = customFileName ? customFileName : `${username}_排班统计_${startDate}_至_${endDate}`;
       
       // 创建临时文件
       const fs = wx.getFileSystemManager();
@@ -317,7 +433,7 @@ Page({
 
   // 分享CSV文件
   shareCSV() {
-    const { lastExportedFilePath, exportFileName, startDate, endDate } = this.data;
+    const { lastExportedFilePath, startDate, endDate } = this.data;
     
     // 如果没有导出过文件，提示用户先导出
     if (!lastExportedFilePath) {
@@ -332,9 +448,8 @@ Page({
       title: '正在分享...'
     });
     
-    // 获取文件名
-    const customFileName = exportFileName;
-    const fileName = customFileName ? customFileName : `排班统计_${startDate}_至_${endDate}`;
+    // 从文件路径中提取文件名
+    const fileName = lastExportedFilePath.substring(lastExportedFilePath.lastIndexOf('/') + 1, lastExportedFilePath.lastIndexOf('.'));
     
     // 分享文件
     wx.shareFileMessage({
@@ -359,6 +474,15 @@ Page({
   },
 
   onLoad() {
+    // 页面加载时读取本地存储的自定义每周标准工时
+    const savedCustomWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
+    const dailyStandardHours = savedCustomWeeklyHours / 7;
+    
+    this.setData({
+      customWeeklyHours: savedCustomWeeklyHours,
+      dailyStandardHours: dailyStandardHours
+    });
+    
     // 页面加载时默认选定本周
     this.selectThisWeek();
   },

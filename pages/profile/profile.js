@@ -9,32 +9,130 @@ Page({
     exportSuccess: false,
     exportFail: false,
     loading: false,
+    username: '', // 用户名
+    avatarText: '用', // 头像文字
+    showUsernameModal: false, // 用户名设置弹窗显示状态
+    tempUsername: '', // 临时存储用户输入的用户名
+    showFileNameModal: false, // 文件名设置弹窗显示状态
+    tempFileName: '', // 临时存储用户输入的文件名
+    defaultFileNameHint: '' // 默认文件名提示
   },
 
 
 
   onLoad() {
-    // 用户信息相关代码已删除
-  },
-
-
-
-  
-
-
-
-
-
-  // 处理文件名输入
-  onFileNameInput(e) {
+    // 读取本地存储的用户名
+    const username = wx.getStorageSync('username') || '';
+    // 生成头像文字
+    const avatarText = this.generateAvatarText(username);
     this.setData({
-      exportFileName: e.detail.value
+      username: username,
+      avatarText: avatarText
     });
   },
 
+  // 生成头像文字
+  generateAvatarText(username) {
+    if (!username) {
+      return '用';
+    }
+    // 取用户名的第一个字符作为头像文字
+    return username.charAt(0).toUpperCase();
+  },
+
+  // 显示用户名设置弹窗
+  showUsernameModal() {
+    this.setData({
+      tempUsername: this.data.username,
+      showUsernameModal: true
+    });
+  },
+
+  // 隐藏用户名设置弹窗
+  hideUsernameModal() {
+    this.setData({
+      showUsernameModal: false
+    });
+  },
+
+  // 处理临时用户名输入
+  onTempUsernameInput(e) {
+    this.setData({
+      tempUsername: e.detail.value
+    });
+  },
+
+  // 确认用户名设置
+  confirmUsername() {
+    const username = this.data.tempUsername;
+    if (!username.trim()) {
+      wx.showToast({
+        title: '用户名不能为空',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 生成新的头像文字
+    const avatarText = this.generateAvatarText(username);
+    
+    this.setData({
+      username: username,
+      avatarText: avatarText,
+      showUsernameModal: false
+    });
+    
+    // 保存到本地存储
+    wx.setStorageSync('username', username);
+    
+    wx.showToast({
+      title: '保存成功',
+      icon: 'success'
+    });
+  },
+
+  // 显示文件名设置弹窗
+  showFileNameModal() {
+    // 设置默认文件名提示：用户名+备份
+    const username = this.data.username || '未命名用户';
+    const defaultFileNameHint = `${username}+备份`;
+    
+    this.setData({
+      tempFileName: '',
+      defaultFileNameHint: defaultFileNameHint,
+      showFileNameModal: true
+    });
+  },
+
+  // 隐藏文件名设置弹窗
+  hideFileNameModal() {
+    this.setData({
+      showFileNameModal: false
+    });
+  },
+
+  // 处理临时文件名输入
+  onTempFileNameInput(e) {
+    this.setData({
+      tempFileName: e.detail.value
+    });
+  },
+
+  // 确认导出
+  confirmExport() {
+    // 获取用户输入的文件名
+    const customFileName = this.data.tempFileName;
+    
+    // 隐藏弹窗
+    this.hideFileNameModal();
+    
+    // 调用导出数据方法
+    this.exportData(customFileName);
+  },
+
   
 
-  exportData() {
+  exportData(customFileName) {
     wx.showLoading({
       title: '正在导出...'
     });
@@ -44,10 +142,14 @@ Page({
       const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
       const shifts = wx.getStorageSync('shifts') || {};
       
+      // 获取自定义每周标准工时
+      const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
+      
       // 构造导出数据结构
       const data = {
         shiftTemplates: shiftTemplates,
-        shifts: shifts
+        shifts: shifts,
+        customWeeklyHours: customWeeklyHours
       };
       
       // 添加统计数据（根据排班实时计算）
@@ -82,9 +184,20 @@ Page({
       
       const jsonData = JSON.stringify(data, null, 2);
       
-      // 获取自定义文件名
-      const customFileName = this.data.exportFileName;
-      const fileName = customFileName ? customFileName : `sywork_backup_${Date.now()}`;
+      // 获取用户名
+      const username = this.data.username || '未命名用户';
+      
+      // 生成默认文件名：用户名+备份时间
+      const backupTime = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).replace(/[\/\s:]/g, '-');
+      const fileName = customFileName ? customFileName : `${username}_备份_${backupTime}`;
       
       // 创建临时文件
       const fs = wx.getFileSystemManager();
@@ -214,6 +327,9 @@ Page({
               }
               if (data.shifts) {
                 wx.setStorageSync('shifts', data.shifts);
+              }
+              if (data.customWeeklyHours !== undefined) {
+                wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
               }
               
               wx.showToast({
