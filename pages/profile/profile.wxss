@@ -324,14 +324,14 @@
 /* 用户板块样式 */
 .user-section {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 40rpx 30rpx;
+  padding: 20rpx 30rpx;
 }
 
 .user-info {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20rpx;
   cursor: pointer;
   padding: 20rpx;
