@@ -39,7 +39,7 @@
   <view class="section">
     <text class="section-title">项目介绍</text>
     <view class="intro-content">
-      <text>这是一个为思语小姐姐创建的便捷工时/排班管理系统，功能正在逐步完善，若您觉得好用，可以分享此小程序也可以支持作者！如有问题反馈欢迎点击下方的联系乐乐。</text>
+      <text>这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，若您觉得好用，可以分享此小程序以支持作者！如有问题反馈欢迎点击下方的联系乐乐。</text>
     </view>
   </view>
 
@@ -60,15 +60,15 @@
         <text class="highlight">(可以自创排班模板，输入文件名"班次模板")</text>
       </view>
       <view class="guide-item">
-        <text>2. 分享数据：导出后可快速分享给好友</text>
-        <text class="highlight">(显示导出成功后，点击分享数据可以把”模板”发给同事)</text>
+        <text>2. 分享数据：导出后可快速分享给好友，也可以分享到”文件传输助手”或者小号，用来备份。</text>
+        <text class="highlight">(显示导出成功后，点击分享数据可以把”模板”发给同事，也可以当作每周备份)</text>
       </view>
       <view class="guide-item">
         <text>3. 导入数据：选择好友通过微信分享给你的json文件，“班次模板”。</text>
-        <text class="highlight">(点击导入，选择同事聊天，找到刚刚分享给你的json文件，即可导入到本地)</text>
+        <text class="highlight">(可以将json文件转发给“文件传输助手”，点击导入，选择“文件传输助手”，找到对应的json文件，即可替换本地的模板和排班)</text>
       </view>
       <view class="guide-item">
-        <text>4. 清空数据：请谨慎操作，此操作不可恢复</text>
+        <text>4. 清空数据：清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
       </view>
     </view>
   </view>
@@ -100,7 +100,7 @@
       <button class="action-btn donate-btn" bindtap="donate">捐赠支持</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
-      <text>如果您觉得这款排班系统对您有帮助，请分享给更多需要的同事！您的支持是我持续开发和维护的动力。</text>
+      <text>如果您觉得这款排班系统对您有帮助，请分享给更多需要的同事！您的分享支持是我持续开发和维护的动力。</text>
     </view>
   </view>
 </view>
