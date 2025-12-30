@@ -93,6 +93,17 @@
       </view>
     </view>
     
+    <!-- 当月工时统计 -->
+    <view class="week-statistics">
+      <view class="stat-item">
+        <text class="stat-label">当月工时：</text>
+        <text class="stat-value">{{monthTotalHours}} 小时</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">{{monthDifferenceType}}：</text>
+        <text class="stat-value {{monthDifferenceType === '超额' ? 'overtime' : 'shortage'}}">{{monthDifferenceValue}} 小时</text>
+      </view>
+    </view>
 
   </view>
 
