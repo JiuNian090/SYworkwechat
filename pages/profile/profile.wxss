@@ -465,6 +465,13 @@
   transform: scale(0.95);
 }
 
+/* 选中表情项样式 */
+.emoji-item-selected {
+  background: #e6f7ff;
+  border: 2rpx solid #1890ff;
+  box-shadow: 0 0 0 4rpx rgba(24, 144, 255, 0.1);
+}
+
 .emoji-icon {
   font-size: 48rpx;
 }

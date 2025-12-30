@@ -106,7 +106,7 @@
     </view>
     <view class="modal-content emoji-content">
       <view class="emoji-grid">
-        <view class="emoji-item" wx:for="{{emojiList}}" wx:key="index" bindtap="selectEmoji" data-emoji="{{item}}">
+        <view class="emoji-item {{selectedEmoji === item ? 'emoji-item-selected' : ''}}" wx:for="{{emojiList}}" wx:key="index" bindtap="selectEmoji" data-emoji="{{item}}">
           <text class="emoji-icon">{{item}}</text>
         </view>
       </view>
