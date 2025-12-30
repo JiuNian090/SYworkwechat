@@ -21,7 +21,11 @@ Page({
     weekDifference: 0, // 本周工时差额/超额
     differenceType: '', // 差额类型：超额或差额
     differenceValue: '0.0', // 差额值，显示为绝对值
-    customWeeklyHours: 35 // 自定义每周标准工时，默认35小时
+    customWeeklyHours: 35, // 自定义每周标准工时，默认35小时
+    monthTotalHours: 0, // 当月总工时
+    monthDifference: 0, // 当月工时差额/超额
+    monthDifferenceType: '', // 当月差额类型：超额或差额
+    monthDifferenceValue: '0.0' // 当月差额值，显示为绝对值
   },
 
   onLoad() {
@@ -387,10 +391,39 @@ Page({
     const today = new Date();
     const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
     
+    // 计算当月总工时
+    let monthTotalHours = 0;
+    monthDates.forEach(week => {
+      week.forEach(day => {
+        if (day.isCurrentMonth && day.shift) {
+          monthTotalHours += parseFloat(day.shift.workHours) || 0;
+        }
+      });
+    });
+    
+    // 计算当月标准工时（每周标准工时 * 当月周数）
+    // 计算当月天数
+    const daysInMonth = lastDay.getDate();
+    // 计算当月周数（按实际天数计算，每周7天）
+    const weeksInMonth = daysInMonth / 7;
+    // 当月标准工时 = 每周标准工时 * 当月周数
+    const monthStandardHours = this.data.customWeeklyHours * weeksInMonth;
+    
+    // 计算当月工时差额/超额
+    const monthDifference = monthTotalHours - monthStandardHours;
+    
+    // 计算差额类型和显示值
+    const monthDifferenceType = monthDifference >= 0 ? '超额' : '差额';
+    const monthDifferenceValue = Math.abs(monthDifference).toFixed(1);
+    
     this.setData({
       monthDates: monthDates,
       currentMonthShiftColor: monthShiftColor,
-      isCurrentMonth: isCurrentMonth
+      isCurrentMonth: isCurrentMonth,
+      monthTotalHours: monthTotalHours.toFixed(1),
+      monthDifference: monthDifference,
+      monthDifferenceType: monthDifferenceType,
+      monthDifferenceValue: monthDifferenceValue
     });
   },
 

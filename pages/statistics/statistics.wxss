@@ -571,11 +571,25 @@
   justify-content: center;
   border-radius: 50%;
   transition: all 0.3s ease;
+  /* 移除所有默认样式 */
+  outline: none;
+  box-shadow: none;
+  -webkit-appearance: none;
+  /* 确保按钮完全透明 */
+  background-color: transparent;
+  /* 确保按钮融入父元素背景 */
+  position: relative;
+  z-index: 1;
 }
 
 .setting-btn:active {
   background: #f0f0f0;
   transform: scale(0.95);
+}
+
+/* 确保按钮在hover时完全融入父元素背景 */
+.summary-item:hover .setting-btn {
+  background: transparent;
 }
 
 /* 弹窗样式 */
