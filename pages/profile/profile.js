@@ -14,6 +14,7 @@ Page({
     avatarEmoji: '', // 头像表情
     avatarType: 'text', // 头像类型：text或emoji
     emojiText: '', // 表情对应的文字信息
+    emojiEmotion: '', // 表情对应的情绪类型
     showUsernameModal: false, // 用户名设置弹窗显示状态
     tempUsername: '', // 临时存储用户输入的用户名
     showFileNameModal: false, // 文件名设置弹窗显示状态
@@ -109,7 +110,98 @@ Page({
       '🤒': '发烧',
       '🤕': '受伤',
       '🤑': '金钱眼'
-    } // 表情对应的文字信息
+    }, // 表情对应的文字信息
+    emojiEmotionMap: {
+      // 积极情绪
+      '😊': 'positive',
+      '😃': 'positive',
+      '😄': 'positive',
+      '😁': 'positive',
+      '😆': 'positive',
+      '🤣': 'positive',
+      '😂': 'positive',
+      '🙂': 'positive',
+      '😉': 'positive',
+      '😌': 'positive',
+      '😍': 'positive',
+      '🥰': 'positive',
+      '😘': 'positive',
+      '😗': 'positive',
+      '😙': 'positive',
+      '😚': 'positive',
+      '😋': 'positive',
+      '😛': 'positive',
+      '😝': 'positive',
+      '😜': 'positive',
+      '🤪': 'positive',
+      '😎': 'positive',
+      '🤩': 'positive',
+      '🥳': 'positive',
+      '😏': 'positive',
+      '🤗': 'positive',
+      '🤭': 'positive',
+      '🤑': 'positive',
+      // 中性情绪
+      '😅': 'neutral',
+      '🙃': 'neutral',
+      '🤨': 'neutral',
+      '🧐': 'neutral',
+      '🤓': 'neutral',
+      '🤔': 'neutral',
+      '🤫': 'neutral',
+      '😶': 'neutral',
+      '😐': 'neutral',
+      '😑': 'neutral',
+      '😬': 'neutral',
+      '🙄': 'neutral',
+      '😯': 'neutral',
+      '😮': 'neutral',
+      '🥱': 'neutral',
+      '😴': 'neutral',
+      '🤤': 'neutral',
+      '😪': 'neutral',
+      '😵': 'neutral',
+      '🤐': 'neutral',
+      '🥴': 'neutral',
+      '😷': 'neutral',
+      '🤒': 'neutral',
+      '🤕': 'neutral',
+      '😧': 'neutral',
+      '😲': 'neutral',
+      // 消极情绪
+      '😒': 'negative',
+      '😞': 'negative',
+      '😔': 'negative',
+      '😟': 'negative',
+      '😕': 'negative',
+      '🙁': 'negative',
+      '☹️': 'negative',
+      '😣': 'negative',
+      '😖': 'negative',
+      '😫': 'negative',
+      '😩': 'negative',
+      '🥺': 'negative',
+      '😢': 'negative',
+      '😭': 'negative',
+      '😤': 'negative',
+      '😠': 'negative',
+      '😡': 'negative',
+      '🤬': 'negative',
+      '🤯': 'negative',
+      '😳': 'negative',
+      '🥵': 'negative',
+      '🥶': 'negative',
+      '😱': 'negative',
+      '😨': 'negative',
+      '😰': 'negative',
+      '😥': 'negative',
+      '😓': 'negative',
+      '🤥': 'negative',
+      '😦': 'negative',
+      '🤢': 'negative',
+      '🤮': 'negative',
+      '🤧': 'negative'
+    } // 表情对应的情绪类型
   },
 
 
@@ -124,15 +216,17 @@ Page({
     // 生成头像文字
     const avatarText = this.generateAvatarText(username);
     
-    // 获取表情对应的文字
+    // 获取表情对应的文字和情绪类型
     const emojiText = avatarType === 'emoji' && avatarEmoji ? this.data.emojiTextMap[avatarEmoji] || '' : '';
+    const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? this.data.emojiEmotionMap[avatarEmoji] || 'neutral' : '';
     
     this.setData({
       username: username,
       avatarText: avatarText,
       avatarEmoji: avatarEmoji,
       avatarType: avatarType,
-      emojiText: emojiText
+      emojiText: emojiText,
+      emojiEmotion: emojiEmotion
     });
   },
 
@@ -230,13 +324,15 @@ Page({
       return;
     }
     
-    // 获取表情对应的文字
+    // 获取表情对应的文字和情绪类型
     const emojiText = this.data.emojiTextMap[emoji] || '';
+    const emojiEmotion = this.data.emojiEmotionMap[emoji] || 'neutral';
     
     this.setData({
       avatarEmoji: emoji,
       avatarType: 'emoji',
       emojiText: emojiText,
+      emojiEmotion: emojiEmotion,
       showEmojiModal: false
     });
     
@@ -258,7 +354,8 @@ Page({
     this.setData({
       avatarType: 'text',
       avatarText: avatarText,
-      emojiText: ''
+      emojiText: '',
+      emojiEmotion: ''
     });
     
     // 保存到本地存储

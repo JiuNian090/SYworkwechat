@@ -404,12 +404,29 @@
 .avatar-emoji-text {
   font-size: 24rpx;
   color: #666;
-  background: #f0f0f0;
   padding: 5rpx 15rpx;
   border-radius: 15rpx;
   font-weight: 500;
   align-self: flex-start;
   margin-top: 10rpx;
+}
+
+/* 积极情绪背景 */
+.emoji-emotion-positive {
+  background: #f0fff0;
+  color: #07c160;
+}
+
+/* 中性情绪背景 */
+.emoji-emotion-neutral {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* 消极情绪背景 */
+.emoji-emotion-negative {
+  background: #fff0f0;
+  color: #ff4d4f;
 }
 
 /* 表情头像样式 */

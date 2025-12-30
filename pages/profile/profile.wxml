@@ -13,7 +13,7 @@
       <view class="user-details">
         <text class="username-display" bindtap="showUsernameModal">{{username || '点击自定义用户名'}}</text>
         <view class="avatar-options">
-          <text class="avatar-emoji-text" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
+          <text class="avatar-emoji-text emoji-emotion-{{emojiEmotion}}" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
         </view>
       </view>
     </view>
