@@ -890,10 +890,12 @@ Page({
       // 解析版本号和日期
       const lines = versionContent.split('\n');
       const versionLine = lines[0].trim();
-      const versionMatch = versionLine.match(/([vV]\d+\.\d+\.\d+\.\d+)\s+\((\d{4}-\d{2}-\d{2})\)/);
+      
+      // 支持两种版本号格式：v.x.w.z 和 v.x.w
+      const versionMatch = versionLine.match(/([vV]\d+\.\d+\.\d+)(?:\.\d+)?\s+\((\d{4}-\d{2}-\d{2})\)/);
       
       if (versionMatch) {
-        const version = versionMatch[1];
+        const version = versionMatch[1]; // 只保留v.x.w格式，去掉.z部分
         const date = versionMatch[2];
         
         // 提取版本内容（去掉版本号和日期行）
