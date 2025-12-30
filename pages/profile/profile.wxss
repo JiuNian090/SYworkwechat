@@ -431,7 +431,7 @@
 
 /* 表情头像样式 */
 .avatar-emoji {
-  font-size: 60rpx;
+  font-size: 80rpx;
   line-height: 120rpx;
   text-align: center;
   width: 100%;
