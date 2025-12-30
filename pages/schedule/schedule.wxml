@@ -19,7 +19,7 @@
     <view class="week-header">
       <button class="nav-btn" bindtap="prevWeek">上一周</button>
       <view class="week-title-container">
-        <text class="current-week {{isCurrentWeek ? 'current-week-highlight' : 'other-week'}}" style="{{isCurrentWeek ? 'background-color:' + currentWeekShiftColor + ';' : 'color: #000;'}}">{{currentWeekTitle}}</text>
+        <text class="current-week {{isCurrentWeek ? 'current-week-highlight' : 'other-week'}}" style="{{isCurrentWeek ? 'background-color:' + currentWeekShiftColor + ';' : 'color: #000;'}}" bindtap="goToToday">{{currentWeekTitle}}</text>
       </view>
       <button class="nav-btn" bindtap="nextWeek">下一周</button>
     </view>
@@ -67,7 +67,7 @@
     <view class="month-header">
       <button class="nav-btn" bindtap="prevMonth">上一月</button>
       <view class="month-title-container">
-        <text class="current-month {{isCurrentMonth ? 'current-month-highlight' : ''}}" style="{{isCurrentMonth ? 'background-color:' + currentMonthShiftColor + '; color: #fff;' : ''}}">{{currentMonthTitle}}</text>
+        <text class="current-month {{isCurrentMonth ? 'current-month-highlight' : ''}}" style="{{isCurrentMonth ? 'background-color:' + currentMonthShiftColor + '; color: #fff;' : ''}}" bindtap="goToToday">{{currentMonthTitle}}</text>
       </view>
       <button class="nav-btn" bindtap="nextMonth">下一月</button>
     </view>
