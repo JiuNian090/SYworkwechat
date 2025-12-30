@@ -51,10 +51,15 @@
     <!-- 本周工时统计 -->
     <view class="week-statistics">
       <view class="stat-item">
+        <text class="stat-avatar">
+          <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+          <text wx:else>{{avatarEmoji}}</text>
+        </text>
         <text class="stat-label">本周工时：</text>
         <text class="stat-value">{{weekTotalHours}} 小时</text>
       </view>
       <view class="stat-item">
+        <text class="stat-avatar"></text>
         <text class="stat-label">{{differenceType}}：</text>
         <text class="stat-value {{differenceType === '超额' ? 'overtime' : 'shortage'}}">{{differenceValue}} 小时</text>
       </view>
@@ -96,10 +101,15 @@
     <!-- 当月工时统计 -->
     <view class="week-statistics">
       <view class="stat-item">
+        <text class="stat-avatar">
+          <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+          <text wx:else>{{avatarEmoji}}</text>
+        </text>
         <text class="stat-label">当月工时：</text>
         <text class="stat-value">{{monthTotalHours}} 小时</text>
       </view>
       <view class="stat-item">
+        <text class="stat-avatar"></text>
         <text class="stat-label">{{monthDifferenceType}}：</text>
         <text class="stat-value {{monthDifferenceType === '超额' ? 'overtime' : 'shortage'}}">{{monthDifferenceValue}} 小时</text>
       </view>

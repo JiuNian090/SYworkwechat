@@ -340,6 +340,9 @@ Page({
     wx.setStorageSync('avatarType', 'emoji');
     wx.setStorageSync('avatarEmoji', emoji);
     
+    // 通知其他页面更新头像信息
+    this.updateAvatarInOtherPages();
+    
     wx.showToast({
       title: '表情已设置为头像',
       icon: 'success'
@@ -361,6 +364,9 @@ Page({
     // 保存到本地存储
     wx.setStorageSync('avatarType', 'text');
     wx.removeStorageSync('avatarEmoji');
+    
+    // 通知其他页面更新头像信息
+    this.updateAvatarInOtherPages();
     
     wx.showToast({
       title: '已切换到文字头像',
@@ -830,6 +836,28 @@ Page({
             }
           });
         }
+      }
+    });
+  },
+
+  // 通知其他页面更新头像信息
+  updateAvatarInOtherPages() {
+    // 获取当前所有页面实例
+    const pages = getCurrentPages();
+    const avatarType = this.data.avatarType;
+    const avatarText = this.data.avatarText;
+    const avatarEmoji = this.data.avatarEmoji;
+    
+    // 遍历所有页面，更新头像信息
+    pages.forEach(page => {
+      // 排除当前页面
+      if (page.route !== 'pages/profile/profile') {
+        // 更新头像信息
+        page.setData({
+          avatarType: avatarType,
+          avatarText: avatarText,
+          avatarEmoji: avatarEmoji
+        });
       }
     });
   },
