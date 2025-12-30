@@ -13,7 +13,7 @@ function syncChangelog() {
     fs.readFile(changelogPath, 'utf8', (err, data) => {
         if (err) {
             console.error('读取CHANGELOG.md失败:', err);
-            return;
+            process.exit(1);
         }
         
         // 生成utils/changelog.js文件内容
@@ -28,23 +28,31 @@ module.exports = {
         fs.writeFile(utilsPath, changelogContent, 'utf8', (err) => {
             if (err) {
                 console.error('写入utils/changelog.js失败:', err);
-                return;
+                process.exit(1);
             }
             
             console.log('CHANGELOG.md内容已成功同步到utils/changelog.js!');
+            process.exit(0);
         });
     });
 }
 
-// 立即执行一次同步
-syncChangelog();
+// 检查是否在pre-commit钩子中运行
+// 当作为pre-commit钩子运行时，不启动文件监听
+if (process.argv.includes('--hook')) {
+    // 只执行一次同步，然后退出
+    syncChangelog();
+} else {
+    // 立即执行一次同步
+    syncChangelog();
 
-// 监听CHANGELOG.md文件变化，实现自动同步
-fs.watch(changelogPath, (eventType, filename) => {
-    if (eventType === 'change') {
-        console.log('检测到CHANGELOG.md文件变化，开始同步...');
-        syncChangelog();
-    }
-});
+    // 监听CHANGELOG.md文件变化，实现自动同步
+    fs.watch(changelogPath, (eventType, filename) => {
+        if (eventType === 'change') {
+            console.log('检测到CHANGELOG.md文件变化，开始同步...');
+            syncChangelog();
+        }
+    });
 
-console.log('已启动CHANGELOG.md文件监听，将自动同步更新日志内容...');
+    console.log('已启动CHANGELOG.md文件监听，将自动同步更新日志内容...');
+}
