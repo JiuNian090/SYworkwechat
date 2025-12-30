@@ -11,11 +11,105 @@ Page({
     loading: false,
     username: '', // 用户名
     avatarText: '用', // 头像文字
+    avatarEmoji: '', // 头像表情
+    avatarType: 'text', // 头像类型：text或emoji
+    emojiText: '', // 表情对应的文字信息
     showUsernameModal: false, // 用户名设置弹窗显示状态
     tempUsername: '', // 临时存储用户输入的用户名
     showFileNameModal: false, // 文件名设置弹窗显示状态
     tempFileName: '', // 临时存储用户输入的文件名
-    defaultFileNameHint: '' // 默认文件名提示
+    defaultFileNameHint: '', // 默认文件名提示
+    showEmojiModal: false, // 表情选择弹窗显示状态
+    emojiList: ['😊', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😪', '😵', '🤐', '🥴', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表
+    selectedEmoji: '', // 当前选中的表情
+    emojiTextMap: {
+      '😊': '微笑',
+      '😃': '开心',
+      '😄': '大笑',
+      '😁': '露齿笑',
+      '😆': '大笑',
+      '😅': '汗颜',
+      '🤣': '捧腹大笑',
+      '😂': '笑哭',
+      '🙂': '略微微笑',
+      '🙃': '倒脸',
+      '😉': '眨眼',
+      '😌': '安心',
+      '😍': '爱心眼',
+      '🥰': '爱慕',
+      '😘': '飞吻',
+      '😗': '亲吻',
+      '😙': '亲吻',
+      '😚': '闭唇亲吻',
+      '😋': '美味',
+      '😛': '吐舌',
+      '😝': '调皮吐舌',
+      '😜': '眨眼吐舌',
+      '🤪': '搞怪',
+      '🤨': '挑眉',
+      '🧐': '思考',
+      '🤓': '书呆子',
+      '😎': '酷',
+      '🤩': '崇拜',
+      '🥳': '庆祝',
+      '😏': '得意',
+      '😒': '无语',
+      '😞': '失望',
+      '😔': '难过',
+      '😟': '担心',
+      '😕': '困惑',
+      '🙁': '沮丧',
+      '☹️': '不满',
+      '😣': '痛苦',
+      '😖': '折磨',
+      '😫': '压力',
+      '😩': '好累',
+      '🥺': '恳求',
+      '😢': '哭泣',
+      '😭': '痛哭',
+      '😤': '生气',
+      '😠': '愤怒',
+      '😡': '暴怒',
+      '🤬': '暴怒',
+      '🤯': '爆炸',
+      '😳': '脸红',
+      '🥵': '热',
+      '🥶': '冷',
+      '😱': '尖叫',
+      '😨': '害怕',
+      '😰': '冷汗',
+      '😥': '担忧',
+      '😓': '汗',
+      '🤗': '拥抱',
+      '🤔': '思考',
+      '🤭': '捂嘴笑',
+      '🤫': '安静',
+      '🤥': '说谎',
+      '😶': '无语',
+      '😐': '中性',
+      '😑': '无奈',
+      '😬': '尴尬',
+      '🙄': '翻白眼',
+      '😯': '惊讶',
+      '😦': '震惊',
+      '😧': '惊恐',
+      '😮': '惊讶',
+      '😲': '震惊',
+      '🥱': '打哈欠',
+      '😴': '睡觉',
+      '🤤': '流口水',
+      '😪': '困倦',
+      '😵': '头晕',
+      '🤐': '闭嘴',
+      '🥴': '眩晕',
+      '🤢': '恶心',
+      '🤮': '呕吐',
+      '🤧': '打喷嚏',
+      '😷': '口罩',
+      '🤒': '发烧',
+      '🤕': '受伤',
+      '🤑': '金钱眼'
+    } // 表情对应的文字信息
   },
 
 
@@ -23,11 +117,22 @@ Page({
   onLoad() {
     // 读取本地存储的用户名
     const username = wx.getStorageSync('username') || '';
+    // 读取本地存储的头像信息
+    const avatarType = wx.getStorageSync('avatarType') || 'text';
+    const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
+    
     // 生成头像文字
     const avatarText = this.generateAvatarText(username);
+    
+    // 获取表情对应的文字
+    const emojiText = avatarType === 'emoji' && avatarEmoji ? this.data.emojiTextMap[avatarEmoji] || '' : '';
+    
     this.setData({
       username: username,
-      avatarText: avatarText
+      avatarText: avatarText,
+      avatarEmoji: avatarEmoji,
+      avatarType: avatarType,
+      emojiText: emojiText
     });
   },
 
@@ -87,6 +192,81 @@ Page({
     
     wx.showToast({
       title: '保存成功',
+      icon: 'success'
+    });
+  },
+
+  // 显示表情选择弹窗
+  showEmojiModal() {
+    this.setData({
+      showEmojiModal: true,
+      selectedEmoji: this.data.avatarEmoji
+    });
+  },
+
+  // 隐藏表情选择弹窗
+  hideEmojiModal() {
+    this.setData({
+      showEmojiModal: false
+    });
+  },
+
+  // 选择表情
+  selectEmoji(e) {
+    const emoji = e.currentTarget.dataset.emoji;
+    this.setData({
+      selectedEmoji: emoji
+    });
+  },
+
+  // 确认表情设置
+  confirmEmoji() {
+    const emoji = this.data.selectedEmoji;
+    if (!emoji) {
+      wx.showToast({
+        title: '请选择一个表情',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 获取表情对应的文字
+    const emojiText = this.data.emojiTextMap[emoji] || '';
+    
+    this.setData({
+      avatarEmoji: emoji,
+      avatarType: 'emoji',
+      emojiText: emojiText,
+      showEmojiModal: false
+    });
+    
+    // 保存到本地存储
+    wx.setStorageSync('avatarType', 'emoji');
+    wx.setStorageSync('avatarEmoji', emoji);
+    
+    wx.showToast({
+      title: '表情已设置为头像',
+      icon: 'success'
+    });
+  },
+
+  // 切换回文字头像
+  switchToTextAvatar() {
+    const username = this.data.username;
+    const avatarText = this.generateAvatarText(username);
+    
+    this.setData({
+      avatarType: 'text',
+      avatarText: avatarText,
+      emojiText: ''
+    });
+    
+    // 保存到本地存储
+    wx.setStorageSync('avatarType', 'text');
+    wx.removeStorageSync('avatarEmoji');
+    
+    wx.showToast({
+      title: '已切换到文字头像',
       icon: 'success'
     });
   },
