@@ -5,12 +5,16 @@
   </view>
 
   <view class="section user-section">
-    <view class="user-info" bindtap="showUsernameModal">
-      <view class="avatar">
-        <text class="avatar-text">{{avatarText}}</text>
+    <view class="user-info">
+      <view class="avatar" bindtap="showEmojiModal">
+        <text class="avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+        <text class="avatar-emoji" wx:else>{{avatarEmoji}}</text>
       </view>
       <view class="user-details">
-        <text class="username-display">{{username || '点击自定义用户名'}}</text>
+        <text class="username-display" bindtap="showUsernameModal">{{username || '点击自定义用户名'}}</text>
+        <view class="avatar-options">
+          <text class="avatar-emoji-text" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
+        </view>
       </view>
     </view>
   </view>
@@ -90,6 +94,30 @@
     <view class="modal-footer">
       <button class="modal-btn cancel-btn" bindtap="hideFileNameModal">取消</button>
       <button class="modal-btn confirm-btn" bindtap="confirmExport">确定导出</button>
+    </view>
+  </view>
+  
+  <!-- 表情选择弹窗 -->
+  <view class="modal-mask" wx:if="{{showEmojiModal}}" bindtap="hideEmojiModal"></view>
+  <view class="modal-container emoji-modal" wx:if="{{showEmojiModal}}">
+    <view class="modal-header">
+      <text class="modal-title">选择表情头像</text>
+      <button class="modal-close-btn" bindtap="hideEmojiModal">×</button>
+    </view>
+    <view class="modal-content emoji-content">
+      <view class="emoji-grid">
+        <view class="emoji-item" wx:for="{{emojiList}}" wx:key="index" bindtap="selectEmoji" data-emoji="{{item}}">
+          <text class="emoji-icon">{{item}}</text>
+        </view>
+      </view>
+      <view class="selected-emoji" wx:if="{{selectedEmoji}}">
+        <text class="selected-emoji-label">已选择：</text>
+        <text class="selected-emoji-icon">{{selectedEmoji}}</text>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn cancel-btn" bindtap="hideEmojiModal">取消</button>
+      <button class="modal-btn confirm-btn" bindtap="confirmEmoji">确定</button>
     </view>
   </view>
   
