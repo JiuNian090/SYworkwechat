@@ -133,4 +133,29 @@
       <text>如果您觉得这款排班系统对您有帮助，请分享给更多需要的同事！您的分享支持是我持续开发和维护的动力。</text>
     </view>
   </view>
+
+  <view class="section">
+    <text class="section-title">更新日志</text>
+    <view class="changelog-container">
+      <view class="changelog-scroll" wx:if="{{changelog && changelog.length > 0}}">
+        <view class="changelog-item" wx:for="{{changelog}}" wx:key="version">
+          <view class="changelog-version">
+            <text class="version-number">{{item.version}}</text>
+            <text class="version-date">{{item.date}}</text>
+          </view>
+          <view class="changelog-content">
+            <view class="changelog-category" wx:for="{{Object.keys(item.categories)}}" wx:for-item="category" wx:key="category">
+              <text class="category-title">{{category}}</text>
+              <view class="changelog-features">
+                <text class="feature-item" wx:for="{{item.categories[category]}}" wx:for-item="feature" wx:key="index">• {{feature}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="changelog-empty" wx:else>
+        <text>暂无更新日志</text>
+      </view>
+    </view>
+  </view>
 </view>

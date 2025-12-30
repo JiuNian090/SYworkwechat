@@ -34,7 +34,12 @@
   },
   "packOptions": {
     "ignore": [],
-    "include": []
+    "include": [
+      {
+        "type": "file",
+        "value": "CHANGELOG.md"
+      }
+    ]
   },
   "appid": "wx0d4971ca2a335914",
   "editorSetting": {},

@@ -1,5 +1,6 @@
 // pages/profile/profile.js
 const api = require('../../utils/api.js');
+const changelogData = require('../../utils/changelog.js');
 
 Page({
   data: {
@@ -871,6 +872,65 @@ Page({
   },
 
   // 朋友圈分享功能
+  // 解析更新日志
+  parseChangelog() {
+    // 读取CHANGELOG.md文件内容
+    // 从utils/changelog.js中获取更新日志内容，确保与实际的CHANGELOG.md文件保持一致
+    const changelogContent = changelogData.changelogContent;
+    
+    // 解析更新日志
+    const changelog = [];
+    const lines = changelogContent.split('\n');
+    
+    let currentVersion = null;
+    let currentDate = null;
+    let currentCategory = null;
+    
+    lines.forEach(line => {
+      line = line.trim();
+      
+      if (line.startsWith('###')) {
+        // 版本标题行，格式：### v1.12.30.1 (2025-12-30)
+        const versionMatch = line.match(/###\s+([vV]\d+\.\d+\.\d+\.\d+)\s+\((\d{4}-\d{2}-\d{2})\)/);
+        if (versionMatch) {
+          currentVersion = versionMatch[1];
+          currentDate = versionMatch[2];
+          currentCategory = null;
+          changelog.push({
+            version: currentVersion,
+            date: currentDate,
+            categories: {}
+          });
+        }
+      } else if (currentVersion && line.startsWith('✨') || line.startsWith('🐛') || line.startsWith('📝') || line.startsWith('🎨') || line.startsWith('🔧')) {
+        // 分类标题行
+        const categoryMatch = line.match(/^(✨|🐛|📝|🎨|🔧)\s+(.+)$/);
+        if (categoryMatch) {
+          currentCategory = categoryMatch[2];
+          if (currentCategory && !changelog[changelog.length - 1].categories[currentCategory]) {
+            changelog[changelog.length - 1].categories[currentCategory] = [];
+          }
+        }
+      } else if (currentVersion && currentCategory && line.startsWith('-')) {
+        // 功能点行
+        const featureMatch = line.match(/^-\s+(.+)$/);
+        if (featureMatch) {
+          changelog[changelog.length - 1].categories[currentCategory].push(featureMatch[1]);
+        }
+      }
+    });
+    
+    return changelog;
+  },
+  
+  onShow() {
+    // 页面显示时重新解析更新日志，确保内容同步
+    const changelog = this.parseChangelog();
+    this.setData({
+      changelog: changelog
+    });
+  },
+  
   onShareTimeline() {
     return {
       title: 'SYwork排班管理系统 - 个人中心',
