@@ -899,8 +899,25 @@ Page({
         const date = versionMatch[2];
         
         // 提取版本内容（去掉版本号和日期行）
-        const contentLines = lines.slice(1).filter(line => line.trim() !== '');
-        const content = contentLines.join('\n').trim();
+        let contentLines = lines.slice(1);
+        
+        // 在每个表情符号大标题前添加换行符，确保标题和内容之间有空行
+        const processedLines = [];
+        contentLines.forEach(line => {
+          // 检查是否是表情符号大标题（以✨、🔧、🐛、📝、🎨等开头）
+          if (/^[✨🔧🐛📝🎨]/.test(line.trim())) {
+            // 如果不是第一个行且前一行不是空行，则添加换行符
+            if (processedLines.length > 0 && processedLines[processedLines.length - 1].trim() !== '') {
+              processedLines.push('');
+            }
+            processedLines.push(line);
+          } else {
+            processedLines.push(line);
+          }
+        });
+        
+        // 移除开头和结尾的空行，然后重新组合内容
+        const content = processedLines.join('\n').trim();
         
         changelog.push({
           version: version,
