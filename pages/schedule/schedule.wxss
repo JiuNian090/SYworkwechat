@@ -789,30 +789,44 @@
   align-items: center;
   background: white;
   border-radius: 16rpx;
-  padding: 20rpx;
+  padding: 15rpx;
   margin-top: 20rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
   border: 1rpx solid #eee;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  gap: 8rpx;
+}
+
+.stat-avatar {
+  font-size: 32rpx;
+  width: 30rpx;
+  height: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .stat-label {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #666;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .stat-value {
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: bold;
   color: #333;
   background: #f0fff0;
-  padding: 8rpx 20rpx;
+  white-space: nowrap;
+  padding: 8rpx 16rpx;
   border-radius: 20rpx;
   border: 1rpx solid #d0f0d0;
 }

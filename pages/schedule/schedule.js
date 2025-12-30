@@ -25,7 +25,11 @@ Page({
     monthTotalHours: 0, // 当月总工时
     monthDifference: 0, // 当月工时差额/超额
     monthDifferenceType: '', // 当月差额类型：超额或差额
-    monthDifferenceValue: '0.0' // 当月差额值，显示为绝对值
+    monthDifferenceValue: '0.0', // 当月差额值，显示为绝对值
+    // 用户头像信息
+    avatarType: 'text', // 头像类型：text 或 emoji
+    avatarText: '用', // 头像文字
+    avatarEmoji: '' // 头像表情
   },
 
   onLoad() {
@@ -34,13 +38,24 @@ Page({
     const isCurrentMonth = this.isCurrentMonth(today);
     // 读取自定义每周标准工时
     const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
+    // 读取用户头像信息
+    const avatarType = wx.getStorageSync('avatarType') || 'text';
+    const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
+    const username = wx.getStorageSync('username') || '';
+    // 生成头像文字
+    const avatarText = username ? username.charAt(0).toUpperCase() : '用';
+    
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),
       currentMonthTitle: this.formatMonthTitle(today),
       isCurrentWeek: isCurrentWeek,
       isCurrentMonth: isCurrentMonth,
-      customWeeklyHours: customWeeklyHours
+      customWeeklyHours: customWeeklyHours,
+      // 设置用户头像信息
+      avatarType: avatarType,
+      avatarEmoji: avatarEmoji,
+      avatarText: avatarText
     });
     this.loadShiftTemplates();
     this.loadShifts();
@@ -52,8 +67,19 @@ Page({
     // 页面显示时重新加载班次模板和排班数据，确保数据同步
     // 读取自定义每周标准工时
     const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
+    // 读取用户头像信息
+    const avatarType = wx.getStorageSync('avatarType') || 'text';
+    const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
+    const username = wx.getStorageSync('username') || '';
+    // 生成头像文字
+    const avatarText = username ? username.charAt(0).toUpperCase() : '用';
+    
     this.setData({
-      customWeeklyHours: customWeeklyHours
+      customWeeklyHours: customWeeklyHours,
+      // 更新用户头像信息
+      avatarType: avatarType,
+      avatarEmoji: avatarEmoji,
+      avatarText: avatarText
     });
     this.loadShiftTemplates();
     this.loadShifts();
