@@ -21,7 +21,11 @@ Page({
       totalDays: 0,
       workDays: 0,
       offDays: 0
-    }
+    },
+    // 连续点击功能相关
+    timer: null, // 定时器
+    isPressing: false, // 是否正在按住按钮
+    pressInterval: 200 // 连续点击间隔时间（毫秒）
   },
 
   // 日期格式化函数
@@ -33,8 +37,8 @@ Page({
   },
 
   // 获取上周日期范围
-  getLastWeekRange() {
-    const now = new Date();
+  getLastWeekRange(referenceDate = new Date()) {
+    const now = new Date(referenceDate);
     const start = new Date(now);
     const end = new Date(now);
 
@@ -52,8 +56,8 @@ Page({
   },
 
   // 获取本周日期范围
-  getThisWeekRange() {
-    const now = new Date();
+  getThisWeekRange(referenceDate = new Date()) {
+    const now = new Date(referenceDate);
     const start = new Date(now);
     const end = new Date(now);
 
@@ -71,8 +75,8 @@ Page({
   },
 
   // 获取下周日期范围
-  getNextWeekRange() {
-    const now = new Date();
+  getNextWeekRange(referenceDate = new Date()) {
+    const now = new Date(referenceDate);
     const start = new Date(now);
     const end = new Date(now);
 
@@ -103,7 +107,9 @@ Page({
 
   // 快速选择按钮事件处理函数
   selectLastWeek() {
-    const range = this.getLastWeekRange();
+    // 使用当前结束日期作为参考日期来计算上周
+    const referenceDate = this.data.endDate ? new Date(this.data.endDate) : new Date();
+    const range = this.getLastWeekRange(referenceDate);
     this.setData({
       startDate: range.startDate,
       endDate: range.endDate,
@@ -123,7 +129,9 @@ Page({
   },
 
   selectNextWeek() {
-    const range = this.getNextWeekRange();
+    // 使用当前结束日期作为参考日期来计算下周
+    const referenceDate = this.data.endDate ? new Date(this.data.endDate) : new Date();
+    const range = this.getNextWeekRange(referenceDate);
     this.setData({
       startDate: range.startDate,
       endDate: range.endDate,
@@ -505,6 +513,73 @@ Page({
   // 提供给其他页面调用的方法，用于主动刷新数据
   refreshStatistics() {
     this.calculateStatistics();
+  },
+
+  // 连续点击功能相关方法
+  
+  // 处理连续按下事件
+  handleContinuousPress(direction) {
+    if (!this.data.isPressing) return;
+    
+    // 根据方向调用相应的选择函数
+    if (direction === 'last') {
+      this.selectLastWeek();
+    } else if (direction === 'next') {
+      this.selectNextWeek();
+    }
+    
+    // 设置定时器，继续执行连续点击
+    this.setData({
+      timer: setTimeout(() => {
+        this.handleContinuousPress(direction);
+      }, this.data.pressInterval)
+    });
+  },
+  
+  // 上一周按钮触摸开始
+  touchStartLastWeek() {
+    this.setData({ isPressing: true });
+    // 立即执行一次
+    this.selectLastWeek();
+    // 设置定时器开始连续点击
+    this.setData({
+      timer: setTimeout(() => {
+        this.handleContinuousPress('last');
+      }, this.data.pressInterval)
+    });
+  },
+  
+  // 上一周按钮触摸结束
+  touchEndLastWeek() {
+    this.setData({ isPressing: false });
+    // 清除定时器
+    if (this.data.timer) {
+      clearTimeout(this.data.timer);
+      this.setData({ timer: null });
+    }
+  },
+  
+  // 下一周按钮触摸开始
+  touchStartNextWeek() {
+    this.setData({ isPressing: true });
+    // 立即执行一次
+    this.selectNextWeek();
+    // 设置定时器开始连续点击
+    this.setData({
+      timer: setTimeout(() => {
+        this.handleContinuousPress('next');
+      }, this.data.pressInterval)
+    });
+  },
+  
+  // 下一周按钮触摸结束
+  touchEndNextWeek() {
+    this.setData({ isPressing: false });
+    // 清除定时器
+    if (this.data.timer) {
+      clearTimeout(this.data.timer);
+      this.setData({ timer: null });
+    }
   },
 
   // 好友分享功能
