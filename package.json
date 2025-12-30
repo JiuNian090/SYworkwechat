@@ -4,8 +4,9 @@
   "description": "SYwork 工时记录系统 - 微信小程序",
   "main": "app.js",
   "scripts": {
-    "build": "gulp build",
-    "dev": "gulp dev",
+    "sync-changelog": "node sync_changelog.js",
+    "build": "node sync_changelog.js && gulp build",
+    "dev": "node sync_changelog.js && gulp dev",
     "clean": "gulp clean"
   },
   "keywords": [
