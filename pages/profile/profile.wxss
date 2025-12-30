@@ -650,3 +650,123 @@
 .confirm-btn:active {
   background: #059e4d;
 }
+
+/* 更新日志样式 */
+.changelog-container {
+  background: #f9f9f9;
+  border-radius: 12rpx;
+  overflow: hidden;
+  border: 1rpx solid #f0f0f0;
+}
+
+.changelog-scroll {
+  height: 400rpx; /* 只显示一个日志的高度，可根据需要调整 */
+  overflow-y: auto;
+  padding: 20rpx;
+}
+
+/* 自定义滚动条样式 */
+.changelog-scroll::-webkit-scrollbar {
+  width: 6rpx;
+}
+
+.changelog-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3rpx;
+}
+
+.changelog-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3rpx;
+}
+
+.changelog-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+.changelog-item {
+  margin-bottom: 30rpx;
+  padding-bottom: 30rpx;
+  border-bottom: 1rpx solid #e0e0e0;
+}
+
+.changelog-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.changelog-version {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 10rpx 15rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.version-number {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.version-date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.changelog-content {
+  background: #fff;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.changelog-category {
+  margin-bottom: 20rpx;
+}
+
+.changelog-category:last-child {
+  margin-bottom: 0;
+}
+
+.category-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #07c160;
+  margin-bottom: 15rpx;
+  display: block;
+}
+
+.changelog-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.feature-item {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.5;
+  display: block;
+  padding-left: 10rpx;
+}
+
+.changelog-empty {
+  height: 400rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 确保滚动条在iOS设备上也能正常显示 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .changelog-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+}
