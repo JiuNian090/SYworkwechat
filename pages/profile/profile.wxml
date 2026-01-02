@@ -59,22 +59,34 @@
       <button class="action-btn import-btn" bindtap="importData">导入数据</button>
       <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
     </view>
+    <view class="data-actions" style="margin-top: 20rpx;">
+      <button class="action-btn export-btn" bindtap="showTemplateFileNameModal">导出模板</button>
+      <button class="action-btn share-btn" bindtap="shareTemplate">分享模板</button>
+    </view>
     <view class="usage-guide">
       <text>使用说明：</text>
       <view class="guide-item">
         <text>❶. 导出数据：点击导出数据，在弹窗中输入自定义文件名后点击确定，可暂存数据文件到剪贴板。</text>
-        <text class="highlight">(可以自创排班模板，输入文件名"班次模板")</text>
+        <text class="highlight">(包含完整的排班数据和模板)</text>
       </view>
       <view class="guide-item">
         <text>❷. 分享数据：导出后可快速分享给好友，也可以分享到”文件传输助手”或者小号，用来备份。</text>
-        <text class="highlight">(显示导出成功后，点击分享数据可以把”模板”发给同事，也可以当作每周备份)</text>
+        <text class="highlight">(分享完整的数据备份)</text>
       </view>
       <view class="guide-item">
-        <text>❸. 导入数据：选择好友通过微信分享给你的json文件，“班次模板”。</text>
+        <text>❸. 导出模板：点击导出模板，默认文件名为"班次模板"，可修改后点击确定，只导出班次模板数据。</text>
+        <text class="highlight">(只包含班次模板，不包含具体排班数据)</text>
+      </view>
+      <view class="guide-item">
+        <text>❹. 分享模板：导出模板后可快速分享给好友，用于统一班次模板。</text>
+        <text class="highlight">(只分享班次模板，方便团队统一使用)</text>
+      </view>
+      <view class="guide-item">
+        <text>❺. 导入数据：选择好友通过微信分享给你的json文件，“班次模板”。</text>
         <text class="highlight">(可以将json文件转发给“文件传输助手”，点击导入，选择“文件传输助手”，找到对应的json文件，即可替换本地的模板和排班)</text>
       </view>
       <view class="guide-item">
-        <text>❹. 清空数据：清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
+        <text>❻. 清空数据：清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
         <text class="highlight">（清空会保留班次模板，清空所有的排班数据，以达到分享模板的目的，分享完成后，再将之前导出的用作备份的json文件恢复就可以了）</text>
       </view>
     </view>
