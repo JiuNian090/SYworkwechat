@@ -75,6 +75,7 @@
       </view>
       <view class="guide-item">
         <text>❹. 清空数据：清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
+        <text class="highlight">（清空会保留班次模板，清空所有的排班数据，以达到分享模板的目的，分享完成后，再将之前导出的用作备份的json文件恢复就可以了）</text>
       </view>
     </view>
   </view>
