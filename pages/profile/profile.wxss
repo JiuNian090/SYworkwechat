@@ -327,6 +327,8 @@
   justify-content: flex-start;
   align-items: center;
   padding: 20rpx 30rpx;
+  position: relative;
+  overflow: hidden;
 }
 
 .user-info {
@@ -342,6 +344,124 @@
 .user-info:hover {
   background: #f0fff0;
   transform: translateY(-2rpx);
+}
+
+/* 背景贴纸样式 */
+.avatar-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  overflow: hidden;
+}
+
+.avatar-sticker {
+  position: absolute;
+  font-size: 80rpx;
+  line-height: 1;
+  opacity: 0.9;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* 贴纸位置和动画延迟 */
+.sticker-1 {
+  top: 10rpx;
+  left: 10rpx;
+  animation-delay: 0s;
+  transform: rotate(-25deg);
+  opacity: 0.9;
+  font-size: 80rpx;
+}
+
+.sticker-2 {
+  top: -20rpx;
+  right: 80rpx;
+  animation-delay: 1s;
+  transform: rotate(30deg);
+  opacity: 0.8;
+  font-size: 100rpx;
+}
+
+.sticker-3 {
+  bottom: 10rpx;
+  left: 20rpx;
+  animation-delay: 2s;
+  transform: rotate(45deg);
+  opacity: 1;
+  font-size: 60rpx;
+}
+
+.sticker-4 {
+  bottom: -10rpx;
+  right: 20rpx;
+  animation-delay: 3s;
+  transform: rotate(-40deg);
+  opacity: 0.7;
+  font-size: 90rpx;
+}
+
+.sticker-5 {
+  top: 20rpx;
+  left: 300rpx;
+  transform: rotate(60deg);
+  animation-delay: 4s;
+  opacity: 0.8;
+  font-size: 70rpx;
+}
+
+/* 新增贴纸 */
+.sticker-6 {
+  bottom: 30rpx;
+  left: 400rpx;
+  transform: rotate(-35deg);
+  animation-delay: 0.5s;
+  opacity: 0.7;
+  font-size: 80rpx;
+}
+
+.sticker-7 {
+  top: 50rpx;
+  left: 180rpx;
+  transform: rotate(15deg);
+  animation-delay: 1.5s;
+  opacity: 0.8;
+  font-size: 75rpx;
+}
+
+.sticker-8 {
+  bottom: 40rpx;
+  left: 250rpx;
+  transform: rotate(-50deg);
+  animation-delay: 2.5s;
+  opacity: 0.9;
+  font-size: 65rpx;
+}
+
+/* 浮动动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) rotate(var(--rotate, 0deg));
+  }
+  25% {
+    transform: translate(5rpx, -5rpx) rotate(calc(var(--rotate, 0deg) + 2deg));
+  }
+  50% {
+    transform: translate(0, -10rpx) rotate(calc(var(--rotate, 0deg) - 2deg));
+  }
+  75% {
+    transform: translate(-5rpx, -5rpx) rotate(calc(var(--rotate, 0deg) + 1deg));
+  }
+}
+
+/* 确保用户信息和头像在贴纸上方 */
+.avatar,
+.user-details {
+  position: relative;
+  z-index: 1;
 }
 
 .avatar {

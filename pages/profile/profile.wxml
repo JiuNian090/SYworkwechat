@@ -5,6 +5,17 @@
   </view>
 
   <view class="section user-section">
+    <!-- 背景贴纸容器 - 移到user-section下，覆盖整个板块 -->
+    <view class="avatar-background">
+      <text class="avatar-sticker sticker-1">{{avatarEmoji || '😊'}}</text>
+      <text class="avatar-sticker sticker-2">{{avatarEmoji || '😊'}}</text>
+      <text class="avatar-sticker sticker-3">{{avatarEmoji || '😊'}}</text>
+      <text class="avatar-sticker sticker-4">{{avatarEmoji || '😊'}}</text>
+      <text class="avatar-sticker sticker-5">{{avatarEmoji || '😊'}}</text>
+      <text class="avatar-sticker sticker-6">{{avatarEmoji || '😊'}}</text>
+      <text class="avatar-sticker sticker-7">{{avatarEmoji || '😊'}}</text>
+      <text class="avatar-sticker sticker-8">{{avatarEmoji || '😊'}}</text>
+    </view>
     <view class="user-info">
       <view class="avatar" bindtap="showEmojiModal">
         <text class="avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
