@@ -565,6 +565,8 @@ Page({
   },
 
   hideShiftModal() {
+    // 由于微信小程序wx:if会立即隐藏元素，无法直接使用CSS动画
+    // 我们通过添加动画类名并使用setTimeout来实现关闭动画效果
     this.setData({
       showShiftModal: false
     });
