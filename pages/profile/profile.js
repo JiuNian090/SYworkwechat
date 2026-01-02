@@ -5,8 +5,12 @@ const changelogData = require('../../utils/changelog.js');
 Page({
   data: {
     exportFileName: '',
+    // 完整数据导出相关变量
     exportedFilePath: '',
     exportedFileName: '',
+    // 模板导出相关变量
+    exportedTemplateFilePath: '',
+    exportedTemplateFileName: '',
     exportSuccess: false,
     exportFail: false,
     loading: false,
@@ -22,6 +26,7 @@ Page({
     tempFileName: '', // 临时存储用户输入的文件名
     defaultFileNameHint: '', // 默认文件名提示
     showEmojiModal: false, // 表情选择弹窗显示状态
+    exportType: 'data', // 导出类型：data表示完整数据，template表示只导出模板
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
     selectedEmoji: '', // 当前选中的表情
     emojiTextMap: {
@@ -384,7 +389,21 @@ Page({
     this.setData({
       tempFileName: '',
       defaultFileNameHint: defaultFileNameHint,
-      showFileNameModal: true
+      showFileNameModal: true,
+      exportType: 'data' // 标记为导出完整数据
+    });
+  },
+
+  // 显示模板文件名设置弹窗
+  showTemplateFileNameModal() {
+    // 设置默认文件名为"班次模板"
+    const defaultFileNameHint = '班次模板';
+    
+    this.setData({
+      tempFileName: '班次模板',
+      defaultFileNameHint: defaultFileNameHint,
+      showFileNameModal: true,
+      exportType: 'template' // 标记为只导出模板
     });
   },
 
@@ -410,12 +429,15 @@ Page({
     // 隐藏弹窗
     this.hideFileNameModal();
     
-    // 调用导出数据方法
-    this.exportData(customFileName);
+    // 根据exportType决定导出完整数据还是只导出模板
+    if (this.data.exportType === 'template') {
+      this.exportTemplate(customFileName);
+    } else {
+      this.exportData(customFileName);
+    }
   },
 
-  
-
+  // 导出完整数据
   exportData(customFileName) {
     wx.showLoading({
       title: '正在导出...'
@@ -502,7 +524,7 @@ Page({
           // 显示提示，让用户点击分享按钮
           wx.showModal({
             title: '导出成功',
-            content: '数据已导出为JSON文件，请点击下方"分享给好友"按钮将文件发送给好友',
+            content: '数据已导出为JSON文件，请点击下方"分享数据"按钮将文件发送给好友',
             showCancel: false,
             confirmText: '知道了'
           });
@@ -526,6 +548,74 @@ Page({
     }
   },
 
+  // 只导出模板数据
+  exportTemplate(customFileName) {
+    wx.showLoading({
+      title: '正在导出模板...'
+    });
+    
+    try {
+      // 只获取班次模板数据，不包含排班数据
+      const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+      
+      // 获取自定义每周标准工时
+      const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
+      
+      // 构造只包含模板的数据结构
+      const data = {
+        shiftTemplates: shiftTemplates,
+        shifts: {}, // 空的排班数据
+        customWeeklyHours: customWeeklyHours
+      };
+      
+      const jsonData = JSON.stringify(data, null, 2);
+      
+      // 使用用户输入的文件名或默认文件名
+      const fileName = customFileName || '班次模板';
+      
+      // 创建临时文件
+      const fs = wx.getFileSystemManager();
+      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.json`;
+      
+      fs.writeFile({
+        filePath: filePath,
+        data: jsonData,
+        encoding: 'utf8',
+        success: () => {
+          wx.hideLoading();
+          // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
+          this.setData({
+            exportedTemplateFilePath: filePath,
+            exportedTemplateFileName: fileName
+          });
+          
+          // 显示提示，让用户点击分享按钮
+          wx.showModal({
+            title: '模板导出成功',
+            content: '班次模板已导出为JSON文件，请点击下方"分享模板"按钮将模板发送给好友',
+            showCancel: false,
+            confirmText: '知道了'
+          });
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          console.error('写入模板文件失败', err);
+          wx.showToast({
+            title: '模板导出失败',
+            icon: 'none'
+          });
+        }
+      });
+    } catch (e) {
+      wx.hideLoading();
+      console.error('导出模板失败', e);
+      wx.showToast({
+        title: '模板导出失败',
+        icon: 'none'
+      });
+    }
+  },
+
   // 分享导出的文件给好友
   shareExportedFile() {
     // 检查是否有导出的文件
@@ -534,6 +624,19 @@ Page({
     } else {
       wx.showToast({
         title: '请先导出数据',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 分享导出的模板文件给好友
+  shareTemplate() {
+    // 检查是否有导出的模板文件
+    if (this.data.exportedTemplateFilePath && this.data.exportedTemplateFileName) {
+      this.shareFile(this.data.exportedTemplateFilePath, this.data.exportedTemplateFileName);
+    } else {
+      wx.showToast({
+        title: '请先导出模板',
         icon: 'none'
       });
     }
