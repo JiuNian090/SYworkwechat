@@ -800,11 +800,11 @@ Page({
 
   
   
-  // 清空数据（保留班次模板）
+  // 清空所有数据（包括班次模板）
   clearAllData() {
     wx.showModal({
       title: '确认清空',
-      content: '确定要清空数据吗？此操作将保留班次模板，清空其他所有数据，且不可恢复！',
+      content: '确定要清空所有数据吗？此操作将清空包括班次模板在内的所有数据，且不可恢复！',
       confirmColor: '#ff4d4f',
       success: (res) => {
         if (res.confirm) {
@@ -813,9 +813,10 @@ Page({
           });
           
           try {
-            // 清空相关的本地存储数据，保留班次模板
+            // 清空所有相关的本地存储数据
             wx.removeStorageSync('shifts');
             wx.removeStorageSync('customWeeklyHours');
+            wx.removeStorageSync('shiftTemplates');
             // 可以添加其他需要清空的数据
             
             wx.showToast({
