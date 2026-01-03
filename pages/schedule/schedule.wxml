@@ -118,33 +118,40 @@
   </view>
 
   <!-- 排班选择弹窗 -->
-  <view class="modal" wx:if="{{showShiftModal}}" bindtap="hideShiftModal">
+  <view class="modal-mask" wx:if="{{showShiftModal}}" bindtap="hideShiftModal"></view>
+  <view class="modal-container" wx:if="{{showShiftModal}}">
+    <view class="modal-header">
+      <text class="modal-title">为 {{selectedDate}} 排班</text>
+      <button class="modal-close-btn" bindtap="hideShiftModal">×</button>
+    </view>
     <view class="modal-content" bindtap="stopPropagation">
-      <view class="modal-header">
-        <text class="modal-title">为 {{selectedDate}} 排班</text>
-        <icon type="clear" size="24" color="#999" bindtap="hideShiftModal" />
+      <!-- 第一个板块：选择器和确认排班按钮 -->
+      <view wx:if="{{shiftTemplates.length > 0}}" class="modal-section">
+        <view class="shift-picker-container">
+          <view class="shift-picker-indicator"></view>
+          <picker-view indicator-style="height: 50px;" style="width: 100%; height: 220px;" value="{{pickerValue}}" bindchange="bindPickerChange">
+            <picker-view-column>
+              <view wx:for="{{shiftTemplates}}" wx:key="index" style="line-height: 50px; text-align: center; font-size: 36rpx; font-weight: 600; padding: 0 20rpx;">
+                <text>{{item.name}}</text>
+              </view>
+            </picker-view-column>
+          </picker-view>
+        </view>
+        <button class="modal-btn confirm-btn section-btn" bindtap="assignShiftFromPicker">确定排班</button>
       </view>
       
-      <view wx:if="{{shiftTemplates.length > 0}}" class="shift-picker-container">
-        <view class="shift-picker-indicator"></view>
-        <picker-view indicator-style="height: 50px;" style="width: 100%; height: 220px;" value="{{pickerValue}}" bindchange="bindPickerChange">
-          <picker-view-column>
-            <view wx:for="{{shiftTemplates}}" wx:key="index" style="line-height: 50px; text-align: center; font-size: 36rpx; font-weight: 600; padding: 0 20rpx;">
-              <text>{{item.name}}</text>
-            </view>
-          </picker-view-column>
-        </picker-view>
-        <button class="shift-picker-btn" bindtap="assignShiftFromPicker">确定排班</button>
-      </view>
-      
-      <view wx:if="{{selectedShift}}" class="current-shift">
-        <text>当前排班: {{selectedShift.name}}</text>
-        <button class="remove-btn" bindtap="removeShift" data-date="{{selectedDate}}">移除排班</button>
+      <!-- 第二个板块：当前排班和移除排班按钮 -->
+      <view wx:if="{{selectedShift}}" class="modal-section">
+        <view class="current-shift">
+          <text>当前排班: {{selectedShift.name}}</text>
+        </view>
+        <button class="modal-btn remove-btn section-btn" bindtap="removeShift" data-date="{{selectedDate}}">移除排班</button>
       </view>
       
       <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
         暂无班次模板，请先到"计划"页面添加
       </view>
     </view>
+    <!-- 移除了取消按钮，可通过点击遮罩层或关闭按钮关闭弹窗 -->
   </view>
 </view>
