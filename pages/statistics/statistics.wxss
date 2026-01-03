@@ -593,6 +593,7 @@
 }
 
 /* 弹窗样式 */
+/* 模态框通用样式 - 统一弹窗设计 */
 .modal-mask {
   position: fixed;
   top: 0;
@@ -606,44 +607,62 @@
   z-index: 999;
 }
 
+/* 基础弹窗样式 - 与表情头像弹窗保持一致 */
 .modal-container {
+  width: 90%;
+  max-width: 600rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  background: white;
+  animation: modalSlideIn 0.3s ease-out;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
-  border-radius: 20rpx;
-  width: 80%;
-  max-width: 500rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.3);
   z-index: 1000;
-  overflow: hidden;
 }
 
+/* 模态框滑入动画 */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9) translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) translateY(0);
+  }
+}
+
+/* 弹窗头部样式 - 渐变背景 */
 .modal-header {
+  background: linear-gradient(135deg, #07c160 0%, #059e4d 100%);
+  color: white;
+  border: none;
+  padding: 30rpx;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20rpx 30rpx;
-  border-bottom: 1rpx solid #eee;
-  background: #f8f8f8;
 }
 
+/* 弹窗标题样式 */
 .modal-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
+  color: white;
+  font-size: 36rpx;
+  font-weight: 600;
 }
 
+/* 关闭按钮样式 */
 .modal-close-btn {
   width: 60rpx;
   height: 60rpx;
   padding: 0;
   margin: 0;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
-  font-size: 40rpx;
-  color: #999;
+  font-size: 36rpx;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -651,21 +670,33 @@
   transition: all 0.3s ease;
 }
 
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
 .modal-close-btn:active {
-  background: #f0f0f0;
-  color: #333;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0.95);
 }
 
+/* 弹窗内容区域 */
 .modal-content {
-  padding: 40rpx 30rpx;
+  padding: 40rpx 30rpx 20rpx 30rpx;
+  background: white;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* 输入框组样式 */
 .modal-input-group {
   display: flex;
   align-items: center;
   width: 100%;
+  margin-bottom: 20rpx;
 }
 
+/* 输入框样式 */
 .modal-input {
   flex: 1;
   height: 80rpx;
@@ -702,41 +733,86 @@
   box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.1);
 }
 
+/* 弹窗底部样式 */
 .modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 20rpx;
+  background: #fafafa;
+  border-top: 1rpx solid #f0f0f0;
   padding: 20rpx 30rpx;
-  border-top: 1rpx solid #eee;
-  background: #f8f8f8;
+  gap: 24rpx;
+  display: flex;
+  justify-content: space-between;
 }
 
+/* 按钮通用样式 */
 .modal-btn {
-  padding: 15rpx 30rpx;
-  border: none;
-  border-radius: 16rpx;
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
   font-size: 28rpx;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  min-width: 120rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.5rpx;
 }
 
+/* 取消按钮样式 */
 .cancel-btn {
-  background: #f0f0f0;
+  background: white;
   color: #666;
+  border: 2rpx solid #e0e0e0;
+}
+
+.cancel-btn:hover {
+  background: #f8f8f8;
+  border-color: #d0d0d0;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.12);
+  transform: translateY(-2rpx);
 }
 
 .cancel-btn:active {
-  background: #e0e0e0;
+  background: #e8e8e8;
+  border-color: #c0c0c0;
+  transform: translateY(0);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 
+/* 确定按钮样式 - 渐变背景 */
 .confirm-btn {
-  background: #07c160;
+  background: linear-gradient(135deg, #07c160 0%, #059e4d 100%);
   color: white;
+  box-shadow: 0 6rpx 20rpx rgba(7, 193, 96, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.confirm-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.confirm-btn:hover::before {
+  left: 100%;
+}
+
+.confirm-btn:hover {
+  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.45);
+  transform: translateY(-3rpx);
 }
 
 .confirm-btn:active {
-  background: #059e4d;
+  background: linear-gradient(135deg, #059e4d 0%, #048c42 100%);
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.3);
 }
 
 /* 标准工时带设置按钮样式 */

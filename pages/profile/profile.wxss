@@ -909,7 +909,7 @@
 
 /* 弹窗内容区域 */
 .modal-content {
-  padding: 40rpx 30rpx;
+  padding: 40rpx 30rpx 20rpx 30rpx;
   background: white;
   width: 100%;
   box-sizing: border-box;
@@ -965,9 +965,9 @@
 /* 按钮通用样式 */
 .modal-btn {
   flex: 1;
-  height: 92rpx;
-  border-radius: 46rpx;
-  font-size: 32rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
   font-weight: 600;
   border: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -975,7 +975,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  letter-spacing: 1rpx;
+  letter-spacing: 0.5rpx;
 }
 
 /* 取消按钮样式 */

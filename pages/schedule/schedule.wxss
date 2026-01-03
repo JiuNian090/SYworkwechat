@@ -631,7 +631,7 @@
 
 /* 弹窗内容区域 */
 .modal-content {
-  padding: 15rpx 30rpx;
+  padding: 15rpx 30rpx 10rpx 30rpx;
   background: white;
   width: 100%;
   box-sizing: border-box;
@@ -668,7 +668,7 @@
 /* 确保所有按钮形状一致 */
 .modal-btn.confirm-btn,
 .modal-btn.remove-btn {
-  border-radius: 46rpx;
+  border-radius: 40rpx;
 }
 
 /* 取消按钮样式 */
