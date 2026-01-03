@@ -382,7 +382,7 @@
   right: 80rpx;
   animation-delay: 1s;
   transform: rotate(30deg);
-  opacity: 0.8;
+  opacity: 1;
   font-size: 100rpx;
 }
 
@@ -400,8 +400,8 @@
   right: 20rpx;
   animation-delay: 3s;
   transform: rotate(-40deg);
-  opacity: 0.7;
-  font-size: 90rpx;
+  opacity: 0.9;
+  font-size: 95rpx;
 }
 
 .sticker-5 {
@@ -409,32 +409,32 @@
   left: 300rpx;
   transform: rotate(60deg);
   animation-delay: 4s;
-  opacity: 0.8;
-  font-size: 70rpx;
+  opacity: 1;
+  font-size: 80rpx;
 }
 
 /* 新增贴纸 */
 .sticker-6 {
   bottom: 30rpx;
-  left: 400rpx;
+  left: 410rpx;
   transform: rotate(-35deg);
   animation-delay: 0.5s;
-  opacity: 0.7;
-  font-size: 80rpx;
+  opacity: 0.9;
+  font-size: 90rpx;
 }
 
 .sticker-7 {
-  top: 50rpx;
+  top: 70rpx;
   left: 180rpx;
   transform: rotate(15deg);
   animation-delay: 1.5s;
-  opacity: 0.8;
+  opacity: 1;
   font-size: 75rpx;
 }
 
 .sticker-8 {
-  bottom: 40rpx;
-  left: 250rpx;
+  bottom: 10rpx;
+  left: 270rpx;
   transform: rotate(-50deg);
   animation-delay: 2.5s;
   opacity: 0.9;
