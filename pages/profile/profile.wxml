@@ -67,12 +67,12 @@
       <button class="action-btn share-btn" bindtap="shareExportedFile">分享数据</button>
     </view>
     <view class="data-actions" style="margin-top: 20rpx;">
-      <button class="action-btn import-btn" bindtap="importData">导入数据</button>
-      <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
-    </view>
-    <view class="data-actions" style="margin-top: 20rpx;">
       <button class="action-btn export-btn" bindtap="showTemplateFileNameModal">导出模板</button>
       <button class="action-btn share-btn" bindtap="shareTemplate">分享模板</button>
+    </view>
+    <view class="data-actions" style="margin-top: 20rpx;">
+     <button class="action-btn import-btn" bindtap="importData">导入数据</button>
+      <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
     </view>
     <view class="usage-guide">
       <text>使用说明：</text>
