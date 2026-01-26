@@ -64,6 +64,28 @@
         <text class="stat-value {{differenceType === '超额' ? 'overtime' : 'shortage'}}">{{differenceValue}} 小时</text>
       </view>
     </view>
+    
+    <!-- 本周排班管理板块 -->
+    <view class="week-images">
+      <view class="images-header">
+        <text class="images-title">本周排班</text>
+        <button class="add-image-btn" bindtap="showAddImageModal">+ 添加图片</button>
+      </view>
+      
+      <view class="images-list" wx:if="{{weekImages.length > 0}}">
+        <view class="image-item" wx:for="{{weekImages}}" wx:key="id">
+          <text class="image-name">{{item.name}}</text>
+          <view class="image-actions">
+            <button class="image-action-btn view-btn" bindtap="viewImage" data-index="{{index}}">查看</button>
+            <button class="image-action-btn delete-btn" bindtap="deleteImage" data-index="{{index}}">删除</button>
+          </view>
+        </view>
+      </view>
+      
+      <view class="empty-images" wx:else>
+        <text>暂无图片，点击"添加图片"按钮添加</text>
+      </view>
+    </view>
 
   </view>
 
@@ -153,5 +175,30 @@
       </view>
     </view>
     <!-- 移除了取消按钮，可通过点击遮罩层或关闭按钮关闭弹窗 -->
+  </view>
+  
+  <!-- 图片管理弹窗 -->
+  <view class="modal-mask" wx:if="{{showAddImageModal}}" bindtap="hideAddImageModal"></view>
+  <view class="modal-container" wx:if="{{showAddImageModal}}">
+    <view class="modal-header">
+      <text class="modal-title">添加图片</text>
+      <button class="modal-close-btn" bindtap="hideAddImageModal">×</button>
+    </view>
+    <view class="modal-content" bindtap="stopPropagation">
+      <view class="image-upload-section">
+        <button class="image-upload-btn" bindtap="chooseImage">选择图片</button>
+        <text class="image-upload-hint" wx:if="{{selectedImagePath}}">已选择图片</text>
+      </view>
+      
+      <view class="image-name-section">
+        <text class="image-name-label">图片名称：</text>
+        <input class="image-name-input" placeholder="请输入图片名称" value="{{imageName}}" bindinput="onImageNameInput"></input>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="modal-btn cancel-btn" bindtap="hideAddImageModal">取消</button>
+        <button class="modal-btn confirm-btn" bindtap="addImage" disabled="{{!selectedImagePath || !imageName}}">确定添加</button>
+      </view>
+    </view>
   </view>
 </view>
