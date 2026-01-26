@@ -31,8 +31,7 @@ Page({
     selectedDataTypes: [], // 选中的数据类型
     dataTypes: [ // 可选择的数据类型
       { id: 'shiftTemplates', name: '班次模板', checked: false },
-      { id: 'shifts', name: '排班数据', checked: false },
-      { id: 'profileSettings', name: '个人中心设置', checked: false }
+      { id: 'shifts', name: '排班数据', checked: false }
     ],
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
     selectedEmoji: '', // 当前选中的表情
@@ -525,12 +524,6 @@ Page({
       if (this.data.selectedDataTypes.includes('shifts')) {
         // 获取排班数据
         data.shifts = wx.getStorageSync('shifts') || {};
-      }
-      
-      if (this.data.selectedDataTypes.includes('profileSettings')) {
-        // 获取个人中心设置数据
-        data.customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
-        // 可以添加其他个人中心设置数据
       }
       
       // 添加统计数据（如果包含排班数据）
