@@ -38,25 +38,30 @@
       <text class="summary-value">{{startDate}} 至 {{endDate}}</text>
     </view>
     
-    <view class="summary-item">
-      <text class="summary-label">总工时</text>
-      <text class="summary-value highlight">{{totalHours}} 小时</text>
-    </view>
     
-    <!-- 新增统计项 -->
-    <view class="summary-item">
-      <text class="summary-label">排班天数</text>
-      <text class="summary-value">{{statistics.totalDays}} 天</text>
-    </view>
     
-    <view class="summary-item">
-        <text class="summary-label">工作班次</text>
-        <text class="summary-value">{{statistics.workDays}}天</text>
+    
+    
+    
+      
+      <view class="summary-item">
+        <text class="summary-label">白天班</text>
+        <text class="summary-value">{{statistics.dayShifts}} 天</text>
+      </view>
+      
+      <view class="summary-item">
+        <text class="summary-label">跨夜班</text>
+        <text class="summary-value">{{statistics.nightShifts}} 天</text>
       </view>
     
     <view class="summary-item">
       <text class="summary-label">休息日</text>
       <text class="summary-value">{{statistics.offDays}} 天</text>
+    </view>
+    
+    <view class="summary-item">
+      <text class="summary-label">总工时</text>
+      <text class="summary-value highlight">{{totalHours}} 小时</text>
     </view>
     
     <view class="summary-item">
