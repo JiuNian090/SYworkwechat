@@ -592,10 +592,16 @@ Page({
   
   // 显示添加图片弹窗
   showAddImageModal() {
+    // 生成当周名称作为默认图片名称
+    const currentDate = new Date(this.data.currentDate);
+    const year = currentDate.getFullYear();
+    const weekTitle = this.formatWeekTitle(currentDate);
+    const defaultImageName = `${year}年 ${weekTitle}`;
+    
     this.setData({
       showAddImageModal: true,
       selectedImagePath: '',
-      imageName: ''
+      imageName: defaultImageName
     });
   },
   
