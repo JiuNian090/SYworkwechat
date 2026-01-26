@@ -1127,3 +1127,61 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* 数据类型选择弹窗样式 */
+.data-type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  padding: 10rpx 0;
+}
+
+.data-type-item {
+  display: flex;
+  align-items: center;
+  padding: 15rpx 10rpx;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.data-type-item:active {
+  background: #f0fff0;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  width: 100%;
+}
+
+.checkbox {
+  width: 40rpx;
+  height: 40rpx;
+  border: 2rpx solid #07c160;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.checkbox.checked {
+  background: #07c160;
+  border-color: #07c160;
+}
+
+.checkbox-icon {
+  color: white;
+  font-size: 24rpx;
+  font-weight: bold;
+}
+
+.data-type-name {
+  font-size: 30rpx;
+  color: #333;
+  flex: 1;
+  font-weight: 500;
+}

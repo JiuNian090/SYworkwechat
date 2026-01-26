@@ -26,7 +26,14 @@ Page({
     tempFileName: '', // 临时存储用户输入的文件名
     defaultFileNameHint: '', // 默认文件名提示
     showEmojiModal: false, // 表情选择弹窗显示状态
-    exportType: 'data', // 导出类型：data表示完整数据，template表示只导出模板
+    // 数据类型选择相关变量
+    showDataTypeModal: false, // 数据类型选择弹窗显示状态
+    selectedDataTypes: [], // 选中的数据类型
+    dataTypes: [ // 可选择的数据类型
+      { id: 'shiftTemplates', name: '班次模板', checked: false },
+      { id: 'shifts', name: '排班数据', checked: false },
+      { id: 'profileSettings', name: '个人中心设置', checked: false }
+    ],
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
     selectedEmoji: '', // 当前选中的表情
     emojiTextMap: {
@@ -380,30 +387,96 @@ Page({
     });
   },
 
-  // 显示文件名设置弹窗
-  showFileNameModal() {
-    // 设置默认文件名提示：用户名+备份
-    const username = this.data.username || '未命名用户';
-    const defaultFileNameHint = `${username}+备份`;
+  // 显示数据类型选择弹窗
+  showDataTypeModal() {
+    // 重置数据类型选择状态
+    const resetDataTypes = this.data.dataTypes.map(type => ({
+      ...type,
+      checked: false
+    }));
     
     this.setData({
-      tempFileName: '',
-      defaultFileNameHint: defaultFileNameHint,
-      showFileNameModal: true,
-      exportType: 'data' // 标记为导出完整数据
+      dataTypes: resetDataTypes,
+      selectedDataTypes: [],
+      showDataTypeModal: true
     });
   },
 
-  // 显示模板文件名设置弹窗
-  showTemplateFileNameModal() {
-    // 设置默认文件名为"班次模板"
-    const defaultFileNameHint = '班次模板';
+  // 隐藏数据类型选择弹窗
+  hideDataTypeModal() {
+    this.setData({
+      showDataTypeModal: false
+    });
+  },
+
+  // 处理数据类型选择
+  onDataTypeSelect(e) {
+    const dataTypeId = e.currentTarget.dataset.typeid;
+    
+    // 更新数据类型选择状态
+    const updatedDataTypes = this.data.dataTypes.map(type => {
+      if (type.id === dataTypeId) {
+        return {
+          ...type,
+          checked: !type.checked
+        };
+      }
+      return type;
+    });
+    
+    // 获取选中的数据类型
+    const selectedDataTypes = updatedDataTypes
+      .filter(type => type.checked)
+      .map(type => type.id);
     
     this.setData({
-      tempFileName: '班次模板',
+      dataTypes: updatedDataTypes,
+      selectedDataTypes: selectedDataTypes
+    });
+  },
+
+  // 确认数据类型选择，进入文件名设置
+  confirmDataTypeSelect() {
+    if (this.data.selectedDataTypes.length === 0) {
+      wx.showToast({
+        title: '请至少选择一种数据类型',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 隐藏数据类型选择弹窗
+    this.hideDataTypeModal();
+    
+    // 显示文件名设置弹窗
+    this.showFileNameModal();
+  },
+
+  // 显示文件名设置弹窗
+  showFileNameModal() {
+    // 设置默认文件名提示：用户名+数据类型+当前时间
+    const username = this.data.username || '未命名用户';
+    const dataTypeNames = this.data.dataTypes
+      .filter(type => this.data.selectedDataTypes.includes(type.id))
+      .map(type => type.name)
+      .join('+');
+    
+    const currentTime = new Date().toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(/[\/\s:]/g, '-');
+    
+    const defaultFileNameHint = `${username}+${dataTypeNames}+${currentTime}`;
+    
+    this.setData({
+      tempFileName: defaultFileNameHint,
       defaultFileNameHint: defaultFileNameHint,
-      showFileNameModal: true,
-      exportType: 'template' // 标记为只导出模板
+      showFileNameModal: true
     });
   },
 
@@ -429,81 +502,72 @@ Page({
     // 隐藏弹窗
     this.hideFileNameModal();
     
-    // 根据exportType决定导出完整数据还是只导出模板
-    if (this.data.exportType === 'template') {
-      this.exportTemplate(customFileName);
-    } else {
-      this.exportData(customFileName);
-    }
+    // 导出选择的数据类型
+    this.exportSelectedData(customFileName);
   },
 
-  // 导出完整数据
-  exportData(customFileName) {
+  // 导出选择的数据类型
+  exportSelectedData(customFileName) {
     wx.showLoading({
       title: '正在导出...'
     });
     
     try {
-      // 获取班次模板数据和排班数据
-      const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
-      const shifts = wx.getStorageSync('shifts') || {};
-      
-      // 获取自定义每周标准工时
-      const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
-      
       // 构造导出数据结构
-      const data = {
-        shiftTemplates: shiftTemplates,
-        shifts: shifts,
-        customWeeklyHours: customWeeklyHours
-      };
+      const data = {};
       
-      // 添加统计数据（根据排班实时计算）
-      const allShifts = data.shifts;
-      let totalHours = 0;
-      let workDays = 0;
-      let offDays = 0;
-      let totalDays = 0;
+      // 根据选择的数据类型获取对应的数据
+      if (this.data.selectedDataTypes.includes('shiftTemplates')) {
+        // 获取班次模板数据
+        data.shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+      }
       
-      // 计算统计数据
-      Object.keys(allShifts).forEach(date => {
-        const shift = allShifts[date];
-        totalHours += parseFloat(shift.workHours) || 0;
-        totalDays++;
+      if (this.data.selectedDataTypes.includes('shifts')) {
+        // 获取排班数据
+        data.shifts = wx.getStorageSync('shifts') || {};
+      }
+      
+      if (this.data.selectedDataTypes.includes('profileSettings')) {
+        // 获取个人中心设置数据
+        data.customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
+        // 可以添加其他个人中心设置数据
+      }
+      
+      // 添加统计数据（如果包含排班数据）
+      if (data.shifts) {
+        let totalHours = 0;
+        let workDays = 0;
+        let offDays = 0;
+        let totalDays = 0;
         
-        // 按班次类型统计工作班次和休息日
-        const shiftType = shift.type;
-        if (shiftType === '白天班' || shiftType === '跨夜班') {
-          workDays++;
-        } else if (shiftType === '休息日') {
-          offDays++;
-        }
-      });
-      
-      // 添加统计数据到导出数据中
-      data.statistics = {
-        totalHours: totalHours.toFixed(1),
-        totalDays: totalDays,
-        workDays: workDays,
-        offDays: offDays
-      };
+        // 计算统计数据
+        Object.keys(data.shifts).forEach(date => {
+          const shift = data.shifts[date];
+          totalHours += parseFloat(shift.workHours) || 0;
+          totalDays++;
+          
+          // 按班次类型统计工作班次和休息日
+          const shiftType = shift.type;
+          if (shiftType === '白天班' || shiftType === '跨夜班') {
+            workDays++;
+          } else if (shiftType === '休息日') {
+            offDays++;
+          }
+        });
+        
+        // 添加统计数据到导出数据中
+        data.statistics = {
+          totalHours: totalHours.toFixed(1),
+          totalDays: totalDays,
+          workDays: workDays,
+          offDays: offDays
+        };
+      }
       
       const jsonData = JSON.stringify(data, null, 2);
       
-      // 获取用户名
-      const username = this.data.username || '未命名用户';
-      
-      // 生成默认文件名：用户名+备份时间
-      const backupTime = new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      }).replace(/[\/\s:]/g, '-');
-      const fileName = customFileName ? customFileName : `${username}_备份_${backupTime}`;
+      // 使用用户输入的文件名
+      const fileName = customFileName;
       
       // 创建临时文件
       const fs = wx.getFileSystemManager();
@@ -543,74 +607,6 @@ Page({
       console.error('导出数据失败', e);
       wx.showToast({
         title: '导出失败',
-        icon: 'none'
-      });
-    }
-  },
-
-  // 只导出模板数据
-  exportTemplate(customFileName) {
-    wx.showLoading({
-      title: '正在导出模板...'
-    });
-    
-    try {
-      // 只获取班次模板数据，不包含排班数据
-      const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
-      
-      // 获取自定义每周标准工时
-      const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
-      
-      // 构造只包含模板的数据结构
-      const data = {
-        shiftTemplates: shiftTemplates,
-        shifts: {}, // 空的排班数据
-        customWeeklyHours: customWeeklyHours
-      };
-      
-      const jsonData = JSON.stringify(data, null, 2);
-      
-      // 使用用户输入的文件名或默认文件名
-      const fileName = customFileName || '班次模板';
-      
-      // 创建临时文件
-      const fs = wx.getFileSystemManager();
-      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.json`;
-      
-      fs.writeFile({
-        filePath: filePath,
-        data: jsonData,
-        encoding: 'utf8',
-        success: () => {
-          wx.hideLoading();
-          // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
-          this.setData({
-            exportedTemplateFilePath: filePath,
-            exportedTemplateFileName: fileName
-          });
-          
-          // 显示提示，让用户点击分享按钮
-          wx.showModal({
-            title: '模板导出成功',
-            content: '班次模板已导出为JSON文件，请点击下方"分享模板"按钮将模板发送给好友',
-            showCancel: false,
-            confirmText: '知道了'
-          });
-        },
-        fail: (err) => {
-          wx.hideLoading();
-          console.error('写入模板文件失败', err);
-          wx.showToast({
-            title: '模板导出失败',
-            icon: 'none'
-          });
-        }
-      });
-    } catch (e) {
-      wx.hideLoading();
-      console.error('导出模板失败', e);
-      wx.showToast({
-        title: '模板导出失败',
         icon: 'none'
       });
     }
