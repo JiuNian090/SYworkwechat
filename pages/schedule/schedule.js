@@ -28,6 +28,11 @@ Page({
     monthDifferenceValue: '0.0', // 当月差额值，显示为绝对值
     // 用户头像信息
     avatarType: 'text', // 头像类型：text 或 emoji
+    // 图片管理相关数据
+    weekImages: [],
+    showAddImageModal: false,
+    selectedImagePath: '',
+    imageName: '',
     avatarText: '用', // 头像文字
     avatarEmoji: '' // 头像表情
   },
@@ -61,6 +66,7 @@ Page({
     this.loadShifts();
     this.generateWeekDates();
     this.generateMonthDates();
+    this.loadWeekImages();
   },
 
   onShow() {
@@ -91,6 +97,9 @@ Page({
     this.setData({
       isCurrentMonth: isCurrentMonth
     });
+    
+    // 加载本周图片
+    this.loadWeekImages();
   },
 
   loadShiftTemplates() {
@@ -484,6 +493,7 @@ Page({
       isCurrentWeek: isCurrentWeek
     });
     this.generateWeekDates();
+    this.loadWeekImages();
   },
 
   nextWeek() {
@@ -496,6 +506,7 @@ Page({
       isCurrentWeek: isCurrentWeek
     });
     this.generateWeekDates();
+    this.loadWeekImages();
   },
 
   prevMonth() {
@@ -575,6 +586,148 @@ Page({
   stopPropagation(e) {
     // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
     e.stopPropagation();
+  },
+  
+  // 图片管理相关方法
+  
+  // 显示添加图片弹窗
+  showAddImageModal() {
+    this.setData({
+      showAddImageModal: true,
+      selectedImagePath: '',
+      imageName: ''
+    });
+  },
+  
+  // 隐藏添加图片弹窗
+  hideAddImageModal() {
+    this.setData({
+      showAddImageModal: false,
+      selectedImagePath: '',
+      imageName: ''
+    });
+  },
+  
+  // 选择图片
+  chooseImage() {
+    const that = this;
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success(res) {
+        // 获取选中图片的临时路径
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        that.setData({
+          selectedImagePath: tempFilePath
+        });
+      }
+    });
+  },
+  
+  // 处理图片名称输入
+  onImageNameInput(e) {
+    this.setData({
+      imageName: e.detail.value
+    });
+  },
+  
+  // 添加图片
+  addImage() {
+    const { selectedImagePath, imageName, weekImages } = this.data;
+    
+    // 生成唯一ID
+    const imageId = Date.now().toString();
+    
+    // 构造图片对象
+    const newImage = {
+      id: imageId,
+      name: imageName,
+      path: selectedImagePath,
+      addedTime: new Date().toISOString()
+    };
+    
+    // 更新图片列表
+    const updatedImages = [...weekImages, newImage];
+    this.setData({
+      weekImages: updatedImages
+    });
+    
+    // 保存到本地存储（这里可以根据需要保存到合适的存储位置）
+    // 由于用户要求图片放在本地，且不会被导出，我们可以保存到特定的存储键
+    const weekKey = this.getWeekKey();
+    wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
+    
+    // 关闭弹窗
+    this.hideAddImageModal();
+    
+    wx.showToast({
+      title: '图片添加成功',
+      icon: 'success'
+    });
+  },
+  
+  // 查看图片
+  viewImage(e) {
+    const index = e.currentTarget.dataset.index;
+    const { weekImages } = this.data;
+    const image = weekImages[index];
+    
+    // 使用微信的图片预览功能
+    wx.previewImage({
+      urls: [image.path],
+      current: image.path
+    });
+  },
+  
+  // 删除图片
+  deleteImage(e) {
+    const index = e.currentTarget.dataset.index;
+    const { weekImages } = this.data;
+    
+    // 显示确认对话框
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这张图片吗？',
+      success: (res) => {
+        if (res.confirm) {
+          // 删除图片
+          const updatedImages = weekImages.filter((_, i) => i !== index);
+          this.setData({
+            weekImages: updatedImages
+          });
+          
+          // 更新本地存储
+          const weekKey = this.getWeekKey();
+          wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
+          
+          wx.showToast({
+            title: '图片删除成功',
+            icon: 'success'
+          });
+        }
+      }
+    });
+  },
+  
+  // 获取当前周的唯一标识（用于本地存储键）
+  getWeekKey() {
+    // 使用当前显示的周的起始日期作为唯一标识
+    const currentDate = new Date(this.data.currentDate);
+    const dayOfWeek = currentDate.getDay();
+    const startDate = new Date(currentDate);
+    // 周一作为每周第一天 (周一为1，周日为0)
+    startDate.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    return startDate.toISOString().split('T')[0];
+  },
+  
+  // 加载本周图片
+  loadWeekImages() {
+    const weekKey = this.getWeekKey();
+    const weekImages = wx.getStorageSync(`week_images_${weekKey}`) || [];
+    this.setData({
+      weekImages: weekImages
+    });
   },
 
   bindPickerChange(e) {

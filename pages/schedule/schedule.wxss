@@ -1185,3 +1185,236 @@
   background: #e6f7ff;
   border: 1rpx solid #91d5ff;
 }
+
+/* 图片管理板块样式 */
+.week-images {
+  background: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+  padding: 20rpx 30rpx;
+  margin-top: 20rpx;
+  transition: all 0.3s ease;
+}
+
+.images-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.images-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.images-title::before {
+  content: "";
+  display: inline-block;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #07c160, #1890ff);
+  margin-right: 12rpx;
+}
+
+.add-image-btn {
+  background: #07c160;
+  color: white;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+  padding: 6rpx 20rpx;
+  border: none;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.15);
+  transition: all 0.3s ease;
+}
+
+.add-image-btn:active {
+  background: #059e4d;
+  transform: translateY(2rpx);
+  box-shadow: 0 1rpx 4rpx rgba(7, 193, 96, 0.1);
+}
+
+.images-list {
+  margin-top: 20rpx;
+}
+
+.image-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 10rpx;
+  background: #f9f9f9;
+  border-radius: 12rpx;
+  margin-bottom: 12rpx;
+  transition: all 0.3s ease;
+}
+
+.image-item:active {
+  background: #f0f0f0;
+}
+
+.image-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+}
+
+.image-actions {
+  display: flex;
+  gap: 10rpx;
+}
+
+.image-action-btn {
+  font-size: 24rpx;
+  padding: 8rpx 15rpx;
+  border-radius: 8rpx;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.image-action-btn.view-btn {
+  background: #1890ff;
+  color: white;
+}
+
+.image-action-btn.view-btn:active {
+  background: #096dd9;
+}
+
+.image-action-btn.delete-btn {
+  background: #ff4d4f;
+  color: white;
+}
+
+.image-action-btn.delete-btn:active {
+  background: #cf1322;
+}
+
+.empty-images {
+  text-align: center;
+  padding: 40rpx 0;
+  color: #999;
+  font-size: 28rpx;
+  background: #f9f9f9;
+  border-radius: 12rpx;
+}
+
+/* 图片上传弹窗样式 */
+.image-upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  margin-bottom: 20rpx;
+}
+
+.image-upload-btn {
+  background: #1890ff;
+  color: white;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  padding: 10rpx 30rpx;
+  border: none;
+  box-shadow: 0 4rpx 12rpx rgba(24, 144, 255, 0.2);
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.image-upload-btn:active {
+  background: #096dd9;
+  transform: translateY(2rpx);
+  box-shadow: 0 2rpx 6rpx rgba(24, 144, 255, 0.15);
+}
+
+.image-upload-hint {
+  color: #07c160;
+  font-size: 28rpx;
+}
+
+.image-name-section {
+  margin-bottom: 30rpx;
+}
+
+.image-name-label {
+  display: block;
+  font-size: 30rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+  font-weight: 500;
+}
+
+.image-name-input {
+  width: 100%;
+  height: 80rpx;
+  border: 2rpx solid #07c160;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.08);
+  transition: all 0.3s ease;
+}
+
+.image-name-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 4rpx rgba(7, 193, 96, 0.3);
+  border-color: #07c160;
+}
+
+.image-upload-section,
+.image-name-section {
+  padding: 0 20rpx;
+}
+
+/* 模态框底部按钮样式 */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 20rpx 0 0 0;
+  margin-top: 30rpx;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  border: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.modal-btn.cancel-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.modal-btn.cancel-btn:active {
+  background: #e0e0e0;
+  transform: translateY(2rpx);
+}
+
+.modal-btn.confirm-btn {
+  background: linear-gradient(135deg, #07c160, #059e4d);
+  color: white;
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.25);
+}
+
+.modal-btn.confirm-btn:active {
+  background: linear-gradient(135deg, #059e4d, #048c42);
+  transform: translateY(2rpx);
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.2);
+}
+
+.modal-btn:disabled {
+  opacity: 0.6;
+  transform: none;
+}
