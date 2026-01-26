@@ -20,6 +20,8 @@ Page({
     statistics: {
       totalDays: 0,
       workDays: 0,
+      dayShifts: 0, // 白天班天数
+      nightShifts: 0, // 跨夜班天数
       offDays: 0
     },
     // 连续点击功能相关
@@ -257,6 +259,8 @@ Page({
       const shiftsInRange = [];
       let totalHours = 0;
       let workDays = 0;
+      let dayShifts = 0; // 白天班天数
+      let nightShifts = 0; // 跨夜班天数
       let offDays = 0;
       
       // 遍历日期范围内的所有排班
@@ -280,8 +284,12 @@ Page({
           // 工作班次：白天班、跨夜班
           // 休息日：休息日
           const shiftType = allShifts[dateStr].type;
-          if (shiftType === '白天班' || shiftType === '跨夜班') {
+          if (shiftType === '白天班') {
             workDays++;
+            dayShifts++;
+          } else if (shiftType === '跨夜班') {
+            workDays++;
+            nightShifts++;
           } else if (shiftType === '休息日') {
             offDays++;
           }
@@ -322,6 +330,8 @@ Page({
         statistics: {
           totalDays: shiftsInRange.length,
           workDays: workDays,
+          dayShifts: dayShifts,
+          nightShifts: nightShifts,
           offDays: offDays
         }
       });
@@ -391,8 +401,8 @@ Page({
       csvContent += '\n';
       
       // 添加统计摘要
-      csvContent += '"统计区间","总工时","标准工时","工时差额","排班天数","工作班次","休息日"\n';
-      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + standardHours + '","' + hourDifference + '","' + statistics.totalDays + '","' + statistics.workDays + '","' + statistics.offDays + '"\n';
+      csvContent += '"统计区间","总工时","标准工时","工时差额","白天班","跨夜班","休息日"\n';
+      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + standardHours + '","' + hourDifference + '","' + statistics.dayShifts + '","' + statistics.nightShifts + '","' + statistics.offDays + '"\n';
       
       // 获取用户名
       const username = wx.getStorageSync('username') || '未命名用户';
