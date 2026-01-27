@@ -709,7 +709,7 @@ Page({
       // 等待所有图片处理完成
       Promise.all(imagePromises).then(() => {
         // 生成ZIP文件
-        zip.generateAsync({ type: 'uint8array' }).then((content) => {
+        zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
           // 创建临时文件
           const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.zip`;
           
