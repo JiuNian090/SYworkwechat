@@ -1,6 +1,7 @@
 // pages/profile/profile.js
 const api = require('../../utils/api.js');
 const changelogData = require('../../utils/changelog.js');
+const JSZip = require('../../utils/jszip.min.js');
 
 Page({
   data: {
@@ -31,7 +32,8 @@ Page({
     selectedDataTypes: [], // 选中的数据类型
     dataTypes: [ // 可选择的数据类型
       { id: 'shiftTemplates', name: '班次模板', checked: false },
-      { id: 'shifts', name: '排班数据', checked: false }
+      { id: 'shifts', name: '排班数据', checked: false },
+      { id: 'scheduleImages', name: '排班图片', checked: false }
     ],
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
     selectedEmoji: '', // 当前选中的表情
@@ -455,22 +457,42 @@ Page({
   showFileNameModal() {
     // 设置默认文件名提示：用户名+数据类型+当前时间
     const username = this.data.username || '未命名用户';
-    const dataTypeNames = this.data.dataTypes
-      .filter(type => this.data.selectedDataTypes.includes(type.id))
-      .map(type => type.name)
-      .join('+');
+    const selectedDataTypes = this.data.selectedDataTypes;
+    const allDataTypes = this.data.dataTypes.map(type => type.id);
     
-    const currentTime = new Date().toLocaleString('zh-CN', {
+    const currentDate = new Date().toLocaleString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
+      day: '2-digit'
     }).replace(/[\/\s:]/g, '-');
     
-    const defaultFileNameHint = `${username}+${dataTypeNames}+${currentTime}`;
+    let defaultFileNameHint;
+    
+    // 检查是否全选了所有导出项目
+    const isAllSelected = selectedDataTypes.length === allDataTypes.length && selectedDataTypes.every(type => allDataTypes.includes(type));
+    
+    if (isAllSelected) {
+      // 全选时使用"用户名+备份+日期"格式
+      defaultFileNameHint = `${username}+备份+${currentDate}`;
+    } else {
+      // 非全选时使用原格式：用户名+数据类型+当前时间
+      const dataTypeNames = this.data.dataTypes
+        .filter(type => selectedDataTypes.includes(type.id))
+        .map(type => type.name)
+        .join('+');
+      
+      const currentTime = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).replace(/[\/\s:]/g, '-');
+      
+      defaultFileNameHint = `${username}+${dataTypeNames}+${currentTime}`;
+    }
     
     this.setData({
       tempFileName: defaultFileNameHint,
@@ -557,47 +579,162 @@ Page({
         };
       }
       
-      const jsonData = JSON.stringify(data, null, 2);
-      
       // 使用用户输入的文件名
       const fileName = customFileName;
-      
-      // 创建临时文件
       const fs = wx.getFileSystemManager();
-      const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.json`;
       
-      fs.writeFile({
-        filePath: filePath,
-        data: jsonData,
-        encoding: 'utf8',
-        success: () => {
-          wx.hideLoading();
-          // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
-          this.setData({
-            exportedFilePath: filePath,
-            exportedFileName: fileName
+      // 检查是否选择了图片
+      const includeImages = this.data.selectedDataTypes.includes('scheduleImages');
+      
+      if (includeImages) {
+        // 生成ZIP文件
+        this.exportAsZip(fileName, data);
+      } else {
+        // 生成JSON文件
+        const jsonData = JSON.stringify(data, null, 2);
+        const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.json`;
+        
+        fs.writeFile({
+          filePath: filePath,
+          data: jsonData,
+          encoding: 'utf8',
+          success: () => {
+            wx.hideLoading();
+            // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
+            this.setData({
+              exportedFilePath: filePath,
+              exportedFileName: fileName
+            });
+            
+            // 显示提示，让用户点击分享按钮
+            wx.showModal({
+              title: '导出成功',
+              content: '数据已导出为JSON文件，请点击下方"分享数据"按钮将文件发送给好友',
+              showCancel: false,
+              confirmText: '知道了'
+            });
+          },
+          fail: (err) => {
+            wx.hideLoading();
+            console.error('写入文件失败', err);
+            wx.showToast({
+              title: '导出失败',
+              icon: 'none'
+            });
+          }
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('导出数据失败', e);
+      wx.showToast({
+        title: '导出失败',
+        icon: 'none'
+      });
+    }
+  },
+  
+  // 导出为ZIP文件
+  exportAsZip(fileName, data) {
+    try {
+      const zip = new JSZip();
+      
+      // 添加JSON数据文件
+      zip.file('data.json', JSON.stringify(data, null, 2));
+      
+      // 添加图片文件
+      const images = [];
+      const fs = wx.getFileSystemManager();
+      const imagePromises = [];
+      
+      // 获取所有周的图片
+      // 注意：这里需要根据实际存储结构调整，例如按周存储的图片
+      // 假设图片是按周存储的，键格式为 week_images_{weekKey}
+      const storageInfo = wx.getStorageInfoSync();
+      const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+      
+      weekImageKeys.forEach(key => {
+        const weekImages = wx.getStorageSync(key) || [];
+        weekImages.forEach((image, index) => {
+          const promise = new Promise((resolve) => {
+            try {
+              // 读取图片文件
+              fs.readFile({
+                filePath: image.path,
+                success: (res) => {
+                  // 生成图片文件名
+                  const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
+                  // 添加图片到ZIP
+                  zip.file(imageFileName, res.data);
+                  // 保存图片信息
+                  images.push({
+                    ...image,
+                    key: key,
+                    zipPath: imageFileName
+                  });
+                  resolve();
+                },
+                fail: (err) => {
+                  console.error('读取图片失败', err);
+                  resolve(); // 忽略失败的图片
+                }
+              });
+            } catch (e) {
+              console.error('处理图片失败', e);
+              resolve();
+            }
           });
+          imagePromises.push(promise);
+        });
+      });
+      
+      // 等待所有图片处理完成
+      Promise.all(imagePromises).then(() => {
+        // 生成ZIP文件
+        zip.generateAsync({ type: 'uint8array' }).then((content) => {
+          // 创建临时文件
+          const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.zip`;
           
-          // 显示提示，让用户点击分享按钮
-          wx.showModal({
-            title: '导出成功',
-            content: '数据已导出为JSON文件，请点击下方"分享数据"按钮将文件发送给好友',
-            showCancel: false,
-            confirmText: '知道了'
+          fs.writeFile({
+            filePath: filePath,
+            data: content,
+            success: () => {
+              wx.hideLoading();
+              // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
+              this.setData({
+                exportedFilePath: filePath,
+                exportedFileName: fileName
+              });
+              
+              // 显示提示，让用户点击分享按钮
+              wx.showModal({
+                title: '导出成功',
+                content: '数据已导出为ZIP文件（包含图片），请点击下方"分享数据"按钮将文件发送给好友',
+                showCancel: false,
+                confirmText: '知道了'
+              });
+            },
+            fail: (err) => {
+              wx.hideLoading();
+              console.error('写入ZIP文件失败', err);
+              wx.showToast({
+                title: '导出失败',
+                icon: 'none'
+              });
+            }
           });
-        },
-        fail: (err) => {
+        }).catch((err) => {
           wx.hideLoading();
-          console.error('写入文件失败', err);
+          console.error('生成ZIP失败', err);
           wx.showToast({
             title: '导出失败',
             icon: 'none'
           });
-        }
+        });
       });
     } catch (e) {
       wx.hideLoading();
-      console.error('导出数据失败', e);
+      console.error('导出ZIP失败', e);
       wx.showToast({
         title: '导出失败',
         icon: 'none'
@@ -635,9 +772,12 @@ Page({
   shareFile(filePath, fileName) {
     // 检查是否支持分享文件
     if (wx.shareFileMessage) {
+      // 确定文件扩展名
+      const extension = filePath.endsWith('.zip') ? '.zip' : '.json';
+      
       wx.shareFileMessage({
         filePath: filePath,
-        fileName: `${fileName}.json`,
+        fileName: `${fileName}${extension}`,
         success: () => {
           wx.showToast({
             title: '分享成功',
@@ -667,32 +807,103 @@ Page({
     wx.chooseMessageFile({
       count: 1,
       type: 'file',
-      extension: ['json'],
-      // 提示用户选择JSON文件，提高用户体验
+      extension: ['json', 'zip'],
+      // 提示用户选择JSON或ZIP文件，提高用户体验
       success: (res) => {
-        // 额外验证文件扩展名，确保是JSON文件
         const fileName = res.tempFiles[0].name;
-        if (!fileName.toLowerCase().endsWith('.json')) {
-          wx.showToast({
-            title: '请选择JSON格式文件',
-            icon: 'none'
-          });
-          return;
-        }
+        const filePath = res.tempFiles[0].path;
+        
         wx.showLoading({
           title: '正在导入...'
         });
         
-        const filePath = res.tempFiles[0].path;
-        
-        wx.getFileSystemManager().readFile({
-          filePath: filePath,
-          encoding: 'utf-8',
-          success: (readRes) => {
-            try {
-              const data = JSON.parse(readRes.data);
+        if (fileName.toLowerCase().endsWith('.zip')) {
+          // 处理ZIP文件
+          this.importFromZip(filePath);
+        } else if (fileName.toLowerCase().endsWith('.json')) {
+          // 处理JSON文件
+          this.importFromJson(filePath);
+        } else {
+          wx.hideLoading();
+          wx.showToast({
+            title: '请选择JSON或ZIP格式文件',
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        if (err.errMsg && !err.errMsg.includes('cancel')) {
+          wx.showToast({
+            title: '选择文件失败',
+            icon: 'none'
+          });
+        }
+      }
+    });
+  },
+  
+  // 从JSON文件导入
+  importFromJson(filePath) {
+    wx.getFileSystemManager().readFile({
+      filePath: filePath,
+      encoding: 'utf-8',
+      success: (readRes) => {
+        try {
+          const data = JSON.parse(readRes.data);
+          
+          // 验证数据格式 - 检查必需的数据结构
+          if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
+            throw new Error('数据格式不正确');
+          }
+          
+          // 保存数据到本地存储
+          if (data.shiftTemplates) {
+            wx.setStorageSync('shiftTemplates', data.shiftTemplates);
+          }
+          if (data.shifts) {
+            wx.setStorageSync('shifts', data.shifts);
+          }
+          if (data.customWeeklyHours !== undefined) {
+            wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
+          }
+          
+          this.finishImport();
+        } catch (e) {
+          wx.hideLoading();
+          console.error('解析数据失败', e);
+          wx.showToast({
+            title: '数据格式错误',
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('读取文件失败', err);
+        wx.showToast({
+          title: '读取文件失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  
+  // 从ZIP文件导入
+  importFromZip(filePath) {
+    const fs = wx.getFileSystemManager();
+    
+    fs.readFile({
+      filePath: filePath,
+      success: (readRes) => {
+        try {
+          const zip = new JSZip();
+          
+          zip.loadAsync(readRes.data).then((zip) => {
+            // 读取data.json文件
+            zip.file('data.json').async('string').then((jsonStr) => {
+              const data = JSON.parse(jsonStr);
               
-              // 验证数据格式 - 检查必需的数据结构
+              // 验证数据格式
               if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
                 throw new Error('数据格式不正确');
               }
@@ -708,81 +919,143 @@ Page({
                 wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
               }
               
-              wx.showToast({
-                title: '导入成功',
-                icon: 'success'
-              });
-              
-              // 延迟一段时间确保数据保存完成后再刷新页面
-              setTimeout(() => {
-                // 刷新所有相关页面数据
-                const pages = getCurrentPages();
-                for (let i = 0; i < pages.length; i++) {
-                  const page = pages[i];
-                  if (page.route === 'pages/plan/plan') {
-                    // 重新加载班次模板数据
-                    if (page.loadShiftTemplates) {
-                      page.loadShiftTemplates();
-                    }
-                  } else if (page.route === 'pages/schedule/schedule') {
-                    // 重新加载排班数据和班次模板
-                    if (page.loadShifts) {
-                      page.loadShifts();
-                    }
-                    if (page.loadShiftTemplates) {
-                      page.loadShiftTemplates();
-                    }
-                    // 重新生成日期数据
-                    if (page.generateWeekDates) {
-                      page.generateWeekDates();
-                    }
-                    if (page.generateMonthDates) {
-                      page.generateMonthDates();
-                    }
-                  } else if (page.route === 'pages/statistics/statistics') {
-                    // 重新计算统计数据
-                    if (page.calculateStatistics) {
-                      page.calculateStatistics();
-                    }
-                  }
-                }
+              // 处理图片文件
+              const imageDir = zip.folder('images');
+              if (imageDir) {
+                const imagePromises = [];
                 
-                // 如果当前在tab页面，也需要刷新当前页面数据
-                if (this.loadUserData && typeof this.loadUserData === 'function') {
-                  this.loadUserData();
-                }
+                // 遍历图片文件夹中的文件
+                imageDir.forEach((relativePath, file) => {
+                  const promise = file.async('uint8array').then((content) => {
+                    // 生成临时图片路径
+                    const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${relativePath.split('/').pop()}`;
+                    // 写入图片文件
+                    fs.writeFile({
+                      filePath: tempPath,
+                      data: content,
+                      success: () => {
+                        // 解析图片信息，恢复到对应的周存储
+                        // 假设图片文件名格式为：week_images_{weekKey}_index_name.jpg
+                        const fileNameParts = relativePath.split('/').pop().split('_');
+                        if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
+                          const weekKey = fileNameParts.slice(2, -2).join('_');
+                          const weekImageKey = `week_images_${weekKey}`;
+                          
+                          // 获取现有图片数据
+                          const existingImages = wx.getStorageSync(weekImageKey) || [];
+                          
+                          // 添加新图片
+                          existingImages.push({
+                            id: Date.now().toString(),
+                            name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
+                            path: tempPath,
+                            addedTime: new Date().toISOString()
+                          });
+                          
+                          // 保存图片数据
+                          wx.setStorageSync(weekImageKey, existingImages);
+                        }
+                      },
+                      fail: (err) => {
+                        console.error('保存图片失败', err);
+                      }
+                    });
+                  });
+                  imagePromises.push(promise);
+                });
                 
-                // 隐藏loading
-                wx.hideLoading();
-              }, 500);
-            } catch (e) {
+                // 等待所有图片处理完成
+                Promise.all(imagePromises).then(() => {
+                  this.finishImport();
+                });
+              } else {
+                this.finishImport();
+              }
+            }).catch((err) => {
               wx.hideLoading();
-              console.error('解析数据失败', e);
+              console.error('解析JSON失败', err);
               wx.showToast({
                 title: '数据格式错误',
                 icon: 'none'
               });
-            }
-          },
-          fail: (err) => {
+            });
+          }).catch((err) => {
             wx.hideLoading();
-            console.error('读取文件失败', err);
+            console.error('解压ZIP失败', err);
             wx.showToast({
-              title: '读取文件失败',
+              title: '压缩包格式错误',
               icon: 'none'
             });
-          }
-        });
-      },
-      fail: (err) => {
-        if (err.errMsg && !err.errMsg.includes('cancel')) {
+          });
+        } catch (e) {
+          wx.hideLoading();
+          console.error('导入失败', e);
           wx.showToast({
-            title: '选择文件失败',
+            title: '导入失败',
             icon: 'none'
           });
         }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.error('读取文件失败', err);
+        wx.showToast({
+          title: '读取文件失败',
+          icon: 'none'
+        });
       }
     });
+  },
+  
+  // 完成导入，刷新页面数据
+  finishImport() {
+    wx.showToast({
+      title: '导入成功',
+      icon: 'success'
+    });
+    
+    // 延迟一段时间确保数据保存完成后再刷新页面
+    setTimeout(() => {
+      // 刷新所有相关页面数据
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        if (page.route === 'pages/plan/plan') {
+          // 重新加载班次模板数据
+          if (page.loadShiftTemplates) {
+            page.loadShiftTemplates();
+          }
+        } else if (page.route === 'pages/schedule/schedule') {
+          // 重新加载排班数据和班次模板
+          if (page.loadShifts) {
+            page.loadShifts();
+          }
+          if (page.loadShiftTemplates) {
+            page.loadShiftTemplates();
+          }
+          // 重新生成日期数据
+          if (page.generateWeekDates) {
+            page.generateWeekDates();
+          }
+          if (page.generateMonthDates) {
+            page.generateMonthDates();
+          }
+        } else if (page.route === 'pages/statistics/statistics') {
+          // 重新计算统计数据
+          if (page.calculateStatistics) {
+            page.calculateStatistics();
+          }
+        }
+      }
+      
+      // 如果当前在tab页面，也需要刷新当前页面数据
+      if (this.loadUserData && typeof this.loadUserData === 'function') {
+        this.loadUserData();
+      }
+      
+      // 隐藏loading
+      wx.hideLoading();
+    }, 500);
   },
 
   
