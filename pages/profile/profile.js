@@ -35,6 +35,17 @@ Page({
       { id: 'shifts', name: '排班数据', checked: false },
       { id: 'scheduleImages', name: '排班图片', checked: false }
     ],
+    // WebDAV备份设置
+    webdavConfig: {
+      url: '',
+      username: '',
+      password: '',
+      folder: ''
+    },
+    // WebDAV配置弹窗
+    showWebDAVModal: false,
+    // 密码显示/隐藏状态
+    showPassword: false,
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
     selectedEmoji: '', // 当前选中的表情
     emojiTextMap: {
@@ -221,11 +232,17 @@ Page({
 
 
   onLoad() {
-    // 读取本地存储的用户名
     const username = wx.getStorageSync('username') || '';
     // 读取本地存储的头像信息
     const avatarType = wx.getStorageSync('avatarType') || 'text';
     const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
+    
+    // 读取WebDAV配置
+    const webdavConfig = wx.getStorageSync('webdavConfig') || {
+      url: '',
+      username: '',
+      password: ''
+    };
     
     // 生成头像文字
     const avatarText = this.generateAvatarText(username);
@@ -240,7 +257,8 @@ Page({
       avatarEmoji: avatarEmoji,
       avatarType: avatarType,
       emojiText: emojiText,
-      emojiEmotion: emojiEmotion
+      emojiEmotion: emojiEmotion,
+      webdavConfig: webdavConfig
     });
   },
 
@@ -1309,5 +1327,919 @@ Page({
       title: 'SYwork排班管理系统 - 个人中心',
       query: 'page=profile'
     };
+  },
+  
+  // WebDAV备份相关方法
+  
+  // 显示WebDAV配置弹窗
+  showWebDAVModal() {
+    this.setData({
+      showWebDAVModal: true
+    });
+  },
+  
+  // 隐藏WebDAV配置弹窗
+  hideWebDAVModal() {
+    this.setData({
+      showWebDAVModal: false
+    });
+  },
+  
+  // 切换密码显示/隐藏状态
+  togglePasswordVisibility() {
+    this.setData({
+      showPassword: !this.data.showPassword
+    });
+  },
+  
+  // WebDAV服务器地址输入处理
+  onWebDAVUrlInput(e) {
+    this.setData({
+      'webdavConfig.url': e.detail.value
+    });
+  },
+  
+  // WebDAV用户名输入处理
+  onWebDAVUsernameInput(e) {
+    this.setData({
+      'webdavConfig.username': e.detail.value
+    });
+  },
+  
+  // WebDAV密码输入处理
+  onWebDAVPasswordInput(e) {
+    this.setData({
+      'webdavConfig.password': e.detail.value
+    });
+  },
+  
+  // WebDAV文件夹输入处理
+  onWebDAVFolderInput(e) {
+    this.setData({
+      'webdavConfig.folder': e.detail.value
+    });
+  },
+  
+  // 保存WebDAV配置
+  saveWebDAVConfig() {
+    const { url, username, password } = this.data.webdavConfig;
+    
+    if (!url) {
+      wx.showToast({
+        title: '请输入服务器地址',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    if (!username) {
+      wx.showToast({
+        title: '请输入用户名',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    if (!password) {
+      wx.showToast({
+        title: '请输入密码',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 保存配置到本地存储
+    wx.setStorageSync('webdavConfig', this.data.webdavConfig);
+    
+    // 关闭弹窗
+    this.hideWebDAVModal();
+    
+    wx.showToast({
+      title: '保存成功',
+      icon: 'success'
+    });
+  },
+  
+  // 测试WebDAV连接
+  testWebDAVConnection() {
+    const { url, username, password } = this.data.webdavConfig;
+    
+    if (!url || !username || !password) {
+      wx.showToast({
+        title: '请先填写完整的服务器信息',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    wx.showLoading({
+      title: '测试连接中...'
+    });
+    
+    // 构建测试请求
+    const testUrl = url.endsWith('/') ? url + 'test.txt' : url + '/test.txt';
+    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    
+    // 使用wx.request测试连接
+    wx.request({
+      url: testUrl,
+      method: 'PUT',
+      header: {
+        'Authorization': authHeader,
+        'Content-Type': 'text/plain'
+      },
+      data: 'test connection',
+      success: (res) => {
+        wx.hideLoading();
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          wx.showToast({
+            title: '连接成功',
+            icon: 'success'
+          });
+        } else {
+          wx.showToast({
+            title: `连接失败: ${res.statusCode}`,
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        wx.showToast({
+          title: '连接失败，请检查服务器信息',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  
+  // WebDAV备份功能
+  backupToWebDAV() {
+    const { url, username, password } = this.data.webdavConfig;
+    
+    if (!url || !username || !password) {
+      wx.showToast({
+        title: '请先填写并保存WebDAV配置',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    wx.showLoading({
+      title: '备份中...'
+    });
+    
+    try {
+      const fs = wx.getFileSystemManager();
+      // 生成固定的文件夹名：用户名排班备份
+      let folder = this.data.webdavConfig.folder;
+      if (!folder) {
+        const user = this.data.username || '未命名用户';
+        folder = `${user}排班备份`;
+      }
+      
+      // 备份班次模板
+      this.backupShiftTemplates(url, username, password, folder, fs);
+      
+      // 备份排班数据
+      this.backupShifts(url, username, password, folder, fs);
+      
+      // 备份图片文件夹
+      this.backupImages(url, username, password, folder, fs);
+      
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '备份失败',
+        icon: 'none'
+      });
+    }
+  },
+  
+  // 备份班次模板
+  backupShiftTemplates(url, username, password, folder, fs) {
+    const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+    const fileName = '班次模板.json';
+    const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+    
+    fs.writeFile({
+      filePath: filePath,
+      data: JSON.stringify({ shiftTemplates }, null, 2),
+      encoding: 'utf8',
+      success: () => {
+        this.uploadToWebDAV(filePath, fileName, url, username, password, folder);
+      },
+      fail: (err) => {
+        console.error('备份班次模板失败', err);
+      }
+    });
+  },
+  
+  // 备份排班数据
+  backupShifts(url, username, password, folder, fs) {
+    const shifts = wx.getStorageSync('shifts') || {};
+    
+    // 计算统计数据
+    let totalHours = 0;
+    let workDays = 0;
+    let offDays = 0;
+    let totalDays = 0;
+    
+    Object.keys(shifts).forEach(date => {
+      const shift = shifts[date];
+      totalHours += parseFloat(shift.workHours) || 0;
+      totalDays++;
+      
+      const shiftType = shift.type;
+      if (shiftType === '白天班' || shiftType === '跨夜班') {
+        workDays++;
+      } else if (shiftType === '休息日') {
+        offDays++;
+      }
+    });
+    
+    const statistics = {
+      totalHours: totalHours.toFixed(1),
+      totalDays: totalDays,
+      workDays: workDays,
+      offDays: offDays
+    };
+    
+    const fileName = '排班数据.json';
+    const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+    
+    fs.writeFile({
+      filePath: filePath,
+      data: JSON.stringify({ shifts, statistics }, null, 2),
+      encoding: 'utf8',
+      success: () => {
+        this.uploadToWebDAV(filePath, fileName, url, username, password, folder);
+      },
+      fail: (err) => {
+        console.error('备份排班数据失败', err);
+      }
+    });
+  },
+  
+  // 备份图片文件夹
+  backupImages(url, username, password, folder, fs) {
+    const storageInfo = wx.getStorageInfoSync();
+    const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+    
+    if (weekImageKeys.length === 0) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '备份成功',
+        icon: 'success'
+      });
+      return;
+    }
+    
+    let imageCount = 0;
+    let uploadedCount = 0;
+    
+    weekImageKeys.forEach(key => {
+      const weekImages = wx.getStorageSync(key) || [];
+      weekImages.forEach((image, index) => {
+        imageCount++;
+        const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
+        const localImagePath = image.path;
+        
+        fs.readFile({
+          filePath: localImagePath,
+          success: (res) => {
+            const uploadUrl = this.buildWebDAVUrl(url, folder, imageFileName);
+            const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+            
+            wx.request({
+              url: uploadUrl,
+              method: 'PUT',
+              header: {
+                'Authorization': authHeader,
+                'Content-Type': 'image/jpeg'
+              },
+              data: res.data,
+              success: () => {
+                uploadedCount++;
+                if (uploadedCount === imageCount) {
+                  wx.hideLoading();
+                  wx.showToast({
+                    title: '备份成功',
+                    icon: 'success'
+                  });
+                }
+              },
+              fail: (err) => {
+                console.error('上传图片失败', err);
+                uploadedCount++;
+                if (uploadedCount === imageCount) {
+                  wx.hideLoading();
+                  wx.showToast({
+                    title: '备份成功（部分图片上传失败）',
+                    icon: 'none'
+                  });
+                }
+              }
+            });
+          },
+          fail: (err) => {
+            console.error('读取图片失败', err);
+            uploadedCount++;
+            if (uploadedCount === imageCount) {
+              wx.hideLoading();
+              wx.showToast({
+                title: '备份成功（部分图片读取失败）',
+                icon: 'none'
+              });
+            }
+          }
+        });
+      });
+    });
+  },
+  
+  // 构建WebDAV URL
+  buildWebDAVUrl(url, folder, fileName) {
+    let webDavUrl = url.endsWith('/') ? url : url + '/';
+    if (folder) {
+      webDavUrl += folder.endsWith('/') ? folder : folder + '/';
+    }
+    webDavUrl += fileName;
+    return webDavUrl;
+  },
+  
+  // 上传文件到WebDAV
+  uploadToWebDAV(filePath, fileName, url, username, password, folder) {
+    const fs = wx.getFileSystemManager();
+    
+    // 读取文件内容
+    fs.readFile({
+      filePath: filePath,
+      success: (res) => {
+        const fileContent = res.data;
+        // 构建上传URL，考虑自定义文件夹
+        let uploadUrl = url.endsWith('/') ? url : url + '/';
+        if (folder) {
+          uploadUrl += folder.endsWith('/') ? folder : folder + '/';
+        }
+        uploadUrl += fileName;
+        const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+        
+        // 上传文件
+        wx.request({
+          url: uploadUrl,
+          method: 'PUT',
+          header: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json'
+          },
+          data: fileContent,
+          success: (res) => {
+            wx.hideLoading();
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              wx.showToast({
+                title: '备份成功',
+                icon: 'success'
+              });
+            } else {
+              wx.showToast({
+                title: `备份失败: ${res.statusCode}`,
+                icon: 'none'
+              });
+            }
+          },
+          fail: (err) => {
+            wx.hideLoading();
+            wx.showToast({
+              title: '备份失败，请检查网络连接',
+              icon: 'none'
+            });
+          }
+        });
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        wx.showToast({
+          title: '读取文件失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  
+  // 从WebDAV恢复备份
+  restoreFromWebDAV() {
+    const { url, username, password } = this.data.webdavConfig;
+    
+    if (!url || !username || !password) {
+      wx.showToast({
+        title: '请先填写并保存WebDAV配置',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    wx.showLoading({
+      title: '恢复中...'
+    });
+    
+    try {
+      // 生成固定的文件夹名：用户名排班备份
+      let folder = this.data.webdavConfig.folder;
+      if (!folder) {
+        const user = this.data.username || '未命名用户';
+        folder = `${user}排班备份`;
+      }
+      
+      // 恢复班次模板
+      this.restoreShiftTemplates(url, username, password, folder);
+      
+      // 恢复排班数据
+      this.restoreShifts(url, username, password, folder);
+      
+      // 恢复图片文件夹
+      this.restoreImages(url, username, password, folder);
+      
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '恢复失败',
+        icon: 'none'
+      });
+    }
+  },
+  
+  // 恢复班次模板
+  restoreShiftTemplates(url, username, password, folder) {
+    const fileName = '班次模板.json';
+    const downloadUrl = this.buildWebDAVUrl(url, folder, fileName);
+    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    
+    wx.request({
+      url: downloadUrl,
+      method: 'GET',
+      header: {
+        'Authorization': authHeader
+      },
+      responseType: 'arraybuffer',
+      success: (res) => {
+        if (res.statusCode === 200) {
+          const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+          const fs = wx.getFileSystemManager();
+          
+          fs.writeFile({
+            filePath: filePath,
+            data: res.data,
+            success: () => {
+              fs.readFile({
+                filePath: filePath,
+                encoding: 'utf8',
+                success: (readRes) => {
+                  try {
+                    const data = JSON.parse(readRes.data);
+                    if (data.shiftTemplates) {
+                      wx.setStorageSync('shiftTemplates', data.shiftTemplates);
+                    }
+                  } catch (e) {
+                    console.error('解析班次模板失败', e);
+                  }
+                },
+                fail: (err) => {
+                  console.error('读取班次模板文件失败', err);
+                }
+              });
+            },
+            fail: (err) => {
+              console.error('写入班次模板文件失败', err);
+            }
+          });
+        }
+      },
+      fail: (err) => {
+        console.error('下载班次模板失败', err);
+      }
+    });
+  },
+  
+  // 恢复排班数据
+  restoreShifts(url, username, password, folder) {
+    const fileName = '排班数据.json';
+    const downloadUrl = this.buildWebDAVUrl(url, folder, fileName);
+    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    
+    wx.request({
+      url: downloadUrl,
+      method: 'GET',
+      header: {
+        'Authorization': authHeader
+      },
+      responseType: 'arraybuffer',
+      success: (res) => {
+        if (res.statusCode === 200) {
+          const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+          const fs = wx.getFileSystemManager();
+          
+          fs.writeFile({
+            filePath: filePath,
+            data: res.data,
+            success: () => {
+              fs.readFile({
+                filePath: filePath,
+                encoding: 'utf8',
+                success: (readRes) => {
+                  try {
+                    const data = JSON.parse(readRes.data);
+                    if (data.shifts) {
+                      wx.setStorageSync('shifts', data.shifts);
+                    }
+                  } catch (e) {
+                    console.error('解析排班数据失败', e);
+                  }
+                },
+                fail: (err) => {
+                  console.error('读取排班数据文件失败', err);
+                }
+              });
+            },
+            fail: (err) => {
+              console.error('写入排班数据文件失败', err);
+            }
+          });
+        }
+      },
+      fail: (err) => {
+        console.error('下载排班数据失败', err);
+      }
+    });
+  },
+  
+  // 恢复图片文件夹
+  restoreImages(url, username, password, folder) {
+    const listUrl = this.buildWebDAVUrl(url, folder, 'images/');
+    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    
+    wx.request({
+      url: listUrl,
+      method: 'PROPFIND',
+      header: {
+        'Authorization': authHeader,
+        'Depth': '1'
+      },
+      success: (res) => {
+        if (res.statusCode === 207) {
+          const images = this.parseWebDAVImageFiles(res.data);
+          this.downloadAndRestoreImages(images, url, username, password, folder);
+        } else {
+          wx.hideLoading();
+          wx.showToast({
+            title: '恢复成功',
+            icon: 'success'
+          });
+        }
+      },
+      fail: (err) => {
+        console.error('列出图片文件失败', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '恢复成功（图片恢复失败）',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  
+  // 解析WebDAV图片文件响应
+  parseWebDAVImageFiles(xmlData) {
+    const images = [];
+    const regex = /<d:response>([\s\S]*?)<\/d:response>/g;
+    let match;
+    
+    while ((match = regex.exec(xmlData)) !== null) {
+      const response = match[1];
+      const hrefMatch = /<d:href>([\s\S]*?)<\/d:href>/.exec(response);
+      const propstatMatch = /<d:propstat>([\s\S]*?)<\/d:propstat>/.exec(response);
+      
+      if (hrefMatch && propstatMatch) {
+        const href = hrefMatch[1];
+        const propstat = propstatMatch[1];
+        const isCollectionMatch = /<d:collection\/>/.exec(propstat);
+        
+        if (!isCollectionMatch) {
+          const fileName = href.split('/').pop();
+          if (fileName && (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png'))) {
+            images.push(href);
+          }
+        }
+      }
+    }
+    
+    return images;
+  },
+  
+  // 下载并恢复图片
+  downloadAndRestoreImages(images, url, username, password, folder) {
+    if (images.length === 0) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '恢复成功',
+        icon: 'success'
+      });
+      return;
+    }
+    
+    let downloadedCount = 0;
+    const totalCount = images.length;
+    
+    images.forEach(imagePath => {
+      const downloadUrl = url.endsWith('/') ? url : url + '/';
+      const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+      
+      wx.request({
+        url: downloadUrl + imagePath,
+        method: 'GET',
+        header: {
+          'Authorization': authHeader
+        },
+        responseType: 'arraybuffer',
+        success: (res) => {
+          if (res.statusCode === 200) {
+            const fs = wx.getFileSystemManager();
+            const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${imagePath.split('/').pop()}`;
+            
+            fs.writeFile({
+              filePath: tempPath,
+              data: res.data,
+              success: () => {
+                // 解析图片信息，恢复到对应的周存储
+                const fileNameParts = imagePath.split('/').pop().split('_');
+                if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
+                  const weekKey = fileNameParts.slice(2, -2).join('_');
+                  const weekImageKey = `week_images_${weekKey}`;
+                  
+                  // 获取现有图片数据
+                  const existingImages = wx.getStorageSync(weekImageKey) || [];
+                  
+                  // 添加新图片
+                  existingImages.push({
+                    id: Date.now().toString(),
+                    name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
+                    path: tempPath,
+                    addedTime: new Date().toISOString()
+                  });
+                  
+                  // 保存图片数据
+                  wx.setStorageSync(weekImageKey, existingImages);
+                }
+              },
+              fail: (err) => {
+                console.error('保存图片失败', err);
+              }
+            });
+          }
+          
+          downloadedCount++;
+          if (downloadedCount === totalCount) {
+            wx.hideLoading();
+            wx.showToast({
+              title: '恢复成功',
+              icon: 'success'
+            });
+          }
+        },
+        fail: (err) => {
+          console.error('下载图片失败', err);
+          downloadedCount++;
+          if (downloadedCount === totalCount) {
+            wx.hideLoading();
+            wx.showToast({
+              title: '恢复成功（部分图片恢复失败）',
+              icon: 'none'
+            });
+          }
+        }
+      });
+    });
+  },
+  
+  // 列出WebDAV中的文件
+  listWebDAVFiles(url, username, password, folder) {
+    // 构建列表URL，考虑自定义文件夹
+    let listUrl = url.endsWith('/') ? url : url + '/';
+    if (folder) {
+      listUrl += folder.endsWith('/') ? folder : folder + '/';
+    }
+    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    
+    wx.request({
+      url: listUrl,
+      method: 'PROPFIND',
+      header: {
+        'Authorization': authHeader,
+        'Depth': '1'
+      },
+      success: (res) => {
+        wx.hideLoading();
+        // 解析XML响应，获取文件列表
+        const files = this.parseWebDAVResponse(res.data);
+        
+        if (files.length === 0) {
+          wx.showToast({
+            title: '未找到备份文件',
+            icon: 'none'
+          });
+          return;
+        }
+        
+        // 显示文件选择弹窗
+        this.showBackupFileList(files, url, username, password);
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        wx.showToast({
+          title: '获取文件列表失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  
+  // 解析WebDAV响应
+  parseWebDAVResponse(xmlData) {
+    // 简单的XML解析，实际项目中可能需要更复杂的解析
+    const files = [];
+    const regex = /<d:response>([\s\S]*?)<\/d:response>/g;
+    let match;
+    
+    while ((match = regex.exec(xmlData)) !== null) {
+      const response = match[1];
+      const hrefMatch = /<d:href>([\s\S]*?)<\/d:href>/.exec(response);
+      const propstatMatch = /<d:propstat>([\s\S]*?)<\/d:propstat>/.exec(response);
+      
+      if (hrefMatch && propstatMatch) {
+        const href = hrefMatch[1];
+        const propstat = propstatMatch[1];
+        const isCollectionMatch = /<d:collection\/>/.exec(propstat);
+        
+        if (!isCollectionMatch) {
+          const fileName = href.split('/').pop();
+          if (fileName && fileName.startsWith('SYwork_backup_') && fileName.endsWith('.json')) {
+            files.push(fileName);
+          }
+        }
+      }
+    }
+    
+    return files;
+  },
+  
+  // 显示备份文件列表
+  showBackupFileList(files, url, username, password) {
+    // 按日期倒序排序
+    files.sort((a, b) => {
+      const dateA = a.replace('SYwork_backup_', '').replace('.json', '');
+      const dateB = b.replace('SYwork_backup_', '').replace('.json', '');
+      return new Date(dateB) - new Date(dateA);
+    });
+    
+    // 显示文件选择菜单
+    wx.showActionSheet({
+      itemList: files,
+      success: (res) => {
+        const selectedFile = files[res.tapIndex];
+        this.downloadBackupFile(selectedFile, url, username, password);
+      }
+    });
+  },
+  
+  // 下载备份文件
+  downloadBackupFile(fileName, url, username, password) {
+    wx.showLoading({
+      title: '下载备份文件...'
+    });
+    
+    // 构建下载URL，考虑自定义文件夹
+    let downloadUrl = url.endsWith('/') ? url : url + '/';
+    if (this.data.webdavConfig.folder) {
+      downloadUrl += this.data.webdavConfig.folder.endsWith('/') ? this.data.webdavConfig.folder : this.data.webdavConfig.folder + '/';
+    }
+    downloadUrl += fileName;
+    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    
+    wx.request({
+      url: downloadUrl,
+      method: 'GET',
+      header: {
+        'Authorization': authHeader
+      },
+      responseType: 'arraybuffer',
+      success: (res) => {
+        wx.hideLoading();
+        if (res.statusCode === 200) {
+          const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+          const fs = wx.getFileSystemManager();
+          
+          // 写入文件
+          fs.writeFile({
+            filePath: filePath,
+            data: res.data,
+            success: () => {
+              // 读取并解析文件
+              fs.readFile({
+                filePath: filePath,
+                encoding: 'utf8',
+                success: (readRes) => {
+                  try {
+                    const data = JSON.parse(readRes.data);
+                    this.restoreData(data);
+                  } catch (e) {
+                    wx.showToast({
+                      title: '文件格式错误',
+                      icon: 'none'
+                    });
+                  }
+                },
+                fail: (err) => {
+                  wx.showToast({
+                    title: '读取文件失败',
+                    icon: 'none'
+                  });
+                }
+              });
+            },
+            fail: (err) => {
+              wx.showToast({
+                title: '写入文件失败',
+                icon: 'none'
+              });
+            }
+          });
+        } else {
+          wx.showToast({
+            title: `下载失败: ${res.statusCode}`,
+            icon: 'none'
+          });
+        }
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        wx.showToast({
+          title: '下载失败，请检查网络连接',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  
+  // 恢复数据
+  restoreData(data) {
+    try {
+      // 保存数据到本地存储
+      if (data.shiftTemplates) {
+        wx.setStorageSync('shiftTemplates', data.shiftTemplates);
+      }
+      if (data.shifts) {
+        wx.setStorageSync('shifts', data.shifts);
+      }
+      
+      wx.showToast({
+        title: '恢复成功',
+        icon: 'success'
+      });
+      
+      // 刷新页面数据
+      setTimeout(() => {
+        const pages = getCurrentPages();
+        for (let i = 0; i < pages.length; i++) {
+          const page = pages[i];
+          if (page.route === 'pages/plan/plan') {
+            if (page.loadShiftTemplates) {
+              page.loadShiftTemplates();
+            }
+          } else if (page.route === 'pages/schedule/schedule') {
+            if (page.loadShifts) {
+              page.loadShifts();
+            }
+            if (page.loadShiftTemplates) {
+              page.loadShiftTemplates();
+            }
+            if (page.generateWeekDates) {
+              page.generateWeekDates();
+            }
+            if (page.generateMonthDates) {
+              page.generateMonthDates();
+            }
+          } else if (page.route === 'pages/statistics/statistics') {
+            if (page.calculateStatistics) {
+              page.calculateStatistics();
+            }
+          }
+        }
+      }, 500);
+    } catch (e) {
+      wx.showToast({
+        title: '恢复失败',
+        icon: 'none'
+      });
+    }
   }
 });

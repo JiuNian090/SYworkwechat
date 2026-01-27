@@ -99,6 +99,51 @@
     </view>
   </view>
 
+  <!-- WebDAV备份设置 -->
+  <view class="section">
+    <view class="section-title">WebDAV备份设置</view>
+    <view class="webdav-setting">
+      <button bindtap="showWebDAVModal" class="primary-btn webdav-config-btn">配置WebDAV</button>
+      <button bindtap="testWebDAVConnection" class="secondary-btn webdav-test-btn">测试连接</button>
+      <button bindtap="backupToWebDAV" class="primary-btn webdav-backup-btn">备份到WebDAV</button>
+      <button bindtap="restoreFromWebDAV" class="secondary-btn webdav-restore-btn">从WebDAV恢复</button>
+    </view>
+  </view>
+
+  <!-- WebDAV配置弹窗 -->
+  <view class="modal-mask" wx:if="{{showWebDAVModal}}" bindtap="hideWebDAVModal"></view>
+  <view class="modal-container" wx:if="{{showWebDAVModal}}">
+    <view class="modal-header">
+      <text class="modal-title">WebDAV服务器配置</text>
+      <button class="modal-close-btn" bindtap="hideWebDAVModal">×</button>
+    </view>
+    <view class="modal-content">
+      <view class="input-group">
+        <text class="input-label">服务器地址</text>
+        <input bindinput="onWebDAVUrlInput" placeholder="请输入WebDAV服务器地址" value="{{webdavConfig.url}}" class="input-field"/>
+      </view>
+      <view class="input-group">
+        <text class="input-label">用户名</text>
+        <input bindinput="onWebDAVUsernameInput" placeholder="请输入WebDAV用户名" value="{{webdavConfig.username}}" class="input-field"/>
+      </view>
+      <view class="input-group password-group">
+        <text class="input-label">密码</text>
+        <view class="password-input-container">
+          <input bindinput="onWebDAVPasswordInput" placeholder="请输入WebDAV密码" value="{{webdavConfig.password}}" class="input-field password-input" password="{{!showPassword}}"/>
+          <button class="password-toggle-btn" bindtap="togglePasswordVisibility">{{showPassword ? '隐藏' : '显示'}}</button>
+        </view>
+      </view>
+      <view class="input-group">
+        <text class="input-label">保存文件夹</text>
+        <input bindinput="onWebDAVFolderInput" placeholder="请输入保存文件夹名（留空使用默认文件夹）" value="{{webdavConfig.folder}}" class="input-field"/>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn cancel-btn" bindtap="hideWebDAVModal">取消</button>
+      <button class="modal-btn confirm-btn" bindtap="saveWebDAVConfig">保存设置</button>
+    </view>
+  </view>
+
   <!-- 文件名设置弹窗 -->
   <view class="modal-mask" wx:if="{{showFileNameModal}}" bindtap="hideFileNameModal"></view>
   <view class="modal-container" wx:if="{{showFileNameModal}}">
