@@ -1473,7 +1473,7 @@ Page({
     });
   },
   
-  // WebDAV备份功能
+  // WebDAV备份功能（增量备份）
   backupToWebDAV() {
     const { url, username, password } = this.data.webdavConfig;
     
@@ -1498,16 +1498,59 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 备份班次模板
-      this.backupShiftTemplates(url, username, password, folder, fs);
-      
-      // 备份排班数据
-      this.backupShifts(url, username, password, folder, fs);
-      
-      // 备份图片文件夹
-      this.backupImages(url, username, password, folder, fs);
+      // 并行获取服务器上的文件信息
+      Promise.all([
+        this.getWebDAVFileInfo(url, username, password, folder, '班次模板.json'),
+        this.getWebDAVFileInfo(url, username, password, folder, '排班数据.json'),
+        this.getWebDAVFileInfo(url, username, password, folder, 'images/')
+      ]).then(([templateInfo, shiftInfo, imagesInfo]) => {
+        // 获取本地数据的修改时间
+        const localTemplateTime = wx.getStorageSync('shiftTemplatesLastModified') || 0;
+        const localShiftTime = wx.getStorageSync('shiftsLastModified') || 0;
+        const localImagesTime = wx.getStorageSync('imagesLastModified') || 0;
+        
+        // 检查是否需要备份班次模板
+        if (!templateInfo || this.needBackup('shiftTemplates', templateInfo, localTemplateTime)) {
+          this.backupShiftTemplates(url, username, password, folder, fs);
+          // 更新本地时间戳
+          wx.setStorageSync('shiftTemplatesLastModified', Date.now());
+        }
+        
+        // 检查是否需要备份排班数据
+        if (!shiftInfo || this.needBackup('shifts', shiftInfo, localShiftTime)) {
+          this.backupShifts(url, username, password, folder, fs);
+          // 更新本地时间戳
+          wx.setStorageSync('shiftsLastModified', Date.now());
+        }
+        
+        // 检查是否需要备份图片
+        if (!imagesInfo || this.needBackupImages(localImagesTime)) {
+          this.backupImages(url, username, password, folder, fs);
+          // 更新本地时间戳
+          wx.setStorageSync('imagesLastModified', Date.now());
+        }
+        
+        // 如果没有需要备份的内容，直接显示成功
+        if (templateInfo && !this.needBackup('shiftTemplates', templateInfo, localTemplateTime) &&
+            shiftInfo && !this.needBackup('shifts', shiftInfo, localShiftTime) &&
+            imagesInfo && !this.needBackupImages(localImagesTime)) {
+          wx.hideLoading();
+          wx.showToast({
+            title: '备份成功（无变化）',
+            icon: 'success'
+          });
+        }
+      }).catch((err) => {
+        console.error('增量备份检查失败', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '备份失败',
+          icon: 'none'
+        });
+      });
       
     } catch (e) {
+      console.error('备份失败', e);
       wx.hideLoading();
       wx.showToast({
         title: '备份失败',
@@ -1516,15 +1559,67 @@ Page({
     }
   },
   
+  // 判断是否需要备份
+  needBackup(dataType, serverInfo, localTime) {
+    // 如果服务器上没有文件，需要备份
+    if (!serverInfo) {
+      return true;
+    }
+    
+    // 如果本地时间戳为0（首次备份），需要备份
+    if (localTime === 0) {
+      return true;
+    }
+    
+    // 对比服务器文件和本地数据的修改时间
+    try {
+      const serverTime = new Date(serverInfo.lastModified).getTime();
+      // 如果本地数据比服务器文件新，需要备份
+      return localTime > serverTime;
+    } catch (e) {
+      // 解析时间失败，默认需要备份
+      return true;
+    }
+  },
+  
+  // 判断是否需要备份图片
+  needBackupImages(localImagesTime) {
+    // 获取所有图片的最后修改时间
+    const storageInfo = wx.getStorageInfoSync();
+    const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+    
+    let latestImageTime = 0;
+    weekImageKeys.forEach(key => {
+      const weekImages = wx.getStorageSync(key) || [];
+      weekImages.forEach(image => {
+        if (image.addedTime) {
+          const imageTime = new Date(image.addedTime).getTime();
+          if (imageTime > latestImageTime) {
+            latestImageTime = imageTime;
+          }
+        }
+      });
+    });
+    
+    // 如果有新图片或首次备份，需要备份
+    return latestImageTime > localImagesTime || localImagesTime === 0;
+  },
+  
   // 备份班次模板
   backupShiftTemplates(url, username, password, folder, fs) {
     const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
     const fileName = '班次模板.json';
     const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
     
+    // 添加时间戳，用于增量备份对比
+    const shiftTemplatesData = {
+      data: shiftTemplates,
+      lastModified: new Date().toISOString()
+    };
+    
     fs.writeFile({
       filePath: filePath,
-      data: JSON.stringify({ shiftTemplates }, null, 2),
+      data: JSON.stringify(shiftTemplatesData, null, 2),
       encoding: 'utf8',
       success: () => {
         this.uploadToWebDAV(filePath, fileName, url, username, password, folder);
@@ -1565,12 +1660,19 @@ Page({
       offDays: offDays
     };
     
+    // 添加时间戳，用于增量备份对比
+    const shiftsData = {
+      shifts: shifts,
+      statistics: statistics,
+      lastModified: new Date().toISOString()
+    };
+    
     const fileName = '排班数据.json';
     const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
     
     fs.writeFile({
       filePath: filePath,
-      data: JSON.stringify({ shifts, statistics }, null, 2),
+      data: JSON.stringify(shiftsData, null, 2),
       encoding: 'utf8',
       success: () => {
         this.uploadToWebDAV(filePath, fileName, url, username, password, folder);
@@ -1581,7 +1683,7 @@ Page({
     });
   },
   
-  // 备份图片文件夹
+  // 备份图片文件夹（增量备份）
   backupImages(url, username, password, folder, fs) {
     const storageInfo = wx.getStorageInfoSync();
     const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
@@ -1595,67 +1697,85 @@ Page({
       return;
     }
     
+    // 获取本地图片最后备份时间
+    const lastBackupTime = wx.getStorageSync('imagesLastModified') || 0;
+    
     let imageCount = 0;
     let uploadedCount = 0;
+    let hasNewImages = false;
     
     weekImageKeys.forEach(key => {
       const weekImages = wx.getStorageSync(key) || [];
       weekImages.forEach((image, index) => {
-        imageCount++;
-        const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
-        const localImagePath = image.path;
-        
-        fs.readFile({
-          filePath: localImagePath,
-          success: (res) => {
-            const uploadUrl = this.buildWebDAVUrl(url, folder, imageFileName);
-            const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
-            
-            wx.request({
-              url: uploadUrl,
-              method: 'PUT',
-              header: {
-                'Authorization': authHeader,
-                'Content-Type': 'image/jpeg'
-              },
-              data: res.data,
-              success: () => {
-                uploadedCount++;
-                if (uploadedCount === imageCount) {
-                  wx.hideLoading();
-                  wx.showToast({
-                    title: '备份成功',
-                    icon: 'success'
-                  });
+        // 检查图片是否是新添加的（在最后备份时间之后）
+        const imageTime = image.addedTime ? new Date(image.addedTime).getTime() : 0;
+        if (imageTime > lastBackupTime || lastBackupTime === 0) {
+          hasNewImages = true;
+          imageCount++;
+          const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
+          const localImagePath = image.path;
+          
+          fs.readFile({
+            filePath: localImagePath,
+            success: (res) => {
+              const uploadUrl = this.buildWebDAVUrl(url, folder, imageFileName);
+              const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+              
+              wx.request({
+                url: uploadUrl,
+                method: 'PUT',
+                header: {
+                  'Authorization': authHeader,
+                  'Content-Type': 'image/jpeg'
+                },
+                data: res.data,
+                success: () => {
+                  uploadedCount++;
+                  if (uploadedCount === imageCount) {
+                    wx.hideLoading();
+                    wx.showToast({
+                      title: '备份成功',
+                      icon: 'success'
+                    });
+                  }
+                },
+                fail: (err) => {
+                  console.error('上传图片失败', err);
+                  uploadedCount++;
+                  if (uploadedCount === imageCount) {
+                    wx.hideLoading();
+                    wx.showToast({
+                      title: '备份成功（部分图片上传失败）',
+                      icon: 'none'
+                    });
+                  }
                 }
-              },
-              fail: (err) => {
-                console.error('上传图片失败', err);
-                uploadedCount++;
-                if (uploadedCount === imageCount) {
-                  wx.hideLoading();
-                  wx.showToast({
-                    title: '备份成功（部分图片上传失败）',
-                    icon: 'none'
-                  });
-                }
-              }
-            });
-          },
-          fail: (err) => {
-            console.error('读取图片失败', err);
-            uploadedCount++;
-            if (uploadedCount === imageCount) {
-              wx.hideLoading();
-              wx.showToast({
-                title: '备份成功（部分图片读取失败）',
-                icon: 'none'
               });
+            },
+            fail: (err) => {
+              console.error('读取图片失败', err);
+              uploadedCount++;
+              if (uploadedCount === imageCount) {
+                wx.hideLoading();
+                wx.showToast({
+                  title: '备份成功（部分图片读取失败）',
+                  icon: 'none'
+                });
+              }
             }
-          }
-        });
+          });
+        }
       });
     });
+    
+    // 如果没有新图片需要上传
+    if (!hasNewImages) {
+      wx.hideLoading();
+      wx.showToast({
+        title: '备份成功（无新图片）',
+        icon: 'success'
+      });
+    }
   },
   
   // 构建WebDAV URL
@@ -1666,6 +1786,48 @@ Page({
     }
     webDavUrl += fileName;
     return webDavUrl;
+  },
+  
+  // 获取WebDAV服务器上文件的详细信息
+  getWebDAVFileInfo(url, username, password, folder, fileName) {
+    return new Promise((resolve, reject) => {
+      const fileUrl = this.buildWebDAVUrl(url, folder, fileName);
+      const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+      
+      wx.request({
+        url: fileUrl,
+        method: 'PROPFIND',
+        header: {
+          'Authorization': authHeader,
+          'Depth': '1' // 获取文件详细信息
+        },
+        success: (res) => {
+          if (res.statusCode === 207) { // WebDAV PROPFIND成功响应码
+            // 解析XML响应，提取文件信息（如修改时间）
+            try {
+              // 简单解析XML，提取lastModified时间
+              const xmlData = res.data;
+              const lastModifiedMatch = xmlData.match(/<d:getlastmodified>(.*?)<\/d:getlastmodified>/);
+              const lastModified = lastModifiedMatch ? lastModifiedMatch[1] : null;
+              resolve({ lastModified });
+            } catch (e) {
+              console.error('解析WebDAV响应失败', e);
+              resolve(null);
+            }
+          } else if (res.statusCode === 404) {
+            // 文件不存在，返回null
+            resolve(null);
+          } else {
+            console.error('获取WebDAV文件信息失败', res.statusCode);
+            resolve(null);
+          }
+        },
+        fail: (err) => {
+          console.error('获取WebDAV文件信息请求失败', err);
+          resolve(null);
+        }
+      });
+    });
   },
   
   // 上传文件到WebDAV
@@ -1727,7 +1889,7 @@ Page({
     });
   },
   
-  // 从WebDAV恢复备份
+  // 从WebDAV恢复备份（多设备同步时以最新备份为准）
   restoreFromWebDAV() {
     const { url, username, password } = this.data.webdavConfig;
     
@@ -1751,16 +1913,74 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 恢复班次模板
-      this.restoreShiftTemplates(url, username, password, folder);
-      
-      // 恢复排班数据
-      this.restoreShifts(url, username, password, folder);
-      
-      // 恢复图片文件夹
-      this.restoreImages(url, username, password, folder);
+      // 并行获取服务器上的文件信息
+      Promise.all([
+        this.getWebDAVFileInfo(url, username, password, folder, '班次模板.json'),
+        this.getWebDAVFileInfo(url, username, password, folder, '排班数据.json'),
+        this.getWebDAVFileInfo(url, username, password, folder, 'images/')
+      ]).then(([templateInfo, shiftInfo, imagesInfo]) => {
+        // 获取本地数据的修改时间
+        const localTemplateTime = wx.getStorageSync('shiftTemplatesLastModified') || 0;
+        const localShiftTime = wx.getStorageSync('shiftsLastModified') || 0;
+        const localImagesTime = wx.getStorageSync('imagesLastModified') || 0;
+        
+        // 检查是否需要恢复班次模板（服务器备份比本地数据新）
+        if (templateInfo) {
+          try {
+            const serverTemplateTime = new Date(templateInfo.lastModified).getTime();
+            if (serverTemplateTime > localTemplateTime || localTemplateTime === 0) {
+              this.restoreShiftTemplates(url, username, password, folder);
+              // 更新本地时间戳
+              wx.setStorageSync('shiftTemplatesLastModified', serverTemplateTime);
+            }
+          } catch (e) {
+            console.error('解析服务器班次模板时间失败', e);
+            this.restoreShiftTemplates(url, username, password, folder);
+          }
+        }
+        
+        // 检查是否需要恢复排班数据（服务器备份比本地数据新）
+        if (shiftInfo) {
+          try {
+            const serverShiftTime = new Date(shiftInfo.lastModified).getTime();
+            if (serverShiftTime > localShiftTime || localShiftTime === 0) {
+              this.restoreShifts(url, username, password, folder);
+              // 更新本地时间戳
+              wx.setStorageSync('shiftsLastModified', serverShiftTime);
+            }
+          } catch (e) {
+            console.error('解析服务器排班数据时间失败', e);
+            this.restoreShifts(url, username, password, folder);
+          }
+        }
+        
+        // 检查是否需要恢复图片（服务器备份存在）
+        if (imagesInfo) {
+          this.restoreImages(url, username, password, folder);
+          // 更新本地时间戳
+          wx.setStorageSync('imagesLastModified', Date.now());
+        }
+        
+        // 延迟显示成功提示，确保所有恢复操作完成
+        setTimeout(() => {
+          wx.hideLoading();
+          wx.showToast({
+            title: '恢复成功',
+            icon: 'success'
+          });
+        }, 1000);
+        
+      }).catch((err) => {
+        console.error('恢复备份失败', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '恢复失败',
+          icon: 'none'
+        });
+      });
       
     } catch (e) {
+      console.error('恢复备份异常', e);
       wx.hideLoading();
       wx.showToast({
         title: '恢复失败',
@@ -1797,7 +2017,12 @@ Page({
                 success: (readRes) => {
                   try {
                     const data = JSON.parse(readRes.data);
-                    if (data.shiftTemplates) {
+                    // 处理带有时间戳的数据格式
+                    if (data.data) {
+                      // 新格式：{ data: [...], lastModified: "..." }
+                      wx.setStorageSync('shiftTemplates', data.data);
+                    } else if (data.shiftTemplates) {
+                      // 旧格式：{ shiftTemplates: [...] }
                       wx.setStorageSync('shiftTemplates', data.shiftTemplates);
                     }
                   } catch (e) {
@@ -1849,7 +2074,9 @@ Page({
                 success: (readRes) => {
                   try {
                     const data = JSON.parse(readRes.data);
+                    // 处理带有时间戳的数据格式
                     if (data.shifts) {
+                      // 新格式和旧格式都包含shifts字段
                       wx.setStorageSync('shifts', data.shifts);
                     }
                   } catch (e) {
