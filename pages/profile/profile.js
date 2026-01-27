@@ -1432,16 +1432,25 @@ Page({
       return;
     }
     
+    // 验证URL格式
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      wx.showToast({
+        title: 'URL格式错误，请包含http://或https://',
+        icon: 'none'
+      });
+      return;
+    }
+    
     wx.showLoading({
       title: '测试连接中...'
     });
     
-    // 构建测试请求 - 使用GET方法测试连接
+    // 构建测试请求
     const testUrl = url;
     // 生成Base64编码的认证信息
     const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
     
-    // 使用wx.request测试连接
+    // 直接使用GET方法测试连接（微信小程序支持的方法）
     wx.request({
       url: testUrl,
       method: 'GET',
@@ -1465,7 +1474,7 @@ Page({
       fail: (err) => {
         wx.hideLoading();
         wx.showToast({
-          title: '连接失败，请检查服务器信息',
+          title: `连接失败: ${err.errMsg}`,
           icon: 'none'
         });
       }
@@ -1502,7 +1511,7 @@ Page({
     return encoded;
   },
   
-  // WebDAV备份功能（增量备份）
+  // WebDAV备份功能（全部备份为ZIP文件）
   backupToWebDAV() {
     const { url, username, password } = this.data.webdavConfig;
     
@@ -1527,50 +1536,23 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 并行获取服务器上的文件信息
-      Promise.all([
-        this.getWebDAVFileInfo(url, username, password, folder, '班次模板.json'),
-        this.getWebDAVFileInfo(url, username, password, folder, '排班数据.json'),
-        this.getWebDAVFileInfo(url, username, password, folder, 'images/')
-      ]).then(([templateInfo, shiftInfo, imagesInfo]) => {
-        // 获取本地数据的修改时间
-        const localTemplateTime = wx.getStorageSync('shiftTemplatesLastModified') || 0;
-        const localShiftTime = wx.getStorageSync('shiftsLastModified') || 0;
-        const localImagesTime = wx.getStorageSync('imagesLastModified') || 0;
-        
-        // 检查是否需要备份班次模板
-        if (!templateInfo || this.needBackup('shiftTemplates', templateInfo, localTemplateTime)) {
-          this.backupShiftTemplates(url, username, password, folder, fs);
-          // 更新本地时间戳
-          wx.setStorageSync('shiftTemplatesLastModified', Date.now());
-        }
-        
-        // 检查是否需要备份排班数据
-        if (!shiftInfo || this.needBackup('shifts', shiftInfo, localShiftTime)) {
-          this.backupShifts(url, username, password, folder, fs);
-          // 更新本地时间戳
-          wx.setStorageSync('shiftsLastModified', Date.now());
-        }
-        
-        // 检查是否需要备份图片
-        if (!imagesInfo || this.needBackupImages(localImagesTime)) {
-          this.backupImages(url, username, password, folder, fs);
-          // 更新本地时间戳
-          wx.setStorageSync('imagesLastModified', Date.now());
-        }
-        
-        // 如果没有需要备份的内容，直接显示成功
-        if (templateInfo && !this.needBackup('shiftTemplates', templateInfo, localTemplateTime) &&
-            shiftInfo && !this.needBackup('shifts', shiftInfo, localShiftTime) &&
-            imagesInfo && !this.needBackupImages(localImagesTime)) {
-          wx.hideLoading();
-          wx.showToast({
-            title: '备份成功（无变化）',
-            icon: 'success'
-          });
-        }
+      // 生成备份文件名，包含时间戳
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupFileName = `排班备份_${timestamp}.zip`;
+      const backupFilePath = `${wx.env.USER_DATA_PATH}/${backupFileName}`;
+      
+      // 生成ZIP文件
+      this.generateBackupZip(backupFilePath, fs).then(() => {
+        // 上传ZIP文件到WebDAV
+        this.uploadToWebDAV(backupFilePath, backupFileName, url, username, password, folder);
+        // 更新备份时间戳
+        wx.setStorageSync('lastBackupTime', Date.now());
+        // 删除旧的备份文件，只保留最新版本
+        setTimeout(() => {
+          this.cleanupOldBackups(url, username, password, folder, backupFileName);
+        }, 1000);
       }).catch((err) => {
-        console.error('增量备份检查失败', err);
+        console.error('生成备份ZIP失败', err);
         wx.hideLoading();
         wx.showToast({
           title: '备份失败',
@@ -1586,6 +1568,112 @@ Page({
         icon: 'none'
       });
     }
+  },
+  
+  // 生成备份ZIP文件
+  generateBackupZip(backupFilePath, fs) {
+    return new Promise((resolve, reject) => {
+      try {
+        const zip = new JSZip();
+        
+        // 添加班次模板数据
+        const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+        zip.file('班次模板.json', JSON.stringify({
+          data: shiftTemplates,
+          lastModified: new Date().toISOString()
+        }, null, 2));
+        
+        // 添加排班数据
+        const shifts = wx.getStorageSync('shifts') || {};
+        // 计算统计数据
+        let totalHours = 0;
+        let workDays = 0;
+        let offDays = 0;
+        let totalDays = 0;
+        
+        Object.keys(shifts).forEach(date => {
+          const shift = shifts[date];
+          totalHours += parseFloat(shift.workHours) || 0;
+          totalDays++;
+          
+          const shiftType = shift.type;
+          if (shiftType === '白天班' || shiftType === '跨夜班') {
+            workDays++;
+          } else if (shiftType === '休息日') {
+            offDays++;
+          }
+        });
+        
+        const statistics = {
+          totalHours: totalHours.toFixed(1),
+          totalDays: totalDays,
+          workDays: workDays,
+          offDays: offDays
+        };
+        
+        zip.file('排班数据.json', JSON.stringify({
+          shifts: shifts,
+          statistics: statistics,
+          lastModified: new Date().toISOString()
+        }, null, 2));
+        
+        // 添加图片文件
+        const storageInfo = wx.getStorageInfoSync();
+        const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+        
+        const imagePromises = [];
+        weekImageKeys.forEach(key => {
+          const weekImages = wx.getStorageSync(key) || [];
+          weekImages.forEach((image, index) => {
+            const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
+            const localImagePath = image.path;
+            
+            const imagePromise = new Promise((resolveImage) => {
+              fs.readFile({
+                filePath: localImagePath,
+                success: (res) => {
+                  // 添加图片到ZIP
+                  zip.file(imageFileName, res.data);
+                  resolveImage();
+                },
+                fail: (err) => {
+                  console.error('读取图片失败', err);
+                  resolveImage(); // 忽略失败的图片
+                }
+              });
+            });
+            
+            imagePromises.push(imagePromise);
+          });
+        });
+        
+        // 等待所有图片处理完成
+        Promise.all(imagePromises).then(() => {
+          // 生成ZIP文件
+          zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
+            // 写入ZIP文件
+            fs.writeFile({
+              filePath: backupFilePath,
+              data: content,
+              success: () => {
+                resolve();
+              },
+              fail: (err) => {
+                console.error('写入ZIP文件失败', err);
+                reject(err);
+              }
+            });
+          }).catch((err) => {
+            console.error('生成ZIP失败', err);
+            reject(err);
+          });
+        });
+        
+      } catch (e) {
+        console.error('生成备份ZIP失败', e);
+        reject(e);
+      }
+    });
   },
   
   // 判断是否需要备份
@@ -1809,6 +1897,11 @@ Page({
   
   // 构建WebDAV URL
   buildWebDAVUrl(url, folder, fileName) {
+    // 确保URL包含协议
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'http://' + url;
+    }
+    
     let webDavUrl = url.endsWith('/') ? url : url + '/';
     if (folder) {
       webDavUrl += folder.endsWith('/') ? folder : folder + '/';
@@ -1823,26 +1916,18 @@ Page({
       const fileUrl = this.buildWebDAVUrl(url, folder, fileName);
       const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
       
+      // 使用HEAD方法获取文件信息（微信小程序支持的方法）
       wx.request({
         url: fileUrl,
-        method: 'PROPFIND',
+        method: 'HEAD',
         header: {
-          'Authorization': authHeader,
-          'Depth': '1' // 获取文件详细信息
+          'Authorization': authHeader
         },
         success: (res) => {
-          if (res.statusCode === 207) { // WebDAV PROPFIND成功响应码
-            // 解析XML响应，提取文件信息（如修改时间）
-            try {
-              // 简单解析XML，提取lastModified时间
-              const xmlData = res.data;
-              const lastModifiedMatch = xmlData.match(/<d:getlastmodified>(.*?)<\/d:getlastmodified>/);
-              const lastModified = lastModifiedMatch ? lastModifiedMatch[1] : null;
-              resolve({ lastModified });
-            } catch (e) {
-              console.error('解析WebDAV响应失败', e);
-              resolve(null);
-            }
+          if (res.statusCode === 200) { // HEAD请求成功
+            // 从响应头中提取Last-Modified信息
+            const lastModified = res.header['Last-Modified'] || res.header['last-modified'] || null;
+            resolve({ lastModified });
           } else if (res.statusCode === 404) {
             // 文件不存在，返回null
             resolve(null);
@@ -1853,9 +1938,38 @@ Page({
         },
         fail: (err) => {
           console.error('获取WebDAV文件信息请求失败', err);
-          resolve(null);
+          // HEAD请求失败后尝试GET请求
+          this.getWebDAVFileInfoWithGET(fileUrl, authHeader, resolve);
         }
       });
+    });
+  },
+  
+  // 使用GET方法获取WebDAV文件信息（备用方法）
+  getWebDAVFileInfoWithGET(fileUrl, authHeader, resolve) {
+    wx.request({
+      url: fileUrl,
+      method: 'GET',
+      header: {
+        'Authorization': authHeader
+      },
+      success: (res) => {
+        if (res.statusCode === 200) { // GET请求成功
+          // 从响应头中提取Last-Modified信息
+          const lastModified = res.header['Last-Modified'] || res.header['last-modified'] || null;
+          resolve({ lastModified });
+        } else if (res.statusCode === 404) {
+          // 文件不存在，返回null
+          resolve(null);
+        } else {
+          console.error('获取WebDAV文件信息失败', res.statusCode);
+          resolve(null);
+        }
+      },
+      fail: (err) => {
+        console.error('GET请求获取WebDAV文件信息失败', err);
+        resolve(null);
+      }
     });
   },
   
@@ -1918,7 +2032,7 @@ Page({
     });
   },
   
-  // 从WebDAV恢复备份（多设备同步时以最新备份为准）
+  // 从WebDAV恢复备份（从ZIP文件恢复）
   restoreFromWebDAV() {
     const { url, username, password } = this.data.webdavConfig;
     
@@ -1931,7 +2045,7 @@ Page({
     }
     
     wx.showLoading({
-      title: '恢复中...'
+      title: '获取备份文件列表...'
     });
     
     try {
@@ -1942,68 +2056,50 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 并行获取服务器上的文件信息
-      Promise.all([
-        this.getWebDAVFileInfo(url, username, password, folder, '班次模板.json'),
-        this.getWebDAVFileInfo(url, username, password, folder, '排班数据.json'),
-        this.getWebDAVFileInfo(url, username, password, folder, 'images/')
-      ]).then(([templateInfo, shiftInfo, imagesInfo]) => {
-        // 获取本地数据的修改时间
-        const localTemplateTime = wx.getStorageSync('shiftTemplatesLastModified') || 0;
-        const localShiftTime = wx.getStorageSync('shiftsLastModified') || 0;
-        const localImagesTime = wx.getStorageSync('imagesLastModified') || 0;
+      // 获取WebDAV服务器上的备份文件列表
+      this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
+        wx.hideLoading();
         
-        // 检查是否需要恢复班次模板（服务器备份比本地数据新）
-        if (templateInfo) {
-          try {
-            const serverTemplateTime = new Date(templateInfo.lastModified).getTime();
-            if (serverTemplateTime > localTemplateTime || localTemplateTime === 0) {
-              this.restoreShiftTemplates(url, username, password, folder);
-              // 更新本地时间戳
-              wx.setStorageSync('shiftTemplatesLastModified', serverTemplateTime);
-            }
-          } catch (e) {
-            console.error('解析服务器班次模板时间失败', e);
-            this.restoreShiftTemplates(url, username, password, folder);
-          }
-        }
-        
-        // 检查是否需要恢复排班数据（服务器备份比本地数据新）
-        if (shiftInfo) {
-          try {
-            const serverShiftTime = new Date(shiftInfo.lastModified).getTime();
-            if (serverShiftTime > localShiftTime || localShiftTime === 0) {
-              this.restoreShifts(url, username, password, folder);
-              // 更新本地时间戳
-              wx.setStorageSync('shiftsLastModified', serverShiftTime);
-            }
-          } catch (e) {
-            console.error('解析服务器排班数据时间失败', e);
-            this.restoreShifts(url, username, password, folder);
-          }
-        }
-        
-        // 检查是否需要恢复图片（服务器备份存在）
-        if (imagesInfo) {
-          this.restoreImages(url, username, password, folder);
-          // 更新本地时间戳
-          wx.setStorageSync('imagesLastModified', Date.now());
-        }
-        
-        // 延迟显示成功提示，确保所有恢复操作完成
-        setTimeout(() => {
-          wx.hideLoading();
+        if (backupFiles.length === 0) {
           wx.showToast({
-            title: '恢复成功',
-            icon: 'success'
+            title: '未找到备份文件',
+            icon: 'none'
           });
-        }, 1000);
+          return;
+        }
         
+        // 让用户选择要恢复的备份文件
+        this.showBackupFileSelector(backupFiles, (selectedFile) => {
+          wx.showLoading({
+            title: '恢复中...'
+          });
+          
+          // 下载并恢复选中的备份文件
+          this.downloadAndRestoreBackup(url, username, password, folder, selectedFile).then(() => {
+            wx.hideLoading();
+            wx.showToast({
+              title: '恢复成功',
+              icon: 'success'
+            });
+            
+            // 延迟刷新页面数据，确保所有恢复操作完成
+            setTimeout(() => {
+              this.refreshPageData();
+            }, 500);
+          }).catch((err) => {
+            console.error('恢复备份失败', err);
+            wx.hideLoading();
+            wx.showToast({
+              title: '恢复失败',
+              icon: 'none'
+            });
+          });
+        });
       }).catch((err) => {
-        console.error('恢复备份失败', err);
+        console.error('获取备份文件列表失败', err);
         wx.hideLoading();
         wx.showToast({
-          title: '恢复失败',
+          title: '获取备份文件列表失败',
           icon: 'none'
         });
       });
@@ -2016,6 +2112,323 @@ Page({
         icon: 'none'
       });
     }
+  },
+  
+  // 获取WebDAV服务器上的备份文件列表
+  getWebDAVBackupFiles(url, username, password, folder) {
+    return new Promise((resolve, reject) => {
+      // 构建文件夹URL
+      const folderUrl = this.buildWebDAVUrl(url, folder, '');
+      const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
+      
+      // 使用GET方法获取文件夹内容（WebDAV服务器通常会返回文件夹列表）
+      wx.request({
+        url: folderUrl,
+        method: 'GET',
+        header: {
+          'Authorization': authHeader
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            // 解析HTML或XML响应，提取备份文件列表
+            const backupFiles = this.parseBackupFilesFromResponse(res.data);
+            resolve(backupFiles);
+          } else {
+            console.error('获取备份文件列表失败', res.statusCode);
+            resolve([]);
+          }
+        },
+        fail: (err) => {
+          console.error('获取备份文件列表请求失败', err);
+          resolve([]);
+        }
+      });
+    });
+  },
+  
+  // 解析响应数据，提取备份文件列表
+  parseBackupFilesFromResponse(responseData) {
+    const backupFiles = [];
+    const responseStr = String(responseData);
+    
+    // 简单解析，查找文件名包含"排班备份"且以.zip结尾的文件
+    // 注意：不同的WebDAV服务器返回的格式可能不同，这里使用通用的解析方法
+    const fileRegex = /排班备份_[^"\']+\.zip/g;
+    let match;
+    
+    while ((match = fileRegex.exec(responseStr)) !== null) {
+      const fileName = match[0];
+      if (!backupFiles.includes(fileName)) {
+        backupFiles.push(fileName);
+      }
+    }
+    
+    // 按文件名排序（最新的备份文件在前面）
+    backupFiles.sort((a, b) => {
+      return b.localeCompare(a);
+    });
+    
+    return backupFiles;
+  },
+  
+  // 显示备份文件选择器
+  showBackupFileSelector(backupFiles, callback) {
+    wx.showActionSheet({
+      itemList: backupFiles,
+      success: (res) => {
+        const selectedFile = backupFiles[res.tapIndex];
+        callback(selectedFile);
+      },
+      fail: (err) => {
+        console.error('选择备份文件失败', err);
+      }
+    });
+  },
+  
+  // 下载并恢复备份文件
+  downloadAndRestoreBackup(url, username, password, folder, backupFileName) {
+    return new Promise((resolve, reject) => {
+      const backupUrl = this.buildWebDAVUrl(url, folder, backupFileName);
+      const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
+      const backupFilePath = `${wx.env.USER_DATA_PATH}/${backupFileName}`;
+      
+      // 下载备份文件
+      wx.request({
+        url: backupUrl,
+        method: 'GET',
+        header: {
+          'Authorization': authHeader
+        },
+        responseType: 'arraybuffer',
+        success: (res) => {
+          if (res.statusCode === 200) {
+            const fs = wx.getFileSystemManager();
+            
+            // 写入下载的ZIP文件
+            fs.writeFile({
+              filePath: backupFilePath,
+              data: res.data,
+              success: () => {
+                // 解压并恢复ZIP文件
+                this.extractAndRestoreBackup(backupFilePath, fs).then(() => {
+                  resolve();
+                }).catch((err) => {
+                  console.error('解压并恢复备份失败', err);
+                  reject(err);
+                });
+              },
+              fail: (err) => {
+                console.error('写入备份文件失败', err);
+                reject(err);
+              }
+            });
+          } else {
+            console.error('下载备份文件失败', res.statusCode);
+            reject(new Error('下载备份文件失败'));
+          }
+        },
+        fail: (err) => {
+          console.error('下载备份文件请求失败', err);
+          reject(err);
+        }
+      });
+    });
+  },
+  
+  // 解压并恢复备份文件
+  extractAndRestoreBackup(backupFilePath, fs) {
+    return new Promise((resolve, reject) => {
+      try {
+        const zip = new JSZip();
+        
+        // 读取并解压ZIP文件
+        fs.readFile({
+          filePath: backupFilePath,
+          success: (res) => {
+            zip.loadAsync(res.data).then((zip) => {
+              // 提取并恢复班次模板
+              this.extractAndRestoreFile(zip, '班次模板.json', (data) => {
+                if (data.data) {
+                  wx.setStorageSync('shiftTemplates', data.data);
+                }
+              });
+              
+              // 提取并恢复排班数据
+              this.extractAndRestoreFile(zip, '排班数据.json', (data) => {
+                if (data.shifts) {
+                  wx.setStorageSync('shifts', data.shifts);
+                }
+              });
+              
+              // 提取并恢复图片
+              this.extractAndRestoreImages(zip, fs);
+              
+              // 更新恢复时间戳
+              wx.setStorageSync('lastRestoreTime', Date.now());
+              
+              resolve();
+            }).catch((err) => {
+              console.error('解压ZIP文件失败', err);
+              reject(err);
+            });
+          },
+          fail: (err) => {
+            console.error('读取备份文件失败', err);
+            reject(err);
+          }
+        });
+      } catch (e) {
+        console.error('解压并恢复备份异常', e);
+        reject(e);
+      }
+    });
+  },
+  
+  // 提取并恢复单个文件
+  extractAndRestoreFile(zip, fileName, callback) {
+    const file = zip.file(fileName);
+    if (file) {
+      file.async('string').then((content) => {
+        try {
+          const data = JSON.parse(content);
+          callback(data);
+        } catch (e) {
+          console.error(`解析${fileName}失败`, e);
+        }
+      }).catch((err) => {
+        console.error(`提取${fileName}失败`, err);
+      });
+    }
+  },
+  
+  // 提取并恢复图片
+  extractAndRestoreImages(zip, fs) {
+    const imageFolder = zip.folder('images');
+    if (imageFolder) {
+      imageFolder.forEach((relativePath, file) => {
+        if (!file.dir) { // 只处理文件，不处理文件夹
+          file.async('uint8array').then((content) => {
+            // 生成临时图片路径
+            const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${relativePath.split('/').pop()}`;
+            
+            // 写入图片文件
+            fs.writeFile({
+              filePath: tempPath,
+              data: content,
+              success: () => {
+                // 解析图片信息，恢复到对应的周存储
+                // 假设图片文件名格式为：week_images_{weekKey}_index_name.jpg
+                const fileNameParts = relativePath.split('/').pop().split('_');
+                if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
+                  const weekKey = fileNameParts.slice(2, -2).join('_');
+                  const weekImageKey = `week_images_${weekKey}`;
+                  
+                  // 获取现有图片数据
+                  const existingImages = wx.getStorageSync(weekImageKey) || [];
+                  
+                  // 添加新图片
+                  existingImages.push({
+                    id: Date.now().toString(),
+                    name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
+                    path: tempPath,
+                    addedTime: new Date().toISOString()
+                  });
+                  
+                  // 保存图片数据
+                  wx.setStorageSync(weekImageKey, existingImages);
+                }
+              },
+              fail: (err) => {
+                console.error('写入图片文件失败', err);
+              }
+            });
+          }).catch((err) => {
+            console.error('提取图片失败', err);
+          });
+        }
+      });
+    }
+  },
+  
+  // 刷新页面数据
+  refreshPageData() {
+    // 刷新所有相关页面数据
+    const pages = getCurrentPages();
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      if (page.route === 'pages/plan/plan') {
+        // 重新加载班次模板数据
+        if (page.loadShiftTemplates) {
+          page.loadShiftTemplates();
+        }
+      } else if (page.route === 'pages/schedule/schedule') {
+        // 重新加载排班数据和班次模板
+        if (page.loadShifts) {
+          page.loadShifts();
+        }
+        if (page.loadShiftTemplates) {
+          page.loadShiftTemplates();
+        }
+        // 重新生成日期数据
+        if (page.generateWeekDates) {
+          page.generateWeekDates();
+        }
+        if (page.generateMonthDates) {
+          page.generateMonthDates();
+        }
+      } else if (page.route === 'pages/statistics/statistics') {
+        // 重新计算统计数据
+        if (page.calculateStatistics) {
+          page.calculateStatistics();
+        }
+      }
+    }
+  },
+  
+  // 清理旧的备份文件，只保留最新版本
+  cleanupOldBackups(url, username, password, folder, currentBackupFileName) {
+    // 获取服务器上的备份文件列表
+    this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
+      if (backupFiles.length > 1) {
+        // 按文件名排序（最新的备份文件在前面）
+        backupFiles.sort((a, b) => {
+          return b.localeCompare(a);
+        });
+        
+        // 保留第一个（最新的），删除其余的
+        const filesToDelete = backupFiles.filter(fileName => fileName !== currentBackupFileName);
+        
+        filesToDelete.forEach((fileName) => {
+          this.deleteWebDAVFile(url, username, password, folder, fileName);
+        });
+      }
+    }).catch((err) => {
+      console.error('清理旧备份文件失败', err);
+    });
+  },
+  
+  // 删除WebDAV服务器上的文件
+  deleteWebDAVFile(url, username, password, folder, fileName) {
+    const fileUrl = this.buildWebDAVUrl(url, folder, fileName);
+    const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
+    
+    wx.request({
+      url: fileUrl,
+      method: 'DELETE',
+      header: {
+        'Authorization': authHeader
+      },
+      success: (res) => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log(`删除旧备份文件成功: ${fileName}`);
+        } else {
+          console.error(`删除旧备份文件失败: ${fileName}`, res.statusCode);
+        }
+      },
+      fail: (err) => {
+        console.error(`删除旧备份文件请求失败: ${fileName}`, err);
+      }
+    });
   },
   
   // 恢复班次模板
