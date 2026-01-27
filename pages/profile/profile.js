@@ -1436,19 +1436,18 @@ Page({
       title: '测试连接中...'
     });
     
-    // 构建测试请求
-    const testUrl = url.endsWith('/') ? url + 'test.txt' : url + '/test.txt';
-    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    // 构建测试请求 - 使用GET方法测试连接
+    const testUrl = url;
+    // 生成Base64编码的认证信息
+    const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
     
     // 使用wx.request测试连接
     wx.request({
       url: testUrl,
-      method: 'PUT',
+      method: 'GET',
       header: {
-        'Authorization': authHeader,
-        'Content-Type': 'text/plain'
+        'Authorization': authHeader
       },
-      data: 'test connection',
       success: (res) => {
         wx.hideLoading();
         if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -1471,6 +1470,36 @@ Page({
         });
       }
     });
+  },
+  
+  // Base64编码函数
+  base64Encode(str) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    let encoded = '';
+    let i = 0;
+    while (i < str.length) {
+      const c1 = str.charCodeAt(i++) & 0xff;
+      if (i === str.length) {
+        encoded += chars.charAt(c1 >> 2);
+        encoded += chars.charAt((c1 & 0x3) << 4);
+        encoded += '==';
+        break;
+      }
+      const c2 = str.charCodeAt(i++) & 0xff;
+      if (i === str.length) {
+        encoded += chars.charAt(c1 >> 2);
+        encoded += chars.charAt(((c1 & 0x3) << 4) | ((c2 & 0xf0) >> 4));
+        encoded += chars.charAt((c2 & 0xf) << 2);
+        encoded += '=';
+        break;
+      }
+      const c3 = str.charCodeAt(i++) & 0xff;
+      encoded += chars.charAt(c1 >> 2);
+      encoded += chars.charAt(((c1 & 0x3) << 4) | ((c2 & 0xf0) >> 4));
+      encoded += chars.charAt(((c2 & 0xf) << 2) | ((c3 & 0xc0) >> 6));
+      encoded += chars.charAt(c3 & 0x3f);
+    }
+    return encoded;
   },
   
   // WebDAV备份功能（增量备份）
@@ -1716,10 +1745,10 @@ Page({
           const localImagePath = image.path;
           
           fs.readFile({
-            filePath: localImagePath,
-            success: (res) => {
-              const uploadUrl = this.buildWebDAVUrl(url, folder, imageFileName);
-              const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+          filePath: localImagePath,
+          success: (res) => {
+            const uploadUrl = this.buildWebDAVUrl(url, folder, imageFileName);
+            const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
               
               wx.request({
                 url: uploadUrl,
@@ -1792,7 +1821,7 @@ Page({
   getWebDAVFileInfo(url, username, password, folder, fileName) {
     return new Promise((resolve, reject) => {
       const fileUrl = this.buildWebDAVUrl(url, folder, fileName);
-      const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+      const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
       
       wx.request({
         url: fileUrl,
@@ -1845,7 +1874,7 @@ Page({
           uploadUrl += folder.endsWith('/') ? folder : folder + '/';
         }
         uploadUrl += fileName;
-        const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+        const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
         
         // 上传文件
         wx.request({
@@ -1993,7 +2022,7 @@ Page({
   restoreShiftTemplates(url, username, password, folder) {
     const fileName = '班次模板.json';
     const downloadUrl = this.buildWebDAVUrl(url, folder, fileName);
-    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
     
     wx.request({
       url: downloadUrl,
@@ -2050,7 +2079,7 @@ Page({
   restoreShifts(url, username, password, folder) {
     const fileName = '排班数据.json';
     const downloadUrl = this.buildWebDAVUrl(url, folder, fileName);
-    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
     
     wx.request({
       url: downloadUrl,
@@ -2103,7 +2132,7 @@ Page({
   // 恢复图片文件夹
   restoreImages(url, username, password, folder) {
     const listUrl = this.buildWebDAVUrl(url, folder, 'images/');
-    const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+    const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
     
     wx.request({
       url: listUrl,
@@ -2179,7 +2208,7 @@ Page({
     
     images.forEach(imagePath => {
       const downloadUrl = url.endsWith('/') ? url : url + '/';
-      const authHeader = 'Basic ' + wx.arrayBufferToBase64(new Uint8Array(encodeURIComponent(`${username}:${password}`).split(',').map(c => c.charCodeAt(0))));
+      const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
       
       wx.request({
         url: downloadUrl + imagePath,
