@@ -44,6 +44,8 @@ Page({
     },
     // WebDAV配置弹窗
     showWebDAVModal: false,
+    // WebDAV使用说明弹窗
+    showWebDAVHelpModal: false,
     // 密码显示/隐藏状态
     showPassword: false,
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
@@ -1345,6 +1347,20 @@ Page({
     });
   },
   
+  // 显示WebDAV使用说明弹窗
+  showWebDAVHelpModal() {
+    this.setData({
+      showWebDAVHelpModal: true
+    });
+  },
+  
+  // 隐藏WebDAV使用说明弹窗
+  hideWebDAVHelpModal() {
+    this.setData({
+      showWebDAVHelpModal: false
+    });
+  },
+  
   // 切换密码显示/隐藏状态
   togglePasswordVisibility() {
     this.setData({
@@ -1640,9 +1656,12 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 生成备份文件名，包含时间戳
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupFileName = `排班备份_${timestamp}.zip`;
+      // 生成备份文件名，格式为：排班备份+当天日期
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const backupFileName = `排班备份${year}_${month}_${day}.zip`;
       const backupFilePath = `${wx.env.USER_DATA_PATH}/${backupFileName}`;
       
       // 生成ZIP文件
@@ -1805,15 +1824,21 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 生成备份文件名，包含时间戳
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const backupFileName = `排班备份_${timestamp}.zip`;
+      // 生成备份文件名，格式为：排班备份+当天日期
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      const backupFileName = `排班备份${year}_${month}_${day}.zip`;
       const backupFilePath = `${wx.env.USER_DATA_PATH}/${backupFileName}`;
       
       // 生成ZIP文件
       this.generateBackupZip(backupFilePath, fs).then(() => {
         // 上传ZIP文件到WebDAV
         return this.uploadToWebDAV(backupFilePath, backupFileName, url, username, password, folder);
+      }).then(() => {
+        // 生成并上传索引文件
+        return this.generateAndUploadBackupIndex(backupFileName, url, username, password, folder);
       }).then(() => {
         // 更新备份时间戳
         wx.setStorageSync('lastBackupTime', Date.now());
@@ -1836,6 +1861,58 @@ Page({
         icon: 'none'
       });
     }
+  },
+  
+  // 生成并上传备份索引文件
+  generateAndUploadBackupIndex(backupFileName, url, username, password, folder) {
+    return new Promise((resolve, reject) => {
+      try {
+        const fs = wx.getFileSystemManager();
+        // 生成索引文件内容
+        const backupIndex = {
+          appid: 'wx1234567890abcdef', // 替换为你的小程序 AppID
+          timestamp: Date.now(),
+          backupFile: {
+            fileName: backupFileName,
+            davPath: `${folder}/${backupFileName}`,
+            lastModified: new Date().toISOString()
+          },
+          files: [
+            {
+              fileName: backupFileName,
+              davPath: `${folder}/${backupFileName}`,
+              localPath: `${wx.env.USER_DATA_PATH}/${backupFileName}`,
+              type: 'zip',
+              lastModified: new Date().toISOString()
+            }
+          ]
+        };
+        
+        // 写入索引文件
+        const indexFilePath = `${wx.env.USER_DATA_PATH}/backup-index.json`;
+        fs.writeFile({
+          filePath: indexFilePath,
+          data: JSON.stringify(backupIndex, null, 2),
+          encoding: 'utf8',
+          success: () => {
+            // 上传索引文件到WebDAV
+            this.uploadToWebDAV(indexFilePath, 'backup-index.json', url, username, password, folder).then(() => {
+              resolve();
+            }).catch((err) => {
+              console.error('上传索引文件失败', err);
+              reject(err);
+            });
+          },
+          fail: (err) => {
+            console.error('写入索引文件失败', err);
+            reject(err);
+          }
+        });
+      } catch (e) {
+        console.error('生成索引文件失败', e);
+        reject(e);
+      }
+    });
   },
   
   // 判断是否需要备份
@@ -2236,20 +2313,13 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 获取WebDAV服务器上的备份文件列表
-      this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
+      // 尝试下载并使用索引文件
+      this.downloadBackupIndex(url, username, password, folder).then((backupIndex) => {
         wx.hideLoading();
         
-        if (backupFiles.length === 0) {
-          wx.showToast({
-            title: '未找到备份文件',
-            icon: 'none'
-          });
-          return;
-        }
-        
-        // 让用户选择要恢复的备份文件
-        this.showBackupFileSelector(backupFiles, (selectedFile) => {
+        if (backupIndex && backupIndex.backupFile) {
+          // 使用索引文件中的备份信息
+          const selectedFile = backupIndex.backupFile.fileName;
           wx.showLoading({
             title: '恢复中...'
           });
@@ -2274,13 +2344,103 @@ Page({
               icon: 'none'
             });
           });
-        });
+        } else {
+          // 索引文件不存在或无效，使用原来的方法
+          this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
+            wx.hideLoading();
+            
+            if (backupFiles.length === 0) {
+              wx.showToast({
+                title: '未找到备份文件',
+                icon: 'none'
+              });
+              return;
+            }
+            
+            // 让用户选择要恢复的备份文件
+            this.showBackupFileSelector(backupFiles, (selectedFile) => {
+              wx.showLoading({
+                title: '恢复中...'
+              });
+              
+              // 下载并恢复选中的备份文件
+              this.downloadAndRestoreBackup(url, username, password, folder, selectedFile).then(() => {
+                wx.hideLoading();
+                wx.showToast({
+                  title: '恢复成功',
+                  icon: 'success'
+                });
+                
+                // 延迟刷新页面数据，确保所有恢复操作完成
+                setTimeout(() => {
+                  this.refreshPageData();
+                }, 500);
+              }).catch((err) => {
+                console.error('恢复备份失败', err);
+                wx.hideLoading();
+                wx.showToast({
+                  title: '恢复失败',
+                  icon: 'none'
+                });
+              });
+            });
+          }).catch((err) => {
+            console.error('获取备份文件列表失败', err);
+            wx.hideLoading();
+            wx.showToast({
+              title: '获取备份文件列表失败',
+              icon: 'none'
+            });
+          });
+        }
       }).catch((err) => {
-        console.error('获取备份文件列表失败', err);
-        wx.hideLoading();
-        wx.showToast({
-          title: '获取备份文件列表失败',
-          icon: 'none'
+        console.error('下载索引文件失败，使用原方法', err);
+        // 索引文件下载失败，使用原来的方法
+        this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
+          wx.hideLoading();
+          
+          if (backupFiles.length === 0) {
+            wx.showToast({
+              title: '未找到备份文件',
+              icon: 'none'
+            });
+            return;
+          }
+          
+          // 让用户选择要恢复的备份文件
+          this.showBackupFileSelector(backupFiles, (selectedFile) => {
+            wx.showLoading({
+              title: '恢复中...'
+            });
+            
+            // 下载并恢复选中的备份文件
+            this.downloadAndRestoreBackup(url, username, password, folder, selectedFile).then(() => {
+              wx.hideLoading();
+              wx.showToast({
+                title: '恢复成功',
+                icon: 'success'
+              });
+              
+              // 延迟刷新页面数据，确保所有恢复操作完成
+              setTimeout(() => {
+                this.refreshPageData();
+              }, 500);
+            }).catch((err) => {
+              console.error('恢复备份失败', err);
+              wx.hideLoading();
+              wx.showToast({
+                title: '恢复失败',
+                icon: 'none'
+              });
+            });
+          });
+        }).catch((err) => {
+          console.error('获取备份文件列表失败', err);
+          wx.hideLoading();
+          wx.showToast({
+            title: '获取备份文件列表失败',
+            icon: 'none'
+          });
         });
       });
       
@@ -2292,6 +2452,54 @@ Page({
         icon: 'none'
       });
     }
+  },
+  
+  // 从WebDAV下载备份索引文件
+  downloadBackupIndex(url, username, password, folder) {
+    return new Promise((resolve, reject) => {
+      const indexFilePath = `${wx.env.USER_DATA_PATH}/backup-index.json`;
+      const indexUrl = this.buildWebDAVUrl(url, folder, 'backup-index.json');
+      const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
+      
+      wx.request({
+        url: indexUrl,
+        method: 'GET',
+        header: {
+          'Authorization': authHeader
+        },
+        responseType: 'arraybuffer',
+        success: (res) => {
+          if (res.statusCode === 200) {
+            const fs = wx.getFileSystemManager();
+            fs.writeFile({
+              filePath: indexFilePath,
+              data: res.data,
+              success: () => {
+                try {
+                  const indexContent = fs.readFileSync(indexFilePath, 'utf8');
+                  const backupIndex = JSON.parse(indexContent);
+                  resolve(backupIndex);
+                } catch (e) {
+                  console.error('解析索引文件失败', e);
+                  resolve(null);
+                }
+              },
+              fail: (err) => {
+                console.error('写入索引文件失败', err);
+                resolve(null);
+              }
+            });
+          } else {
+            console.error('下载索引文件失败', res.statusCode);
+            resolve(null);
+          }
+        },
+        fail: (err) => {
+          console.error('下载索引文件请求失败', err);
+          resolve(null);
+        }
+      });
+    });
   },
   
   // 获取WebDAV服务器上的备份文件列表
@@ -2455,6 +2663,33 @@ Page({
         },
         fail: (err) => {
           console.error('下载备份文件请求失败', err);
+          reject(err);
+        }
+      });
+    });
+  },
+  
+  // 计算文件MD5（简化版，实际项目中可能需要更复杂的实现）
+  calculateFileMD5(filePath) {
+    return new Promise((resolve, reject) => {
+      const fs = wx.getFileSystemManager();
+      fs.readFile({
+        filePath: filePath,
+        success: (res) => {
+          // 注意：微信小程序中没有内置的MD5计算函数
+          // 这里使用一个简化的方法，实际项目中可能需要引入第三方库
+          // 或者使用云函数来计算MD5
+          const data = res.data;
+          let hash = 0;
+          for (let i = 0; i < data.length; i++) {
+            const char = data.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // 转换为32位整数
+          }
+          resolve(hash.toString(16));
+        },
+        fail: (err) => {
+          console.error('读取文件失败', err);
           reject(err);
         }
       });
