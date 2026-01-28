@@ -46,6 +46,8 @@ Page({
     showWebDAVModal: false,
     // WebDAV使用说明弹窗
     showWebDAVHelpModal: false,
+    // 数据管理使用说明弹窗
+    showDataManagementHelpModal: false,
     // 密码显示/隐藏状态
     showPassword: false,
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
@@ -1373,6 +1375,22 @@ Page({
       title: 'SYwork排班管理系统 - 个人中心',
       query: 'page=profile'
     };
+  },
+  
+  // 数据管理使用说明弹窗相关方法
+  
+  // 显示数据管理使用说明弹窗
+  showDataManagementHelpModal() {
+    this.setData({
+      showDataManagementHelpModal: true
+    });
+  },
+  
+  // 隐藏数据管理使用说明弹窗
+  hideDataManagementHelpModal() {
+    this.setData({
+      showDataManagementHelpModal: false
+    });
   },
   
   // WebDAV备份相关方法
