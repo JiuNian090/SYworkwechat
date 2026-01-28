@@ -93,12 +93,39 @@
 
   <!-- WebDAV备份设置 -->
   <view class="section">
-    <view class="section-title">WebDAV备份设置</view>
+    <view class="section-title-container">
+      <text class="section-title">WebDAV备份设置</text>
+      <button class="help-icon-btn" bindtap="showWebDAVHelpModal">
+        <text class="help-icon">?</text>
+      </button>
+    </view>
     <view class="webdav-setting">
       <button bindtap="showWebDAVModal" class="primary-btn webdav-config-btn">配置WebDAV</button>
       <button bindtap="testWebDAVConnection" class="secondary-btn webdav-test-btn">测试连接</button>
       <button bindtap="backupToWebDAV" class="primary-btn webdav-backup-btn">备份到WebDAV</button>
       <button bindtap="restoreFromWebDAV" class="secondary-btn webdav-restore-btn">从WebDAV恢复</button>
+    </view>
+  </view>
+
+  <!-- WebDAV使用说明弹窗 -->
+  <view class="modal-mask" wx:if="{{showWebDAVHelpModal}}" bindtap="hideWebDAVHelpModal"></view>
+  <view class="modal-container webdav-help-modal" wx:if="{{showWebDAVHelpModal}}">
+    <view class="modal-header">
+      <text class="modal-title">WebDAV使用说明</text>
+      <button class="modal-close-btn" bindtap="hideWebDAVHelpModal">×</button>
+    </view>
+    <view class="modal-content webdav-help-content">
+      <view class="webdav-step">
+        <text class="step-title">第一步，打开坚果云创建排班备份文件夹</text>
+        <image src="/pages/profile/first.png" class="step-image" mode="widthFix"></image>
+      </view>
+      <view class="webdav-step">
+        <text class="step-title">第二步，创建坚果云webdav账号密码</text>
+        <image src="/pages/profile/second.png" class="step-image" mode="widthFix"></image>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn confirm-btn" bindtap="hideWebDAVHelpModal">我知道了</button>
     </view>
   </view>
 

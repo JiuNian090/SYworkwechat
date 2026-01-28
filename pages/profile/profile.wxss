@@ -1393,3 +1393,97 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* 章节标题容器样式，用于右对齐帮助图标按钮 */
+.section-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 10rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+/* 帮助图标按钮样式 */
+.help-icon-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #07c160, #059e4d);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.2);
+  transition: all 0.3s ease;
+}
+
+.help-icon-btn:hover {
+  background: linear-gradient(135deg, #059e4d, #048c42);
+  transform: scale(1.05);
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+}
+
+.help-icon-btn:active {
+  background: linear-gradient(135deg, #048c42, #037a3a);
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 6rpx rgba(7, 193, 96, 0.2);
+}
+
+/* 帮助图标样式 */
+.help-icon {
+  font-size: 36rpx;
+  color: white;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* WebDAV使用说明弹窗样式 */
+.webdav-help-modal {
+  width: 95%;
+  max-width: 700rpx;
+}
+
+.webdav-help-content {
+  max-height: 700rpx;
+  overflow-y: auto;
+  padding: 10rpx 0;
+}
+
+/* WebDAV使用说明步骤样式 */
+.webdav-step {
+  margin-bottom: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.webdav-step:last-child {
+  margin-bottom: 20rpx;
+}
+
+/* 步骤标题样式 */
+.step-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* 步骤图片样式 */
+.step-image {
+  width: 100%;
+  max-width: 600rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  margin-bottom: 10rpx;
+}
+
+/* 确保滚动条在iOS设备上也能正常显示 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .webdav-help-content {
+    -webkit-overflow-scrolling: touch;
+  }
+}

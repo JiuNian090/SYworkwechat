@@ -2313,13 +2313,20 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 尝试下载并使用索引文件
-      this.downloadBackupIndex(url, username, password, folder).then((backupIndex) => {
+      // 获取所有备份文件，无论是否存在索引文件
+      this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
         wx.hideLoading();
         
-        if (backupIndex && backupIndex.backupFile) {
-          // 使用索引文件中的备份信息
-          const selectedFile = backupIndex.backupFile.fileName;
+        if (backupFiles.length === 0) {
+          wx.showToast({
+            title: '未找到备份文件',
+            icon: 'none'
+          });
+          return;
+        }
+        
+        // 让用户选择要恢复的备份文件
+        this.showBackupFileSelector(backupFiles, (selectedFile) => {
           wx.showLoading({
             title: '恢复中...'
           });
@@ -2344,103 +2351,13 @@ Page({
               icon: 'none'
             });
           });
-        } else {
-          // 索引文件不存在或无效，使用原来的方法
-          this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
-            wx.hideLoading();
-            
-            if (backupFiles.length === 0) {
-              wx.showToast({
-                title: '未找到备份文件',
-                icon: 'none'
-              });
-              return;
-            }
-            
-            // 让用户选择要恢复的备份文件
-            this.showBackupFileSelector(backupFiles, (selectedFile) => {
-              wx.showLoading({
-                title: '恢复中...'
-              });
-              
-              // 下载并恢复选中的备份文件
-              this.downloadAndRestoreBackup(url, username, password, folder, selectedFile).then(() => {
-                wx.hideLoading();
-                wx.showToast({
-                  title: '恢复成功',
-                  icon: 'success'
-                });
-                
-                // 延迟刷新页面数据，确保所有恢复操作完成
-                setTimeout(() => {
-                  this.refreshPageData();
-                }, 500);
-              }).catch((err) => {
-                console.error('恢复备份失败', err);
-                wx.hideLoading();
-                wx.showToast({
-                  title: '恢复失败',
-                  icon: 'none'
-                });
-              });
-            });
-          }).catch((err) => {
-            console.error('获取备份文件列表失败', err);
-            wx.hideLoading();
-            wx.showToast({
-              title: '获取备份文件列表失败',
-              icon: 'none'
-            });
-          });
-        }
+        });
       }).catch((err) => {
-        console.error('下载索引文件失败，使用原方法', err);
-        // 索引文件下载失败，使用原来的方法
-        this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
-          wx.hideLoading();
-          
-          if (backupFiles.length === 0) {
-            wx.showToast({
-              title: '未找到备份文件',
-              icon: 'none'
-            });
-            return;
-          }
-          
-          // 让用户选择要恢复的备份文件
-          this.showBackupFileSelector(backupFiles, (selectedFile) => {
-            wx.showLoading({
-              title: '恢复中...'
-            });
-            
-            // 下载并恢复选中的备份文件
-            this.downloadAndRestoreBackup(url, username, password, folder, selectedFile).then(() => {
-              wx.hideLoading();
-              wx.showToast({
-                title: '恢复成功',
-                icon: 'success'
-              });
-              
-              // 延迟刷新页面数据，确保所有恢复操作完成
-              setTimeout(() => {
-                this.refreshPageData();
-              }, 500);
-            }).catch((err) => {
-              console.error('恢复备份失败', err);
-              wx.hideLoading();
-              wx.showToast({
-                title: '恢复失败',
-                icon: 'none'
-              });
-            });
-          });
-        }).catch((err) => {
-          console.error('获取备份文件列表失败', err);
-          wx.hideLoading();
-          wx.showToast({
-            title: '获取备份文件列表失败',
-            icon: 'none'
-          });
+        console.error('获取备份文件列表失败', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '获取备份文件列表失败',
+          icon: 'none'
         });
       });
       
@@ -2846,18 +2763,18 @@ Page({
     }
   },
   
-  // 清理旧的备份文件，只保留最新版本
+  // 清理旧的备份文件，只保留最近三次备份
   cleanupOldBackups(url, username, password, folder, currentBackupFileName) {
     // 获取服务器上的备份文件列表
     this.getWebDAVBackupFiles(url, username, password, folder).then((backupFiles) => {
-      if (backupFiles.length > 1) {
+      if (backupFiles.length > 3) {
         // 按文件名排序（最新的备份文件在前面）
         backupFiles.sort((a, b) => {
           return b.localeCompare(a);
         });
         
-        // 保留第一个（最新的），删除其余的
-        const filesToDelete = backupFiles.filter(fileName => fileName !== currentBackupFileName);
+        // 保留前三个（最新的三个），删除其余的
+        const filesToDelete = backupFiles.slice(3);
         
         filesToDelete.forEach((fileName) => {
           this.deleteWebDAVFile(url, username, password, folder, fileName);
