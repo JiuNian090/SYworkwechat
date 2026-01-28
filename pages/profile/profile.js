@@ -2151,18 +2151,27 @@ Page({
     }
   },
   
-  // 构建WebDAV URL
+  // 构建WebDAV URL，确保符合坚果云要求
   buildWebDAVUrl(url, folder, fileName) {
     // 确保URL包含协议
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       url = 'http://' + url;
     }
     
+    // 确保URL以/结尾，符合坚果云要求
     let webDavUrl = url.endsWith('/') ? url : url + '/';
+    
+    // 处理文件夹路径，确保无特殊字符
     if (folder) {
-      webDavUrl += folder.endsWith('/') ? folder : folder + '/';
+      // 移除文件夹路径中的特殊字符，符合坚果云命名规则
+      const safeFolder = folder.replace(/[\\/:*?"<>|]/g, '_').trim();
+      webDavUrl += safeFolder.endsWith('/') ? safeFolder : safeFolder + '/';
     }
-    webDavUrl += fileName;
+    
+    // 处理文件名，确保无特殊字符
+    const safeFileName = fileName.replace(/[\\/:*?"<>|]/g, '_').trim();
+    webDavUrl += safeFileName;
+    
     return webDavUrl;
   },
   
