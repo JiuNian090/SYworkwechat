@@ -599,6 +599,20 @@ Page({
         };
       }
       
+      // 检查数据是否为空
+      const isDataEmpty = Object.keys(data).length === 0 || 
+        (Object.keys(data).length === 1 && data.shiftTemplates && data.shiftTemplates.length === 0) ||
+        (Object.keys(data).length === 1 && data.shifts && Object.keys(data.shifts).length === 0);
+      
+      if (isDataEmpty) {
+        wx.hideLoading();
+        wx.showToast({
+          title: '没有数据可导出',
+          icon: 'none'
+        });
+        return;
+      }
+      
       // 使用用户输入的文件名
       const fileName = customFileName;
       const fs = wx.getFileSystemManager();
@@ -613,6 +627,16 @@ Page({
         // 生成JSON文件
         const jsonData = JSON.stringify(data, null, 2);
         const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.json`;
+        
+        // 检查jsonData是否为空
+        if (!jsonData || jsonData === '{}') {
+          wx.hideLoading();
+          wx.showToast({
+            title: '没有数据可导出',
+            icon: 'none'
+          });
+          return;
+        }
         
         fs.writeFile({
           filePath: filePath,
@@ -712,6 +736,16 @@ Page({
       Promise.all(imagePromises).then(() => {
         // 生成ZIP文件
         zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
+          // 检查content是否为空
+          if (!content || content.byteLength === 0) {
+            wx.hideLoading();
+            wx.showToast({
+              title: '没有数据可导出',
+              icon: 'none'
+            });
+            return;
+          }
+          
           // 创建临时文件
           const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.zip`;
           
@@ -946,7 +980,7 @@ Page({
                 
                 // 遍历图片文件夹中的文件
                 imageDir.forEach((relativePath, file) => {
-                  const promise = file.async('uint8array').then((content) => {
+                  const promise = file.async('arraybuffer').then((content) => {
                     // 生成临时图片路径
                     const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${relativePath.split('/').pop()}`;
                     // 写入图片文件
@@ -2816,7 +2850,7 @@ Page({
     if (imageFolder) {
       imageFolder.forEach((relativePath, file) => {
         if (!file.dir) { // 只处理文件，不处理文件夹
-          file.async('uint8array').then((content) => {
+          file.async('arraybuffer').then((content) => {
             // 生成临时图片路径
             const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${relativePath.split('/').pop()}`;
             

@@ -585,7 +585,9 @@ Page({
 
   stopPropagation(e) {
     // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
-    e.stopPropagation();
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
   },
   
   // 图片管理相关方法
