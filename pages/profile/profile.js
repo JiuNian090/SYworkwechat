@@ -690,6 +690,7 @@ Page({
       const images = [];
       const fs = wx.getFileSystemManager();
       const imagePromises = [];
+      const processedImages = new Set(); // 用于跟踪已处理的图片
       
       // 获取所有周的图片
       // 注意：这里需要根据实际存储结构调整，例如按周存储的图片
@@ -700,35 +701,44 @@ Page({
       weekImageKeys.forEach(key => {
         const weekImages = wx.getStorageSync(key) || [];
         weekImages.forEach((image, index) => {
-          const promise = new Promise((resolve) => {
-            try {
-              // 读取图片文件
-              fs.readFile({
-                filePath: image.path,
-                success: (res) => {
-                  // 生成图片文件名
-                  const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
-                  // 添加图片到ZIP
-                  zip.file(imageFileName, res.data);
-                  // 保存图片信息
-                  images.push({
-                    ...image,
-                    key: key,
-                    zipPath: imageFileName
-                  });
-                  resolve();
-                },
-                fail: (err) => {
-                  console.error('读取图片失败', err);
-                  resolve(); // 忽略失败的图片
-                }
-              });
-            } catch (e) {
-              console.error('处理图片失败', e);
-              resolve();
-            }
-          });
-          imagePromises.push(promise);
+          // 生成图片唯一标识（基于图片路径和名称）
+          const imageKey = `${key}_${image.name}_${image.path}`;
+          
+          // 检查图片是否已经处理过
+          if (!processedImages.has(imageKey)) {
+            processedImages.add(imageKey);
+            
+            const promise = new Promise((resolve) => {
+              try {
+                // 读取图片文件
+                fs.readFile({
+                  filePath: image.path,
+                  success: (res) => {
+                    // 生成图片文件名（使用周标识和图片名称，避免重复）
+                    const safeImageName = image.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
+                    const imageFileName = `images/${key}_${safeImageName}.jpg`;
+                    // 添加图片到ZIP
+                    zip.file(imageFileName, res.data);
+                    // 保存图片信息
+                    images.push({
+                      ...image,
+                      key: key,
+                      zipPath: imageFileName
+                    });
+                    resolve();
+                  },
+                  fail: (err) => {
+                    console.error('读取图片失败', err);
+                    resolve(); // 忽略失败的图片
+                  }
+                });
+              } catch (e) {
+                console.error('处理图片失败', e);
+                resolve();
+              }
+            });
+            imagePromises.push(promise);
+          }
         });
       });
       
@@ -2851,40 +2861,52 @@ Page({
       imageFolder.forEach((relativePath, file) => {
         if (!file.dir) { // 只处理文件，不处理文件夹
           file.async('arraybuffer').then((content) => {
-            // 生成临时图片路径
-            const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${relativePath.split('/').pop()}`;
-            
-            // 写入图片文件
-            fs.writeFile({
-              filePath: tempPath,
-              data: content,
-              success: () => {
-                // 解析图片信息，恢复到对应的周存储
-                // 假设图片文件名格式为：week_images_{weekKey}_index_name.jpg
-                const fileNameParts = relativePath.split('/').pop().split('_');
-                if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
-                  const weekKey = fileNameParts.slice(2, -2).join('_');
-                  const weekImageKey = `week_images_${weekKey}`;
-                  
-                  // 获取现有图片数据
-                  const existingImages = wx.getStorageSync(weekImageKey) || [];
-                  
-                  // 添加新图片
-                  existingImages.push({
-                    id: Date.now().toString(),
-                    name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
-                    path: tempPath,
-                    addedTime: new Date().toISOString()
-                  });
-                  
-                  // 保存图片数据
-                  wx.setStorageSync(weekImageKey, existingImages);
-                }
-              },
-              fail: (err) => {
-                console.error('写入图片文件失败', err);
+            // 解析图片信息，恢复到对应的周存储
+            // 假设图片文件名格式为：week_images_{weekKey}_index_name.jpg
+            const fileNameParts = relativePath.split('/').pop().split('_');
+            if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
+              const weekKey = fileNameParts.slice(2, -2).join('_');
+              const weekImageKey = `week_images_${weekKey}`;
+              
+              // 获取现有图片数据
+              const existingImages = wx.getStorageSync(weekImageKey) || [];
+              
+              // 生成图片唯一标识（基于文件名和内容长度）
+              const imageId = `${weekKey}_${fileNameParts[fileNameParts.length - 2]}_${content.byteLength}`;
+              
+              // 检查图片是否已存在（基于唯一标识）
+              const imageExists = existingImages.some(img => 
+                img.id === imageId || 
+                (img.name === fileNameParts.slice(-1)[0].replace('.jpg', '') && 
+                 img.path.includes(fileNameParts[fileNameParts.length - 2]))
+              );
+              
+              if (!imageExists) {
+                // 生成临时图片路径
+                const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}_${fileNameParts.slice(-1)[0]}`;
+                
+                // 写入图片文件
+                fs.writeFile({
+                  filePath: tempPath,
+                  data: content,
+                  success: () => {
+                    // 添加新图片
+                    existingImages.push({
+                      id: imageId,
+                      name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
+                      path: tempPath,
+                      addedTime: new Date().toISOString()
+                    });
+                    
+                    // 保存图片数据
+                    wx.setStorageSync(weekImageKey, existingImages);
+                  },
+                  fail: (err) => {
+                    console.error('写入图片文件失败', err);
+                  }
+                });
               }
-            });
+            }
           }).catch((err) => {
             console.error('提取图片失败', err);
           });
