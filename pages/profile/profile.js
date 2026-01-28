@@ -1676,6 +1676,64 @@ Page({
     });
   },
   
+  // WebDAV备份功能（全部备份为ZIP文件）
+  backupToWebDAV() {
+    const { url, username, password } = this.data.webdavConfig;
+    
+    if (!url || !username || !password) {
+      wx.showToast({
+        title: '请先填写并保存WebDAV配置',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    wx.showLoading({
+      title: '备份中...'
+    });
+    
+    try {
+      const fs = wx.getFileSystemManager();
+      // 生成固定的文件夹名：用户名排班备份
+      let folder = this.data.webdavConfig.folder;
+      if (!folder) {
+        const user = this.data.username || '未命名用户';
+        folder = `${user}排班备份`;
+      }
+      
+      // 生成备份文件名，包含时间戳
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupFileName = `排班备份_${timestamp}.zip`;
+      const backupFilePath = `${wx.env.USER_DATA_PATH}/${backupFileName}`;
+      
+      // 生成ZIP文件
+      this.generateBackupZip(backupFilePath, fs).then(() => {
+        // 上传ZIP文件到WebDAV
+        return this.uploadToWebDAV(backupFilePath, backupFileName, url, username, password, folder);
+      }).then(() => {
+        // 更新备份时间戳
+        wx.setStorageSync('lastBackupTime', Date.now());
+        // 删除旧的备份文件，只保留最新版本
+        this.cleanupOldBackups(url, username, password, folder, backupFileName);
+      }).catch((err) => {
+        console.error('备份失败', err);
+        wx.hideLoading();
+        wx.showToast({
+          title: '备份失败',
+          icon: 'none'
+        });
+      });
+      
+    } catch (e) {
+      console.error('备份失败', e);
+      wx.hideLoading();
+      wx.showToast({
+        title: '备份失败',
+        icon: 'none'
+      });
+    }
+  },
+  
   // 判断是否需要备份
   needBackup(dataType, serverInfo, localTime) {
     // 如果服务器上没有文件，需要备份
@@ -1975,60 +2033,78 @@ Page({
   
   // 上传文件到WebDAV
   uploadToWebDAV(filePath, fileName, url, username, password, folder) {
-    const fs = wx.getFileSystemManager();
-    
-    // 读取文件内容
-    fs.readFile({
-      filePath: filePath,
-      success: (res) => {
-        const fileContent = res.data;
-        // 构建上传URL，考虑自定义文件夹
-        let uploadUrl = url.endsWith('/') ? url : url + '/';
-        if (folder) {
-          uploadUrl += folder.endsWith('/') ? folder : folder + '/';
-        }
-        uploadUrl += fileName;
-        const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
-        
-        // 上传文件
-        wx.request({
-          url: uploadUrl,
-          method: 'PUT',
-          header: {
-            'Authorization': authHeader,
-            'Content-Type': 'application/json'
-          },
-          data: fileContent,
-          success: (res) => {
-            wx.hideLoading();
-            if (res.statusCode >= 200 && res.statusCode < 300) {
+    return new Promise((resolve, reject) => {
+      const fs = wx.getFileSystemManager();
+      
+      // 读取文件内容
+      fs.readFile({
+        filePath: filePath,
+        success: (res) => {
+          const fileContent = res.data;
+          // 构建上传URL，考虑自定义文件夹
+          let uploadUrl = url.endsWith('/') ? url : url + '/';
+          if (folder) {
+            uploadUrl += folder.endsWith('/') ? folder : folder + '/';
+          }
+          uploadUrl += fileName;
+          const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
+          
+          // 根据文件扩展名设置正确的Content-Type
+          let contentType = 'application/octet-stream';
+          if (fileName.endsWith('.zip')) {
+            contentType = 'application/zip';
+          } else if (fileName.endsWith('.json')) {
+            contentType = 'application/json';
+          } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+            contentType = 'image/jpeg';
+          } else if (fileName.endsWith('.png')) {
+            contentType = 'image/png';
+          }
+          
+          // 上传文件
+          wx.request({
+            url: uploadUrl,
+            method: 'PUT',
+            header: {
+              'Authorization': authHeader,
+              'Content-Type': contentType
+            },
+            data: fileContent,
+            success: (res) => {
+              wx.hideLoading();
+              if (res.statusCode >= 200 && res.statusCode < 300) {
+                wx.showToast({
+                  title: '备份成功',
+                  icon: 'success'
+                });
+                resolve();
+              } else {
+                wx.showToast({
+                  title: `备份失败: ${res.statusCode}`,
+                  icon: 'none'
+                });
+                reject(new Error(`备份失败: ${res.statusCode}`));
+              }
+            },
+            fail: (err) => {
+              wx.hideLoading();
               wx.showToast({
-                title: '备份成功',
-                icon: 'success'
-              });
-            } else {
-              wx.showToast({
-                title: `备份失败: ${res.statusCode}`,
+                title: '备份失败，请检查网络连接',
                 icon: 'none'
               });
+              reject(err);
             }
-          },
-          fail: (err) => {
-            wx.hideLoading();
-            wx.showToast({
-              title: '备份失败，请检查网络连接',
-              icon: 'none'
-            });
-          }
-        });
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        wx.showToast({
-          title: '读取文件失败',
-          icon: 'none'
-        });
-      }
+          });
+        },
+        fail: (err) => {
+          wx.hideLoading();
+          wx.showToast({
+            title: '读取文件失败',
+            icon: 'none'
+          });
+          reject(err);
+        }
+      });
     });
   },
   
@@ -2151,15 +2227,61 @@ Page({
     const backupFiles = [];
     const responseStr = String(responseData);
     
-    // 简单解析，查找文件名包含"排班备份"且以.zip结尾的文件
-    // 注意：不同的WebDAV服务器返回的格式可能不同，这里使用通用的解析方法
-    const fileRegex = /排班备份_[^"\']+\.zip/g;
+    // 方法1：尝试解析HTML链接
+    const linkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([^<]+)<\/a>/g;
     let match;
     
-    while ((match = fileRegex.exec(responseStr)) !== null) {
-      const fileName = match[0];
-      if (!backupFiles.includes(fileName)) {
-        backupFiles.push(fileName);
+    while ((match = linkRegex.exec(responseStr)) !== null) {
+      const href = match[1];
+      const linkText = match[2];
+      
+      // 检查链接文本或href是否包含备份文件名
+      if ((linkText.includes('排班备份') && linkText.endsWith('.zip')) || (href.includes('排班备份') && href.endsWith('.zip'))) {
+        // 从href中提取文件名
+        let fileName;
+        if (href.includes('/')) {
+          fileName = href.split('/').pop();
+        } else {
+          fileName = linkText;
+        }
+        
+        // 清理文件名，移除可能的URL编码
+        fileName = decodeURIComponent(fileName);
+        
+        if (fileName.includes('排班备份') && fileName.endsWith('.zip') && !backupFiles.includes(fileName)) {
+          backupFiles.push(fileName);
+        }
+      }
+    }
+    
+    // 方法2：如果方法1没有找到文件，尝试直接搜索文件名模式
+    if (backupFiles.length === 0) {
+      const fileRegex = /[^"]*排班备份[^"]*\.zip/g;
+      let fileMatch;
+      
+      while ((fileMatch = fileRegex.exec(responseStr)) !== null) {
+        let fileName = fileMatch[0].trim();
+        
+        // 清理文件名
+        fileName = fileName.replace(/[<>"'&]/g, '').trim();
+        
+        if (fileName.includes('排班备份') && fileName.endsWith('.zip') && !backupFiles.includes(fileName)) {
+          backupFiles.push(fileName);
+        }
+      }
+    }
+    
+    // 方法3：如果还是没有找到，尝试更宽松的匹配
+    if (backupFiles.length === 0) {
+      const looseRegex = /排班备份[^\s<>"'&]+\.zip/g;
+      let looseMatch;
+      
+      while ((looseMatch = looseRegex.exec(responseStr)) !== null) {
+        let fileName = looseMatch[0].trim();
+        
+        if (fileName.endsWith('.zip') && !backupFiles.includes(fileName)) {
+          backupFiles.push(fileName);
+        }
       }
     }
     
