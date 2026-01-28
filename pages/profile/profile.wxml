@@ -94,8 +94,8 @@
   <!-- WebDAV备份设置 -->
   <view class="section">
     <view class="section-title-container">
-      <text class="section-title">WebDAV备份设置</text>
-      <button class="help-icon-btn" bindtap="showWebDAVHelpModal">
+      <text class="section-title" style="position: relative; left: 0rpx; top: 6rpx">WebDAV备份设置</text>
+      <button class="help-icon-btn" bindtap="showWebDAVHelpModal" style="position: relative; left: 127rpx; top: -8rpx">
         <text class="help-icon">?</text>
       </button>
     </view>
@@ -114,7 +114,11 @@
       <text class="modal-title">WebDAV使用说明</text>
       <button class="modal-close-btn" bindtap="hideWebDAVHelpModal">×</button>
     </view>
-    <view class="modal-content webdav-help-content">
+    <view class="modal-content webdav-help-content" 
+          catchtouchstart="touchStart" 
+          catchtouchmove="touchMove" 
+          catchtouchend="touchEnd"
+          style="transform: scale({{scale}}); transform-origin: 0 0;">
       <view class="webdav-step">
         <text class="step-title">第一步，打开坚果云创建排班备份文件夹</text>
         <image src="/pages/profile/first.png" class="step-image" mode="widthFix"></image>
