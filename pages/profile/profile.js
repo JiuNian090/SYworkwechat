@@ -26,8 +26,6 @@ Page({
     showFileNameModal: false, // 文件名设置弹窗显示状态
     tempFileName: '', // 临时存储用户输入的文件名
     defaultFileNameHint: '', // 默认文件名提示
-    showEmojiModal: false, // 表情选择弹窗显示状态
-    // 数据类型选择相关变量
     showDataTypeModal: false, // 数据类型选择弹窗显示状态
     selectedDataTypes: [], // 选中的数据类型
     dataTypes: [ // 可选择的数据类型
@@ -48,6 +46,11 @@ Page({
     showWebDAVHelpModal: false,
     // 密码显示/隐藏状态
     showPassword: false,
+    // 缩放相关变量
+    scale: 1, // 默认缩放比例
+    lastDistance: 0, // 上次两指距离
+    // 触摸事件相关
+    touchStartDistance: 0,
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
     selectedEmoji: '', // 当前选中的表情
     emojiTextMap: {
@@ -1357,8 +1360,58 @@ Page({
   // 隐藏WebDAV使用说明弹窗
   hideWebDAVHelpModal() {
     this.setData({
-      showWebDAVHelpModal: false
+      showWebDAVHelpModal: false,
+      scale: 1 // 重置缩放比例
     });
+  },
+  
+  // 触摸开始事件
+  touchStart(e) {
+    if (e.touches.length === 2) {
+      // 计算两指距离
+      const distance = this.calculateDistance(e.touches[0], e.touches[1]);
+      this.setData({
+        touchStartDistance: distance
+      });
+    }
+  },
+  
+  // 触摸移动事件
+  touchMove(e) {
+    if (e.touches.length === 2) {
+      // 计算当前两指距离
+      const currentDistance = this.calculateDistance(e.touches[0], e.touches[1]);
+      // 计算距离变化
+      const distanceChange = currentDistance - this.data.touchStartDistance;
+      
+      // 计算新的缩放比例
+      let newScale = this.data.scale + distanceChange * 0.002;
+      
+      // 限制缩放范围
+      newScale = Math.max(0.5, Math.min(newScale, 3));
+      
+      // 更新缩放比例
+      this.setData({
+        scale: newScale
+      });
+      
+      // 更新起始距离
+      this.setData({
+        touchStartDistance: currentDistance
+      });
+    }
+  },
+  
+  // 触摸结束事件
+  touchEnd() {
+    // 可以在这里添加结束触摸时的处理
+  },
+  
+  // 计算两点之间的距离
+  calculateDistance(touch1, touch2) {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
   },
   
   // 切换密码显示/隐藏状态

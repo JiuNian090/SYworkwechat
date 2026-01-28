@@ -1406,8 +1406,8 @@
 
 /* 帮助图标按钮样式 */
 .help-icon-btn {
-  width: 56rpx;
-  height: 56rpx;
+  width: 48rpx;
+  height: 48rpx;
   border-radius: 50%;
   background: linear-gradient(135deg, #07c160, #059e4d);
   border: none;
@@ -1416,6 +1416,7 @@
   justify-content: center;
   box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.2);
   transition: all 0.3s ease;
+  margin-left: auto;
 }
 
 .help-icon-btn:hover {
@@ -1432,7 +1433,7 @@
 
 /* 帮助图标样式 */
 .help-icon {
-  font-size: 36rpx;
+  font-size: 28rpx;
   color: white;
   font-weight: bold;
   line-height: 1;
