@@ -1281,3 +1281,115 @@
 .modal-content .input-field {
   margin-bottom: 20rpx;
 }
+
+/* 章节头部样式（包含标题和帮助按钮） */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 10rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+/* 帮助按钮样式 */
+.help-btn {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #07c160, #059e4d);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.2);
+  transition: all 0.3s ease;
+}
+
+.help-btn:hover {
+  background: linear-gradient(135deg, #059e4d, #048c42);
+  transform: scale(1.05);
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+}
+
+.help-btn:active {
+  background: linear-gradient(135deg, #048c42, #037a3a);
+  transform: scale(0.95);
+  box-shadow: 0 2rpx 6rpx rgba(7, 193, 96, 0.2);
+}
+
+/* 帮助图标样式 */
+.help-icon {
+  font-size: 36rpx;
+  color: white;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* 帮助内容样式 */
+.help-content {
+  max-height: 600rpx;
+  overflow-y: auto;
+  padding: 10rpx 0;
+}
+
+/* 帮助项样式 */
+.help-item {
+  margin-bottom: 30rpx;
+  padding: 20rpx;
+  background: #f9f9f9;
+  border-radius: 12rpx;
+  border: 1rpx solid #f0f0f0;
+}
+
+.help-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 帮助项标题样式 */
+.help-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+/* 帮助项文本样式 */
+.help-text {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.help-text:last-child {
+  margin-bottom: 0;
+}
+
+/* 帮助内容滚动条样式 */
+.help-content::-webkit-scrollbar {
+  width: 8rpx;
+}
+
+.help-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4rpx;
+}
+
+.help-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4rpx;
+}
+
+.help-content::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* 确保滚动条在iOS设备上也能正常显示 */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .help-content {
+    -webkit-overflow-scrolling: touch;
+  }
+}
