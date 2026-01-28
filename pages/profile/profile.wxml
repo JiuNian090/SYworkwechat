@@ -60,8 +60,29 @@
     </view>
   </view>
 
+  <!-- WebDAV备份设置 -->
   <view class="section">
-    <text class="section-title">数据管理</text>
+    <view class="section-title-container">
+      <text class="section-title" style="position: relative; left: 0rpx; top: 6rpx">WebDAV备份设置</text>
+      <button class="help-icon-btn" bindtap="showWebDAVHelpModal" style="position: relative; left: 127rpx; top: -8rpx">
+        <text class="help-icon">?</text>
+      </button>
+    </view>
+    <view class="webdav-setting">
+      <button bindtap="showWebDAVModal" class="primary-btn webdav-config-btn">配置WebDAV</button>
+      <button bindtap="testWebDAVConnection" class="secondary-btn webdav-test-btn">测试连接</button>
+      <button bindtap="backupToWebDAV" class="primary-btn webdav-backup-btn">备份到WebDAV</button>
+      <button bindtap="restoreFromWebDAV" class="secondary-btn webdav-restore-btn">从WebDAV恢复</button>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-title-container">
+      <text class="section-title">数据管理</text>
+      <button class="help-icon-btn" bindtap="showDataManagementHelpModal" style="position: relative; left: 200rpx; top: -18rpx">
+        <text class="help-icon">?</text>
+      </button>
+    </view>
     <view class="data-actions">
       <button class="action-btn export-btn" bindtap="showDataTypeModal">导出数据</button>
       <button class="action-btn share-btn" bindtap="shareExportedFile">分享数据</button>
@@ -70,8 +91,16 @@
      <button class="action-btn import-btn" bindtap="importData">导入数据</button>
       <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
     </view>
-    <view class="usage-guide">
-      <text>使用说明：</text>
+  </view>
+
+  <!-- 数据管理使用说明弹窗 -->
+  <view class="modal-mask" wx:if="{{showDataManagementHelpModal}}" bindtap="hideDataManagementHelpModal"></view>
+  <view class="modal-container webdav-help-modal" wx:if="{{showDataManagementHelpModal}}">
+    <view class="modal-header">
+      <text class="modal-title">数据管理使用说明</text>
+      <button class="modal-close-btn" bindtap="hideDataManagementHelpModal">×</button>
+    </view>
+    <view class="modal-content webdav-help-content">
       <view class="guide-item">
         <text>❶. 导出数据：点击导出数据，在弹窗中输入自定义文件名后点击确定，可暂存数据文件到剪贴板。当选了图片之后，导出为zip。</text>
         <text class="highlight">(可自选需要导出的数据，排班数据，班次模板，排班图片)</text>
@@ -89,21 +118,8 @@
         <text class="highlight">（清空所有数据，如要恢复，请导入之前分享出去的json或zip文件！）</text>
       </view>
     </view>
-  </view>
-
-  <!-- WebDAV备份设置 -->
-  <view class="section">
-    <view class="section-title-container">
-      <text class="section-title" style="position: relative; left: 0rpx; top: 6rpx">WebDAV备份设置</text>
-      <button class="help-icon-btn" bindtap="showWebDAVHelpModal" style="position: relative; left: 127rpx; top: -8rpx">
-        <text class="help-icon">?</text>
-      </button>
-    </view>
-    <view class="webdav-setting">
-      <button bindtap="showWebDAVModal" class="primary-btn webdav-config-btn">配置WebDAV</button>
-      <button bindtap="testWebDAVConnection" class="secondary-btn webdav-test-btn">测试连接</button>
-      <button bindtap="backupToWebDAV" class="primary-btn webdav-backup-btn">备份到WebDAV</button>
-      <button bindtap="restoreFromWebDAV" class="secondary-btn webdav-restore-btn">从WebDAV恢复</button>
+    <view class="modal-footer">
+      <button class="modal-btn confirm-btn" bindtap="hideDataManagementHelpModal">我知道了</button>
     </view>
   </view>
 
