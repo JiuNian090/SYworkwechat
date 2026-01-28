@@ -1445,39 +1445,143 @@ Page({
       title: '测试连接中...'
     });
     
-    // 构建测试请求
-    const testUrl = url;
-    // 生成Base64编码的认证信息
-    const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
-    
-    // 直接使用GET方法测试连接（微信小程序支持的方法）
-    wx.request({
-      url: testUrl,
-      method: 'GET',
-      header: {
-        'Authorization': authHeader
-      },
-      success: (res) => {
-        wx.hideLoading();
-        if (res.statusCode >= 200 && res.statusCode < 300) {
-          wx.showToast({
-            title: '连接成功',
-            icon: 'success'
+    try {
+      // 生成测试文件内容
+      const testContent = JSON.stringify({
+        test: true,
+        timestamp: new Date().toISOString(),
+        message: 'WebDAV连接测试文件'
+      }, null, 2);
+      
+      // 生成测试文件名
+      const testFileName = `webdav_test_${Date.now()}.json`;
+      const testFilePath = `${wx.env.USER_DATA_PATH}/${testFileName}`;
+      const fs = wx.getFileSystemManager();
+      
+      // 写入测试文件
+      fs.writeFile({
+        filePath: testFilePath,
+        data: testContent,
+        encoding: 'utf8',
+        success: () => {
+          // 生成固定的测试文件夹名
+          let folder = this.data.webdavConfig.folder;
+          if (!folder) {
+            const user = this.data.username || '未命名用户';
+            folder = `${user}排班备份`;
+          }
+          
+          // 上传测试文件到WebDAV
+          this.uploadToWebDAV(testFilePath, testFileName, url, username, password, folder).then(() => {
+            // 上传成功后，检查文件是否存在
+            this.checkWebDAVFileExists(url, username, password, folder, testFileName).then((exists) => {
+              if (exists) {
+                // 文件存在，连接成功
+                // 删除测试文件
+                this.deleteWebDAVFile(url, username, password, folder, testFileName);
+                // 删除本地测试文件
+                fs.unlinkSync(testFilePath);
+                wx.hideLoading();
+                wx.showToast({
+                  title: '连接成功',
+                  icon: 'success'
+                });
+              } else {
+                // 文件不存在，连接失败
+                fs.unlinkSync(testFilePath);
+                wx.hideLoading();
+                wx.showToast({
+                  title: '连接失败：无法验证文件上传',
+                  icon: 'none'
+                });
+              }
+            }).catch((err) => {
+              console.error('检查测试文件失败', err);
+              fs.unlinkSync(testFilePath);
+              wx.hideLoading();
+              wx.showToast({
+                title: '连接失败：无法验证文件上传',
+                icon: 'none'
+              });
+            });
+          }).catch((err) => {
+            console.error('上传测试文件失败', err);
+            fs.unlinkSync(testFilePath);
+            wx.hideLoading();
+            wx.showToast({
+              title: '连接失败：无法上传测试文件',
+              icon: 'none'
+            });
           });
-        } else {
+        },
+        fail: (err) => {
+          console.error('创建测试文件失败', err);
+          wx.hideLoading();
           wx.showToast({
-            title: `连接失败: ${res.statusCode}`,
+            title: '连接失败：无法创建测试文件',
             icon: 'none'
           });
         }
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        wx.showToast({
-          title: `连接失败: ${err.errMsg}`,
-          icon: 'none'
-        });
-      }
+      });
+    } catch (e) {
+      console.error('测试连接失败', e);
+      wx.hideLoading();
+      wx.showToast({
+        title: '连接失败：测试过程中出现错误',
+        icon: 'none'
+      });
+    }
+  },
+  
+  // 检查WebDAV服务器上文件是否存在
+  checkWebDAVFileExists(url, username, password, folder, fileName) {
+    return new Promise((resolve, reject) => {
+      const fileUrl = this.buildWebDAVUrl(url, folder, fileName);
+      const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
+      
+      // 使用HEAD方法检查文件是否存在
+      wx.request({
+        url: fileUrl,
+        method: 'HEAD',
+        header: {
+          'Authorization': authHeader
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            // 文件存在
+            resolve(true);
+          } else if (res.statusCode === 404) {
+            // 文件不存在
+            resolve(false);
+          } else {
+            console.error('检查文件存在性失败', res.statusCode);
+            resolve(false);
+          }
+        },
+        fail: (err) => {
+          console.error('检查文件存在性请求失败', err);
+          // HEAD请求失败后尝试GET请求
+          wx.request({
+            url: fileUrl,
+            method: 'GET',
+            header: {
+              'Authorization': authHeader
+            },
+            success: (res) => {
+              if (res.statusCode === 200) {
+                // 文件存在
+                resolve(true);
+              } else {
+                resolve(false);
+              }
+            },
+            fail: (err) => {
+              console.error('GET请求检查文件存在性失败', err);
+              resolve(false);
+            }
+          });
+        }
+      });
     });
   },
   
