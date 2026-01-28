@@ -93,7 +93,7 @@
 
   <!-- WebDAV备份设置 -->
   <view class="section">
-    <view class="section-title">WebDAV备份设置（开发中，请勿尝试）</view>
+    <view class="section-title">WebDAV备份设置</view>
     <view class="webdav-setting">
       <button bindtap="showWebDAVModal" class="primary-btn webdav-config-btn">配置WebDAV</button>
       <button bindtap="testWebDAVConnection" class="secondary-btn webdav-test-btn">测试连接</button>
