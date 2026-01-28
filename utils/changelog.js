@@ -4,6 +4,18 @@
 module.exports = {
   changelogContent: `# SYwork 项目更新日志
 
+### v2.01.28 (2026-01-28)
+🐛 问题修复
+- WebDAV恢复：修复了WebDAV恢复时找不到备份文件的问题，改进了文件列表解析逻辑
+- WebDAV测试：修改了测试连接方式，采用备份测试文档的方法，提高连接测试的可靠性
+- 加载状态：修复了showLoading与hideLoading配对使用的问题，确保在所有情况下都能正确关闭加载状态
+
+🔧 功能调整
+- WebDAV备份：优化了backupToWebDAV函数，使用Promise链确保操作顺序正确
+- WebDAV上传：改进了uploadToWebDAV函数，根据文件扩展名设置正确的Content-Type
+- 文件解析：增强了parseBackupFilesFromResponse函数，支持解析不同WebDAV服务器返回的HTML格式
+- 错误处理：完善了Promise链中的错误处理，提高了系统的稳定性
+
 ### v2.01.27 (2026-01-27)
 ✨ 新增功能
 - 数据备份：实现ZIP压缩备份功能，支持包含图片和数据的完整备份
