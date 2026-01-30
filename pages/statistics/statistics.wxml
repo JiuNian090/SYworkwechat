@@ -13,6 +13,9 @@
     <view class="card-header">
       <view class="card-icon">📅</view>
       <text class="card-title">日期范围</text>
+      <view class="help-btn" bindtap="navigateToDocs" data-type="statistics">
+        <text class="help-icon">?</text>
+      </view>
     </view>
     <view class="date-picker-row">
       <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange" class="date-picker">
