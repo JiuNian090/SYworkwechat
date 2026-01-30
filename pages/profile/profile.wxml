@@ -1,272 +1,292 @@
 <!-- pages/profile/profile.wxml -->
 <view class="container">
-  <view class="header">
-    <text class="title">个人中心</text>
-  </view>
-
-  <view class="section user-section">
-    <!-- 背景贴纸容器 - 移到user-section下，覆盖整个板块 -->
-    <view class="avatar-background">
-      <text class="avatar-sticker sticker-1">{{avatarEmoji || '😊'}}</text>
-      <text class="avatar-sticker sticker-2">{{avatarEmoji || '😊'}}</text>
-      <text class="avatar-sticker sticker-3">{{avatarEmoji || '😊'}}</text>
-      <text class="avatar-sticker sticker-4">{{avatarEmoji || '😊'}}</text>
-      <text class="avatar-sticker sticker-5">{{avatarEmoji || '😊'}}</text>
-      <text class="avatar-sticker sticker-6">{{avatarEmoji || '😊'}}</text>
-      <text class="avatar-sticker sticker-7">{{avatarEmoji || '😊'}}</text>
-      <text class="avatar-sticker sticker-8">{{avatarEmoji || '😊'}}</text>
+  <!-- 顶部用户卡片 -->
+  <view class="user-card">
+    <view class="user-card-bg">
+      <view class="bg-circle circle-1"></view>
+      <view class="bg-circle circle-2"></view>
+      <view class="bg-circle circle-3"></view>
     </view>
     <view class="user-info">
-      <view class="avatar" bindtap="showEmojiModal">
-        <text class="avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
-        <text class="avatar-emoji" wx:else>{{avatarEmoji}}</text>
+      <view class="avatar-wrapper" bindtap="showEmojiModal">
+        <view class="avatar">
+          <text class="avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+          <text class="avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
+        </view>
+        <view class="avatar-edit">
+          <text class="edit-icon">📷</text>
+        </view>
       </view>
       <view class="user-details">
-        <text class="username-display" bindtap="showUsernameModal">{{username || '点击自定义用户名'}}</text>
-        <view class="avatar-options">
-          <text class="avatar-emoji-text emoji-emotion-{{emojiEmotion}}" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
+        <text class="username" bindtap="showUsernameModal">{{username || '点击设置用户名'}}</text>
+        <text class="user-hint" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
+        <text class="user-hint" wx:else>点击头像更换表情</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- WebDAV远程区块 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-icon webdav-icon">
+        <text class="icon-text">☁️</text>
+      </view>
+      <text class="section-title">WebDAV远程备份</text>
+      <view class="help-btn" bindtap="navigateToDocs" data-type="webdav">
+        <text class="help-icon">?</text>
+      </view>
+    </view>
+    <view class="section-body">
+      <view class="btn-grid">
+        <view class="grid-btn config-btn" bindtap="showWebDAVModal">
+          <text class="btn-icon">⚙️</text>
+          <text class="btn-text">WebDAV配置</text>
+        </view>
+        <view class="grid-btn test-btn" bindtap="testWebDAVConnection">
+          <text class="btn-icon">🔌</text>
+          <text class="btn-text">测试连接</text>
+        </view>
+        <view class="grid-btn backup-btn" bindtap="backupToWebDAV">
+          <text class="btn-icon">⬆️</text>
+          <text class="btn-text">备份</text>
+        </view>
+        <view class="grid-btn restore-btn" bindtap="restoreFromWebDAV">
+          <text class="btn-icon">⬇️</text>
+          <text class="btn-text">恢复</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 数据管理区块 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-icon data-icon">
+        <text class="icon-text">💾</text>
+      </view>
+      <text class="section-title">数据管理</text>
+      <view class="help-btn" bindtap="navigateToDocs" data-type="data">
+        <text class="help-icon">?</text>
+      </view>
+    </view>
+    <view class="section-body">
+      <view class="btn-grid">
+        <view class="grid-btn export-btn" bindtap="showDataTypeModal">
+          <text class="btn-icon">📤</text>
+          <text class="btn-text">导出数据</text>
+        </view>
+        <view class="grid-btn share-btn" bindtap="shareExportedFile">
+          <text class="btn-icon">📨</text>
+          <text class="btn-text">分享数据</text>
+        </view>
+        <view class="grid-btn import-btn" bindtap="importData">
+          <text class="btn-icon">📥</text>
+          <text class="btn-text">导入数据</text>
+        </view>
+        <view class="grid-btn clear-btn" bindtap="clearAllData">
+          <text class="btn-icon">🗑️</text>
+          <text class="btn-text">清空数据</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 项目介绍区块 -->
+  <view class="section about-section">
+    <view class="section-header">
+      <view class="section-icon about-icon">
+        <text class="icon-text">💝</text>
+      </view>
+      <text class="section-title">项目介绍</text>
+    </view>
+    <view class="section-body">
+      <view class="about-content">
+        <view class="about-item">
+          <text class="about-dot">🎯</text>
+          <text class="about-text">这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，完全免费无广告的公益项目。</text>
+        </view>
+        <view class="about-item">
+          <text class="about-dot">🤝</text>
+          <text class="about-text">若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！</text>
+        </view>
+        <view class="about-item">
+          <text class="about-dot">🔒</text>
+          <text class="about-text">所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎联系作者。</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 更新日志区块 -->
+  <view class="section">
+    <view class="section-header">
+      <view class="section-icon changelog-icon">
+        <text class="icon-text">📝</text>
+      </view>
+      <text class="section-title">更新日志</text>
+    </view>
+    <view class="section-body">
+      <view class="changelog-wrapper">
+        <scroll-view class="changelog-scroll" scroll-y wx:if="{{changelog && changelog.length > 0}}">
+          <view class="changelog-list">
+            <view class="changelog-item" wx:for="{{changelog}}" wx:key="version">
+              <view class="changelog-header">
+                <text class="version-tag">{{item.version}}</text>
+                <text class="version-date">{{item.date}}</text>
+              </view>
+              <view class="changelog-content">
+                <text class="changelog-text">{{item.content}}</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+        <view class="changelog-empty" wx:else>
+          <text class="empty-text">暂无更新日志</text>
+        </view>
+      </view>
+      <view class="action-row">
+        <view class="action-btn contact-btn" bindtap="contactAuthor">
+          <text class="action-icon">💬</text>
+          <text class="action-text">联系乐乐</text>
+        </view>
+        <view class="action-btn donate-btn" bindtap="donate">
+          <text class="action-icon">❤️</text>
+          <text class="action-text">捐赠支持</text>
         </view>
       </view>
     </view>
   </view>
 
   <!-- 用户名设置弹窗 -->
-  <view class="modal-mask" wx:if="{{showUsernameModal}}" bindtap="hideUsernameModal"></view>
-  <view class="modal-container" wx:if="{{showUsernameModal}}">
+  <view class="modal-mask {{showUsernameModal ? 'show' : ''}}" wx:if="{{showUsernameModal}}" bindtap="hideUsernameModal"></view>
+  <view class="modal-container {{showUsernameModal ? 'show' : ''}}" wx:if="{{showUsernameModal}}">
     <view class="modal-header">
       <text class="modal-title">设置用户名</text>
-      <button class="modal-close-btn" bindtap="hideUsernameModal">×</button>
+      <view class="modal-close" bindtap="hideUsernameModal">
+        <text class="close-icon">×</text>
+      </view>
     </view>
-    <view class="modal-content">
-      <view class="modal-input-group">
-        <input class="modal-input" placeholder="请输入用户名" value="{{tempUsername}}" bindinput="onTempUsernameInput"></input>
+    <view class="modal-body">
+      <view class="input-wrapper">
+        <input class="modal-input" placeholder="请输入用户名" value="{{tempUsername}}" bindinput="onTempUsernameInput" maxlength="20"></input>
       </view>
-      <view class="modal-hint">
-        <text>用户名将用于导出文件名</text>
-      </view>
+      <text class="input-hint">用户名将用于导出文件名</text>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn cancel-btn" bindtap="hideUsernameModal">取消</button>
-      <button class="modal-btn confirm-btn" bindtap="confirmUsername">确定</button>
+      <button class="modal-btn btn-cancel" bindtap="hideUsernameModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="confirmUsername">确定</button>
     </view>
   </view>
 
-  <view class="section">
-    <text class="section-title">项目介绍</text>
-    <view class="intro-content">
-    <text>●这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，完全免费无广告的公益项目。
-    ●若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！
-    ●所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎点击最下方的联系乐乐。</text>
-    </view>
-  </view>
-
-  <!-- WebDAV备份设置 -->
-  <view class="section">
-    <view class="section-title-container">
-      <text class="section-title" style="position: relative; left: 0rpx; top: 6rpx">WebDAV备份设置</text>
-      <button class="help-icon-btn" bindtap="navigateToDocs" data-type="webdav" style="position: relative; left: 127rpx; top: -8rpx">
-        <text class="help-icon">?</text>
-      </button>
-    </view>
-    <view class="webdav-setting">
-      <button bindtap="showWebDAVModal" class="primary-btn webdav-config-btn">配置WebDAV</button>
-      <button bindtap="testWebDAVConnection" class="secondary-btn webdav-test-btn">测试连接</button>
-      <button bindtap="backupToWebDAV" class="primary-btn webdav-backup-btn">备份到WebDAV</button>
-      <button bindtap="restoreFromWebDAV" class="secondary-btn webdav-restore-btn">从WebDAV恢复</button>
-    </view>
-  </view>
-
-  <view class="section">
-    <view class="section-title-container">
-      <text class="section-title">数据管理</text>
-      <button class="help-icon-btn" bindtap="navigateToDocs" data-type="data" style="position: relative; left: 200rpx; top: -18rpx">
-        <text class="help-icon">?</text>
-      </button>
-    </view>
-    <view class="data-actions">
-      <button class="action-btn export-btn" bindtap="showDataTypeModal">导出数据</button>
-      <button class="action-btn share-btn" bindtap="shareExportedFile">分享数据</button>
-    </view>
-    <view class="data-actions" style="margin-top: 20rpx;">
-     <button class="action-btn import-btn" bindtap="importData">导入数据</button>
-      <button class="action-btn clear-btn" bindtap="clearAllData">清空数据</button>
-    </view>
-  </view>
-
-  <!-- 数据管理使用说明弹窗 -->
-  <view class="modal-mask" wx:if="{{showDataManagementHelpModal}}" bindtap="hideDataManagementHelpModal"></view>
-  <view class="modal-container webdav-help-modal" wx:if="{{showDataManagementHelpModal}}">
+  <!-- 表情选择弹窗 -->
+  <view class="modal-mask {{showEmojiModal ? 'show' : ''}}" wx:if="{{showEmojiModal}}" bindtap="hideEmojiModal"></view>
+  <view class="modal-container emoji-modal {{showEmojiModal ? 'show' : ''}}" wx:if="{{showEmojiModal}}">
     <view class="modal-header">
-      <text class="modal-title">数据管理使用说明</text>
-      <button class="modal-close-btn" bindtap="hideDataManagementHelpModal">×</button>
-    </view>
-    <view class="modal-content webdav-help-content">
-      <view class="guide-item">
-        <text>❶. 导出数据：点击导出数据，在弹窗中输入自定义文件名后点击确定，可暂存数据文件到剪贴板。当选了图片之后，导出为zip。</text>
-        <text class="highlight">(可自选需要导出的数据，排班数据，班次模板，排班图片)</text>
-      </view>
-      <view class="guide-item">
-        <text>❷. 分享数据：导出后可快速分享给好友，也可以分享到”文件传输助手”或者小号，用来备份。</text>
-        <text class="highlight">(分享完整的数据备份)</text>
-      </view>
-      <view class="guide-item">
-        <text>❺. 导入数据：选择好友通过微信分享给你的json文件，或者zip文件。</text>
-        <text class="highlight">(可以将json文件或者zip转发给“文件传输助手”，点击导入，选择“文件传输助手”，找到对应的文件，即可替换本地的模板，排班，图片等)</text>
-      </view>
-      <view class="guide-item">
-        <text>❻. 清空数据：清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
-        <text class="highlight">（清空所有数据，如要恢复，请导入之前分享出去的json或zip文件！）</text>
+      <text class="modal-title">选择表情头像</text>
+      <view class="modal-close" bindtap="hideEmojiModal">
+        <text class="close-icon">×</text>
       </view>
     </view>
-    <view class="modal-footer">
-      <button class="modal-btn confirm-btn" bindtap="hideDataManagementHelpModal">我知道了</button>
-    </view>
-  </view>
-
-  <!-- WebDAV使用说明弹窗 -->
-  <view class="modal-mask" wx:if="{{showWebDAVHelpModal}}" bindtap="hideWebDAVHelpModal"></view>
-  <view class="modal-container webdav-help-modal" wx:if="{{showWebDAVHelpModal}}">
-    <view class="modal-header">
-      <text class="modal-title">WebDAV使用说明</text>
-      <button class="modal-close-btn" bindtap="hideWebDAVHelpModal">×</button>
-    </view>
-    <view class="modal-content webdav-help-content">
-      <view class="webdav-step">
-        <text class="step-title">第一步，打开坚果云创建排班备份文件夹</text>
-        <image src="/pages/profile/first.png" class="step-image" mode="widthFix"></image>
-      </view>
-      <view class="webdav-step">
-        <text class="step-title">第二步，创建坚果云webdav账号密码</text>
-        <image src="/pages/profile/second.png" class="step-image" mode="widthFix"></image>
-      </view>
-    </view>
-    <view class="modal-footer">
-      <button class="modal-btn confirm-btn" bindtap="hideWebDAVHelpModal">我知道了</button>
-    </view>
-  </view>
-
-  <!-- WebDAV配置弹窗 -->
-  <view class="modal-mask" wx:if="{{showWebDAVModal}}" bindtap="hideWebDAVModal"></view>
-  <view class="modal-container" wx:if="{{showWebDAVModal}}">
-    <view class="modal-header">
-      <text class="modal-title">WebDAV服务器配置</text>
-      <button class="modal-close-btn" bindtap="hideWebDAVModal">×</button>
-    </view>
-    <view class="modal-content">
-      <view class="input-group">
-        <text class="input-label">服务器地址</text>
-        <input bindinput="onWebDAVUrlInput" placeholder="请输入WebDAV服务器地址" value="{{webdavConfig.url}}" class="input-field"/>
-      </view>
-      <view class="input-group">
-        <text class="input-label">用户名</text>
-        <input bindinput="onWebDAVUsernameInput" placeholder="请输入WebDAV用户名" value="{{webdavConfig.username}}" class="input-field"/>
-      </view>
-      <view class="input-group password-group">
-        <text class="input-label">密码</text>
-        <view class="password-input-container">
-          <input bindinput="onWebDAVPasswordInput" placeholder="请输入WebDAV密码" value="{{webdavConfig.password}}" class="input-field password-input" password="{{!showPassword}}"/>
-          <button class="password-toggle-btn" bindtap="togglePasswordVisibility">{{showPassword ? '隐藏' : '显示'}}</button>
+    <view class="modal-body emoji-body">
+      <view class="emoji-grid">
+        <view class="emoji-item {{selectedEmoji === item ? 'selected' : ''}}" wx:for="{{emojiList}}" wx:key="index" bindtap="selectEmoji" data-emoji="{{item}}">
+          <text class="emoji-char">{{item}}</text>
         </view>
       </view>
-      <view class="input-group">
-        <text class="input-label">保存文件夹</text>
-        <input bindinput="onWebDAVFolderInput" placeholder="请输入保存文件夹名（留空使用默认文件夹）" value="{{webdavConfig.folder}}" class="input-field"/>
+      <view class="emoji-preview" wx:if="{{selectedEmoji}}">
+        <text class="preview-label">已选择：</text>
+        <text class="preview-emoji">{{selectedEmoji}}</text>
+        <text class="preview-text">{{emojiTextMap[selectedEmoji]}}</text>
       </view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn cancel-btn" bindtap="hideWebDAVModal">取消</button>
-      <button class="modal-btn confirm-btn" bindtap="saveWebDAVConfig">保存设置</button>
+      <button class="modal-btn btn-cancel" bindtap="hideEmojiModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="confirmEmoji">确定</button>
+    </view>
+  </view>
+
+  <!-- 数据类型选择弹窗 -->
+  <view class="modal-mask {{showDataTypeModal ? 'show' : ''}}" wx:if="{{showDataTypeModal}}" bindtap="hideDataTypeModal"></view>
+  <view class="modal-container {{showDataTypeModal ? 'show' : ''}}" wx:if="{{showDataTypeModal}}">
+    <view class="modal-header">
+      <text class="modal-title">选择导出数据</text>
+      <view class="modal-close" bindtap="hideDataTypeModal">
+        <text class="close-icon">×</text>
+      </view>
+    </view>
+    <view class="modal-body">
+      <view class="checkbox-list">
+        <view class="checkbox-item" wx:for="{{dataTypes}}" wx:key="id" bindtap="onDataTypeSelect" data-typeid="{{item.id}}">
+          <view class="checkbox-wrapper">
+            <view class="checkbox {{item.checked ? 'checked' : ''}}">
+              <text class="check-icon" wx:if="{{item.checked}}">✓</text>
+            </view>
+          </view>
+          <text class="checkbox-label">{{item.name}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn btn-cancel" bindtap="hideDataTypeModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="confirmDataTypeSelect">确定</button>
     </view>
   </view>
 
   <!-- 文件名设置弹窗 -->
-  <view class="modal-mask" wx:if="{{showFileNameModal}}" bindtap="hideFileNameModal"></view>
-  <view class="modal-container" wx:if="{{showFileNameModal}}">
+  <view class="modal-mask {{showFileNameModal ? 'show' : ''}}" wx:if="{{showFileNameModal}}" bindtap="hideFileNameModal"></view>
+  <view class="modal-container {{showFileNameModal ? 'show' : ''}}" wx:if="{{showFileNameModal}}">
     <view class="modal-header">
-      <text class="modal-title">设置导出文件名</text>
-      <button class="modal-close-btn" bindtap="hideFileNameModal">×</button>
+      <text class="modal-title">设置文件名</text>
+      <view class="modal-close" bindtap="hideFileNameModal">
+        <text class="close-icon">×</text>
+      </view>
     </view>
-    <view class="modal-content">
-      <view class="modal-input-group">
-        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput"></input>
+    <view class="modal-body">
+      <view class="input-wrapper">
+        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput" maxlength="50"></input>
       </view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn cancel-btn" bindtap="hideFileNameModal">取消</button>
-      <button class="modal-btn confirm-btn" bindtap="confirmExport">确定导出</button>
+      <button class="modal-btn btn-cancel" bindtap="hideFileNameModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="confirmExport">确定导出</button>
     </view>
   </view>
-  
-  <!-- 表情选择弹窗 -->
-  <view class="modal-mask" wx:if="{{showEmojiModal}}" bindtap="hideEmojiModal"></view>
-  <view class="modal-container emoji-modal" wx:if="{{showEmojiModal}}">
+
+  <!-- WebDAV配置弹窗 -->
+  <view class="modal-mask {{showWebDAVModal ? 'show' : ''}}" wx:if="{{showWebDAVModal}}" bindtap="hideWebDAVModal"></view>
+  <view class="modal-container {{showWebDAVModal ? 'show' : ''}}" wx:if="{{showWebDAVModal}}">
     <view class="modal-header">
-      <text class="modal-title">选择表情头像</text>
-      <button class="modal-close-btn" bindtap="hideEmojiModal">×</button>
+      <text class="modal-title">WebDAV配置</text>
+      <view class="modal-close" bindtap="hideWebDAVModal">
+        <text class="close-icon">×</text>
+      </view>
     </view>
-    <view class="modal-content emoji-content">
-      <view class="emoji-grid">
-        <view class="emoji-item {{selectedEmoji === item ? 'emoji-item-selected' : ''}}" wx:for="{{emojiList}}" wx:key="index" bindtap="selectEmoji" data-emoji="{{item}}">
-          <text class="emoji-icon">{{item}}</text>
+    <view class="modal-body">
+      <view class="form-group">
+        <text class="form-label">服务器地址</text>
+        <input class="form-input" placeholder="https://dav.jianguoyun.com/dav/" value="{{webdavConfig.url}}" bindinput="onWebDAVUrlInput"></input>
+      </view>
+      <view class="form-group">
+        <text class="form-label">用户名</text>
+        <input class="form-input" placeholder="请输入用户名" value="{{webdavConfig.username}}" bindinput="onWebDAVUsernameInput"></input>
+      </view>
+      <view class="form-group">
+        <text class="form-label">密码</text>
+        <view class="password-wrapper">
+          <input class="form-input password-input" placeholder="请输入密码" value="{{webdavConfig.password}}" bindinput="onWebDAVPasswordInput" password="{{!showPassword}}"></input>
+          <view class="password-toggle" bindtap="togglePasswordVisibility">
+            <text class="toggle-text">{{showPassword ? '隐藏' : '显示'}}</text>
+          </view>
         </view>
       </view>
-      <view class="selected-emoji" wx:if="{{selectedEmoji}}">
-        <text class="selected-emoji-label">已选择：</text>
-        <text class="selected-emoji-icon">{{selectedEmoji}}</text>
+      <view class="form-group">
+        <text class="form-label">保存文件夹</text>
+        <input class="form-input" placeholder="留空使用默认文件夹" value="{{webdavConfig.folder}}" bindinput="onWebDAVFolderInput"></input>
       </view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn cancel-btn" bindtap="hideEmojiModal">取消</button>
-      <button class="modal-btn confirm-btn" bindtap="confirmEmoji">确定</button>
-    </view>
-  </view>
-  
-  <!-- 数据类型选择弹窗 -->
-  <view class="modal-mask" wx:if="{{showDataTypeModal}}" bindtap="hideDataTypeModal"></view>
-  <view class="modal-container" wx:if="{{showDataTypeModal}}">
-    <view class="modal-header">
-      <text class="modal-title">选择要导出的数据类型</text>
-      <button class="modal-close-btn" bindtap="hideDataTypeModal">×</button>
-    </view>
-    <view class="modal-content">
-      <view class="data-type-list">
-        <view class="data-type-item" wx:for="{{dataTypes}}" wx:key="id" bindtap="onDataTypeSelect" data-typeid="{{item.id}}">
-          <view class="checkbox-container">
-            <view class="checkbox {{item.checked ? 'checked' : ''}}">
-              <text class="checkbox-icon" wx:if="{{item.checked}}">✓</text>
-            </view>
-            <text class="data-type-name">{{item.name}}</text>
-          </view>
-        </view>
-      </view>
-    </view>
-    <view class="modal-footer">
-      <button class="modal-btn cancel-btn" bindtap="hideDataTypeModal">取消</button>
-      <button class="modal-btn confirm-btn" bindtap="confirmDataTypeSelect">确定</button>
-    </view>
-  </view>
-  
-  <view class="section">
-    <text class="section-title">更新日志</text>
-    <view class="changelog-container">
-      <view class="changelog-scroll" wx:if="{{changelog && changelog.length > 0}}">
-        <view class="changelog-version-section" wx:for="{{changelog}}" wx:key="version">
-          <view class="changelog-version-header">
-            <text class="version-number">{{item.version}}</text>
-            <text class="version-date">{{item.date}}</text>
-          </view>
-          <view class="changelog-version-content">
-            <text class="changelog-content-text">{{item.content}}</text>
-          </view>
-        </view>
-      </view>
-      <view class="changelog-empty" wx:else>
-        <text>暂无更新日志</text>
-      </view>
-    </view>
-    <view class="data-actions" style="margin-top: 20rpx;">
-      <button class="action-btn contact-btn" bindtap="contactAuthor">联系乐乐</button>
-      <button class="action-btn donate-btn" bindtap="donate">捐赠支持</button>
+      <button class="modal-btn btn-cancel" bindtap="hideWebDAVModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="saveWebDAVConfig">保存</button>
     </view>
   </view>
 </view>
