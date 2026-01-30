@@ -17,11 +17,11 @@
   <!-- 周视图 -->
   <view wx:if="{{currentView === 'week'}}" class="week-view">
     <view class="week-header">
-      <button class="nav-btn" bindtap="prevWeek">上一周</button>
+      <button class="nav-btn" bindtap="prevWeek" hover-class="nav-btn-hover">上一周</button>
       <view class="week-title-container">
         <text class="current-week {{isCurrentWeek ? 'current-week-highlight' : 'other-week'}}" style="{{isCurrentWeek ? 'background-color:' + currentWeekShiftColor + ';' : 'color: #000;'}}" bindtap="goToToday">{{currentWeekTitle}}</text>
       </view>
-      <button class="nav-btn" bindtap="nextWeek">下一周</button>
+      <button class="nav-btn" bindtap="nextWeek" hover-class="nav-btn-hover">下一周</button>
     </view>
 
     <!-- 隐藏周视图的星期几显示 -->
@@ -95,11 +95,11 @@
   <!-- 月视图 -->
   <view wx:if="{{currentView === 'month'}}" class="month-view">
     <view class="month-header">
-      <button class="nav-btn" bindtap="prevMonth">上一月</button>
+      <button class="nav-btn" bindtap="prevMonth" hover-class="nav-btn-hover">上一月</button>
       <view class="month-title-container">
         <text class="current-month {{isCurrentMonth ? 'current-month-highlight' : ''}}" style="{{isCurrentMonth ? 'background-color:' + currentMonthShiftColor + '; color: #fff;' : ''}}" bindtap="goToToday">{{currentMonthTitle}}</text>
       </view>
-      <button class="nav-btn" bindtap="nextMonth">下一月</button>
+      <button class="nav-btn" bindtap="nextMonth" hover-class="nav-btn-hover">下一月</button>
     </view>
 
     <view class="weekdays">

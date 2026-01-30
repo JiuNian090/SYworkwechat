@@ -154,9 +154,11 @@
   text-align: center;
 }
 
-.nav-btn:active {
-  background: #f5f5f5;
-  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.1);
+.nav-btn:active,
+.nav-btn-hover {
+  background: #07c160;
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
   transform: translateY(1rpx);
 }
 
