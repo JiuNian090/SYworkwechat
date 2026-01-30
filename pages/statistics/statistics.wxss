@@ -51,11 +51,19 @@
 }
 
 /* 按钮按下状态样式 */
-.quick-btn-pressed,
-.quick-btn-hover {
+.quick-btn-pressed {
   background: #059e4d;
   color: #ffffff;
   border-color: #059e4d;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* 按钮 hover 状态样式 */
+.quick-btn-hover {
+  background: #07c160;
+  color: #ffffff;
+  border-color: #07c160;
   transform: scale(0.98);
   transition: all 0.1s ease;
 }
