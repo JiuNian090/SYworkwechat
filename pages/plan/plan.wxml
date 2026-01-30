@@ -1,7 +1,12 @@
 <!-- pages/plan/plan.wxml -->
 <view class="container">
-  <view class="header">
-    <text class="title">班次模板管理</text>
+  <!-- 页面标题区 -->
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <text class="header-title">📋 班次模板管理</text>
+      <text class="header-subtitle">管理您的班次模板</text>
+    </view>
   </view>
 
   <view class="content">
