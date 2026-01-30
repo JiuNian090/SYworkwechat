@@ -60,7 +60,7 @@
           </view>
           <view class="day-right">
             <block wx:if="{{item.shift}}">
-              <view class="shift-info-card" style="background:{{item.shift.color}}15; border-color:{{item.shift.color}}30;">
+              <view class="shift-info-card" style="background:{{item.shift.color}}66; border-color:{{item.shift.color}}99;">
                 <text class="shift-name" style="color:{{item.shift.color}};">{{item.shift.name}}</text>
                 <text class="shift-time">{{item.shift.startTime}} - {{item.shift.endTime}}</text>
                 <view class="shift-hours-badge" style="background:{{item.shift.color}};">
