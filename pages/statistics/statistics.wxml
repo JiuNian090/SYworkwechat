@@ -86,13 +86,6 @@
         <text class="help-icon">?</text>
       </button>
     </view>
-    <view class="usage-guide">
-      <text class="usage-guide-text">使用说明：
-        1. 点击导出报表，在弹窗中输入文件名（可按姓名+日期范围）;
-        2. 出现导出成功提示后，点击分享报表，可以分享给自己;
-        3. 在聊天界面点击CSV，选择用WPS打开，即可生成报表！
-        4. 下面排班详情会显示选定日期内的所有排班!</text>
-    </view>
   </view>
 
   <!-- 文件名设置弹窗 -->
