@@ -13,10 +13,13 @@ Page({
     monthDates: [],
     shifts: {},
     showShiftModal: false,
+    showActionMenu: false,
     selectedDate: '',
     selectedShift: null,
     shiftTemplates: [],
-    pickerValue: [0],
+    shiftTemplateNames: [], // 班次名称列表，用于picker
+    pickerIndex: 0, // picker选中的索引
+    selectedTemplate: {}, // 当前选中的班次模板
     weekTotalHours: 0, // 本周总工时
     weekDifference: 0, // 本周工时差额/超额
     differenceType: '', // 差额类型：超额或差额
@@ -549,29 +552,103 @@ Page({
     this.generateMonthDates();
   },
 
-  selectDate(e) {
+  // 显示操作菜单（添加/删除排班）
+  showActionMenu(e) {
     const date = e.currentTarget.dataset.date;
     const selectedShift = this.data.shifts[date] || null;
     
-    // 重置pickerValue为默认值或匹配当前排班的索引
-    let pickerValue = [0];
-    if (selectedShift && this.data.shiftTemplates.length > 0) {
-      // 尝试找到当前排班对应的模板索引
-      const matchingIndex = this.data.shiftTemplates.findIndex(template => 
+    this.setData({
+      selectedDate: date,
+      selectedShift: selectedShift,
+      showActionMenu: true
+    });
+  },
+
+  // 隐藏操作菜单
+  hideActionMenu() {
+    this.setData({
+      showActionMenu: false
+    });
+  },
+
+  // 点击"添加排班"
+  onAddShiftClick() {
+    // 隐藏操作菜单
+    this.hideActionMenu();
+    
+    // 准备班次模板数据
+    const templates = this.data.shiftTemplates;
+    if (templates.length === 0) {
+      wx.showToast({
+        title: '暂无班次模板',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 提取班次名称列表
+    const templateNames = templates.map(t => t.name);
+    
+    // 查找当前日期是否已有排班，如果有则选中对应的班次
+    let pickerIndex = 0;
+    const selectedShift = this.data.selectedShift;
+    if (selectedShift) {
+      const matchingIndex = templates.findIndex(template => 
         template.name === selectedShift.name && 
         template.startTime === selectedShift.startTime && 
         template.endTime === selectedShift.endTime
       );
       if (matchingIndex !== -1) {
-        pickerValue = [matchingIndex];
+        pickerIndex = matchingIndex;
       }
     }
     
+    // 设置选中的模板
+    const selectedTemplate = templates[pickerIndex] || templates[0];
+    
     this.setData({
-      selectedDate: date,
-      selectedShift: selectedShift,
-      pickerValue: pickerValue,
+      shiftTemplateNames: templateNames,
+      pickerIndex: pickerIndex,
+      selectedTemplate: selectedTemplate,
       showShiftModal: true
+    });
+  },
+
+  // 点击"删除排班"
+  onDeleteShiftClick() {
+    // 隐藏操作菜单
+    this.hideActionMenu();
+    
+    // 检查是否有排班可删除
+    if (!this.data.selectedShift) {
+      wx.showToast({
+        title: '当前日期暂无排班',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 显示确认弹窗
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除 ${this.data.selectedDate} 的排班吗？`,
+      confirmColor: '#ff4d4f',
+      success: (res) => {
+        if (res.confirm) {
+          this.removeShift();
+        }
+      }
+    });
+  },
+
+  // picker选择变化
+  onShiftPickerChange(e) {
+    const index = e.detail.value;
+    const selectedTemplate = this.data.shiftTemplates[index];
+    
+    this.setData({
+      pickerIndex: index,
+      selectedTemplate: selectedTemplate
     });
   },
 
@@ -738,15 +815,9 @@ Page({
     });
   },
 
-  bindPickerChange(e) {
-    this.setData({
-      pickerValue: e.detail.value
-    });
-  },
-
   assignShiftFromPicker() {
-    const selectedIndex = this.data.pickerValue[0];
-    const template = this.data.shiftTemplates[selectedIndex];
+    const selectedIndex = this.data.pickerIndex;
+    const template = this.data.selectedTemplate;
     const { selectedDate, shifts } = this.data;
     
     // 检查template是否存在
@@ -815,9 +886,17 @@ Page({
 
 
 
-  removeShift(e) {
-    const date = e.currentTarget.dataset.date;
+  removeShift() {
+    const date = this.data.selectedDate;
     const { shifts } = this.data;
+    
+    if (!date) {
+      wx.showToast({
+        title: '未选择日期',
+        icon: 'none'
+      });
+      return;
+    }
     
     const newShifts = { ...shifts };
     delete newShifts[date];

@@ -51,7 +51,7 @@
         <view class="day-item {{item.isToday ? 'today' : ''}} {{item.shift ? 'has-shift' : ''}}" 
               wx:for="{{weekDates}}" 
               wx:key="date" 
-              bindtap="selectDate" 
+              bindtap="showActionMenu" 
               data-date="{{item.date}}">
           <view class="day-left" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + ';' : 'background:#07c160;') : ''}}">
             <text class="day-weekday">周{{item.weekday}}</text>
@@ -184,7 +184,7 @@
           <view class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.shift ? 'has-shift' : ''}}" 
                 wx:for="{{item}}" 
                 wx:key="date" 
-                bindtap="selectDate" 
+                bindtap="showActionMenu" 
                 data-date="{{item.date}}">
             <view class="day-number-wrapper">
               <text class="day-number {{item.isToday ? 'today-num' : ''}}">{{item.day}}</text>
@@ -229,6 +229,37 @@
   <view class="safe-area-bottom"></view>
 </view>
 
+<!-- 操作选择菜单弹窗 -->
+<view class="modal-mask {{showActionMenu ? 'show' : ''}}" bindtap="hideActionMenu"></view>
+<view class="modal-content action-menu-content {{showActionMenu ? 'show' : ''}}">
+  <view class="modal-header">
+    <text class="modal-title">{{selectedDate}}</text>
+    <view class="modal-close" bindtap="hideActionMenu">
+      <text class="close-icon">✕</text>
+    </view>
+  </view>
+  <view class="modal-body action-menu-body" catchtap="stopPropagation">
+    <view class="action-menu">
+      <view class="action-item add" bindtap="onAddShiftClick">
+        <view class="action-icon">➕</view>
+        <view class="action-info">
+          <text class="action-title">添加排班</text>
+          <text class="action-desc">为当前日期添加班次</text>
+        </view>
+        <text class="action-arrow">›</text>
+      </view>
+      <view class="action-item delete {{selectedShift ? '' : 'disabled'}}" bindtap="onDeleteShiftClick">
+        <view class="action-icon">🗑️</view>
+        <view class="action-info">
+          <text class="action-title">删除排班</text>
+          <text class="action-desc">{{selectedShift ? '删除当前日期的排班' : '当前日期暂无排班'}}</text>
+        </view>
+        <text class="action-arrow">›</text>
+      </view>
+    </view>
+  </view>
+</view>
+
 <!-- 排班选择弹窗 -->
 <view class="modal-mask {{showShiftModal ? 'show' : ''}}" bindtap="hideShiftModal"></view>
 <view class="modal-content {{showShiftModal ? 'show' : ''}}">
@@ -239,35 +270,19 @@
     </view>
   </view>
   <view class="modal-body" catchtap="stopPropagation">
-    <!-- 班次选择器 -->
+    <!-- 班次选择器 - 使用原生picker -->
     <view wx:if="{{shiftTemplates.length > 0}}" class="modal-section">
       <view class="section-title">选择班次</view>
-      <view class="shift-picker-container">
-        <picker-view indicator-style="height: 50px;" style="width: 100%; height: 200px;" value="{{pickerValue}}" bindchange="bindPickerChange">
-          <picker-view-column>
-            <view wx:for="{{shiftTemplates}}" wx:key="index" class="picker-item">
-              <view class="picker-shift" style="border-color: {{item.color}};">
-                <text class="picker-shift-name" style="color: {{item.color}};">{{item.name}}</text>
-                <text class="picker-shift-time">{{item.startTime}}-{{item.endTime}}</text>
-              </view>
-            </view>
-          </picker-view-column>
-        </picker-view>
-      </view>
-      <view class="modal-btn confirm-btn" bindtap="assignShiftFromPicker">确定排班</view>
-    </view>
-    
-    <!-- 当前排班信息 -->
-    <view wx:if="{{selectedShift}}" class="modal-section">
-      <view class="section-title">当前排班</view>
-      <view class="current-shift-card" style="background: {{selectedShift.color}}15; border-color: {{selectedShift.color}}30;">
-        <view class="current-shift-info">
-          <text class="current-shift-name" style="color: {{selectedShift.color}};">{{selectedShift.name}}</text>
-          <text class="current-shift-time">{{selectedShift.startTime}} - {{selectedShift.endTime}}</text>
-          <text class="current-shift-hours">{{selectedShift.workHours}} 小时</text>
+      <picker mode="selector" range="{{shiftTemplateNames}}" value="{{pickerIndex}}" bindchange="onShiftPickerChange" class="native-picker">
+        <view class="picker-display">
+          <view class="picker-selected-shift" style="border-color: {{selectedTemplate.color}}; background: {{selectedTemplate.color}}15;">
+            <text class="picker-selected-name" style="color: {{selectedTemplate.color}};">{{selectedTemplate.name}}</text>
+            <text class="picker-selected-time">{{selectedTemplate.startTime}} - {{selectedTemplate.endTime}}</text>
+          </view>
+          <text class="picker-hint">点击选择其他班次</text>
         </view>
-      </view>
-      <view class="modal-btn remove-btn" bindtap="removeShift" data-date="{{selectedDate}}">移除排班</view>
+      </picker>
+      <view class="modal-btn confirm-btn" bindtap="assignShiftFromPicker">确定排班</view>
     </view>
     
     <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
