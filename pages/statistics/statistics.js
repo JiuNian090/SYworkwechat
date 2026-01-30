@@ -7,29 +7,28 @@ Page({
     standardHours: 0,
     hourDifference: 0,
     differenceText: '',
-    customWeeklyHours: 35, // 自定义每周标准工时，默认35小时   dailyStandardHours: 5, // 每天标准工时，根据customWeeklyHours计算
-    showModal: false, // 控制每周标准工时弹窗显示/隐藏
-    tempCustomWeeklyHours: 35, // 临时存储用户输入的每周标准工时
-    exportFileName: '',
+    progressText: '进行中 0.0%',
+    customHours: 35, // 自定义每周标准工时，默认35小时
+    dailyStandardHours: 5, // 每天标准工时，根据customHours计算
+    showHoursModal: false, // 控制每周标准工时弹窗显示/隐藏
+    tempCustomHours: 35, // 临时存储用户输入的每周标准工时
+    exportFilename: '', // 导出的文件名
     lastExportedFilePath: '', // 用于存储上次导出的文件路径
     shifts: [], // 用于存储排班数据
-    selectedQuickBtn: 'thisWeek', // 用于跟踪当前选中的快速选择按钮
-    showFileNameModal: false, // 控制文件名设置弹窗显示/隐藏
-    tempFileName: '', // 临时存储用户输入的文件名
-    defaultFileNameHint: '', // 默认文件名提示
+    filteredSchedules: [], // 用于显示的班次明细列表
+    activeQuickBtn: 'thisWeek', // 用于跟踪当前选中的快速选择按钮
+    showFilenameModal: false, // 控制文件名设置弹窗显示/隐藏
+    tempFilename: '', // 临时存储用户输入的文件名
+    defaultFilenameHint: '', // 默认文件名提示
     statistics: {
       totalDays: 0,
       workDays: 0,
       dayShifts: 0, // 白天班天数
       nightShifts: 0, // 跨夜班天数
-      offDays: 0
-    },
-    // 连续点击功能相关
-    timer: null, // 定时器
-    isPressing: false, // 是否正在按住按钮
-    isPressingLastWeek: false, // 是否正在按住上周按钮
-    isPressingNextWeek: false, // 是否正在按住下周按钮
-    pressInterval: 200 // 连续点击间隔时间（毫秒）
+      offDays: 0,
+      totalHours: 0,
+      hourDifference: 0
+    }
   },
 
   /**
@@ -47,6 +46,19 @@ Page({
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  },
+
+  // 获取星期几
+  getWeekday(dateStr) {
+    const date = new Date(dateStr);
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    return weekdays[date.getDay()];
+  },
+
+  // 格式化日期显示（MM-DD）
+  formatDayDisplay(dateStr) {
+    const parts = dateStr.split('-');
+    return `${parts[1]}-${parts[2]}`;
   },
 
   // 获取上周日期范围
@@ -126,7 +138,7 @@ Page({
     this.setData({
       startDate: range.startDate,
       endDate: range.endDate,
-      selectedQuickBtn: 'lastWeek'
+      activeQuickBtn: 'lastWeek'
     });
     this.calculateStatistics();
   },
@@ -136,7 +148,7 @@ Page({
     this.setData({
       startDate: range.startDate,
       endDate: range.endDate,
-      selectedQuickBtn: 'thisWeek'
+      activeQuickBtn: 'thisWeek'
     });
     this.calculateStatistics();
   },
@@ -148,7 +160,7 @@ Page({
     this.setData({
       startDate: range.startDate,
       endDate: range.endDate,
-      selectedQuickBtn: 'nextWeek'
+      activeQuickBtn: 'nextWeek'
     });
     this.calculateStatistics();
   },
@@ -158,7 +170,7 @@ Page({
     this.setData({
       startDate: range.startDate,
       endDate: range.endDate,
-      selectedQuickBtn: 'thisMonth'
+      activeQuickBtn: 'thisMonth'
     });
     this.calculateStatistics();
   },
@@ -166,7 +178,8 @@ Page({
   // 开始日期变更事件
   onStartDateChange(e) {
     this.setData({
-      startDate: e.detail.value
+      startDate: e.detail.value,
+      activeQuickBtn: '' // 清除快捷按钮选中状态
     });
     this.calculateStatistics();
   },
@@ -174,100 +187,112 @@ Page({
   // 结束日期变更事件
   onEndDateChange(e) {
     this.setData({
-      endDate: e.detail.value
+      endDate: e.detail.value,
+      activeQuickBtn: '' // 清除快捷按钮选中状态
     });
     this.calculateStatistics();
   },
   
   // 显示文件名设置弹窗
-  showFileNameModal() {
+  onExportBtnTap() {
     // 设置默认文件名提示：用户名+排班统计
     const username = wx.getStorageSync('username') || '未命名用户';
-    const defaultFileNameHint = `${username}+排班统计`;
+    const defaultFilenameHint = `${username}+排班统计`;
     
     this.setData({
-      tempFileName: '',
-      defaultFileNameHint: defaultFileNameHint,
-      showFileNameModal: true
+      tempFilename: '',
+      defaultFilenameHint: defaultFilenameHint,
+      showFilenameModal: true
     });
   },
 
   // 隐藏文件名设置弹窗
-  hideFileNameModal() {
+  hideFilenameModal() {
     this.setData({
-      showFileNameModal: false
+      showFilenameModal: false
     });
   },
 
   // 处理临时文件名输入
-  onTempFileNameInput(e) {
+  onFilenameInput(e) {
     this.setData({
-      tempFileName: e.detail.value
+      tempFilename: e.detail.value
     });
   },
 
   // 确认导出
   confirmExport() {
     // 获取用户输入的文件名
-    const customFileName = this.data.tempFileName;
+    const customFilename = this.data.tempFilename;
     
     // 隐藏弹窗
-    this.hideFileNameModal();
+    this.hideFilenameModal();
     
     // 调用导出数据方法
-    this.exportToCSV(customFileName);
+    this.exportToCSV(customFilename);
   },
 
   // 显示自定义每周标准工时弹窗
   showCustomHoursModal() {
     this.setData({
-      tempCustomWeeklyHours: this.data.customWeeklyHours,
-      showModal: true
+      tempCustomHours: this.data.customHours,
+      showHoursModal: true
     });
   },
 
   // 隐藏自定义每周标准工时弹窗
   hideCustomHoursModal() {
     this.setData({
-      showModal: false
+      showHoursModal: false
     });
   },
 
   // 临时存储用户输入的每周标准工时
-  onTempCustomHoursChange(e) {
-    const tempCustomWeeklyHours = e.detail.value;
+  onCustomHoursInput(e) {
+    const tempCustomHours = e.detail.value;
     this.setData({
-      tempCustomWeeklyHours: tempCustomWeeklyHours
+      tempCustomHours: tempCustomHours
     });
   },
 
   // 确认自定义每周标准工时设置
-  confirmCustomHours() {
-    const customWeeklyHours = parseFloat(this.data.tempCustomWeeklyHours) || 35;
-    const dailyStandardHours = customWeeklyHours / 7;
+  saveCustomHours() {
+    const customHours = parseFloat(this.data.tempCustomHours) || 35;
+    const dailyStandardHours = customHours / 7;
     
     this.setData({
-      customWeeklyHours: customWeeklyHours,
+      customHours: customHours,
       dailyStandardHours: dailyStandardHours,
-      showModal: false
+      showHoursModal: false
     });
     
     // 保存到本地存储
-    wx.setStorageSync('customWeeklyHours', customWeeklyHours);
+    wx.setStorageSync('customHours', customHours);
     
     // 重新计算统计数据
     this.calculateStatistics();
+    
+    wx.showToast({
+      title: '设置已保存',
+      icon: 'success'
+    });
+  },
+
+  // 阻止事件冒泡
+  preventBubble() {
+    // 什么都不做，只是阻止冒泡
   },
 
   // 计算统计数据
   calculateStatistics() {
-    const { startDate, endDate, customWeeklyHours, dailyStandardHours } = this.data;
+    const { startDate, endDate, customHours, dailyStandardHours } = this.data;
 
     if (!startDate || !endDate) return;
 
     try {
       const allShifts = wx.getStorageSync('shifts') || {};
       const shiftsInRange = [];
+      const filteredSchedules = [];
       let totalHours = 0;
       let workDays = 0;
       let dayShifts = 0; // 白天班天数
@@ -283,18 +308,18 @@ Page({
       
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = this.formatDate(d);
-        if (allShifts[dateStr]) {
+        const shiftData = allShifts[dateStr];
+        
+        if (shiftData) {
           const shift = {
             date: dateStr,
-            ...allShifts[dateStr]
+            ...shiftData
           };
           shiftsInRange.push(shift);
-          totalHours += parseFloat(allShifts[dateStr].workHours) || 0;
+          totalHours += parseFloat(shiftData.workHours) || 0;
           
           // 按班次类型统计工作班次和休息日
-          // 工作班次：白天班、跨夜班
-          // 休息日：休息日
-          const shiftType = allShifts[dateStr].type;
+          const shiftType = shiftData.type;
           if (shiftType === '白天班') {
             workDays++;
             dayShifts++;
@@ -304,6 +329,25 @@ Page({
           } else if (shiftType === '休息日') {
             offDays++;
           }
+          
+          // 添加到显示列表
+          filteredSchedules.push({
+            date: dateStr,
+            day: this.formatDayDisplay(dateStr),
+            weekday: this.getWeekday(dateStr),
+            shiftType: shiftType,
+            startTime: shiftData.startTime || '--:--'
+          });
+        } else {
+          // 没有排班数据的日期也显示为休息
+          filteredSchedules.push({
+            date: dateStr,
+            day: this.formatDayDisplay(dateStr),
+            weekday: this.getWeekday(dateStr),
+            shiftType: '休息日',
+            startTime: '--:--'
+          });
+          offDays++;
         }
       }
       
@@ -313,7 +357,7 @@ Page({
       // 根据统计类型计算标准工时
       if (dayCount === 7) {
         // 整周统计（上周、本周、下周）：使用自定义每周标准工时
-        standardHours = customWeeklyHours;
+        standardHours = customHours;
       } else {
         // 自定义日期范围或本月统计：使用自定义每天标准工时
         standardHours = dayCount * dailyStandardHours;
@@ -332,18 +376,27 @@ Page({
         differenceText = '工时正好';
       }
       
+      // 生成进度文本
+      const progressPercent = standardHours > 0 ? (totalHours / standardHours * 100).toFixed(1) : '0.0';
+      const progressStatus = totalHours >= standardHours ? '已完成' : '进行中';
+      const progressText = `${progressStatus} ${progressPercent}%`;
+      
       this.setData({
         shifts: shiftsInRange,
+        filteredSchedules: filteredSchedules,
         totalHours: totalHours.toFixed(1),
         standardHours: standardHours.toFixed(1),
         hourDifference: hourDifference.toFixed(1),
         differenceText: differenceText,
+        progressText: progressText,
         statistics: {
-          totalDays: shiftsInRange.length,
+          totalDays: dayCount,
           workDays: workDays,
           dayShifts: dayShifts,
           nightShifts: nightShifts,
-          offDays: offDays
+          offDays: offDays,
+          totalHours: totalHours.toFixed(1),
+          hourDifference: hourDifference.toFixed(1)
         }
       });
     } catch (e) {
@@ -356,8 +409,8 @@ Page({
   },
 
   // 导出为CSV文件
-  exportToCSV(customFileName) {
-    const { startDate, endDate, shifts, totalHours, standardHours, hourDifference, statistics, customWeeklyHours } = this.data;
+  exportToCSV(customFilename) {
+    const { startDate, endDate, shifts, totalHours, standardHours, hourDifference, statistics, customHours } = this.data;
 
     wx.showLoading({
       title: '正在导出...'
@@ -371,7 +424,7 @@ Page({
       csvContent += '"排班统计报表"\n';
       csvContent += '"=================="\n';
       csvContent += '"统计时间范围: ' + startDate + ' 至 ' + endDate + '"\n';
-      csvContent += '"每周标准工时: ' + customWeeklyHours + ' 小时"\n\n';
+      csvContent += '"每周标准工时: ' + customHours + ' 小时"\n\n';
       
       // 添加表头
       csvContent += '"日期","班次名称","工时","班次类型","开始时间","结束时间"\n';
@@ -419,7 +472,7 @@ Page({
       const username = wx.getStorageSync('username') || '未命名用户';
       
       // 生成默认文件名：用户名+时间段
-      const fileName = customFileName ? customFileName : `${username}_排班统计_${startDate}_至_${endDate}`;
+      const fileName = customFilename ? customFilename : `${username}_排班统计_${startDate}_至_${endDate}`;
       
       // 创建临时文件
       const fs = wx.getFileSystemManager();
@@ -504,11 +557,11 @@ Page({
 
   onLoad() {
     // 页面加载时读取本地存储的自定义每周标准工时
-    const savedCustomWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
-    const dailyStandardHours = savedCustomWeeklyHours / 7;
+    const savedCustomHours = wx.getStorageSync('customHours') || 35;
+    const dailyStandardHours = savedCustomHours / 7;
     
     this.setData({
-      customWeeklyHours: savedCustomWeeklyHours,
+      customHours: savedCustomHours,
       dailyStandardHours: dailyStandardHours
     });
     
@@ -519,100 +572,6 @@ Page({
   onShow() {
     // 页面显示时重新计算统计数据，确保数据同步
     this.calculateStatistics();
-  },
-  
-  // 监听页面显示和隐藏的生命周期，确保在任何时候都能正确更新数据
-  onHide() {
-    // 页面隐藏前不需要特别处理
-  },
-  
-  // 监听全局数据变化的方法，确保实时更新
-  onPageScroll() {
-    // 可以在滚动时选择性更新数据，但通常不需要
-  },
-  
-  // 提供给其他页面调用的方法，用于主动刷新数据
-  refreshStatistics() {
-    this.calculateStatistics();
-  },
-
-  // 连续点击功能相关方法
-  
-  // 处理连续按下事件
-  handleContinuousPress(direction) {
-    if (!this.data.isPressing) return;
-    
-    // 根据方向调用相应的选择函数
-    if (direction === 'last') {
-      this.selectLastWeek();
-    } else if (direction === 'next') {
-      this.selectNextWeek();
-    }
-    
-    // 设置定时器，继续执行连续点击
-    this.setData({
-      timer: setTimeout(() => {
-        this.handleContinuousPress(direction);
-      }, this.data.pressInterval)
-    });
-  },
-  
-  // 上一周按钮触摸开始
-  touchStartLastWeek() {
-    this.setData({ 
-      isPressing: true,
-      isPressingLastWeek: true 
-    });
-    // 立即执行一次
-    this.selectLastWeek();
-    // 设置定时器开始连续点击
-    this.setData({
-      timer: setTimeout(() => {
-        this.handleContinuousPress('last');
-      }, this.data.pressInterval)
-    });
-  },
-  
-  // 上一周按钮触摸结束
-  touchEndLastWeek() {
-    this.setData({ 
-      isPressing: false,
-      isPressingLastWeek: false 
-    });
-    // 清除定时器
-    if (this.data.timer) {
-      clearTimeout(this.data.timer);
-      this.setData({ timer: null });
-    }
-  },
-  
-  // 下一周按钮触摸开始
-  touchStartNextWeek() {
-    this.setData({ 
-      isPressing: true,
-      isPressingNextWeek: true 
-    });
-    // 立即执行一次
-    this.selectNextWeek();
-    // 设置定时器开始连续点击
-    this.setData({
-      timer: setTimeout(() => {
-        this.handleContinuousPress('next');
-      }, this.data.pressInterval)
-    });
-  },
-  
-  // 下一周按钮触摸结束
-  touchEndNextWeek() {
-    this.setData({ 
-      isPressing: false,
-      isPressingNextWeek: false 
-    });
-    // 清除定时器
-    if (this.data.timer) {
-      clearTimeout(this.data.timer);
-      this.setData({ timer: null });
-    }
   },
 
   // 好友分享功能

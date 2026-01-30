@@ -1,149 +1,210 @@
-<!-- pages/statistics/statistics.wxml -->
 <view class="container">
-  <view class="header">
-    <text class="title">排班统计</text>
+  <!-- 页面标题区 -->
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <text class="header-title">📊 统计概览</text>
+      <text class="header-subtitle">班次与工时统计分析</text>
+    </view>
   </view>
 
-  <view class="date-selector">
-    <view class="date-item">
-      <text class="label">开始日期</text>
-      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
-        <view class="picker">
-          {{startDate}}
+  <!-- 日期选择卡片 -->
+  <view class="card date-card">
+    <view class="card-header">
+      <view class="card-icon">📅</view>
+      <text class="card-title">日期范围</text>
+    </view>
+    <view class="date-picker-row">
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange" class="date-picker">
+        <view class="date-display">
+          <text class="date-label">开始</text>
+          <text class="date-value">{{startDate}}</text>
+        </view>
+      </picker>
+      <view class="date-separator">~</view>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange" class="date-picker">
+        <view class="date-display">
+          <text class="date-label">结束</text>
+          <text class="date-value">{{endDate}}</text>
         </view>
       </picker>
     </view>
-    
-    <view class="date-item">
-      <text class="label">结束日期</text>
-      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
-        <view class="picker">
-          {{endDate}}
+    <view class="quick-buttons">
+      <view class="quick-btn {{activeQuickBtn === 'lastWeek' ? 'active' : ''}}" bindtap="selectLastWeek">上周</view>
+      <view class="quick-btn {{activeQuickBtn === 'thisWeek' ? 'active' : ''}}" bindtap="selectThisWeek">本周</view>
+      <view class="quick-btn {{activeQuickBtn === 'nextWeek' ? 'active' : ''}}" bindtap="selectNextWeek">下周</view>
+      <view class="quick-btn {{activeQuickBtn === 'thisMonth' ? 'active' : ''}}" bindtap="selectThisMonth">本月</view>
+    </view>
+  </view>
+
+  <!-- 班次统计卡片 -->
+  <view class="card stats-card">
+    <view class="card-header">
+      <view class="card-icon">📈</view>
+      <text class="card-title">班次统计</text>
+      <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
+    </view>
+    <view class="shift-stats-grid">
+      <view class="shift-stat-item day-shift">
+        <view class="stat-icon">☀️</view>
+        <view class="stat-info">
+          <text class="stat-value">{{statistics.dayShifts}}</text>
+          <text class="stat-label">白天班天数</text>
         </view>
-      </picker>
-    </view>
-  </view>
-
-  <!-- 添加快速选择按钮 -->
-  <view class="quick-select-buttons">
-    <button class="quick-btn {{selectedQuickBtn === 'lastWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectLastWeek" hover-class="quick-btn-selected">上周</button>
-    <button class="quick-btn {{selectedQuickBtn === 'thisWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectThisWeek">本周</button>
-    <button class="quick-btn {{selectedQuickBtn === 'nextWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectNextWeek" hover-class="quick-btn-selected">下周</button>
-    <button class="quick-btn {{selectedQuickBtn === 'thisMonth' ? 'quick-btn-selected' : ''}}" bindtap="selectThisMonth">本月</button>
-  </view>
-
-  <view class="summary">
-    <view class="summary-item">
-      <text class="summary-label">统计区间</text>
-      <text class="summary-value">{{startDate}} 至 {{endDate}}</text>
-    </view>
-    
-    
-    
-    
-    
-    
-      
-      <view class="summary-item">
-        <text class="summary-label">白天班</text>
-        <text class="summary-value">{{statistics.dayShifts}} 天</text>
       </view>
-      
-      <view class="summary-item">
-        <text class="summary-label">跨夜班</text>
-        <text class="summary-value">{{statistics.nightShifts}} 天</text>
+      <view class="shift-stat-item night-shift">
+        <view class="stat-icon">🌙</view>
+        <view class="stat-info">
+          <text class="stat-value">{{statistics.nightShifts}}</text>
+          <text class="stat-label">跨夜班天数</text>
+        </view>
       </view>
-    
-    <view class="summary-item">
-      <text class="summary-label">休息日</text>
-      <text class="summary-value">{{statistics.offDays}} 天</text>
-    </view>
-    
-    <view class="summary-item">
-      <text class="summary-label">总工时</text>
-      <text class="summary-value highlight">{{totalHours}} 小时</text>
-    </view>
-    
-    <view class="summary-item">
-      <view class="standard-hours-label-with-setting">
-        <text class="summary-label">标准工时</text>
-        <button class="setting-btn" bindtap="showCustomHoursModal">⚙️</button>
+      <view class="shift-stat-item off-day">
+        <view class="stat-icon">😴</view>
+        <view class="stat-info">
+          <text class="stat-value">{{statistics.offDays}}</text>
+          <text class="stat-label">休息天数</text>
+        </view>
       </view>
-      <text class="summary-value">{{standardHours}} 小时</text>
-    </view>
-    
-    <view class="summary-item">
-      <text class="summary-label">工时差额</text>
-      <text class="summary-value {{hourDifference >= 0 ? 'overtime' : 'shortage'}}">{{differenceText}}</text>
     </view>
   </view>
 
-  <view class="export-section">
-    <view class="button-group">
-      <button class="export-btn" bindtap="showFileNameModal">导出报表</button>
-      <button class="share-btn" bindtap="shareCSV">分享报表</button>
-      <button class="help-icon-btn" bindtap="navigateToDocs" style="position: relative; left: 10rpx; top: 0rpx">
-        <text class="help-icon">?</text>
-      </button>
+  <!-- 工时统计卡片 -->
+  <view class="card hours-card">
+    <view class="card-header">
+      <view class="card-icon">⏱️</view>
+      <text class="card-title">工时统计</text>
+      <view class="help-icon-btn" bindtap="showCustomHoursModal">
+        <text class="help-icon">⚙️</text>
+      </view>
+    </view>
+    <view class="hours-stats">
+      <view class="hours-main">
+        <view class="hours-item">
+          <text class="hours-value">{{statistics.totalHours}}</text>
+          <text class="hours-label">实际工时</text>
+        </view>
+        <view class="hours-divider">/</view>
+        <view class="hours-item">
+          <text class="hours-value standard">{{customHours}}</text>
+          <text class="hours-label">标准工时</text>
+        </view>
+      </view>
+      <view class="hours-progress">
+        <view class="progress-bar-bg">
+          <view class="progress-bar-fill {{statistics.totalHours >= customHours ? 'over' : 'under'}}" style="width: {{(statistics.totalHours / customHours * 100) > 100 ? 100 : (statistics.totalHours / customHours * 100)}}%"></view>
+        </view>
+        <text class="progress-text">{{progressText}}</text>
+      </view>
+      <view class="hours-difference {{statistics.hourDifference >= 0 ? 'positive' : 'negative'}}">
+        <text class="diff-label">工时差额</text>
+        <text class="diff-value">{{statistics.hourDifference >= 0 ? '+' : ''}}{{statistics.hourDifference}}h</text>
+      </view>
     </view>
   </view>
 
-  <!-- 文件名设置弹窗 -->
-  <view class="modal-mask" wx:if="{{showFileNameModal}}" bindtap="hideFileNameModal"></view>
-  <view class="modal-container" wx:if="{{showFileNameModal}}">
+  <!-- 快捷操作区 -->
+  <view class="action-buttons">
+    <view class="action-btn export-btn" bindtap="onExportBtnTap">
+      <text class="btn-icon">📥</text>
+      <text class="btn-text">导出CSV</text>
+    </view>
+    <view class="action-btn share-btn" bindtap="shareCSV">
+      <text class="btn-icon">📤</text>
+      <text class="btn-text">分享文件</text>
+    </view>
+  </view>
+
+  <!-- 班次明细列表 -->
+  <view class="card list-card">
+    <view class="card-header">
+      <view class="card-icon">📋</view>
+      <text class="card-title">班次明细</text>
+      <text class="card-subtitle">{{filteredSchedules.length}} 条记录</text>
+    </view>
+    <view class="schedule-list">
+      <block wx:if="{{filteredSchedules.length > 0}}">
+        <view class="schedule-item" wx:for="{{filteredSchedules}}" wx:key="date">
+          <view class="schedule-date">
+            <text class="date-day">{{item.day}}</text>
+            <text class="date-weekday">{{item.weekday}}</text>
+          </view>
+          <view class="schedule-type">
+            <view class="type-tag {{item.shiftType === '白天班' ? 'day' : item.shiftType === '跨夜班' ? 'night' : 'off'}}">
+              {{item.shiftType}}
+            </view>
+          </view>
+          <view class="schedule-time">
+            <text wx:if="{{item.shiftType !== '休息'}}">{{item.startTime}}</text>
+            <text wx:else>--:--</text>
+          </view>
+        </view>
+      </block>
+      <view class="empty-state" wx:else>
+        <text class="empty-icon">📭</text>
+        <text class="empty-text">该时间段暂无班次记录</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全区域 -->
+  <view class="safe-area-bottom"></view>
+</view>
+
+<!-- 文件名设置模态框 -->
+<view class="modal-mask {{showFilenameModal ? 'show' : ''}}" bindtap="hideFilenameModal">
+  <view class="modal-content {{showFilenameModal ? 'show' : ''}}" catchtap="preventBubble">
     <view class="modal-header">
-      <text class="modal-title">设置导出文件名</text>
-      <button class="modal-close-btn" bindtap="hideFileNameModal">×</button>
+      <text class="modal-title">设置文件名</text>
+      <view class="modal-close" bindtap="hideFilenameModal">
+        <text class="close-icon">✕</text>
+      </view>
     </view>
-    <view class="modal-content">
-      <view class="modal-input-group">
-        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput"></input>
+    <view class="modal-body">
+      <view class="input-group">
+        <text class="input-label">CSV文件名</text>
+        <input 
+          type="text" 
+          value="{{tempFilename}}" 
+          bindinput="onFilenameInput"
+          placeholder="请输入文件名"
+          class="modal-input"
+        />
+        <text class="input-hint">将保存为 {{tempFilename || defaultFilenameHint}}.csv</text>
       </view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn cancel-btn" bindtap="hideFileNameModal">取消</button>
-      <button class="modal-btn confirm-btn" bindtap="confirmExport">确定导出</button>
+      <view class="modal-btn cancel" bindtap="hideFilenameModal">取消</view>
+      <view class="modal-btn confirm" bindtap="confirmExport">确认导出</view>
     </view>
   </view>
+</view>
 
-  <view class="shifts-list">
-    <view class="list-header">
-      <text>排班详情</text>
-    </view>
-    
-    <view class="shift-item" wx:for="{{shifts}}" wx:key="date">
-      <view class="shift-date">
-        {{item.date}}
-      </view>
-      <view class="shift-content">
-        <text class="shift-name">{{item.name}}</text>
-        <text class="shift-time">{{item.startTime}}-{{item.endTime}}</text>
-        <text class="shift-hours">{{item.workHours}}小时</text>
-        <text class="shift-type">{{item.type}}</text>
-      </view>
-    </view>
-    
-    <view wx:if="{{shifts.length === 0}}" class="empty-tip">
-      所选日期范围内无排班记录
-    </view>
-  </view>
-
-  <!-- 自定义每周标准工时弹窗 -->
-  <view class="modal-mask" wx:if="{{showModal}}" bindtap="hideCustomHoursModal"></view>
-  <view class="modal-container" wx:if="{{showModal}}">
+<!-- 自定义工时设置模态框 -->
+<view class="modal-mask {{showHoursModal ? 'show' : ''}}" bindtap="hideCustomHoursModal">
+  <view class="modal-content {{showHoursModal ? 'show' : ''}}" catchtap="preventBubble">
     <view class="modal-header">
-      <text class="modal-title">设置每周标准工时</text>
-      <button class="modal-close-btn" bindtap="hideCustomHoursModal">×</button>
+      <text class="modal-title">设置标准工时</text>
+      <view class="modal-close" bindtap="hideCustomHoursModal">
+        <text class="close-icon">✕</text>
+      </view>
     </view>
-    <view class="modal-content">
-      <view class="modal-input-group">
-        <input class="modal-input" type="number" placeholder="请输入每周标准工时" value="{{tempCustomWeeklyHours}}" bindinput="onTempCustomHoursChange" min="0" step="0.5"></input>
-        <text class="modal-input-unit">小时</text>
+    <view class="modal-body">
+      <view class="input-group">
+        <text class="input-label">每周标准工时（小时）</text>
+        <input 
+          type="digit" 
+          value="{{customHours}}" 
+          bindinput="onCustomHoursInput"
+          placeholder="请输入标准工时"
+          class="modal-input"
+        />
+        <text class="input-hint">默认值为 35 小时/周</text>
       </view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn cancel-btn" bindtap="hideCustomHoursModal">取消</button>
-      <button class="modal-btn confirm-btn" bindtap="confirmCustomHours">确定</button>
+      <view class="modal-btn cancel" bindtap="hideCustomHoursModal">取消</view>
+      <view class="modal-btn confirm" bindtap="saveCustomHours">保存设置</view>
     </view>
   </view>
 </view>
