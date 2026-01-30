@@ -486,6 +486,7 @@
 .button-group {
   display: flex;
   gap: 20rpx;
+  align-items: center;
 }
 
 .export-btn, .share-btn {
@@ -497,6 +498,30 @@
   font-size: 28rpx;
   text-align: center;
   transition: all 0.3s ease;
+}
+
+/* 帮助图标按钮样式 */
+.help-icon-btn {
+  background-color: #07c160;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48rpx;
+  height: 48rpx;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.help-icon-btn:active {
+  background-color: #059e4d;
+  transform: scale(0.95);
+}
+
+.help-icon {
+  font-size: 24rpx;
   font-weight: bold;
 }
 

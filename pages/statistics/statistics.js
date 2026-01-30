@@ -30,6 +30,15 @@ Page({
     pressInterval: 200 // 连续点击间隔时间（毫秒）
   },
 
+  /**
+   * 跳转到使用说明页面
+   */
+  navigateToDocs() {
+    wx.navigateTo({
+      url: '/pages/docs/docs?type=statistics'
+    });
+  },
+
   // 日期格式化函数
   formatDate(date) {
     const year = date.getFullYear();

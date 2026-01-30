@@ -64,7 +64,7 @@
   <view class="section">
     <view class="section-title-container">
       <text class="section-title" style="position: relative; left: 0rpx; top: 6rpx">WebDAV备份设置</text>
-      <button class="help-icon-btn" bindtap="showWebDAVHelpModal" style="position: relative; left: 127rpx; top: -8rpx">
+      <button class="help-icon-btn" bindtap="navigateToDocs" data-type="webdav" style="position: relative; left: 127rpx; top: -8rpx">
         <text class="help-icon">?</text>
       </button>
     </view>
@@ -79,7 +79,7 @@
   <view class="section">
     <view class="section-title-container">
       <text class="section-title">数据管理</text>
-      <button class="help-icon-btn" bindtap="showDataManagementHelpModal" style="position: relative; left: 200rpx; top: -18rpx">
+      <button class="help-icon-btn" bindtap="navigateToDocs" data-type="data" style="position: relative; left: 200rpx; top: -18rpx">
         <text class="help-icon">?</text>
       </button>
     </view>

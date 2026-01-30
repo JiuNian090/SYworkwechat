@@ -233,7 +233,13 @@ Page({
     } // 表情对应的情绪类型
   },
 
-
+  // 跳转到使用说明页面
+  navigateToDocs(e) {
+    const type = e.currentTarget.dataset.type;
+    wx.navigateTo({
+      url: '/pages/docs/docs?type=' + type
+    });
+  },
 
   onLoad() {
     const username = wx.getStorageSync('username') || '';
