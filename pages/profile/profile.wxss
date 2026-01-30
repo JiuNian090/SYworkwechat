@@ -449,65 +449,222 @@ page {
 }
 
 /* ========== 更新日志 ========== */
+/* ========== 更新日志时间线样式 ========== */
 .changelog-wrapper {
   background: var(--bg-color);
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   overflow: hidden;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .changelog-scroll {
-  max-height: 400rpx;
-  padding: 24rpx;
+  max-height: 60vh;
+  padding: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* 日志列表 */
 .changelog-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  width: 100%;
 }
 
+/* 日志项 - 使用flex布局 */
 .changelog-item {
-  background: var(--card-bg);
-  border-radius: 16rpx;
-  padding: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  margin-bottom: 16rpx;
+  animation: fadeInLeft 0.5s ease-out;
+  animation-fill-mode: both;
+  box-sizing: border-box;
 }
 
+.changelog-item:nth-child(1) { animation-delay: 0.05s; }
+.changelog-item:nth-child(2) { animation-delay: 0.1s; }
+.changelog-item:nth-child(3) { animation-delay: 0.15s; }
+.changelog-item:nth-child(4) { animation-delay: 0.2s; }
+.changelog-item:nth-child(5) { animation-delay: 0.25s; }
+
+.changelog-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 时间线左侧区域 */
+.timeline-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24rpx;
+  flex-shrink: 0;
+  position: relative;
+  padding-top: 12rpx;
+}
+
+/* 时间线圆点 */
+.timeline-dot {
+  width: 14rpx;
+  height: 14rpx;
+  background: var(--card-bg);
+  border: 2rpx solid var(--primary-color);
+  border-radius: 50%;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.changelog-item.latest .timeline-dot {
+  background: var(--primary-color);
+  box-shadow: 0 0 0 3rpx rgba(7, 193, 96, 0.2);
+  animation: pulse 2s infinite;
+}
+
+/* 时间线连接线 */
+.timeline-line {
+  width: 2rpx;
+  flex: 1;
+  min-height: 32rpx;
+  background: var(--border-color);
+  margin-top: 6rpx;
+}
+
+/* 日志卡片 */
+.changelog-card {
+  flex: 1;
+  margin-left: 12rpx;
+  background: var(--card-bg);
+  border-radius: 12rpx;
+  padding: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid transparent;
+  transition: all 0.3s ease;
+  min-width: 0;
+  max-width: calc(100% - 36rpx);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.changelog-item.latest .changelog-card {
+  border-color: rgba(7, 193, 96, 0.15);
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.1);
+}
+
+.changelog-card:active {
+  transform: scale(0.98);
+}
+
+/* 头部信息 */
 .changelog-header {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12rpx;
-  padding-bottom: 12rpx;
+  align-items: flex-start;
+  margin-bottom: 10rpx;
+  padding-bottom: 10rpx;
   border-bottom: 2rpx solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.version-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6rpx;
+  min-width: 0;
+  flex-wrap: wrap;
+  flex: 1;
 }
 
 .version-tag {
-  font-size: 28rpx;
-  font-weight: 600;
+  font-size: 30rpx;
+  font-weight: 700;
   color: var(--primary-color);
+  letter-spacing: 0;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.latest-badge {
+  font-size: 20rpx;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  padding: 3rpx 8rpx;
+  border-radius: 6rpx;
+  font-weight: 500;
+  flex-shrink: 0;
+  line-height: 1.4;
 }
 
 .version-date {
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: var(--text-tertiary);
+  font-weight: 400;
+  flex-shrink: 0;
+  margin-left: 8rpx;
+  line-height: 1.4;
 }
 
+/* 内容区域 */
 .changelog-content {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.7;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .changelog-text {
+  display: block;
+  width: 100%;
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.6;
 }
 
+/* 空状态 */
 .changelog-empty {
-  height: 200rpx;
+  height: 280rpx;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16rpx;
+}
+
+.empty-icon {
+  font-size: 64rpx;
+  opacity: 0.4;
+}
+
+.changelog-empty .empty-text {
+  font-size: 28rpx;
+  color: var(--text-tertiary);
+}
+
+/* 动画效果 */
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 6rpx rgba(7, 193, 96, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 10rpx rgba(7, 193, 96, 0.1);
+  }
 }
 
 .empty-text {
@@ -862,21 +1019,61 @@ page {
     grid-template-columns: repeat(2, 1fr);
     gap: 16rpx;
   }
-  
+
   .grid-btn {
     padding: 24rpx 16rpx;
   }
-  
+
   .btn-icon {
     font-size: 36rpx;
   }
-  
+
   .btn-text {
     font-size: 24rpx;
   }
-  
+
   .emoji-grid {
     grid-template-columns: repeat(5, 1fr);
+  }
+
+  /* 更新日志小屏幕适配 */
+  .changelog-scroll {
+    max-height: 50vh;
+    padding: 12rpx;
+  }
+
+  .timeline-left {
+    width: 20rpx;
+  }
+
+  .timeline-dot {
+    width: 12rpx;
+    height: 12rpx;
+    border-width: 2rpx;
+  }
+
+  .changelog-card {
+    padding: 12rpx;
+    margin-left: 8rpx;
+    max-width: calc(100% - 28rpx);
+  }
+
+  .version-tag {
+    font-size: 26rpx;
+  }
+
+  .latest-badge {
+    font-size: 18rpx;
+    padding: 2rpx 6rpx;
+  }
+
+  .version-date {
+    font-size: 20rpx;
+  }
+
+  .changelog-content {
+    font-size: 22rpx;
+    line-height: 1.6;
   }
 }
 
@@ -885,14 +1082,58 @@ page {
     max-width: 750rpx;
     margin: 0 auto;
   }
-  
+
   .user-card {
     margin-left: -24rpx;
     margin-right: -24rpx;
   }
-  
+
   .btn-grid {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* 更新日志大屏幕适配 */
+  .changelog-scroll {
+    max-height: 70vh;
+    padding: 24rpx;
+  }
+
+  .timeline-left {
+    width: 32rpx;
+  }
+
+  .timeline-dot {
+    width: 18rpx;
+    height: 18rpx;
+    border-width: 3rpx;
+  }
+
+  .changelog-item.latest .timeline-dot {
+    box-shadow: 0 0 0 5rpx rgba(7, 193, 96, 0.2);
+  }
+
+  .changelog-card {
+    padding: 24rpx;
+    margin-left: 16rpx;
+    max-width: calc(100% - 48rpx);
+  }
+
+  .version-tag {
+    font-size: 34rpx;
+  }
+
+  .latest-badge {
+    font-size: 24rpx;
+    padding: 4rpx 12rpx;
+  }
+
+  .version-date {
+    font-size: 28rpx;
+  }
+
+  .changelog-content {
+    font-size: 30rpx;
+    line-height: 1.9;
   }
 }
 
