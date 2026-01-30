@@ -1,85 +1,225 @@
 <!-- pages/docs/docs.wxml -->
 <view class="container">
-  <view class="header">
-    <text class="title">使用说明</text>
+  <!-- 顶部导航栏 -->
+  <view class="nav-header">
+    <view class="nav-title">使用说明</view>
+    <view class="nav-subtitle">快速了解排班助手功能</view>
+  </view>
+
+  <!-- 快速导航 -->
+  <view class="quick-nav">
+    <view class="quick-nav-title">快速跳转</view>
+    <view class="quick-nav-list">
+      <view class="quick-nav-item {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
+        <text class="nav-icon">📊</text>
+        <text class="nav-text">数据管理</text>
+      </view>
+      <view class="quick-nav-item {{activeSection === 'webdav' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-webdav">
+        <text class="nav-icon">☁️</text>
+        <text class="nav-text">WebDAV</text>
+      </view>
+      <view class="quick-nav-item {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
+        <text class="nav-icon">📈</text>
+        <text class="nav-text">统计报表</text>
+      </view>
+      <view class="quick-nav-item {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
+        <text class="nav-icon">💝</text>
+        <text class="nav-text">项目介绍</text>
+      </view>
+    </view>
   </view>
 
   <view class="content">
     <!-- 数据管理使用说明 -->
-    <view class="section" id="section-data">
-      <text class="section-title">数据管理使用说明</text>
+    <view class="section {{activeSection === 'data' ? 'highlight' : ''}}" id="section-data">
+      <view class="section-header">
+        <view class="section-icon-wrapper data-icon">
+          <text class="section-icon">📊</text>
+        </view>
+        <view class="section-title-wrapper">
+          <text class="section-title">数据管理使用说明</text>
+          <text class="section-desc">备份、分享与恢复数据</text>
+        </view>
+      </view>
       <view class="section-content">
-        <view class="guide-item">
-          <text class="guide-number">1.</text>
-          <text class="guide-text">导出数据：点击导出数据，在弹窗中输入自定义文件名后点击确定，可暂存数据文件到剪贴板。当选了图片之后，导出为zip。</text>
-          <text class="guide-highlight">(可自选需要导出的数据，排班数据，班次模板，排班图片)</text>
-        </view>
-        <view class="guide-item">
-          <text class="guide-number">2.</text>
-          <text class="guide-text">分享数据：导出后可快速分享给好友，也可以分享到"文件传输助手"或者小号，用来备份。</text>
-          <text class="guide-highlight">(分享完整的数据备份)</text>
-        </view>
-        <view class="guide-item">
-          <text class="guide-number">3.</text>
-          <text class="guide-text">导入数据：选择好友通过微信分享给你的json文件，或者zip文件。</text>
-          <text class="guide-highlight">(可以将json文件或者zip转发给"文件传输助手"，点击导入，选择"文件传输助手"，找到对应的文件，即可替换本地的模板，排班，图片等)</text>
-        </view>
-        <view class="guide-item">
-          <text class="guide-number">4.</text>
-          <text class="guide-text">清空数据：清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
-          <text class="guide-highlight">（清空所有数据，如要恢复，请导入之前分享出去的json或zip文件！）</text>
+        <view class="guide-list">
+          <view class="guide-item">
+            <view class="guide-badge">1</view>
+            <view class="guide-body">
+              <text class="guide-title">导出数据</text>
+              <text class="guide-text">点击导出数据，在弹窗中输入自定义文件名后点击确定，可暂存数据文件到剪贴板。当选了图片之后，导出为zip。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">可自选需要导出的数据：排班数据、班次模板、排班图片</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="guide-item">
+            <view class="guide-badge">2</view>
+            <view class="guide-body">
+              <text class="guide-title">分享数据</text>
+              <text class="guide-text">导出后可快速分享给好友，也可以分享到"文件传输助手"或者小号，用来备份。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">分享完整的数据备份</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="guide-item">
+            <view class="guide-badge">3</view>
+            <view class="guide-body">
+              <text class="guide-title">导入数据</text>
+              <text class="guide-text">选择好友通过微信分享给你的json文件，或者zip文件。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">可以将json文件或者zip转发给"文件传输助手"，点击导入，选择"文件传输助手"，找到对应的文件，即可替换本地的模板、排班、图片等</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="guide-item warning">
+            <view class="guide-badge">4</view>
+            <view class="guide-body">
+              <text class="guide-title">清空数据</text>
+              <text class="guide-text">清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
+              <view class="guide-tip warning-tip">
+                <text class="tip-icon">⚠️</text>
+                <text class="tip-text">清空所有数据，如要恢复，请导入之前分享出去的json或zip文件！</text>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
     </view>
 
     <!-- WebDAV使用说明 -->
-    <view class="section" id="section-webdav">
-      <text class="section-title">WebDAV使用说明</text>
-      <view class="section-content">
-        <view class="webdav-step">
-          <text class="step-title">第一步：</text>
-          <text class="step-title">手机上下载坚果云app，或者网页搜索坚果云。</text>
-          <text class="step-title">打开坚果云创建排班备份文件夹</text>
-          <image src="/pages/profile/first.png" class="step-image" mode="widthFix" bindtap="previewImage" data-src="/pages/profile/first.png"></image>
+    <view class="section {{activeSection === 'webdav' ? 'highlight' : ''}}" id="section-webdav">
+      <view class="section-header">
+        <view class="section-icon-wrapper webdav-icon">
+          <text class="section-icon">☁️</text>
         </view>
-        <view class="webdav-step">
-          <text class="step-title">第二步：创建坚果云webdav账号密码。将创建好的服务器地址，账号，密码，文件夹，按照如图填入小程序的配置中</text>
-          <image src="/pages/profile/second.png" class="step-image" mode="widthFix" bindtap="previewImage" data-src="/pages/profile/second.png"></image>
+        <view class="section-title-wrapper">
+          <text class="section-title">WebDAV使用说明</text>
+          <text class="section-desc">坚果云自动备份配置</text>
+        </view>
+      </view>
+      <view class="section-content">
+        <view class="step-progress">
+          <view class="progress-line"></view>
+          <view class="progress-dot active"></view>
+          <view class="progress-dot"></view>
+        </view>
+
+        <view class="step-list">
+          <view class="step-item">
+            <view class="step-number">01</view>
+            <view class="step-content">
+              <text class="step-title">创建坚果云文件夹</text>
+              <text class="step-desc">手机上下载坚果云app，或者网页搜索坚果云。打开坚果云创建排班备份文件夹</text>
+              <view class="image-wrapper" bindtap="previewImage" data-src="/pages/profile/first.png">
+                <image src="/pages/profile/first.png" class="step-image" mode="widthFix" lazy-load></image>
+                <view class="image-overlay">
+                  <text class="image-hint">👆 点击预览</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <view class="step-item">
+            <view class="step-number">02</view>
+            <view class="step-content">
+              <text class="step-title">配置WebDAV账号</text>
+              <text class="step-desc">创建坚果云webdav账号密码。将创建好的服务器地址、账号、密码、文件夹，按照如图填入小程序的配置中</text>
+              <view class="image-wrapper" bindtap="previewImage" data-src="/pages/profile/second.png">
+                <image src="/pages/profile/second.png" class="step-image" mode="widthFix" lazy-load></image>
+                <view class="image-overlay">
+                  <text class="image-hint">👆 点击预览</text>
+                </view>
+              </view>
+            </view>
+          </view>
         </view>
       </view>
     </view>
 
     <!-- 统计页面使用说明 -->
-    <view class="section" id="section-statistics">
-      <text class="section-title">统计页面使用说明</text>
+    <view class="section {{activeSection === 'statistics' ? 'highlight' : ''}}" id="section-statistics">
+      <view class="section-header">
+        <view class="section-icon-wrapper stats-icon">
+          <text class="section-icon">📈</text>
+        </view>
+        <view class="section-title-wrapper">
+          <text class="section-title">统计页面使用说明</text>
+          <text class="section-desc">生成与分享排班报表</text>
+        </view>
+      </view>
       <view class="section-content">
-        <view class="guide-item">
-          <text class="guide-number">1.</text>
-          <text class="guide-text">点击导出报表，在弹窗中输入文件名（可按姓名+日期范围）;</text>
-        </view>
-        <view class="guide-item">
-          <text class="guide-number">2.</text>
-          <text class="guide-text">出现导出成功提示后，点击分享报表，可以分享给自己;</text>
-        </view>
-        <view class="guide-item">
-          <text class="guide-number">3.</text>
-          <text class="guide-text">在聊天界面点击CSV，选择用WPS打开，即可生成报表！</text>
-        </view>
-        <view class="guide-item">
-          <text class="guide-number">4.</text>
-          <text class="guide-text">下面排班详情会显示选定日期内的所有排班!</text>
+        <view class="guide-list compact">
+          <view class="guide-item compact-item">
+            <view class="guide-badge small">1</view>
+            <view class="guide-body">
+              <text class="guide-text">点击导出报表，在弹窗中输入文件名（可按姓名+日期范围）</text>
+            </view>
+          </view>
+
+          <view class="guide-item compact-item">
+            <view class="guide-badge small">2</view>
+            <view class="guide-body">
+              <text class="guide-text">出现导出成功提示后，点击分享报表，可以分享给自己</text>
+            </view>
+          </view>
+
+          <view class="guide-item compact-item">
+            <view class="guide-badge small">3</view>
+            <view class="guide-body">
+              <text class="guide-text">在聊天界面点击CSV，选择用WPS打开，即可生成报表！</text>
+            </view>
+          </view>
+
+          <view class="guide-item compact-item">
+            <view class="guide-badge small">4</view>
+            <view class="guide-body">
+              <text class="guide-text">下面排班详情会显示选定日期内的所有排班！</text>
+            </view>
+          </view>
         </view>
       </view>
     </view>
 
     <!-- 项目介绍 -->
-    <view class="section">
-      <text class="section-title">项目介绍</text>
+    <view class="section about-section {{activeSection === 'about' ? 'highlight' : ''}}" id="section-about">
+      <view class="section-header">
+        <view class="section-icon-wrapper about-icon">
+          <text class="section-icon">💝</text>
+        </view>
+        <view class="section-title-wrapper">
+          <text class="section-title">项目介绍</text>
+          <text class="section-desc">为爱而生的排班助手</text>
+        </view>
+      </view>
       <view class="section-content">
-        <text class="intro-text">●这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，完全免费无广告的公益项目。
-●若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！
-●所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎点击最下方的联系乐乐。</text>
+        <view class="about-card">
+          <view class="about-item">
+            <text class="about-icon-small">🎯</text>
+            <text class="about-text">这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，完全免费无广告的公益项目。</text>
+          </view>
+          <view class="about-item">
+            <text class="about-icon-small">🤝</text>
+            <text class="about-text">若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！</text>
+          </view>
+          <view class="about-item">
+            <text class="about-icon-small">🔒</text>
+            <text class="about-text">所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎点击最下方的联系乐乐。</text>
+          </view>
+        </view>
       </view>
     </view>
+  </view>
+
+  <!-- 返回顶部按钮 -->
+  <view class="back-to-top {{showBackToTop ? 'visible' : ''}}" bindtap="backToTop">
+    <text class="back-to-top-icon">↑</text>
   </view>
 </view>
