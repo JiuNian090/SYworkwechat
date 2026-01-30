@@ -569,9 +569,6 @@ Page({
 
   // 点击"添加排班" - 直接调用系统ActionSheet
   onAddShiftClick() {
-    // 隐藏操作菜单
-    this.hideActionMenu();
-
     // 准备班次模板数据
     const templates = this.data.shiftTemplates;
     if (templates.length === 0) {
@@ -585,11 +582,17 @@ Page({
     // 提取班次名称列表（仅显示名称）
     const templateNames = templates.map(t => t.name);
 
-    // 直接使用系统ActionSheet选择班次
+    // 立即调用ActionSheet，确保在用户点击的同步上下文中
+    // 菜单的隐藏通过ActionSheet的success/fail回调处理
     wx.showActionSheet({
       itemList: templateNames,
       itemColor: '#333333',
       success: (res) => {
+        // 先隐藏操作菜单
+        this.setData({
+          showActionMenu: false
+        });
+
         const index = res.tapIndex;
         const selectedTemplate = templates[index];
 
@@ -597,7 +600,10 @@ Page({
         this.saveShift(selectedTemplate);
       },
       fail: (res) => {
-        // 用户取消选择，不做处理
+        // 用户取消选择，隐藏操作菜单
+        this.setData({
+          showActionMenu: false
+        });
         console.log('用户取消选择班次');
       }
     });
