@@ -34,9 +34,10 @@ Page({
   /**
    * 跳转到使用说明页面
    */
-  navigateToDocs() {
+  navigateToDocs(e) {
+    const type = e.currentTarget.dataset.type || 'statistics';
     wx.navigateTo({
-      url: '/pages/docs/docs?type=statistics'
+      url: `/pages/docs/docs?type=${type}`
     });
   },
 

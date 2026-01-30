@@ -4,7 +4,7 @@
   <view class="page-header">
     <view class="header-bg"></view>
     <view class="header-content">
-      <text class="header-title">📋 班次模板管理</text>
+      <text class="header-title">📋计划管理</text>
       <text class="header-subtitle">管理您的班次模板</text>
     </view>
   </view>
