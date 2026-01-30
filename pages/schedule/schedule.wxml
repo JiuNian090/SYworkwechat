@@ -271,7 +271,7 @@
   <view class="modal-body" catchtap="stopPropagation">
     <view class="input-group">
       <text class="input-label">图片名称</text>
-      <input class="modal-input" placeholder="请输入图片名称" value="{{imageName}}" bindinput="onImageNameInput"/>
+      <input class="modal-input" placeholder="请输入图片名称" value="{{imageName || ''}}" bindinput="onImageNameInput"/>
     </view>
 
     <view class="upload-section">

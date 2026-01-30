@@ -53,7 +53,7 @@
         </view>
         <view class="form-group">
           <text class="label">班次名称 <text style="color:red">*</text></text>
-          <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name}}" />
+          <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name || ''}}" />
         </view>
         <view class="form-group">
           <text class="label">班次类型</text>
@@ -121,7 +121,7 @@
         </view>
         <view class="form-group">
           <text class="label">班次名称 <text style="color:red">*</text></text>
-          <input class="input" placeholder="请输入班次名称" bindinput="onEditTemplateInput" data-field="name" value="{{editTemplate.name}}" />
+          <input class="input" placeholder="请输入班次名称" bindinput="onEditTemplateInput" data-field="name" value="{{editTemplate.name || ''}}" />
         </view>
         <view class="form-group">
           <text class="label">班次类型</text>

@@ -272,16 +272,16 @@
     <view class="modal-body">
       <view class="form-group">
         <text class="form-label">服务器地址</text>
-        <input class="form-input" placeholder="https://dav.jianguoyun.com/dav/" value="{{webdavConfig.url}}" bindinput="onWebDAVUrlInput"></input>
+        <input class="form-input" placeholder="https://dav.jianguoyun.com/dav/" value="{{webdavConfig.url || ''}}" bindinput="onWebDAVUrlInput"></input>
       </view>
       <view class="form-group">
         <text class="form-label">用户名</text>
-        <input class="form-input" placeholder="请输入用户名" value="{{webdavConfig.username}}" bindinput="onWebDAVUsernameInput"></input>
+        <input class="form-input" placeholder="请输入用户名" value="{{webdavConfig.username || ''}}" bindinput="onWebDAVUsernameInput"></input>
       </view>
       <view class="form-group">
         <text class="form-label">密码</text>
         <view class="password-wrapper">
-          <input class="form-input password-input" placeholder="请输入密码" value="{{webdavConfig.password}}" bindinput="onWebDAVPasswordInput" password="{{!showPassword}}"></input>
+          <input class="form-input password-input" placeholder="请输入密码" value="{{webdavConfig.password || ''}}" bindinput="onWebDAVPasswordInput" password="{{!showPassword}}"></input>
           <view class="password-toggle" bindtap="togglePasswordVisibility">
             <text class="toggle-text">{{showPassword ? '隐藏' : '显示'}}</text>
           </view>
@@ -289,7 +289,7 @@
       </view>
       <view class="form-group">
         <text class="form-label">保存文件夹</text>
-        <input class="form-input" placeholder="留空使用默认文件夹" value="{{webdavConfig.folder}}" bindinput="onWebDAVFolderInput"></input>
+        <input class="form-input" placeholder="留空使用默认文件夹" value="{{webdavConfig.folder || ''}}" bindinput="onWebDAVFolderInput"></input>
       </view>
     </view>
     <view class="modal-footer">
