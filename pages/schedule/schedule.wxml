@@ -35,7 +35,6 @@
         <view class="week-title-container" bindtap="goToToday">
           <view class="week-title-badge {{isCurrentWeek ? 'current' : ''}}" style="{{isCurrentWeek ? 'background-color:' + currentWeekShiftColor + ';' : ''}}">
             <text class="week-title">{{currentWeekTitle}}</text>
-            <text wx:if="{{isCurrentWeek}}" class="current-tag">本周</text>
           </view>
         </view>
         <view class="nav-btn" bindtap="nextWeek">
@@ -160,7 +159,6 @@
         <view class="month-title-container" bindtap="goToToday">
           <view class="month-title-badge {{isCurrentMonth ? 'current' : ''}}" style="{{isCurrentMonth ? 'background-color:' + currentMonthShiftColor + ';' : ''}}">
             <text class="month-title">{{currentMonthTitle}}</text>
-            <text wx:if="{{isCurrentMonth}}" class="current-tag">本月</text>
           </view>
         </view>
         <view class="nav-btn" bindtap="nextMonth">
