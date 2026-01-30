@@ -992,50 +992,64 @@ Page({
                 wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
               }
               
-              // 处理图片文件
-              const imageDir = zip.folder('images');
+              // 处理图片文件（兼容新旧路径格式：image/YYYY-MM/ 或 images/）
+              const imageDir = zip.folder('image') || zip.folder('images');
               if (imageDir) {
                 const imagePromises = [];
                 
-                // 遍历图片文件夹中的文件
-                imageDir.forEach((relativePath, file) => {
-                  const promise = file.async('arraybuffer').then((content) => {
-                    // 生成临时图片路径
-                    const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${relativePath.split('/').pop()}`;
-                    // 写入图片文件
-                    fs.writeFile({
-                      filePath: tempPath,
-                      data: content,
-                      success: () => {
-                        // 解析图片信息，恢复到对应的周存储
-                        // 假设图片文件名格式为：week_images_{weekKey}_index_name.jpg
-                        const fileNameParts = relativePath.split('/').pop().split('_');
-                        if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
-                          const weekKey = fileNameParts.slice(2, -2).join('_');
-                          const weekImageKey = `week_images_${weekKey}`;
-                          
-                          // 获取现有图片数据
-                          const existingImages = wx.getStorageSync(weekImageKey) || [];
-                          
-                          // 添加新图片
-                          existingImages.push({
-                            id: Date.now().toString(),
-                            name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
-                            path: tempPath,
-                            addedTime: new Date().toISOString()
-                          });
-                          
-                          // 保存图片数据
-                          wx.setStorageSync(weekImageKey, existingImages);
-                        }
-                      },
-                      fail: (err) => {
-                        console.error('保存图片失败', err);
+                // 递归处理图片文件夹中的所有文件
+                const processImageFolder = (folder, basePath = '') => {
+                  folder.forEach((relativePath, file) => {
+                    if (file.dir) {
+                      // 如果是子文件夹（如 YYYY-MM），递归处理
+                      const subFolder = folder.folder(relativePath);
+                      if (subFolder) {
+                        processImageFolder(subFolder, `${basePath}${relativePath}/`);
                       }
-                    });
+                    } else {
+                      // 处理图片文件
+                      const promise = file.async('arraybuffer').then((content) => {
+                        // 生成临时图片路径
+                        const fileName = relativePath.split('/').pop();
+                        const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${fileName}`;
+                        // 写入图片文件
+                        fs.writeFile({
+                          filePath: tempPath,
+                          data: content,
+                          success: () => {
+                            // 解析图片信息，恢复到对应的周存储
+                            // 文件名格式：week_images_{weekKey}_index_name.jpg
+                            const fileNameParts = fileName.split('_');
+                            if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
+                              const weekKey = fileNameParts.slice(2, -2).join('_');
+                              const weekImageKey = `week_images_${weekKey}`;
+                              
+                              // 获取现有图片数据
+                              const existingImages = wx.getStorageSync(weekImageKey) || [];
+                              
+                              // 添加新图片
+                              existingImages.push({
+                                id: Date.now().toString(),
+                                name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
+                                path: tempPath,
+                                addedTime: new Date().toISOString()
+                              });
+                              
+                              // 保存图片数据
+                              wx.setStorageSync(weekImageKey, existingImages);
+                            }
+                          },
+                          fail: (err) => {
+                            console.error('保存图片失败', err);
+                          }
+                        });
+                      });
+                      imagePromises.push(promise);
+                    }
                   });
-                  imagePromises.push(promise);
-                });
+                };
+                
+                processImageFolder(imageDir);
                 
                 // 等待所有图片处理完成
                 Promise.all(imagePromises).then(() => {
