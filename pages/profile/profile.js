@@ -50,6 +50,8 @@ Page({
     showDataManagementHelpModal: false,
     // 密码显示/隐藏状态
     showPassword: false,
+    // 更新日志数据
+    changelog: [],
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
     selectedEmoji: '', // 当前选中的表情
     emojiTextMap: {
@@ -263,6 +265,9 @@ Page({
     const emojiText = avatarType === 'emoji' && avatarEmoji ? this.data.emojiTextMap[avatarEmoji] || '' : '';
     const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? this.data.emojiEmotionMap[avatarEmoji] || 'neutral' : '';
     
+    // 解析更新日志
+    const changelog = this.parseChangelog();
+    
     this.setData({
       username: username,
       avatarText: avatarText,
@@ -270,7 +275,8 @@ Page({
       avatarType: avatarType,
       emojiText: emojiText,
       emojiEmotion: emojiEmotion,
-      webdavConfig: webdavConfig
+      webdavConfig: webdavConfig,
+      changelog: changelog
     });
   },
 
