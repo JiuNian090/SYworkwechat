@@ -6,7 +6,7 @@
 
   <view class="content">
     <!-- 数据管理使用说明 -->
-    <view class="section">
+    <view class="section" id="section-data">
       <text class="section-title">数据管理使用说明</text>
       <view class="section-content">
         <view class="guide-item">
@@ -33,7 +33,7 @@
     </view>
 
     <!-- WebDAV使用说明 -->
-    <view class="section">
+    <view class="section" id="section-webdav">
       <text class="section-title">WebDAV使用说明</text>
       <view class="section-content">
         <view class="webdav-step">
@@ -48,7 +48,7 @@
     </view>
 
     <!-- 统计页面使用说明 -->
-    <view class="section">
+    <view class="section" id="section-statistics">
       <text class="section-title">统计页面使用说明</text>
       <view class="section-content">
         <view class="guide-item">
