@@ -1,207 +1,315 @@
 <!-- pages/schedule/schedule.wxml -->
 <view class="container">
-  <view class="header">
-    <text class="title">排班管理</text>
+  <!-- 页面标题区 -->
+  <view class="page-header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <text class="header-title">📅 排班管理</text>
+      <text class="header-subtitle">查看和管理您的排班信息</text>
+    </view>
   </view>
 
-  <!-- 视图切换 -->
-  <view class="view-switch">
-    <view class="switch-item {{currentView === 'week' ? 'active' : ''}}" data-view="week" bindtap="switchView">
-      周视图
-    </view>
-    <view class="switch-item {{currentView === 'month' ? 'active' : ''}}" data-view="month" bindtap="switchView">
-      月视图
+  <!-- 视图切换卡片 -->
+  <view class="card view-switch-card">
+    <view class="view-switch">
+      <view class="switch-item {{currentView === 'week' ? 'active' : ''}}" data-view="week" bindtap="switchView">
+        <text class="switch-icon">📊</text>
+        <text class="switch-text">周视图</text>
+      </view>
+      <view class="switch-item {{currentView === 'month' ? 'active' : ''}}" data-view="month" bindtap="switchView">
+        <text class="switch-icon">📅</text>
+        <text class="switch-text">月视图</text>
+      </view>
     </view>
   </view>
 
   <!-- 周视图 -->
-  <view wx:if="{{currentView === 'week'}}" class="week-view">
-    <view class="week-header">
-      <button class="nav-btn" bindtap="prevWeek" hover-class="nav-btn-hover">上一周</button>
-      <view class="week-title-container">
-        <text class="current-week {{isCurrentWeek ? 'current-week-highlight' : 'other-week'}}" style="{{isCurrentWeek ? 'background-color:' + currentWeekShiftColor + ';' : 'color: #000;'}}" bindtap="goToToday">{{currentWeekTitle}}</text>
-      </view>
-      <button class="nav-btn" bindtap="nextWeek" hover-class="nav-btn-hover">下一周</button>
-    </view>
-
-    <!-- 隐藏周视图的星期几显示 -->
-    <view class="weekdays" style="display:none;">
-      <view class="weekday" wx:for="{{['一', '二', '三', '四', '五', '六', '日']}}" wx:key="index">
-        {{item}}
-      </view>
-    </view>
-
-    <view class="week-grid">
-      <view class="day-cell {{item.isToday ? 'today' : ''}}" wx:for="{{weekDates}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + '30;' : 'background:#f0fdf4;') : ''}}">
-        <view class="day-header" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + 'B0;' : 'background:#34d399;') : ''}}">
-          <text class="weekday-text">{{item.weekday}}</text>
-          <text class="day-number">{{item.month}}/{{item.day}}</text>
+  <view wx:if="{{currentView === 'week'}}" class="week-view-container">
+    <!-- 周导航卡片 -->
+    <view class="card nav-card">
+      <view class="week-header">
+        <view class="nav-btn" bindtap="prevWeek">
+          <text class="nav-icon">‹</text>
+          <text class="nav-text">上周</text>
         </view>
-        <view class="day-content">
-          <text wx:if="{{!item.shift}}" class="no-shift-text">未排班</text>
-          <view wx:if="{{item.shift}}" class="shift-card" style="background-color:{{item.shift.color}}40;">
-            <text class="shift-name">{{item.shift.name}}</text>
-            <text class="shift-time">{{item.shift.startTime}}-{{item.shift.endTime}}</text>
-            <text class="shift-hours">{{item.shift.workHours}}小时</text>
+        <view class="week-title-container" bindtap="goToToday">
+          <view class="week-title-badge {{isCurrentWeek ? 'current' : ''}}" style="{{isCurrentWeek ? 'background-color:' + currentWeekShiftColor + ';' : ''}}">
+            <text class="week-title">{{currentWeekTitle}}</text>
+            <text wx:if="{{isCurrentWeek}}" class="current-tag">本周</text>
+          </view>
+        </view>
+        <view class="nav-btn" bindtap="nextWeek">
+          <text class="nav-text">下周</text>
+          <text class="nav-icon">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 周排班列表 -->
+    <view class="card week-list-card">
+      <view class="week-list">
+        <view class="day-item {{item.isToday ? 'today' : ''}} {{item.shift ? 'has-shift' : ''}}" 
+              wx:for="{{weekDates}}" 
+              wx:key="date" 
+              bindtap="selectDate" 
+              data-date="{{item.date}}">
+          <view class="day-left" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + ';' : 'background:#07c160;') : ''}}">
+            <text class="day-weekday">周{{item.weekday}}</text>
+            <text class="day-date">{{item.month}}/{{item.day}}</text>
+            <view wx:if="{{item.isToday}}" class="today-dot"></view>
+          </view>
+          <view class="day-right">
+            <block wx:if="{{item.shift}}">
+              <view class="shift-info-card" style="background:{{item.shift.color}}15; border-color:{{item.shift.color}}30;">
+                <view class="shift-main">
+                  <text class="shift-name" style="color:{{item.shift.color}};">{{item.shift.name}}</text>
+                  <text class="shift-time">{{item.shift.startTime}} - {{item.shift.endTime}}</text>
+                </view>
+                <view class="shift-hours-badge" style="background:{{item.shift.color}};">
+                  <text class="hours-num">{{item.shift.workHours}}</text>
+                  <text class="hours-unit">h</text>
+                </view>
+              </view>
+            </block>
+            <block wx:else>
+              <view class="no-shift">
+                <text class="no-shift-icon">😴</text>
+                <text class="no-shift-text">休息</text>
+              </view>
+            </block>
           </view>
         </view>
       </view>
     </view>
     
-    <!-- 本周工时统计 -->
-    <view class="week-statistics">
-      <view class="stat-item">
-        <text class="stat-avatar">
-          <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
-          <text wx:else>{{avatarEmoji}}</text>
-        </text>
-        <text class="stat-label">本周工时：</text>
-        <text class="stat-value">{{weekTotalHours}} 小时</text>
+    <!-- 本周工时统计卡片 -->
+    <view class="card stats-card">
+      <view class="card-header">
+        <view class="card-icon">⏱️</view>
+        <text class="card-title">本周工时</text>
       </view>
-      <view class="stat-item">
-        <text class="stat-avatar"></text>
-        <text class="stat-label">{{differenceType}}：</text>
-        <text class="stat-value {{differenceType === '超额' ? 'overtime' : 'shortage'}}">{{differenceValue}} 小时</text>
+      <view class="stats-content">
+        <view class="stat-row primary">
+          <view class="stat-avatar">
+            <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+            <text wx:else>{{avatarEmoji}}</text>
+          </view>
+          <view class="stat-main">
+            <text class="stat-value">{{weekTotalHours}}</text>
+            <text class="stat-unit">h</text>
+            <text class="stat-divider">/</text>
+            <text class="stat-standard">{{customWeeklyHours}}h</text>
+          </view>
+        </view>
+        <view class="progress-bar-container">
+          <view class="progress-bar-bg">
+            <view class="progress-bar-fill {{weekDifference >= 0 ? 'over' : 'under'}}" style="width: {{(weekTotalHours / customWeeklyHours * 100) > 100 ? 100 : (weekTotalHours / customWeeklyHours * 100)}}%"></view>
+          </view>
+          <text class="progress-text">{{weekTotalHours >= customWeeklyHours ? '已完成' : '进行中'}}</text>
+        </view>
+        <view class="stat-row secondary">
+          <text class="diff-label">{{differenceType}}</text>
+          <text class="diff-value {{differenceType === '超额' ? 'over' : 'under'}}">{{differenceValue}}h</text>
+        </view>
       </view>
     </view>
     
-    <!-- 本周排班管理板块 -->
-    <view class="week-images">
-      <view class="images-header">
-        <text class="images-title">本周排班</text>
+    <!-- 本周排班图片卡片 -->
+    <view class="card images-card">
+      <view class="card-header">
+        <view class="card-icon">🖼️</view>
+        <text class="card-title">本周排班图片</text>
+        <text class="card-subtitle">{{weekImages.length}} 张</text>
       </view>
       
-      <view class="images-list" wx:if="{{weekImages.length > 0}}">
-        <view class="image-item" wx:for="{{weekImages}}" wx:key="id">
-          <text class="image-name">{{item.name}}</text>
-          <view class="image-actions">
-            <button class="image-action-btn view-btn" bindtap="viewImage" data-index="{{index}}">查看</button>
-            <button class="image-action-btn delete-btn" bindtap="deleteImage" data-index="{{index}}">删除</button>
+      <view class="images-content">
+        <view class="images-list" wx:if="{{weekImages.length > 0}}">
+          <view class="image-item" wx:for="{{weekImages}}" wx:key="id">
+            <view class="image-info">
+              <text class="image-icon">📷</text>
+              <text class="image-name">{{item.name}}</text>
+            </view>
+            <view class="image-actions">
+              <view class="action-btn view" bindtap="viewImage" data-index="{{index}}">查看</view>
+              <view class="action-btn delete" bindtap="deleteImage" data-index="{{index}}">删除</view>
+            </view>
           </view>
         </view>
-      </view>
-      
-      <view class="empty-images" wx:else>
-        <text>暂无图片</text>
-      </view>
-      
-      <view class="add-image-section">
-        <button class="add-image-btn" bindtap="showAddImageModal">+ 添加图片</button>
+        
+        <view class="empty-state" wx:else>
+          <text class="empty-icon">🖼️</text>
+          <text class="empty-text">暂无排班图片</text>
+        </view>
+        
+        <view class="add-image-btn" bindtap="showAddImageModal">
+          <text class="btn-icon">+</text>
+          <text class="btn-text">添加图片</text>
+        </view>
       </view>
     </view>
-
   </view>
 
   <!-- 月视图 -->
-  <view wx:if="{{currentView === 'month'}}" class="month-view">
-    <view class="month-header">
-      <button class="nav-btn" bindtap="prevMonth" hover-class="nav-btn-hover">上一月</button>
-      <view class="month-title-container">
-        <text class="current-month {{isCurrentMonth ? 'current-month-highlight' : ''}}" style="{{isCurrentMonth ? 'background-color:' + currentMonthShiftColor + '; color: #fff;' : ''}}" bindtap="goToToday">{{currentMonthTitle}}</text>
+  <view wx:if="{{currentView === 'month'}}" class="month-view-container">
+    <!-- 月导航卡片 -->
+    <view class="card nav-card">
+      <view class="month-header">
+        <view class="nav-btn" bindtap="prevMonth">
+          <text class="nav-icon">‹</text>
+          <text class="nav-text">上月</text>
+        </view>
+        <view class="month-title-container" bindtap="goToToday">
+          <view class="month-title-badge {{isCurrentMonth ? 'current' : ''}}" style="{{isCurrentMonth ? 'background-color:' + currentMonthShiftColor + ';' : ''}}">
+            <text class="month-title">{{currentMonthTitle}}</text>
+            <text wx:if="{{isCurrentMonth}}" class="current-tag">本月</text>
+          </view>
+        </view>
+        <view class="nav-btn" bindtap="nextMonth">
+          <text class="nav-text">下月</text>
+          <text class="nav-icon">›</text>
+        </view>
       </view>
-      <button class="nav-btn" bindtap="nextMonth" hover-class="nav-btn-hover">下一月</button>
     </view>
 
-    <view class="weekdays">
-      <view class="weekday" wx:for="{{['一', '二', '三', '四', '五', '六', '日']}}" wx:key="index">
-        {{item}}
+    <!-- 月历卡片 -->
+    <view class="card calendar-card">
+      <view class="weekdays-header">
+        <view class="weekday-label" wx:for="{{['一', '二', '三', '四', '五', '六', '日']}}" wx:key="index">
+          {{item}}
+        </view>
       </view>
-    </view>
 
-    <view class="month-grid">
+      <view class="month-grid">
         <view class="week-row" wx:for="{{monthDates}}" wx:key="index">
-          <view class="day-cell {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}}" 
-                wx:for="{{item}}" wx:key="date" bindtap="selectDate" data-date="{{item.date}}">
-            <text class="day-number">{{item.day}}</text>
-            <view wx:if="{{item.shift}}" class="shift-info" style="background:{{item.shift.color}}40;">
-              <text class="shift-name">{{item.shift.name}}</text>
+          <view class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.shift ? 'has-shift' : ''}}" 
+                wx:for="{{item}}" 
+                wx:key="date" 
+                bindtap="selectDate" 
+                data-date="{{item.date}}">
+            <view class="day-number-wrapper">
+              <text class="day-number {{item.isToday ? 'today-num' : ''}}">{{item.day}}</text>
             </view>
-            <view wx:elif="{{!item.shift}}" class="no-shift">
-              <text>未排班</text>
+            <view wx:if="{{item.shift}}" class="day-shift-tag" style="background:{{item.shift.color}};">
+              <text class="shift-tag-name">{{item.shift.name}}</text>
+            </view>
+            <view wx:else class="day-shift-tag empty">
+              <text class="shift-tag-name">休息</text>
             </view>
           </view>
+        </view>
       </view>
     </view>
     
-    <!-- 当月工时统计 -->
-    <view class="week-statistics">
-      <view class="stat-item">
-        <text class="stat-avatar">
-          <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
-          <text wx:else>{{avatarEmoji}}</text>
-        </text>
-        <text class="stat-label">当月工时：</text>
-        <text class="stat-value">{{monthTotalHours}} 小时</text>
+    <!-- 当月工时统计卡片 -->
+    <view class="card stats-card">
+      <view class="card-header">
+        <view class="card-icon">⏱️</view>
+        <text class="card-title">当月工时</text>
       </view>
-      <view class="stat-item">
-        <text class="stat-avatar"></text>
-        <text class="stat-label">{{monthDifferenceType}}：</text>
-        <text class="stat-value {{monthDifferenceType === '超额' ? 'overtime' : 'shortage'}}">{{monthDifferenceValue}} 小时</text>
+      <view class="stats-content">
+        <view class="stat-row primary">
+          <view class="stat-avatar">
+            <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+            <text wx:else>{{avatarEmoji}}</text>
+          </view>
+          <view class="stat-main">
+            <text class="stat-value">{{monthTotalHours}}</text>
+            <text class="stat-unit">h</text>
+          </view>
+        </view>
+        <view class="stat-row secondary">
+          <text class="diff-label">{{monthDifferenceType}}</text>
+          <text class="diff-value {{monthDifferenceType === '超额' ? 'over' : 'under'}}">{{monthDifferenceValue}}h</text>
+        </view>
       </view>
     </view>
-
   </view>
 
-  <!-- 排班选择弹窗 -->
-  <view class="modal-mask" wx:if="{{showShiftModal}}" bindtap="hideShiftModal"></view>
-  <view class="modal-container" wx:if="{{showShiftModal}}">
-    <view class="modal-header">
-      <text class="modal-title">为 {{selectedDate}} 排班</text>
-      <button class="modal-close-btn" bindtap="hideShiftModal">×</button>
+  <!-- 底部安全区域 -->
+  <view class="safe-area-bottom"></view>
+</view>
+
+<!-- 排班选择弹窗 -->
+<view class="modal-mask {{showShiftModal ? 'show' : ''}}" bindtap="hideShiftModal"></view>
+<view class="modal-content {{showShiftModal ? 'show' : ''}}">
+  <view class="modal-header">
+    <text class="modal-title">{{selectedDate}} 排班</text>
+    <view class="modal-close" bindtap="hideShiftModal">
+      <text class="close-icon">✕</text>
     </view>
-    <view class="modal-content" bindtap="stopPropagation">
-      <!-- 第一个板块：选择器和确认排班按钮 -->
-      <view wx:if="{{shiftTemplates.length > 0}}" class="modal-section">
-        <view class="shift-picker-container">
-          <view class="shift-picker-indicator"></view>
-          <picker-view indicator-style="height: 50px;" style="width: 100%; height: 220px;" value="{{pickerValue}}" bindchange="bindPickerChange">
-            <picker-view-column>
-              <view wx:for="{{shiftTemplates}}" wx:key="index" style="line-height: 50px; text-align: center; font-size: 36rpx; font-weight: 600; padding: 0 20rpx;">
-                <text>{{item.name}}</text>
+  </view>
+  <view class="modal-body" catchtap="stopPropagation">
+    <!-- 班次选择器 -->
+    <view wx:if="{{shiftTemplates.length > 0}}" class="modal-section">
+      <view class="section-title">选择班次</view>
+      <view class="shift-picker-container">
+        <picker-view indicator-style="height: 50px;" style="width: 100%; height: 200px;" value="{{pickerValue}}" bindchange="bindPickerChange">
+          <picker-view-column>
+            <view wx:for="{{shiftTemplates}}" wx:key="index" class="picker-item">
+              <view class="picker-shift" style="border-color: {{item.color}};">
+                <text class="picker-shift-name" style="color: {{item.color}};">{{item.name}}</text>
+                <text class="picker-shift-time">{{item.startTime}}-{{item.endTime}}</text>
               </view>
-            </picker-view-column>
-          </picker-view>
-        </view>
-        <button class="modal-btn confirm-btn section-btn" bindtap="assignShiftFromPicker">确定排班</button>
+            </view>
+          </picker-view-column>
+        </picker-view>
       </view>
-      
-      <!-- 第二个板块：当前排班和移除排班按钮 -->
-      <view wx:if="{{selectedShift}}" class="modal-section">
-        <view class="current-shift">
-          <text>当前排班: {{selectedShift.name}}</text>
-        </view>
-        <button class="modal-btn remove-btn section-btn" bindtap="removeShift" data-date="{{selectedDate}}">移除排班</button>
-      </view>
-      
-      <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
-        暂无班次模板，请先到"计划"页面添加
-      </view>
+      <view class="modal-btn confirm-btn" bindtap="assignShiftFromPicker">确定排班</view>
     </view>
-    <!-- 移除了取消按钮，可通过点击遮罩层或关闭按钮关闭弹窗 -->
+    
+    <!-- 当前排班信息 -->
+    <view wx:if="{{selectedShift}}" class="modal-section">
+      <view class="section-title">当前排班</view>
+      <view class="current-shift-card" style="background: {{selectedShift.color}}15; border-color: {{selectedShift.color}}30;">
+        <view class="current-shift-info">
+          <text class="current-shift-name" style="color: {{selectedShift.color}};">{{selectedShift.name}}</text>
+          <text class="current-shift-time">{{selectedShift.startTime}} - {{selectedShift.endTime}}</text>
+          <text class="current-shift-hours">{{selectedShift.workHours}} 小时</text>
+        </view>
+      </view>
+      <view class="modal-btn remove-btn" bindtap="removeShift" data-date="{{selectedDate}}">移除排班</view>
+    </view>
+    
+    <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无班次模板</text>
+      <text class="empty-subtext">请先到"计划"页面添加</text>
+    </view>
   </view>
-  
-  <!-- 图片管理弹窗 -->
-    <view class="modal-mask" wx:if="{{showAddImageModal}}" bindtap="hideAddImageModal"></view>
-    <view class="modal-container" wx:if="{{showAddImageModal}}">
-      <view class="modal-header">
-        <text class="modal-title">添加图片</text>
-        <button class="modal-close-btn" bindtap="hideAddImageModal">×</button>
+</view>
+
+<!-- 图片管理弹窗 -->
+<view class="modal-mask {{showAddImageModal ? 'show' : ''}}" bindtap="hideAddImageModal"></view>
+<view class="modal-content {{showAddImageModal ? 'show' : ''}}">
+  <view class="modal-header">
+    <text class="modal-title">添加排班图片</text>
+    <view class="modal-close" bindtap="hideAddImageModal">
+      <text class="close-icon">✕</text>
+    </view>
+  </view>
+  <view class="modal-body" catchtap="stopPropagation">
+    <view class="input-group">
+      <text class="input-label">图片名称</text>
+      <input class="modal-input" placeholder="请输入图片名称" value="{{imageName}}" bindinput="onImageNameInput"/>
+    </view>
+    
+    <view class="upload-section">
+      <view wx:if="{{!selectedImagePath}}" class="upload-placeholder" bindtap="chooseImage">
+        <text class="upload-icon">📷</text>
+        <text class="upload-text">点击选择图片</text>
+        <text class="upload-hint">支持从相册或相机选择</text>
       </view>
-      <view class="modal-content" bindtap="stopPropagation">
-        <view class="image-name-section">
-          <text class="image-name-label">图片名称：</text>
-          <input class="image-name-input" placeholder="请输入图片名称" value="{{imageName}}" bindinput="onImageNameInput"></input>
-        </view>
-        
-        <view class="image-upload-section">
-          <button class="image-upload-btn" bindtap="chooseImage">选择图片</button>
-          <text class="image-upload-hint" wx:if="{{selectedImagePath}}">已选择图片</text>
-        </view>
-        
-        <view class="modal-footer">
-          <button class="modal-btn cancel-btn" bindtap="hideAddImageModal">取消</button>
-          <button class="modal-btn confirm-btn" bindtap="addImage" disabled="{{!selectedImagePath || !imageName}}">确定添加</button>
+      <view wx:else class="upload-preview">
+        <image class="preview-image" src="{{selectedImagePath}}" mode="aspectFill"/>
+        <view class="preview-overlay" bindtap="chooseImage">
+          <text class="overlay-text">更换图片</text>
         </view>
       </view>
     </view>
+    
+    <view class="modal-footer">
+      <view class="modal-btn cancel-btn" bindtap="hideAddImageModal">取消</view>
+      <view class="modal-btn confirm-btn {{!selectedImagePath || !imageName ? 'disabled' : ''}}" bindtap="addImage">确定添加</view>
+    </view>
+  </view>
 </view>
