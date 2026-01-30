@@ -27,10 +27,63 @@ page {
 /* ========== 容器 ========== */
 .container {
   min-height: 100vh;
-  padding: 0 24rpx 40rpx;
+  padding-bottom: 40rpx;
+}
+
+/* ========== 页面标题区 ========== */
+.page-header {
+  position: relative;
+  padding: 60rpx 30rpx 80rpx;
+  overflow: hidden;
+}
+
+.header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-radius: 0 0 40rpx 40rpx;
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.header-title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 16rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+.header-subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========== 卡片基础样式 ========== */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  margin: -40rpx 24rpx 24rpx;
+  padding: 30rpx;
+  box-shadow: var(--shadow);
+  position: relative;
+  z-index: 2;
 }
 
 /* ========== 用户卡片 ========== */
+.user-info-card {
+  padding: 40rpx 30rpx;
+}
+
 .user-card {
   position: relative;
   margin: 0 -24rpx 24rpx;
@@ -83,6 +136,7 @@ page {
   flex-direction: column;
   align-items: center;
   z-index: 1;
+  padding: 20rpx 0;
 }
 
 .avatar-wrapper {
@@ -141,14 +195,14 @@ page {
 .username {
   font-size: 40rpx;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary);
   margin-bottom: 8rpx;
   letter-spacing: 2rpx;
 }
 
 .user-hint {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 }
 
 /* ========== 区块卡片 ========== */
