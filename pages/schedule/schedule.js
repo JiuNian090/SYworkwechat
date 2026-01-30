@@ -32,7 +32,6 @@ Page({
     showAddImageModal: false,
     selectedImagePath: '',
     imageName: '',
-    currentFolderName: '', // 当前文件夹名称
     avatarText: '用', // 头像文字
     avatarEmoji: '' // 头像表情
   },
@@ -714,17 +713,10 @@ Page({
 
   // 显示添加图片弹窗
   onAddImageBtnTap() {
-    // 生成当周名称作为文件夹名称
-    const currentDate = new Date(this.data.currentDate);
-    const year = currentDate.getFullYear();
-    const weekTitle = this.formatWeekTitle(currentDate);
-    const folderName = `${year}年 ${weekTitle}`;
-
     this.setData({
       showAddImageModal: true,
       selectedImagePath: '',
-      imageName: folderName,
-      currentFolderName: folderName
+      imageName: ''
     });
   },
 
@@ -733,8 +725,7 @@ Page({
     this.setData({
       showAddImageModal: false,
       selectedImagePath: '',
-      imageName: '',
-      currentFolderName: ''
+      imageName: ''
     });
   },
   
@@ -764,15 +755,15 @@ Page({
   
   // 添加图片
   addImage() {
-    const { selectedImagePath, currentFolderName, weekImages } = this.data;
+    const { selectedImagePath, imageName, weekImages } = this.data;
 
     // 生成唯一ID
     const imageId = Date.now().toString();
 
-    // 构造图片对象 - 使用文件夹名称作为图片名称
+    // 构造图片对象
     const newImage = {
       id: imageId,
-      name: currentFolderName,
+      name: imageName,
       path: selectedImagePath,
       addedTime: new Date().toISOString()
     };

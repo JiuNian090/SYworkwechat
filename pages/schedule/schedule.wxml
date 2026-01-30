@@ -271,13 +271,12 @@
       <text class="close-icon">✕</text>
     </view>
   </view>
-  <view class="modal-body image-modal-body" catchtap="stopPropagation">
-    <!-- 文件夹名称显示 - 始终在最上层 -->
-    <view class="folder-name-display">
-      <text class="folder-label">📁 当前文件夹</text>
-      <text class="folder-name">{{currentFolderName}}</text>
+  <view class="modal-body" catchtap="stopPropagation">
+    <view class="input-group">
+      <text class="input-label">图片名称</text>
+      <input class="modal-input" placeholder="请输入图片名称" value="{{imageName}}" bindinput="onImageNameInput"/>
     </view>
-    
+
     <view class="upload-section">
       <view wx:if="{{!selectedImagePath}}" class="upload-placeholder" bindtap="chooseImage">
         <text class="upload-icon">📷</text>
@@ -291,10 +290,10 @@
         </view>
       </view>
     </view>
-    
+
     <view class="modal-footer">
       <view class="modal-btn cancel-btn" bindtap="hideAddImageModal">取消</view>
-      <view class="modal-btn confirm-btn {{!selectedImagePath ? 'disabled' : ''}}" bindtap="addImage">确定添加</view>
+      <view class="modal-btn confirm-btn {{!selectedImagePath || !imageName ? 'disabled' : ''}}" bindtap="addImage">确定添加</view>
     </view>
   </view>
 </view>
