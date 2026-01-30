@@ -78,6 +78,44 @@ page {
   color: rgba(255, 255, 255, 0.9);
 }
 
+/* 卡片基础样式 */
+.card {
+  background: var(--card-bg);
+  border-radius: 24rpx;
+  margin: -40rpx 30rpx 30rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx var(--shadow-color);
+  position: relative;
+  z-index: 2;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.card-icon {
+  width: 48rpx;
+  height: 48rpx;
+  font-size: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+}
+
+.card-title {
+  flex: 1;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-action {
+  margin-left: auto;
+}
+
 .header {
   text-align: center;
   padding: 20rpx 0;
