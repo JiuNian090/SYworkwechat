@@ -125,7 +125,8 @@ Page({
     const range = this.getLastWeekRange(referenceDate);
     this.setData({
       startDate: range.startDate,
-      endDate: range.endDate
+      endDate: range.endDate,
+      selectedQuickBtn: 'lastWeek'
     });
     this.calculateStatistics();
   },
@@ -146,7 +147,8 @@ Page({
     const range = this.getNextWeekRange(referenceDate);
     this.setData({
       startDate: range.startDate,
-      endDate: range.endDate
+      endDate: range.endDate,
+      selectedQuickBtn: 'nextWeek'
     });
     this.calculateStatistics();
   },
