@@ -32,6 +32,7 @@ Page({
     showAddImageModal: false,
     selectedImagePath: '',
     imageName: '',
+    currentFolderName: '', // 当前文件夹名称
     avatarText: '用', // 头像文字
     avatarEmoji: '' // 头像表情
   },
@@ -552,7 +553,7 @@ Page({
   showActionMenu(e) {
     const date = e.currentTarget.dataset.date;
     const selectedShift = this.data.shifts[date] || null;
-    
+
     this.setData({
       selectedDate: date,
       selectedShift: selectedShift,
@@ -567,7 +568,7 @@ Page({
     });
   },
 
-  // 点击"添加排班"
+  // 点击"添加排班" - 直接调用系统ActionSheet
   onAddShiftClick() {
     // 隐藏操作菜单
     this.hideActionMenu();
@@ -582,22 +583,8 @@ Page({
       return;
     }
 
-    // 提取班次名称列表
-    const templateNames = templates.map(t => `${t.name} (${t.startTime}-${t.endTime})`);
-
-    // 查找当前日期是否已有排班，如果有则选中对应的班次
-    let selectedIndex = 0;
-    const selectedShift = this.data.selectedShift;
-    if (selectedShift) {
-      const matchingIndex = templates.findIndex(template =>
-        template.name === selectedShift.name &&
-        template.startTime === selectedShift.startTime &&
-        template.endTime === selectedShift.endTime
-      );
-      if (matchingIndex !== -1) {
-        selectedIndex = matchingIndex;
-      }
-    }
+    // 提取班次名称列表（仅显示名称）
+    const templateNames = templates.map(t => t.name);
 
     // 直接使用系统ActionSheet选择班次
     wx.showActionSheet({
@@ -684,24 +671,29 @@ Page({
     }
   },
 
-  // 点击"删除排班"
-  onDeleteShiftClick() {
-    // 隐藏操作菜单
-    this.hideActionMenu();
-    
+  // 长按日期 - 删除排班
+  onDeleteShiftClick(e) {
+    const date = e.currentTarget.dataset.date;
+    const selectedShift = this.data.shifts[date] || null;
+
     // 检查是否有排班可删除
-    if (!this.data.selectedShift) {
+    if (!selectedShift) {
       wx.showToast({
         title: '当前日期暂无排班',
         icon: 'none'
       });
       return;
     }
-    
+
+    this.setData({
+      selectedDate: date,
+      selectedShift: selectedShift
+    });
+
     // 显示确认弹窗
     wx.showModal({
       title: '确认删除',
-      content: `确定要删除 ${this.data.selectedDate} 的排班吗？`,
+      content: `确定要删除 ${date} 的排班吗？`,
       confirmColor: '#ff4d4f',
       success: (res) => {
         if (res.confirm) {
@@ -722,25 +714,27 @@ Page({
 
   // 显示添加图片弹窗
   onAddImageBtnTap() {
-    // 生成当周名称作为默认图片名称
+    // 生成当周名称作为文件夹名称
     const currentDate = new Date(this.data.currentDate);
     const year = currentDate.getFullYear();
     const weekTitle = this.formatWeekTitle(currentDate);
-    const defaultImageName = `${year}年 ${weekTitle}`;
+    const folderName = `${year}年 ${weekTitle}`;
 
     this.setData({
       showAddImageModal: true,
       selectedImagePath: '',
-      imageName: defaultImageName
+      imageName: folderName,
+      currentFolderName: folderName
     });
   },
-  
+
   // 隐藏添加图片弹窗
   hideAddImageModal() {
     this.setData({
       showAddImageModal: false,
       selectedImagePath: '',
-      imageName: ''
+      imageName: '',
+      currentFolderName: ''
     });
   },
   
@@ -770,15 +764,15 @@ Page({
   
   // 添加图片
   addImage() {
-    const { selectedImagePath, imageName, weekImages } = this.data;
-    
+    const { selectedImagePath, currentFolderName, weekImages } = this.data;
+
     // 生成唯一ID
     const imageId = Date.now().toString();
-    
-    // 构造图片对象
+
+    // 构造图片对象 - 使用文件夹名称作为图片名称
     const newImage = {
       id: imageId,
-      name: imageName,
+      name: currentFolderName,
       path: selectedImagePath,
       addedTime: new Date().toISOString()
     };
