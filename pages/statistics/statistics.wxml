@@ -82,6 +82,9 @@
     <view class="button-group">
       <button class="export-btn" bindtap="showFileNameModal">导出报表</button>
       <button class="share-btn" bindtap="shareCSV">分享报表</button>
+      <button class="help-icon-btn" bindtap="navigateToDocs" style="position: relative; left: 10rpx; top: 0rpx">
+        <text class="help-icon">?</text>
+      </button>
     </view>
     <view class="usage-guide">
       <text class="usage-guide-text">使用说明：

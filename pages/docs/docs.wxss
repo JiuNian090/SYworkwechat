@@ -1,0 +1,116 @@
+/* pages/docs/docs.wxss */
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 60rpx;
+}
+
+.header {
+  background-color: white;
+  color: black;
+  padding: 20rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-bottom: 1rpx solid #e8e8e8;
+}
+
+.title {
+  font-size: 32rpx;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+
+.content {
+  padding: 20rpx;
+}
+
+.section {
+  background-color: white;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-bottom: 12rpx;
+  border-bottom: 1rpx solid #e8e8e8;
+}
+
+.section-content {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.6;
+}
+
+.guide-item {
+  margin-bottom: 20rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.guide-number {
+  font-weight: bold;
+  color: #3cc51f;
+  margin-right: 10rpx;
+}
+
+.guide-text {
+  flex: 1;
+  margin-bottom: 8rpx;
+}
+
+.guide-highlight {
+  color: #ff6b35;
+  font-size: 22rpx;
+  margin-top: 4rpx;
+  padding-left: 30rpx;
+}
+
+.webdav-step {
+  margin-bottom: 30rpx;
+}
+
+.step-title {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.step-image {
+  width: 100%;
+  border-radius: 8rpx;
+  margin-top: 10rpx;
+}
+
+.intro-text {
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .section {
+    padding: 20rpx;
+  }
+  
+  .title {
+    font-size: 28rpx;
+  }
+  
+  .section-title {
+    font-size: 26rpx;
+  }
+  
+  .section-content {
+    font-size: 22rpx;
+  }
+}

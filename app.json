@@ -3,7 +3,8 @@
     "pages/schedule/schedule",
     "pages/plan/plan",
     "pages/statistics/statistics",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/docs/docs"
   ],
   "window": {
     "backgroundTextStyle": "light",
