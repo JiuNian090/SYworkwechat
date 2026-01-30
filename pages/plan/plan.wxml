@@ -9,13 +9,14 @@
     </view>
   </view>
 
-  <view class="content">
-    <view class="section-header">
-      <view class="section-title">
-        <icon type="form" size="20" class="title-icon" />
-        班次列表
+  <!-- 班次列表卡片 -->
+  <view class="card shift-list-card">
+    <view class="card-header">
+      <view class="card-icon">📋</view>
+      <text class="card-title">班次列表</text>
+      <view class="card-action">
+        <button class="add-template-btn" bindtap="showAddTemplateModal">添加班次模板</button>
       </view>
-      <button class="add-template-btn" bindtap="showAddTemplateModal">添加班次模板</button>
     </view>
     <view class="template-list">
       <view class="template-item" wx:for="{{shiftTemplates}}" wx:key="index" style="background-color:{{item.color}}20">
