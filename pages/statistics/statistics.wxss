@@ -48,6 +48,7 @@
   color: #ffffff;
   border-color: #07c160;
   transform: scale(1);
+  transition: all 0.3s ease;
 }
 
 /* 按钮按下状态样式 */
