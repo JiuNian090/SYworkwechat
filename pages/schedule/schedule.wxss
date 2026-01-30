@@ -993,6 +993,8 @@ page {
 /* 输入框 */
 .input-group {
   margin-bottom: 30rpx;
+  position: relative;
+  z-index: 1;
 }
 
 .input-label {
@@ -1001,6 +1003,8 @@ page {
   color: var(--text-primary);
   margin-bottom: 16rpx;
   font-weight: 500;
+  position: relative;
+  z-index: 1;
 }
 
 .modal-input {
@@ -1011,9 +1015,11 @@ page {
   border-radius: 12rpx;
   font-size: 30rpx;
   color: var(--text-primary);
-  background: var(--bg-color);
+  background: #ffffff;
   box-sizing: border-box;
   transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
 }
 
 .modal-input:focus {
