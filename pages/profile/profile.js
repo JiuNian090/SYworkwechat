@@ -248,10 +248,12 @@ Page({
     const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
     
     // 读取WebDAV配置
-    const webdavConfig = wx.getStorageSync('webdavConfig') || {
-      url: '',
-      username: '',
-      password: ''
+    const savedWebdavConfig = wx.getStorageSync('webdavConfig') || {};
+    const webdavConfig = {
+      url: savedWebdavConfig.url || '',
+      username: savedWebdavConfig.username || '',
+      password: savedWebdavConfig.password || '',
+      folder: savedWebdavConfig.folder || ''
     };
     
     // 生成头像文字

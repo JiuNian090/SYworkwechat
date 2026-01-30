@@ -31,7 +31,7 @@ Page({
     weekImages: [],
     showAddImageModal: false,
     selectedImagePath: '',
-    imageName: '',
+    imageName: null,
     avatarText: '用', // 头像文字
     avatarEmoji: '' // 头像表情
   },
@@ -716,7 +716,7 @@ Page({
     this.setData({
       showAddImageModal: true,
       selectedImagePath: '',
-      imageName: ''
+      imageName: null
     });
   },
 
@@ -725,7 +725,7 @@ Page({
     this.setData({
       showAddImageModal: false,
       selectedImagePath: '',
-      imageName: ''
+      imageName: null
     });
   },
   

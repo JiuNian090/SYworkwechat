@@ -20,12 +20,12 @@
     "position": "bottom",
     "list": [
       {
-        "pagePath": "pages/plan/plan",
-        "text": "📋计划"
-      },
-      {
         "pagePath": "pages/schedule/schedule",
         "text": "📅排班"
+      },
+      {
+        "pagePath": "pages/plan/plan",
+        "text": "📋计划"
       },
       {
         "pagePath": "pages/statistics/statistics",

@@ -197,7 +197,7 @@
         <text class="input-label">每周标准工时（小时）</text>
         <input 
           type="digit" 
-          value="{{customHours}}" 
+          value="{{tempCustomHours}}" 
           bindinput="onCustomHoursInput"
           placeholder="请输入标准工时"
           class="modal-input"
