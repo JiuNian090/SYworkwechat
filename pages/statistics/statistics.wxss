@@ -68,6 +68,15 @@
   transition: all 0.1s ease;
 }
 
+/* 快速选择按钮 hover 状态样式 */
+.quick-select-buttons .quick-btn:hover {
+  background: #07c160;
+  color: #ffffff;
+  border-color: #07c160;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
+}
+
 /* 自定义每周标准工时样式 */
 .custom-hours-setting {
   background: #ffffff;
