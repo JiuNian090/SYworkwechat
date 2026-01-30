@@ -91,25 +91,25 @@ page {
 }
 
 .avatar {
-  width: 160rpx;
-  height: 160rpx;
+  width: 140rpx;
+  height: 140rpx;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
-  border: 6rpx solid rgba(255, 255, 255, 0.3);
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
 }
 
 .avatar-text {
-  font-size: 72rpx;
+  font-size: 64rpx;
   font-weight: bold;
   color: var(--primary-color);
 }
 
 .avatar-emoji {
-  font-size: 88rpx;
+  font-size: 110rpx;
   line-height: 1;
 }
 
