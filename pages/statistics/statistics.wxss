@@ -30,11 +30,7 @@
   background: #07c160;
   opacity: 0;
   transition: opacity 0.3s ease;
-}
-
-.quick-btn:active {
-  background: #f0f0f0;
-  transform: scale(0.98);
+  z-index: -1;
 }
 
 .quick-btn:first-child {
@@ -52,6 +48,16 @@
   color: #ffffff;
   border-color: #07c160;
   transform: scale(1);
+}
+
+/* 按钮按下状态样式 */
+.quick-btn-pressed,
+.quick-btn-hover {
+  background: #059e4d;
+  color: #ffffff;
+  border-color: #059e4d;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
 }
 
 /* 自定义每周标准工时样式 */

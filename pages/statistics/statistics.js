@@ -27,6 +27,8 @@ Page({
     // 连续点击功能相关
     timer: null, // 定时器
     isPressing: false, // 是否正在按住按钮
+    isPressingLastWeek: false, // 是否正在按住上周按钮
+    isPressingNextWeek: false, // 是否正在按住下周按钮
     pressInterval: 200 // 连续点击间隔时间（毫秒）
   },
 
@@ -557,7 +559,10 @@ Page({
   
   // 上一周按钮触摸开始
   touchStartLastWeek() {
-    this.setData({ isPressing: true });
+    this.setData({ 
+      isPressing: true,
+      isPressingLastWeek: true 
+    });
     // 立即执行一次
     this.selectLastWeek();
     // 设置定时器开始连续点击
@@ -570,7 +575,10 @@ Page({
   
   // 上一周按钮触摸结束
   touchEndLastWeek() {
-    this.setData({ isPressing: false });
+    this.setData({ 
+      isPressing: false,
+      isPressingLastWeek: false 
+    });
     // 清除定时器
     if (this.data.timer) {
       clearTimeout(this.data.timer);
@@ -580,7 +588,10 @@ Page({
   
   // 下一周按钮触摸开始
   touchStartNextWeek() {
-    this.setData({ isPressing: true });
+    this.setData({ 
+      isPressing: true,
+      isPressingNextWeek: true 
+    });
     // 立即执行一次
     this.selectNextWeek();
     // 设置定时器开始连续点击
@@ -593,7 +604,10 @@ Page({
   
   // 下一周按钮触摸结束
   touchEndNextWeek() {
-    this.setData({ isPressing: false });
+    this.setData({ 
+      isPressing: false,
+      isPressingNextWeek: false 
+    });
     // 清除定时器
     if (this.data.timer) {
       clearTimeout(this.data.timer);
