@@ -26,9 +26,9 @@
 
   <!-- 添加快速选择按钮 -->
   <view class="quick-select-buttons">
-    <button class="quick-btn {{selectedQuickBtn === 'lastWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectLastWeek" hover-class="quick-btn-hover">上周</button>
+    <button class="quick-btn {{selectedQuickBtn === 'lastWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectLastWeek" hover-class="quick-btn-selected">上周</button>
     <button class="quick-btn {{selectedQuickBtn === 'thisWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectThisWeek">本周</button>
-    <button class="quick-btn {{selectedQuickBtn === 'nextWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectNextWeek" hover-class="quick-btn-hover">下周</button>
+    <button class="quick-btn {{selectedQuickBtn === 'nextWeek' ? 'quick-btn-selected' : ''}}" bindtap="selectNextWeek" hover-class="quick-btn-selected">下周</button>
     <button class="quick-btn {{selectedQuickBtn === 'thisMonth' ? 'quick-btn-selected' : ''}}" bindtap="selectThisMonth">本月</button>
   </view>
 
