@@ -327,26 +327,23 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx;
+  padding: 20rpx 24rpx;
   border-radius: 12rpx;
   border: 2rpx solid;
-}
-
-.shift-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  gap: 20rpx;
 }
 
 .shift-name {
   font-size: 32rpx;
   font-weight: 600;
-  margin-bottom: 8rpx;
+  flex-shrink: 0;
 }
 
 .shift-time {
   font-size: 24rpx;
   color: var(--text-secondary);
+  flex: 1;
+  text-align: center;
 }
 
 .shift-hours-badge {
