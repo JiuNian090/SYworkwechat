@@ -48,10 +48,11 @@
     <!-- 周排班列表 -->
     <view class="card week-list-card">
       <view class="week-list">
-        <view class="day-item {{item.isToday ? 'today' : ''}} {{item.shift ? 'has-shift' : ''}}" 
-              wx:for="{{weekDates}}" 
-              wx:key="date" 
-              bindtap="showActionMenu" 
+        <view class="day-item {{item.isToday ? 'today' : ''}} {{item.shift ? 'has-shift' : ''}}"
+              wx:for="{{weekDates}}"
+              wx:key="date"
+              bindtap="showActionMenu"
+              bindlongpress="onDeleteShiftClick"
               data-date="{{item.date}}">
           <view class="day-left" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + ';' : 'background:#07c160;') : ''}}">
             <text class="day-weekday">周{{item.weekday}}</text>
@@ -181,10 +182,11 @@
 
       <view class="month-grid">
         <view class="week-row" wx:for="{{monthDates}}" wx:key="index">
-          <view class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.shift ? 'has-shift' : ''}}" 
-                wx:for="{{item}}" 
-                wx:key="date" 
-                bindtap="showActionMenu" 
+          <view class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.shift ? 'has-shift' : ''}}"
+                wx:for="{{item}}"
+                wx:key="date"
+                bindtap="showActionMenu"
+                bindlongpress="onDeleteShiftClick"
                 data-date="{{item.date}}">
             <view class="day-number-wrapper">
               <text class="day-number {{item.isToday ? 'today-num' : ''}}">{{item.day}}</text>
@@ -269,10 +271,11 @@
       <text class="close-icon">✕</text>
     </view>
   </view>
-  <view class="modal-body" catchtap="stopPropagation">
-    <view class="input-group">
-      <text class="input-label">图片名称</text>
-      <input class="modal-input" placeholder="请输入图片名称" value="{{imageName}}" bindinput="onImageNameInput"/>
+  <view class="modal-body image-modal-body" catchtap="stopPropagation">
+    <!-- 文件夹名称显示 - 始终在最上层 -->
+    <view class="folder-name-display">
+      <text class="folder-label">📁 当前文件夹</text>
+      <text class="folder-name">{{currentFolderName}}</text>
     </view>
     
     <view class="upload-section">
@@ -291,7 +294,7 @@
     
     <view class="modal-footer">
       <view class="modal-btn cancel-btn" bindtap="hideAddImageModal">取消</view>
-      <view class="modal-btn confirm-btn {{!selectedImagePath || !imageName ? 'disabled' : ''}}" bindtap="addImage">确定添加</view>
+      <view class="modal-btn confirm-btn {{!selectedImagePath ? 'disabled' : ''}}" bindtap="addImage">确定添加</view>
     </view>
   </view>
 </view>
