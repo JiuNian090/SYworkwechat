@@ -1205,52 +1205,6 @@ page {
   font-weight: 300;
 }
 
-/* 原生picker样式 */
-.native-picker {
-  width: 100%;
-}
-
-.picker-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 30rpx;
-  background: var(--bg-color);
-  border-radius: 16rpx;
-  transition: all 0.2s ease;
-}
-
-.picker-display:active {
-  background: #e8e8e8;
-}
-
-.picker-selected-shift {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 30rpx 50rpx;
-  border: 3rpx solid;
-  border-radius: 16rpx;
-  background: #ffffff;
-  margin-bottom: 16rpx;
-}
-
-.picker-selected-name {
-  font-size: 40rpx;
-  font-weight: 700;
-  margin-bottom: 12rpx;
-}
-
-.picker-selected-time {
-  font-size: 28rpx;
-  color: var(--text-secondary);
-}
-
-.picker-hint {
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-}
-
 /* 响应式适配 */
 @media (max-width: 375px) {
   .day-left {

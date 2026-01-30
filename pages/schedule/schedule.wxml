@@ -141,7 +141,7 @@
           <text class="empty-text">暂无排班图片</text>
         </view>
         
-        <view class="add-image-btn" bindtap="showAddImageModal">
+        <view class="add-image-btn" bindtap="onAddImageBtnTap">
           <text class="btn-icon">+</text>
           <text class="btn-text">添加图片</text>
         </view>
@@ -256,39 +256,6 @@
         </view>
         <text class="action-arrow">›</text>
       </view>
-    </view>
-  </view>
-</view>
-
-<!-- 排班选择弹窗 -->
-<view class="modal-mask {{showShiftModal ? 'show' : ''}}" bindtap="hideShiftModal"></view>
-<view class="modal-content {{showShiftModal ? 'show' : ''}}">
-  <view class="modal-header">
-    <text class="modal-title">{{selectedDate}} 排班</text>
-    <view class="modal-close" bindtap="hideShiftModal">
-      <text class="close-icon">✕</text>
-    </view>
-  </view>
-  <view class="modal-body" catchtap="stopPropagation">
-    <!-- 班次选择器 - 使用原生picker -->
-    <view wx:if="{{shiftTemplates.length > 0}}" class="modal-section">
-      <view class="section-title">选择班次</view>
-      <picker mode="selector" range="{{shiftTemplateNames}}" value="{{pickerIndex}}" bindchange="onShiftPickerChange" class="native-picker">
-        <view class="picker-display">
-          <view class="picker-selected-shift" style="border-color: {{selectedTemplate.color}}; background: {{selectedTemplate.color}}15;">
-            <text class="picker-selected-name" style="color: {{selectedTemplate.color}};">{{selectedTemplate.name}}</text>
-            <text class="picker-selected-time">{{selectedTemplate.startTime}} - {{selectedTemplate.endTime}}</text>
-          </view>
-          <text class="picker-hint">点击选择其他班次</text>
-        </view>
-      </picker>
-      <view class="modal-btn confirm-btn" bindtap="assignShiftFromPicker">确定排班</view>
-    </view>
-    
-    <view wx:if="{{shiftTemplates.length === 0}}" class="empty-tip">
-      <text class="empty-icon">📋</text>
-      <text class="empty-text">暂无班次模板</text>
-      <text class="empty-subtext">请先到"计划"页面添加</text>
     </view>
   </view>
 </view>
