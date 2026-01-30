@@ -67,6 +67,21 @@ Page({
   },
 
   /**
+   * 预览图片
+   */
+  previewImage(e) {
+    const current = e.currentTarget.dataset.src;
+    const urls = [
+      '/pages/profile/first.png',
+      '/pages/profile/second.png'
+    ];
+    wx.previewImage({
+      current: current,
+      urls: urls
+    });
+  },
+
+  /**
    * 生命周期函数--监听页面显示
    */
   onShow() {
