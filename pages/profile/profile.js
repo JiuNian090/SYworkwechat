@@ -722,9 +722,10 @@ Page({
                 fs.readFile({
                   filePath: image.path,
                   success: (res) => {
-                    // 生成图片文件名（使用周标识和图片名称，避免重复）
+                    // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
+                    const yearMonth = this.getCurrentYearMonth();
                     const safeImageName = image.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
-                    const imageFileName = `images/${key}_${safeImageName}.jpg`;
+                    const imageFileName = `image/${yearMonth}/${key}_${safeImageName}.jpg`;
                     // 添加图片到ZIP
                     zip.file(imageFileName, res.data);
                     // 保存图片信息
@@ -1669,6 +1670,14 @@ Page({
     });
   },
   
+  // 获取当前年月格式（YYYY-MM）
+  getCurrentYearMonth() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  },
+
   // Base64编码函数
   base64Encode(str) {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
@@ -1822,10 +1831,11 @@ Page({
         const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
         
         const imagePromises = [];
+        const yearMonth = this.getCurrentYearMonth();
         weekImageKeys.forEach(key => {
           const weekImages = wx.getStorageSync(key) || [];
           weekImages.forEach((image, index) => {
-            const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
+            const imageFileName = `image/${yearMonth}/${key}_${index}_${image.name || `image_${index}.jpg`}`;
             const localImagePath = image.path;
             
             const imagePromise = new Promise((resolveImage) => {
@@ -2144,6 +2154,7 @@ Page({
     let imageCount = 0;
     let uploadedCount = 0;
     let hasNewImages = false;
+    const yearMonth = this.getCurrentYearMonth();
     
     weekImageKeys.forEach(key => {
       const weekImages = wx.getStorageSync(key) || [];
@@ -2153,7 +2164,7 @@ Page({
         if (imageTime > lastBackupTime || lastBackupTime === 0) {
           hasNewImages = true;
           imageCount++;
-          const imageFileName = `images/${key}_${index}_${image.name || `image_${index}.jpg`}`;
+          const imageFileName = `image/${yearMonth}/${key}_${index}_${image.name || `image_${index}.jpg`}`;
           const localImagePath = image.path;
           
           fs.readFile({
@@ -2878,16 +2889,28 @@ Page({
     }
   },
   
-  // 提取并恢复图片
+  // 提取并恢复图片（兼容新旧路径格式）
   extractAndRestoreImages(zip, fs) {
-    const imageFolder = zip.folder('images');
-    if (imageFolder) {
-      imageFolder.forEach((relativePath, file) => {
-        if (!file.dir) { // 只处理文件，不处理文件夹
+    // 尝试获取新旧两种路径格式的图片文件夹
+    const imageFolder = zip.folder('image') || zip.folder('images');
+    if (!imageFolder) return;
+    
+    // 递归处理图片文件夹中的所有文件
+    const processImageFolder = (folder, basePath = '') => {
+      folder.forEach((relativePath, file) => {
+        if (file.dir) {
+          // 如果是子文件夹（如 YYYY-MM），递归处理
+          const subFolder = folder.folder(relativePath);
+          if (subFolder) {
+            processImageFolder(subFolder, `${basePath}${relativePath}/`);
+          }
+        } else {
+          // 处理图片文件
           file.async('arraybuffer').then((content) => {
             // 解析图片信息，恢复到对应的周存储
-            // 假设图片文件名格式为：week_images_{weekKey}_index_name.jpg
-            const fileNameParts = relativePath.split('/').pop().split('_');
+            // 文件名格式：week_images_{weekKey}_index_name.jpg
+            const fileName = relativePath.split('/').pop();
+            const fileNameParts = fileName.split('_');
             if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
               const weekKey = fileNameParts.slice(2, -2).join('_');
               const weekImageKey = `week_images_${weekKey}`;
@@ -2936,9 +2959,11 @@ Page({
           });
         }
       });
-    }
+    };
+    
+    processImageFolder(imageFolder);
   },
-  
+
   // 刷新页面数据
   refreshPageData() {
     // 刷新所有相关页面数据
