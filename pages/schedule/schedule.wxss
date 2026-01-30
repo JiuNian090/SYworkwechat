@@ -735,6 +735,7 @@ page {
 
 .shift-tag-name {
   font-size: 18rpx;
+  font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
   overflow: hidden;

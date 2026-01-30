@@ -183,12 +183,13 @@
                 wx:key="date"
                 bindtap="showActionMenu"
                 bindlongpress="onDeleteShiftClick"
-                data-date="{{item.date}}">
+                data-date="{{item.date}}"
+                style="{{item.shift ? 'background:' + item.shift.color + '40;' : ''}}">
             <view class="day-number-wrapper">
               <text class="day-number {{item.isToday ? 'today-num' : ''}}">{{item.day}}</text>
             </view>
-            <view wx:if="{{item.shift}}" class="day-shift-tag" style="background:{{item.shift.color}};">
-              <text class="shift-tag-name">{{item.shift.name}}</text>
+            <view wx:if="{{item.shift}}" class="day-shift-tag">
+              <text class="shift-tag-name" style="color:{{item.shift.color}};">{{item.shift.name}}</text>
             </view>
             <view wx:else class="day-shift-tag empty">
               <text class="shift-tag-name">休息</text>
