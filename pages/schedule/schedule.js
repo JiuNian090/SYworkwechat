@@ -12,14 +12,10 @@ Page({
     weekDates: [],
     monthDates: [],
     shifts: {},
-    showShiftModal: false,
     showActionMenu: false,
     selectedDate: '',
     selectedShift: null,
     shiftTemplates: [],
-    shiftTemplateNames: [], // 班次名称列表，用于picker
-    pickerIndex: 0, // picker选中的索引
-    selectedTemplate: {}, // 当前选中的班次模板
     weekTotalHours: 0, // 本周总工时
     weekDifference: 0, // 本周工时差额/超额
     differenceType: '', // 差额类型：超额或差额
@@ -575,7 +571,7 @@ Page({
   onAddShiftClick() {
     // 隐藏操作菜单
     this.hideActionMenu();
-    
+
     // 准备班次模板数据
     const templates = this.data.shiftTemplates;
     if (templates.length === 0) {
@@ -585,33 +581,107 @@ Page({
       });
       return;
     }
-    
+
     // 提取班次名称列表
-    const templateNames = templates.map(t => t.name);
-    
+    const templateNames = templates.map(t => `${t.name} (${t.startTime}-${t.endTime})`);
+
     // 查找当前日期是否已有排班，如果有则选中对应的班次
-    let pickerIndex = 0;
+    let selectedIndex = 0;
     const selectedShift = this.data.selectedShift;
     if (selectedShift) {
-      const matchingIndex = templates.findIndex(template => 
-        template.name === selectedShift.name && 
-        template.startTime === selectedShift.startTime && 
+      const matchingIndex = templates.findIndex(template =>
+        template.name === selectedShift.name &&
+        template.startTime === selectedShift.startTime &&
         template.endTime === selectedShift.endTime
       );
       if (matchingIndex !== -1) {
-        pickerIndex = matchingIndex;
+        selectedIndex = matchingIndex;
       }
     }
-    
-    // 设置选中的模板
-    const selectedTemplate = templates[pickerIndex] || templates[0];
-    
-    this.setData({
-      shiftTemplateNames: templateNames,
-      pickerIndex: pickerIndex,
-      selectedTemplate: selectedTemplate,
-      showShiftModal: true
+
+    // 直接使用系统ActionSheet选择班次
+    wx.showActionSheet({
+      itemList: templateNames,
+      itemColor: '#333333',
+      success: (res) => {
+        const index = res.tapIndex;
+        const selectedTemplate = templates[index];
+
+        // 直接保存排班
+        this.saveShift(selectedTemplate);
+      },
+      fail: (res) => {
+        // 用户取消选择，不做处理
+        console.log('用户取消选择班次');
+      }
     });
+  },
+
+  // 保存排班（从ActionSheet选择后调用）
+  saveShift(template) {
+    const { selectedDate, shifts } = this.data;
+
+    // 检查template是否存在
+    if (!template) {
+      wx.showToast({
+        title: '请选择有效的班次模板',
+        icon: 'none'
+      });
+      return;
+    }
+
+    // 确保班次数据包含所有必要字段，包括工时数
+    const shiftData = {
+      ...template,
+      name: template.name || '未命名班次',
+      startTime: template.startTime || '00:00',
+      endTime: template.endTime || '00:00',
+      workHours: template.workHours || 0,
+      type: template.type || '其他',
+      color: template.color || '#07c160'
+    };
+
+    const newShifts = {
+      ...shifts,
+      [selectedDate]: shiftData
+    };
+
+    try {
+      wx.setStorageSync('shifts', newShifts);
+      this.setData({
+        shifts: newShifts
+      });
+
+      // 更新视图
+      this.generateWeekDates();
+      this.generateMonthDates();
+
+      // 通知统计页面更新数据
+      const pages = getCurrentPages();
+      for (let i = 0; i < pages.length; i++) {
+        if (pages[i].route === 'pages/statistics/statistics') {
+          // 使用专门的刷新方法，而不是直接调用计算方法
+          if (pages[i].refreshStatistics) {
+            pages[i].refreshStatistics();
+          } else if (pages[i].calculateStatistics) {
+            // 兼容旧版本
+            pages[i].calculateStatistics();
+          }
+          break;
+        }
+      }
+
+      wx.showToast({
+        title: '排班成功',
+        icon: 'success'
+      });
+    } catch (e) {
+      console.error('保存排班失败', e);
+      wx.showToast({
+        title: '排班失败',
+        icon: 'none'
+      });
+    }
   },
 
   // 点击"删除排班"
@@ -641,42 +711,23 @@ Page({
     });
   },
 
-  // picker选择变化
-  onShiftPickerChange(e) {
-    const index = e.detail.value;
-    const selectedTemplate = this.data.shiftTemplates[index];
-    
-    this.setData({
-      pickerIndex: index,
-      selectedTemplate: selectedTemplate
-    });
-  },
-
-  hideShiftModal() {
-    // 由于微信小程序wx:if会立即隐藏元素，无法直接使用CSS动画
-    // 我们通过添加动画类名并使用setTimeout来实现关闭动画效果
-    this.setData({
-      showShiftModal: false
-    });
-  },
-
   stopPropagation(e) {
     // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
     if (e && typeof e.stopPropagation === 'function') {
       e.stopPropagation();
     }
   },
-  
+
   // 图片管理相关方法
-  
+
   // 显示添加图片弹窗
-  showAddImageModal() {
+  onAddImageBtnTap() {
     // 生成当周名称作为默认图片名称
     const currentDate = new Date(this.data.currentDate);
     const year = currentDate.getFullYear();
     const weekTitle = this.formatWeekTitle(currentDate);
     const defaultImageName = `${year}年 ${weekTitle}`;
-    
+
     this.setData({
       showAddImageModal: true,
       selectedImagePath: '',
@@ -814,76 +865,6 @@ Page({
       weekImages: weekImages
     });
   },
-
-  assignShiftFromPicker() {
-    const selectedIndex = this.data.pickerIndex;
-    const template = this.data.selectedTemplate;
-    const { selectedDate, shifts } = this.data;
-    
-    // 检查template是否存在
-    if (!template) {
-      wx.showToast({
-        title: '请先选择有效的班次模板',
-        icon: 'none'
-      });
-      return;
-    }
-    
-    // 确保班次数据包含所有必要字段，包括工时数
-    const shiftData = {
-      ...template,
-      name: template.name || '未命名班次',
-      startTime: template.startTime || '00:00',
-      endTime: template.endTime || '00:00',
-      workHours: template.workHours || 0,
-      type: template.type || '其他',
-      color: template.color || '#07c160'
-    };
-    
-    const newShifts = {
-      ...shifts,
-      [selectedDate]: shiftData
-    };
-    
-    try {
-      wx.setStorageSync('shifts', newShifts);
-      this.setData({
-        shifts: newShifts,
-        showShiftModal: false
-      });
-      
-      // 更新视图
-      this.generateWeekDates();
-      this.generateMonthDates();
-      
-      // 通知统计页面更新数据
-      const pages = getCurrentPages();
-      for (let i = 0; i < pages.length; i++) {
-        if (pages[i].route === 'pages/statistics/statistics') {
-          // 使用专门的刷新方法，而不是直接调用计算方法
-          if (pages[i].refreshStatistics) {
-            pages[i].refreshStatistics();
-          } else if (pages[i].calculateStatistics) {
-            // 兼容旧版本
-            pages[i].calculateStatistics();
-          }
-          break;
-        }
-      }
-      
-      wx.showToast({
-        title: '排班成功',
-        icon: 'success'
-      });
-    } catch (e) {
-      console.error('保存排班失败', e);
-      wx.showToast({
-        title: '排班失败',
-        icon: 'none'
-      });
-    }
-  },
-
 
 
   removeShift() {
