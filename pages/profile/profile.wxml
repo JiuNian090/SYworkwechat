@@ -25,6 +25,32 @@
     </view>
   </view>
 
+  <!-- 项目介绍区块 -->
+  <view class="section about-section">
+    <view class="section-header">
+      <view class="section-icon about-icon">
+        <text class="icon-text">💝</text>
+      </view>
+      <text class="section-title">项目介绍</text>
+    </view>
+    <view class="section-body">
+      <view class="about-content">
+        <view class="about-item">
+          <text class="about-dot">🎯</text>
+          <text class="about-text">这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，完全免费无广告的公益项目。</text>
+        </view>
+        <view class="about-item">
+          <text class="about-dot">🤝</text>
+          <text class="about-text">若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！</text>
+        </view>
+        <view class="about-item">
+          <text class="about-dot">🔒</text>
+          <text class="about-text">所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎联系作者。</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- WebDAV远程区块 -->
   <view class="section">
     <view class="section-header">
@@ -86,32 +112,6 @@
         <view class="grid-btn clear-btn" bindtap="clearAllData">
           <text class="btn-icon">🗑️</text>
           <text class="btn-text">清空数据</text>
-        </view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 项目介绍区块 -->
-  <view class="section about-section">
-    <view class="section-header">
-      <view class="section-icon about-icon">
-        <text class="icon-text">💝</text>
-      </view>
-      <text class="section-title">项目介绍</text>
-    </view>
-    <view class="section-body">
-      <view class="about-content">
-        <view class="about-item">
-          <text class="about-dot">🎯</text>
-          <text class="about-text">这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，完全免费无广告的公益项目。</text>
-        </view>
-        <view class="about-item">
-          <text class="about-dot">🤝</text>
-          <text class="about-text">若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！</text>
-        </view>
-        <view class="about-item">
-          <text class="about-dot">🔒</text>
-          <text class="about-text">所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎联系作者。</text>
         </view>
       </view>
     </view>
