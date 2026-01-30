@@ -1111,6 +1111,146 @@ page {
   flex: 1;
 }
 
+/* 操作菜单样式 */
+.action-menu-content {
+  max-height: 50vh;
+}
+
+.action-menu-body {
+  padding: 20rpx 30rpx 40rpx;
+}
+
+.action-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  background: var(--bg-color);
+  border-radius: 16rpx;
+  transition: all 0.2s ease;
+}
+
+.action-item:active {
+  transform: scale(0.98);
+  background: #e8e8e8;
+}
+
+.action-item.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.action-item.add {
+  background: linear-gradient(145deg, #e6f7ff 0%, #f0f9ff 100%);
+  border: 2rpx solid rgba(24, 144, 255, 0.2);
+}
+
+.action-item.add:active {
+  background: linear-gradient(145deg, #bae7ff 0%, #e6f7ff 100%);
+}
+
+.action-item.delete {
+  background: linear-gradient(145deg, #fff2f0 0%, #fff5f5 100%);
+  border: 2rpx solid rgba(255, 77, 79, 0.2);
+}
+
+.action-item.delete:active {
+  background: linear-gradient(145deg, #ffccc7 0%, #fff2f0 100%);
+}
+
+.action-icon {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  margin-right: 20rpx;
+}
+
+.action-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.action-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8rpx;
+}
+
+.action-item.add .action-title {
+  color: #1890ff;
+}
+
+.action-item.delete .action-title {
+  color: #ff4d4f;
+}
+
+.action-desc {
+  font-size: 24rpx;
+  color: var(--text-tertiary);
+}
+
+.action-arrow {
+  font-size: 40rpx;
+  color: var(--text-tertiary);
+  font-weight: 300;
+}
+
+/* 原生picker样式 */
+.native-picker {
+  width: 100%;
+}
+
+.picker-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx;
+  background: var(--bg-color);
+  border-radius: 16rpx;
+  transition: all 0.2s ease;
+}
+
+.picker-display:active {
+  background: #e8e8e8;
+}
+
+.picker-selected-shift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 50rpx;
+  border: 3rpx solid;
+  border-radius: 16rpx;
+  background: #ffffff;
+  margin-bottom: 16rpx;
+}
+
+.picker-selected-name {
+  font-size: 40rpx;
+  font-weight: 700;
+  margin-bottom: 12rpx;
+}
+
+.picker-selected-time {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}
+
+.picker-hint {
+  font-size: 24rpx;
+  color: var(--text-tertiary);
+}
+
 /* 响应式适配 */
 @media (max-width: 375px) {
   .day-left {
