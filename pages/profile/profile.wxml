@@ -4,27 +4,21 @@
   <view class="page-header">
     <view class="header-bg"></view>
     <view class="header-content">
-      <text class="header-title">👤 个人中心</text>
-      <text class="header-subtitle">管理您的个人信息</text>
-    </view>
-  </view>
-
-  <!-- 用户卡片 -->
-  <view class="card user-info-card">
-    <view class="user-info">
-      <view class="avatar-wrapper" bindtap="showEmojiModal">
-        <view class="avatar">
-          <text class="avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
-          <text class="avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
+      <view class="header-user-info">
+        <view class="header-avatar-wrapper" bindtap="showEmojiModal">
+          <view class="header-avatar">
+            <text class="header-avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+            <text class="header-avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
+          </view>
+          <view class="header-avatar-edit">
+            <text class="header-edit-icon">📷</text>
+          </view>
         </view>
-        <view class="avatar-edit">
-          <text class="edit-icon">📷</text>
+        <view class="header-user-details">
+          <text class="header-username" bindtap="showUsernameModal">{{username || '点击设置用户名'}}</text>
+          <text class="header-user-status" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
+          <text class="header-user-status" wx:else>点击头像更换表情</text>
         </view>
-      </view>
-      <view class="user-details">
-        <text class="username" bindtap="showUsernameModal">{{username || '点击设置用户名'}}</text>
-        <text class="user-hint" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
-        <text class="user-hint" wx:else>点击头像更换表情</text>
       </view>
     </view>
   </view>

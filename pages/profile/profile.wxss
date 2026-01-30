@@ -50,22 +50,79 @@ page {
 .header-content {
   position: relative;
   z-index: 1;
-  text-align: center;
 }
 
-.header-title {
-  display: block;
+.header-user-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30rpx;
+}
+
+.header-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.header-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.header-avatar-text {
   font-size: 48rpx;
-  font-weight: 700;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.header-avatar-emoji {
+  font-size: 80rpx;
+  line-height: 1;
+}
+
+.header-avatar-edit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40rpx;
+  height: 40rpx;
+  background: var(--primary-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3rpx solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+}
+
+.header-edit-icon {
+  font-size: 20rpx;
+}
+
+.header-user-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8rpx;
+}
+
+.header-username {
+  font-size: 40rpx;
+  font-weight: 600;
   color: #ffffff;
-  margin-bottom: 16rpx;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
-.header-subtitle {
-  display: block;
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
+.header-user-status {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 /* ========== 卡片基础样式 ========== */
@@ -358,6 +415,9 @@ page {
 /* ========== 项目介绍 ========== */
 .about-section {
   background: linear-gradient(135deg, #fff9f5 0%, #ffffff 100%);
+  margin-top: -40rpx;
+  position: relative;
+  z-index: 2;
 }
 
 .about-content {
