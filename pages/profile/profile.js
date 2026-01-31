@@ -3032,7 +3032,7 @@ Page({
         });
         
         // 保留第一个（最新的），删除其余的
-        const filesToDelete = backupFiles.filter(fileName => fileName !== currentBackupFileName);
+        const filesToDelete = backupFiles.slice(1); // 从第二个开始删除，保留第一个
         
         filesToDelete.forEach((fileName) => {
           this.deleteWebDAVFile(url, username, password, folder, fileName);

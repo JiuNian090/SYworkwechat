@@ -84,7 +84,7 @@
     <view class="hours-stats">
       <view class="hours-main">
         <view class="hours-item">
-          <text class="hours-value">{{statistics.totalHours}}</text>
+          <text class="hours-value {{statistics.totalHours >= customHours ? 'over' : ''}}">{{statistics.totalHours}}</text>
           <text class="hours-label">实际工时</text>
         </view>
         <view class="hours-divider">/</view>
@@ -100,7 +100,7 @@
         <text class="progress-text">{{progressText}}</text>
       </view>
       <view class="hours-difference {{statistics.hourDifference >= 0 ? 'positive' : 'negative'}}">
-        <text class="diff-label">工时差额</text>
+        <text class="diff-label">{{statistics.hourDifference >= 0 ? '工时超额' : '工时差额'}}</text>
         <text class="diff-value">{{statistics.hourDifference >= 0 ? '+' : ''}}{{statistics.hourDifference}}h</text>
       </view>
     </view>
