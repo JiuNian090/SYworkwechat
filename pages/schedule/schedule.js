@@ -14,7 +14,6 @@ Page({
     weekDates: [],
     monthDates: [],
     shifts: {},
-    showActionMenu: false,
     selectedDate: '',
     selectedShift: null,
     shiftTemplates: [],
@@ -570,27 +569,16 @@ Page({
     this.generateMonthDates();
   },
 
-  // 显示操作菜单（添加/删除排班）
-  showActionMenu(e) {
+  // 显示班次选择器
+  showShiftSelector(e) {
     const date = e.currentTarget.dataset.date;
     const selectedShift = this.data.shifts[date] || null;
 
     this.setData({
       selectedDate: date,
-      selectedShift: selectedShift,
-      showActionMenu: true
+      selectedShift: selectedShift
     });
-  },
 
-  // 隐藏操作菜单
-  hideActionMenu() {
-    this.setData({
-      showActionMenu: false
-    });
-  },
-
-  // 点击"添加排班" - 直接调用系统ActionSheet
-  onAddShiftClick() {
     // 准备班次模板数据
     const templates = this.data.shiftTemplates;
     if (templates.length === 0) {
@@ -605,16 +593,10 @@ Page({
     const templateNames = templates.map(t => t.name);
 
     // 立即调用ActionSheet，确保在用户点击的同步上下文中
-    // 菜单的隐藏通过ActionSheet的success/fail回调处理
     wx.showActionSheet({
       itemList: templateNames,
       itemColor: '#333333',
       success: (res) => {
-        // 先隐藏操作菜单
-        this.setData({
-          showActionMenu: false
-        });
-
         const index = res.tapIndex;
         const selectedTemplate = templates[index];
 
@@ -622,10 +604,6 @@ Page({
         this.saveShift(selectedTemplate);
       },
       fail: (res) => {
-        // 用户取消选择，隐藏操作菜单
-        this.setData({
-          showActionMenu: false
-        });
         console.log('用户取消选择班次');
       }
     });

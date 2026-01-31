@@ -257,7 +257,7 @@ page {
   display: flex;
   border-radius: 16rpx;
   overflow: hidden;
-  background: var(--bg-color);
+  background: #fefefe;
   transition: all 0.2s ease;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
@@ -278,7 +278,7 @@ page {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #fafafa;
+  background: #fefefe;
   border-right: 1rpx solid var(--border-color);
 }
 
@@ -486,7 +486,7 @@ page {
 .stat-row.secondary {
   justify-content: center;
   padding: 12rpx 24rpx;
-  background: var(--bg-color);
+  background: #fefefe;
   border-radius: 12rpx;
 }
 
