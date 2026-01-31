@@ -336,12 +336,13 @@ page {
 .shift-name {
   font-size: 32rpx;
   font-weight: 600;
+  color: #000000;
   flex-shrink: 0;
 }
 
 .shift-time {
   font-size: 24rpx;
-  color: var(--text-secondary);
+  color: #000000;
   flex: 1;
   text-align: center;
 }
@@ -736,7 +737,7 @@ page {
 .shift-tag-name {
   font-size: 18rpx;
   font-weight: 600;
-  color: #ffffff;
+  color: #000000;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
