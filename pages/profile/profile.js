@@ -2651,31 +2651,8 @@ Page({
       const folderUrl = this.buildWebDAVUrl(url, folder, '');
       const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
       
-      // 首先尝试使用PROPFIND方法获取文件夹内容（标准WebDAV方法）
-      wx.request({
-        url: folderUrl,
-        method: 'PROPFIND',
-        header: {
-          'Authorization': authHeader,
-          'Depth': '1',
-          'Content-Type': 'application/xml'
-        },
-        success: (res) => {
-          if (res.statusCode === 207) {
-            // 解析WebDAV PROPFIND响应，提取备份文件列表
-            const backupFiles = this.parseWebDAVBackupFiles(res.data);
-            resolve(backupFiles);
-          } else {
-            // PROPFIND失败，尝试使用GET方法
-            this.tryGetWithGET(folderUrl, authHeader, resolve, reject);
-          }
-        },
-        fail: (err) => {
-          console.error('PROPFIND请求失败，尝试GET方法', err);
-          // PROPFIND请求失败，尝试使用GET方法
-          this.tryGetWithGET(folderUrl, authHeader, resolve, reject);
-        }
-      });
+      // 直接使用GET方法获取文件夹内容（微信小程序支持的方法）
+      this.tryGetWithGET(folderUrl, authHeader, resolve, reject);
     });
   },
   
