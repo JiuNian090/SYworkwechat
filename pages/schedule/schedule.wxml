@@ -60,7 +60,7 @@
           </view>
           <view class="day-right">
             <block wx:if="{{item.shift}}">
-              <view class="shift-info-card" style="background:{{item.shift.color}}33; border-color:{{item.shift.color}}4D;">
+              <view class="shift-info-card" style="background:{{item.shift.color}}4D; border-color:{{item.shift.color}}4D;">
                 <text class="shift-name"> {{item.shift.name}}</text>
                 <text class="shift-time">{{item.shift.startTime}} - {{item.shift.endTime}}</text>
                 <view class="shift-hours-badge" style="background:{{item.shift.color}};">
@@ -184,7 +184,7 @@
                 bindtap="showActionMenu"
                 bindlongpress="onDeleteShiftClick"
                 data-date="{{item.date}}"
-                style="{{item.shift ? 'background:' + item.shift.color + '33;' : ''}}">
+                style="{{item.shift ? 'background:' + item.shift.color + '4D;' : ''}}">
             <view class="day-number-wrapper">
               <text class="day-number {{item.isToday ? 'today-num' : ''}}">{{item.day}}</text>
             </view>
