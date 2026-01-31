@@ -101,7 +101,7 @@
         </view>
         <view class="progress-bar-container">
           <view class="progress-bar-bg">
-            <view class="progress-bar-fill {{weekDifference >= 0 ? 'over' : 'under'}}" style="width: {{(weekTotalHours / customWeeklyHours * 100) > 100 ? 100 : (weekTotalHours / customWeeklyHours * 100)}}%"></view>
+            <view class="progress-bar-fill {{weekDifference >= 0 ? 'over' : 'under'}}" style="width: {{(weekTotalHours / customWeeklyHours * 100) > 100 ? 100 : (weekTotalHours / customWeeklyHours * 100)}}  "></view>
           </view>
           <text class="progress-text">{{weekTotalHours >= customWeeklyHours ? '已完成' : '进行中'}}</text>
         </view>
@@ -181,7 +181,7 @@
           <view class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.shift ? 'has-shift' : ''}}"
                 wx:for="{{item}}"
                 wx:key="date"
-                bindtap="showShiftSelector"
+                bindtap="showActionMenu"
                 bindlongpress="onDeleteShiftClick"
                 data-date="{{item.date}}"
                 style="{{item.shift ? 'background:' + item.shift.color + '4D;' : ''}}">
