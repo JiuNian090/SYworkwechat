@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/schedule/schedule",
     "pages/plan/plan",
+    "pages/schedule/schedule",
     "pages/statistics/statistics",
     "pages/profile/profile",
     "pages/docs/docs"
@@ -20,12 +20,12 @@
     "position": "bottom",
     "list": [
       {
-        "pagePath": "pages/schedule/schedule",
-        "text": "📅排班"
-      },
-      {
         "pagePath": "pages/plan/plan",
         "text": "📋计划"
+      },
+      {
+        "pagePath": "pages/schedule/schedule",
+        "text": "📅排班"
       },
       {
         "pagePath": "pages/statistics/statistics",
