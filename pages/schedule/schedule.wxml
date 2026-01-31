@@ -181,7 +181,7 @@
           <view class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.shift ? 'has-shift' : ''}}"
                 wx:for="{{item}}"
                 wx:key="date"
-                bindtap="showActionMenu"
+                bindtap="showShiftSelector"
                 bindlongpress="onDeleteShiftClick"
                 data-date="{{item.date}}"
                 style="{{item.shift ? 'background:' + item.shift.color + '4D;' : ''}}">
