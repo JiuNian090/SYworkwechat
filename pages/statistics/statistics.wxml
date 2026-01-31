@@ -95,7 +95,7 @@
       </view>
       <view class="hours-progress">
         <view class="progress-bar-bg">
-          <view class="progress-bar-fill {{totalHours >= standardHours ? 'over' : 'under'}}" style="width: {{(standardHours > 0 ? (totalHours / standardHours * 100) : 0) > 100 ? 100 : (standardHours > 0 ? (totalHours / standardHours * 100) : 0)}} "></view>
+          <view class="progress-bar-fill {{totalHours >= standardHours ? 'over' : 'under'}}" style="width: {{(standardHours > 0 ? (totalHours / standardHours * 100) : 0) > 100 ? 100 : (standardHours > 0 ? (totalHours / standardHours * 100) : 0)}}% "></view>
         </view>
         <text class="progress-text">{{progressText}}</text>
       </view>
