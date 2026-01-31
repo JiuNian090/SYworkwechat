@@ -1307,7 +1307,7 @@ page {
 
 .bottom-picker-content {
   padding: 0;
-  height: 480rpx;
+  height: 350rpx;
 }
 
 .shift-picker-view {
