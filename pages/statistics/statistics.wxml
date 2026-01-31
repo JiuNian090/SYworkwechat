@@ -84,24 +84,24 @@
     <view class="hours-stats">
       <view class="hours-main">
         <view class="hours-item">
-          <text class="hours-value {{statistics.totalHours >= customHours ? 'over' : ''}}">{{statistics.totalHours}}</text>
+          <text class="hours-value {{totalHours >= standardHours ? 'over' : ''}}">{{totalHours}}</text>
           <text class="hours-label">实际工时</text>
         </view>
         <view class="hours-divider">/</view>
         <view class="hours-item">
-          <text class="hours-value standard">{{customHours}}</text>
+          <text class="hours-value standard">{{standardHours}}</text>
           <text class="hours-label">标准工时</text>
         </view>
       </view>
       <view class="hours-progress">
         <view class="progress-bar-bg">
-          <view class="progress-bar-fill {{statistics.totalHours >= customHours ? 'over' : 'under'}}" style="width: {{(statistics.totalHours / customHours * 100) > 100 ? 100 : (statistics.totalHours / customHours * 100)}} "></view>
+          <view class="progress-bar-fill {{totalHours >= standardHours ? 'over' : 'under'}}" style="width: {{(standardHours > 0 ? (totalHours / standardHours * 100) : 0) > 100 ? 100 : (standardHours > 0 ? (totalHours / standardHours * 100) : 0)}} "></view>
         </view>
         <text class="progress-text">{{progressText}}</text>
       </view>
-      <view class="hours-difference {{statistics.hourDifference >= 0 ? 'positive' : 'negative'}}">
-        <text class="diff-label">{{statistics.hourDifference >= 0 ? '工时超额' : '工时差额'}}</text>
-        <text class="diff-value">{{statistics.hourDifference >= 0 ? '+' : ''}}{{statistics.hourDifference}}h</text>
+      <view class="hours-difference {{hourDifference >= 0 ? 'positive' : 'negative'}}">
+        <text class="diff-label">{{hourDifference >= 0 ? '工时超额' : '工时差额'}}</text>
+        <text class="diff-value">{{hourDifference >= 0 ? '+' : ''}}{{hourDifference}}h</text>
       </view>
     </view>
   </view>
