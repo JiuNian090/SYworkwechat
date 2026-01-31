@@ -343,6 +343,16 @@ Page({
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       const dateStr = this.formatDate(date);
+      // 获取班次数据
+      const shift = this.data.shifts[dateStr] || null;
+      // 如果有班次，添加lightColor属性
+      let modifiedShift = shift;
+      if (shift) {
+        modifiedShift = {
+          ...shift,
+          lightColor: this.lightenColor(shift.color)
+        };
+      }
       // 修改星期几的显示顺序，从周一开始
       weekDates.push({
         date: dateStr,
@@ -350,7 +360,7 @@ Page({
         month: date.getMonth() + 1, // 添加月份信息
         weekday: ['一', '二', '三', '四', '五', '六', '日'][date.getDay() === 0 ? 6 : date.getDay() - 1],
         isToday: dateStr === this.formatDate(new Date()),
-        shift: this.data.shifts[dateStr] || null
+        shift: modifiedShift
       });
     }
     
@@ -405,18 +415,28 @@ Page({
     
     while (current <= endDate) {
       const week = [];
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(current);
-        const dateStr = this.formatDate(date);
-        week.push({
-          date: dateStr,
-          day: date.getDate(),
-          isCurrentMonth: date.getMonth() === month,
-          isToday: dateStr === this.formatDate(new Date()),
-          shift: this.data.shifts[dateStr] || null
-        });
-        current.setDate(current.getDate() + 1);
-      }
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(current);
+          const dateStr = this.formatDate(date);
+          // 获取班次数据
+          const shift = this.data.shifts[dateStr] || null;
+          // 如果有班次，添加lightColor属性
+          let modifiedShift = shift;
+          if (shift) {
+            modifiedShift = {
+              ...shift,
+              lightColor: this.lightenColor(shift.color)
+            };
+          }
+          week.push({
+            date: dateStr,
+            day: date.getDate(),
+            isCurrentMonth: date.getMonth() === month,
+            isToday: dateStr === this.formatDate(new Date()),
+            shift: modifiedShift
+          });
+          current.setDate(current.getDate() + 1);
+        }
       monthDates.push(week);
     }
     

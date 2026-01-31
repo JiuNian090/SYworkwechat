@@ -88,13 +88,15 @@ export function colorWithAlpha(color, alpha) {
  * @returns {object} 颜色配置对象
  */
 export function getShiftColors(baseColor) {
+  // 通过修改RGB值使颜色变浅，不使用透明度
+  const lightenedColor = lightenColor(baseColor, 0.7);
   return {
     // 纯颜色（用于文字和徽章）
     solid: baseColor,
-    // 背景色（20%透明度）
-    background: colorWithAlpha(baseColor, 0.2),
-    // 边框色（30%透明度）
-    border: colorWithAlpha(baseColor, 0.3),
+    // 背景色（通过修改RGB值实现浅淡效果）
+    background: lightenedColor,
+    // 边框色（与背景色相同，实现无缝融合）
+    border: lightenedColor,
     // 浅色（用于标题背景）
     light: lightenColor(baseColor)
   };
