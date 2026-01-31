@@ -1,4 +1,6 @@
 // pages/schedule/schedule.js
+const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/colorUtils.js');
+
 Page({
   data: {
     currentView: 'week', // week 或 month
