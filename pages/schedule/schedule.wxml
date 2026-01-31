@@ -250,7 +250,7 @@
   <view class="bottom-picker-content">
     <picker-view 
       class="shift-picker-view" 
-      indicator-style="height: 90rpx;" 
+      indicator-style="height: 200rpx; background-color: rgba(52, 211, 153, 0.1); border-radius: 16rpx; margin: 20rpx 0;" 
       value="{{pickerValue}}" 
       bindchange="onPickerChange"
     >
