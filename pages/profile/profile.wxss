@@ -2,12 +2,12 @@
 
 /* ========== CSS变量定义 ========== */
 page {
-  --primary-color: #07c160;
-  --primary-dark: #059e4d;
-  --primary-light: #e6f7e6;
-  --danger-color: #ff4d4f;
-  --warning-color: #fa8c16;
-  --info-color: #1890ff;
+  --primary-color: #34d399;
+  --primary-dark: #10b981;
+  --primary-light: #d1fae5;
+  --danger-color: #f87171;
+  --warning-color: #fbbf24;
+  --info-color: #60a5fa;
   --bg-color: #f5f5f5;
   --card-bg: #ffffff;
   --text-primary: #1a1a1a;
