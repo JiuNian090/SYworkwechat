@@ -2651,29 +2651,101 @@ Page({
       const folderUrl = this.buildWebDAVUrl(url, folder, '');
       const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
       
-      // 使用GET方法获取文件夹内容（WebDAV服务器通常会返回文件夹列表）
+      // 首先尝试使用PROPFIND方法获取文件夹内容（标准WebDAV方法）
       wx.request({
         url: folderUrl,
-        method: 'GET',
+        method: 'PROPFIND',
         header: {
-          'Authorization': authHeader
+          'Authorization': authHeader,
+          'Depth': '1',
+          'Content-Type': 'application/xml'
         },
         success: (res) => {
-          if (res.statusCode === 200) {
-            // 解析HTML或XML响应，提取备份文件列表
-            const backupFiles = this.parseBackupFilesFromResponse(res.data);
+          if (res.statusCode === 207) {
+            // 解析WebDAV PROPFIND响应，提取备份文件列表
+            const backupFiles = this.parseWebDAVBackupFiles(res.data);
             resolve(backupFiles);
           } else {
-            console.error('获取备份文件列表失败', res.statusCode);
-            resolve([]);
+            // PROPFIND失败，尝试使用GET方法
+            this.tryGetWithGET(folderUrl, authHeader, resolve, reject);
           }
         },
         fail: (err) => {
-          console.error('获取备份文件列表请求失败', err);
-          resolve([]);
+          console.error('PROPFIND请求失败，尝试GET方法', err);
+          // PROPFIND请求失败，尝试使用GET方法
+          this.tryGetWithGET(folderUrl, authHeader, resolve, reject);
         }
       });
     });
+  },
+  
+  // 尝试使用GET方法获取文件夹内容
+  tryGetWithGET(folderUrl, authHeader, resolve, reject) {
+    wx.request({
+      url: folderUrl,
+      method: 'GET',
+      header: {
+        'Authorization': authHeader
+      },
+      success: (res) => {
+        if (res.statusCode === 200) {
+          // 解析HTML或XML响应，提取备份文件列表
+          const backupFiles = this.parseBackupFilesFromResponse(res.data);
+          resolve(backupFiles);
+        } else {
+          console.error('获取备份文件列表失败', res.statusCode);
+          resolve([]);
+        }
+      },
+      fail: (err) => {
+        console.error('获取备份文件列表请求失败', err);
+        resolve([]);
+      }
+    });
+  },
+  
+  // 解析WebDAV PROPFIND响应，提取备份文件列表
+  parseWebDAVBackupFiles(xmlData) {
+    const backupFiles = [];
+    const regex = /<d:response>([\s\S]*?)<\/d:response>/g;
+    let match;
+    
+    while ((match = regex.exec(xmlData)) !== null) {
+      const response = match[1];
+      const hrefMatch = /<d:href>([\s\S]*?)<\/d:href>/.exec(response);
+      const propstatMatch = /<d:propstat>([\s\S]*?)<\/d:propstat>/.exec(response);
+      
+      if (hrefMatch && propstatMatch) {
+        const href = hrefMatch[1];
+        const propstat = propstatMatch[1];
+        const isCollectionMatch = /<d:collection\/>/.exec(propstat);
+        
+        if (!isCollectionMatch) {
+          // 从href中提取文件名
+          let fileName;
+          if (href.includes('/')) {
+            fileName = href.split('/').pop();
+          } else {
+            fileName = href;
+          }
+          
+          // 清理文件名，移除可能的URL编码
+          fileName = decodeURIComponent(fileName);
+          
+          // 检查是否是备份文件（以"排班备份"开头，以".zip"结尾）
+          if (fileName.includes('排班备份') && fileName.endsWith('.zip') && !backupFiles.includes(fileName)) {
+            backupFiles.push(fileName);
+          }
+        }
+      }
+    }
+    
+    // 按文件名排序（最新的备份文件在前面）
+    backupFiles.sort((a, b) => {
+      return b.localeCompare(a);
+    });
+    
+    return backupFiles;
   },
   
   // 解析响应数据，提取备份文件列表
