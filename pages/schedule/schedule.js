@@ -17,6 +17,9 @@ Page({
     selectedDate: '',
     selectedShift: null,
     shiftTemplates: [],
+    showShiftSelectorModal: false,
+    pickerValue: [0], // 滚动选择器当前值
+    selectedTemplateIndex: 0, // 当前选中的模板索引
     weekTotalHours: 0, // 本周总工时
     weekDifference: 0, // 本周工时差额/超额
     differenceType: '', // 差额类型：超额或差额
@@ -571,42 +574,93 @@ Page({
 
   // 显示班次选择器
   showShiftSelector(e) {
-    const date = e.currentTarget.dataset.date;
-    const selectedShift = this.data.shifts[date] || null;
+    try {
+      const date = e.currentTarget.dataset.date;
+      const selectedShift = this.data.shifts[date] || null;
 
-    this.setData({
-      selectedDate: date,
-      selectedShift: selectedShift
-    });
+      // 立即设置选中日期，不等待异步操作
+      this.setData({
+        selectedDate: date,
+        selectedShift: selectedShift
+      });
 
-    // 准备班次模板数据
-    const templates = this.data.shiftTemplates;
-    if (templates.length === 0) {
+      // 同步加载班次模板数据，确保数据最新
+      this.loadShiftTemplates();
+      
+      // 准备班次模板数据
+      const templates = this.data.shiftTemplates;
+      if (templates.length === 0) {
+        wx.showToast({
+          title: '暂无班次模板',
+          icon: 'none'
+        });
+        return;
+      }
+
+      // 重置选择器值
+      this.setData({
+        pickerValue: [0],
+        selectedTemplateIndex: 0,
+        showShiftSelectorModal: true
+      });
+    } catch (error) {
+      console.error('显示班次选择器失败:', error);
       wx.showToast({
-        title: '暂无班次模板',
+        title: '操作失败，请重试',
         icon: 'none'
       });
-      return;
     }
+  },
 
-    // 提取班次名称列表（仅显示名称）
-    const templateNames = templates.map(t => t.name);
-
-    // 立即调用ActionSheet，确保在用户点击的同步上下文中
-    wx.showActionSheet({
-      itemList: templateNames,
-      itemColor: '#333333',
-      success: (res) => {
-        const index = res.tapIndex;
-        const selectedTemplate = templates[index];
-
-        // 直接保存排班
-        this.saveShift(selectedTemplate);
-      },
-      fail: (res) => {
-        console.log('用户取消选择班次');
-      }
+  // 隐藏班次选择器
+  hideShiftSelectorModal() {
+    this.setData({
+      showShiftSelectorModal: false
     });
+  },
+
+  // 滚动选择器变化事件
+  onPickerChange(e) {
+    const value = e.detail.value;
+    this.setData({
+      pickerValue: value,
+      selectedTemplateIndex: value[0]
+    });
+  },
+
+  // 确认选择班次
+  confirmShiftSelection() {
+    try {
+      const templates = this.data.shiftTemplates;
+      const selectedIndex = this.data.selectedTemplateIndex;
+      const selectedTemplate = templates[selectedIndex];
+
+      if (!selectedTemplate) {
+        wx.showToast({
+          title: '请选择有效的班次',
+          icon: 'none'
+        });
+        return;
+      }
+
+      // 隐藏选择器
+      this.setData({
+        showShiftSelectorModal: false
+      });
+
+      // 直接保存排班
+      this.saveShift(selectedTemplate);
+    } catch (error) {
+      console.error('确认选择班次失败:', error);
+      wx.showToast({
+        title: '选择班次失败',
+        icon: 'none'
+      });
+      // 确保选择器关闭
+      this.setData({
+        showShiftSelectorModal: false
+      });
+    }
   },
 
   // 保存排班（从ActionSheet选择后调用）
