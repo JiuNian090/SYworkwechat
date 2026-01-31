@@ -54,13 +54,13 @@
               bindlongpress="onDeleteShiftClick"
               data-date="{{item.date}}">
           <view class="day-left" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + ';' : 'background:#07c160;') : ''}}">
-            <text class="day-weekday">周{{item.weekday}}</text>
+            <text class="day-weekday">{{item.weekday}}</text>
             <text class="day-date">{{item.month}}/{{item.day}}</text>
             <view wx:if="{{item.isToday}}" class="today-dot"></view>
           </view>
           <view class="day-right">
             <block wx:if="{{item.shift}}">
-              <view class="shift-info-card" style="background:{{item.shift.color}}66; border-color:{{item.shift.color}}99;">
+              <view class="shift-info-card" style="background:{{item.shift.color}}33; border-color:{{item.shift.color}}4D;">
                 <text class="shift-name" style="color:{{item.shift.color}};">{{item.shift.name}}</text>
                 <text class="shift-time">{{item.shift.startTime}} - {{item.shift.endTime}}</text>
                 <view class="shift-hours-badge" style="background:{{item.shift.color}};">
@@ -184,7 +184,7 @@
                 bindtap="showActionMenu"
                 bindlongpress="onDeleteShiftClick"
                 data-date="{{item.date}}"
-                style="{{item.shift ? 'background:' + item.shift.color + '40;' : ''}}">
+                style="{{item.shift ? 'background:' + item.shift.color + '33;' : ''}}">
             <view class="day-number-wrapper">
               <text class="day-number {{item.isToday ? 'today-num' : ''}}">{{item.day}}</text>
             </view>

@@ -1,9 +1,9 @@
 /* pages/plan/plan.wxss */
 /* CSS Variables - 统一设计系统 */
 page {
-  --primary-color: #07c160;
-  --primary-light: #10b981;
-  --primary-dark: #059669;
+  --primary-color: #34d399;
+  --primary-light: #6ee7b7;
+  --primary-dark: #10b981;
   --bg-color: #f5f5f5;
   --card-bg: #ffffff;
   --text-primary: #333333;
@@ -18,18 +18,18 @@ page {
 
 /* 主色变量和统一按钮样式 */
 .main-color {
-  color: #07c160;
+  color: #34d399;
 }
 .btn-primary {
-  background: #07c160;
+  background: #34d399;
   color: #fff;
   border-radius: 10rpx;
   font-size: 32rpx;
   padding: 16rpx 0;
-  box-shadow: 0 2rpx 8rpx rgba(7,193,96,0.08);
+  box-shadow: 0 2rpx 8rpx rgba(52,211,153,0.08);
 }
 .btn-primary:active {
-  background: #059e4d;
+  background: #10b981;
 }
 .modal {
   border-radius: 20rpx;
