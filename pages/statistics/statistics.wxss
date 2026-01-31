@@ -288,6 +288,10 @@ page {
   color: var(--text-secondary);
 }
 
+.hours-value.over {
+  color: var(--error-color);
+}
+
 .hours-label {
   display: block;
   font-size: 24rpx;
@@ -365,11 +369,11 @@ page {
 }
 
 .hours-difference.positive .diff-value {
-  color: var(--success-color);
+  color: var(--error-color);
 }
 
 .hours-difference.negative .diff-value {
-  color: var(--error-color);
+  color: var(--success-color);
 }
 
 /* 设置按钮 */
