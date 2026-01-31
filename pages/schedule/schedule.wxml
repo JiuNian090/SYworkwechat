@@ -48,11 +48,11 @@
     <view class="card week-list-card">
       <view class="week-list">
         <view class="day-item {{item.isToday ? 'today' : ''}} {{item.shift ? 'has-shift' : ''}}"
-              wx:for="{{weekDates}}"
-              wx:key="date"
-              bindtap="showActionMenu"
-              bindlongpress="onDeleteShiftClick"
-              data-date="{{item.date}}">
+            wx:for="{{weekDates}}"
+            wx:key="date"
+            bindtap="showShiftSelector"
+            bindlongpress="onDeleteShiftClick"
+            data-date="{{item.date}}">
           <view class="day-left" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + ';' : 'background:#07c160;') : ''}}">
             <text class="day-weekday">{{item.weekday}}</text>
             <text class="day-date">{{item.month}}/{{item.day}}</text>
@@ -228,36 +228,7 @@
   <view class="safe-area-bottom"></view>
 </view>
 
-<!-- 操作选择菜单弹窗 -->
-<view class="modal-mask {{showActionMenu ? 'show' : ''}}" bindtap="hideActionMenu"></view>
-<view class="modal-content action-menu-content {{showActionMenu ? 'show' : ''}}">
-  <view class="modal-header">
-    <text class="modal-title">{{selectedDate}}</text>
-    <view class="modal-close" bindtap="hideActionMenu">
-      <text class="close-icon">✕</text>
-    </view>
-  </view>
-  <view class="modal-body action-menu-body" catchtap="stopPropagation">
-    <view class="action-menu">
-      <view class="action-item add" bindtap="onAddShiftClick">
-        <view class="action-icon">➕</view>
-        <view class="action-info">
-          <text class="action-title">添加排班</text>
-          <text class="action-desc">为当前日期添加班次</text>
-        </view>
-        <text class="action-arrow">›</text>
-      </view>
-      <view class="action-item delete {{selectedShift ? '' : 'disabled'}}" bindtap="onDeleteShiftClick">
-        <view class="action-icon">🗑️</view>
-        <view class="action-info">
-          <text class="action-title">删除排班</text>
-          <text class="action-desc">{{selectedShift ? '删除当前日期的排班' : '当前日期暂无排班'}}</text>
-        </view>
-        <text class="action-arrow">›</text>
-      </view>
-    </view>
-  </view>
-</view>
+
 
 <!-- 图片管理弹窗 -->
 <view class="modal-mask {{showAddImageModal ? 'show' : ''}}" bindtap="hideAddImageModal"></view>
