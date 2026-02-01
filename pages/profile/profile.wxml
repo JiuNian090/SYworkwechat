@@ -10,9 +10,7 @@
             <text class="header-avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
             <text class="header-avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
           </view>
-          <view class="header-avatar-edit">
-            <text class="header-edit-icon">📷</text>
-          </view>
+          <view class="header-avatar-edit {{avatarType === 'emoji' && emojiEmotion ? emojiEmotion : ''}}"></view>
         </view>
         <view class="header-user-details">
           <text class="header-username" bindtap="showUsernameModal">{{username || '点击设置用户名'}}</text>
