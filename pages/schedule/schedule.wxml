@@ -101,7 +101,7 @@
         </view>
         <view class="progress-bar-container">
           <view class="progress-bar-bg">
-            <view class="progress-bar-fill {{weekDifference >= 0 ? 'over' : 'under'}}" style="width: {{(weekTotalHours / customWeeklyHours * 100) > 100 ? 100 : (weekTotalHours / customWeeklyHours * 100)}}  "></view>
+            <view class="progress-bar-fill {{weekDifference >= 0 ? 'over' : 'under'}}" style="width: {{(customWeeklyHours > 0 ? (weekTotalHours / customWeeklyHours * 100) : 0) > 100 ? 100 : (customWeeklyHours > 0 ? (weekTotalHours / customWeeklyHours * 100) : 0)}}% "></view>
           </view>
           <text class="progress-text">{{weekTotalHours >= customWeeklyHours ? '已完成' : '进行中'}}</text>
         </view>
@@ -215,6 +215,12 @@
             <text class="stat-value">{{monthTotalHours}}</text>
             <text class="stat-unit">h</text>
           </view>
+        </view>
+        <view class="progress-bar-container">
+          <view class="progress-bar-bg">
+            <view class="progress-bar-fill {{monthDifference >= 0 ? 'over' : 'under'}}" style="width: {{(monthStandardHours > 0 ? (monthTotalHours / monthStandardHours * 100) : 0) > 100 ? 100 : (monthStandardHours > 0 ? (monthTotalHours / monthStandardHours * 100) : 0)}}% "></view>
+          </view>
+          <text class="progress-text">{{monthTotalHours >= monthStandardHours ? '已完成' : '进行中'}}</text>
         </view>
         <view class="stat-row secondary">
           <text class="diff-label">{{monthDifferenceType}}</text>
