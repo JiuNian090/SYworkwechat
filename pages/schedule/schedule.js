@@ -479,6 +479,7 @@ Page({
       currentMonthShiftColor: monthShiftColor,
       isCurrentMonth: isCurrentMonth,
       monthTotalHours: monthTotalHours.toFixed(1),
+      monthStandardHours: monthStandardHours,
       monthDifference: monthDifference,
       monthDifferenceType: monthDifferenceType,
       monthDifferenceValue: monthDifferenceValue
