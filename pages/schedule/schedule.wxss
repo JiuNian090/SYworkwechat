@@ -1262,10 +1262,60 @@ page {
   color: var(--text-primary);
 }
 
+.bottom-picker-close-btn {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 24rpx;
+  background: #fff2f0;
+  border: 2rpx solid rgba(255, 77, 79, 0.2);
+  border-radius: 24rpx;
+  transition: all 0.2s ease;
+}
+
+.bottom-picker-close-btn:active {
+  background: #ffccc7;
+  border-color: var(--error-color);
+}
+
+.close-btn-icon {
+  font-size: 24rpx;
+  color: var(--error-color);
+  margin-right: 8rpx;
+}
+
+.close-btn-text {
+  font-size: 28rpx;
+  color: var(--error-color);
+  font-weight: 500;
+}
+
 .bottom-picker-actions {
   display: flex;
   align-items: center;
   gap: 16rpx;
+}
+
+.bottom-picker-delete {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--error-color);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.bottom-picker-delete:active {
+  background: #cf1322;
+  transform: scale(0.95);
+}
+
+.delete-icon {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 .bottom-picker-confirm {
