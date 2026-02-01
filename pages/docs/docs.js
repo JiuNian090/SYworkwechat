@@ -143,6 +143,15 @@ Page({
     this.updateSectionRects();
     // 获取导航栏位置信息
     this.getNavPosition();
+    
+    // 页面加载后立即检查当前位置
+    setTimeout(() => {
+      wx.createSelectorQuery().selectViewport().scrollOffset().exec((res) => {
+        if (res && res[0]) {
+          this.updateActiveSection(res[0].scrollTop);
+        }
+      });
+    }, 100);
   },
 
   /**
@@ -203,7 +212,7 @@ Page({
     }
 
     // 特殊处理：如果滚动位置在页面顶部附近，检查第一个区块
-    if (!activeSection && scrollTop > 0) {
+    if (!activeSection && scrollTop >= 0) {
       const firstSection = sections[0];
       if (firstSection) {
         const rect = this.sectionRects[firstSection];
@@ -215,11 +224,6 @@ Page({
           activeSection = firstSection.replace('section-', '');
         }
       }
-    }
-
-    // 如果滚动到页面顶部，清空活跃状态
-    if (scrollTop === 0) {
-      activeSection = '';
     }
 
     if (this.data.activeSection !== activeSection) {
