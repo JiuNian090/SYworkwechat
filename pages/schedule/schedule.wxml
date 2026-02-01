@@ -20,6 +20,7 @@
         <text class="switch-icon">📅</text>
         <text class="switch-text">月视图</text>
       </view>
+    </view>
   </view>
 
   <!-- 周视图 -->
@@ -205,30 +206,21 @@
         <text class="card-title">当月工时</text>
       </view>
       <view class="stats-content">
-      <view class="stat-row primary">
-        <view class="stat-avatar">
-          <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
-          <text wx:else>{{avatarEmoji}}</text>
+        <view class="stat-row primary">
+          <view class="stat-avatar">
+            <text wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+            <text wx:else>{{avatarEmoji}}</text>
+          </view>
+          <view class="stat-main">
+            <text class="stat-value">{{monthTotalHours}}</text>
+            <text class="stat-unit">h</text>
+          </view>
         </view>
-        <view class="stat-main">
-          <text class="stat-value">{{monthTotalHours}}</text>
-          <text class="stat-unit">h</text>
-          <text class="stat-divider">/</text>
-          <text class="stat-standard">{{monthStandardHours}}h</text>
+        <view class="stat-row secondary">
+          <text class="diff-label">{{monthDifferenceType}}</text>
+          <text class="diff-value {{monthDifferenceType === '超额' ? 'over' : 'under'}}">{{monthDifferenceValue}}h</text>
         </view>
       </view>
-      <view class="progress-bar-container">
-        <view class="progress-bar-bg">
-          <view class="progress-bar-fill {{monthDifference >= 0 ? 'over' : 'under'}}" 
-            style="width: {{(monthTotalHours / monthStandardHours * 100) > 100 ? 100 : (monthTotalHours / monthStandardHours * 100)}}  "></view>
-        </view>
-        <text class="progress-text">{{monthTotalHours >= monthStandardHours ? '已完成' : '进行中'}}</text>
-      </view>
-      <view class="stat-row secondary">
-        <text class="diff-label">{{monthDifferenceType}}</text>
-        <text class="diff-value {{monthDifferenceType === '超额' ? 'over' : 'under'}}">{{monthDifferenceValue}}h</text>
-      </view>
-    </view>
     </view>
   </view>
 
