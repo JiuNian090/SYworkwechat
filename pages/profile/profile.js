@@ -1848,10 +1848,15 @@ Page({
         const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
         
         const imagePromises = [];
-        const yearMonth = this.getCurrentYearMonth();
         weekImageKeys.forEach(key => {
           const weekImages = wx.getStorageSync(key) || [];
           weekImages.forEach((image, index) => {
+            // 从weekKey中提取年月（格式：YYYY-MM）
+            const weekKey = key.replace('week_images_', '');
+            const weekDate = new Date(weekKey);
+            const year = weekDate.getFullYear();
+            const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+            const yearMonth = `${year}-${month}`;
             const imageFileName = `image/${yearMonth}/${key}_${index}_${image.name || `image_${index}.jpg`}`;
             const localImagePath = image.path;
             
@@ -2167,7 +2172,6 @@ Page({
     let imageCount = 0;
     let uploadedCount = 0;
     let hasNewImages = false;
-    const yearMonth = this.getCurrentYearMonth();
     
     weekImageKeys.forEach(key => {
       const weekImages = wx.getStorageSync(key) || [];
@@ -2177,6 +2181,12 @@ Page({
         if (imageTime > lastBackupTime || lastBackupTime === 0) {
           hasNewImages = true;
           imageCount++;
+          // 从weekKey中提取年月（格式：YYYY-MM）
+          const weekKey = key.replace('week_images_', '');
+          const weekDate = new Date(weekKey);
+          const year = weekDate.getFullYear();
+          const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+          const yearMonth = `${year}-${month}`;
           const imageFileName = `image/${yearMonth}/${key}_${index}_${image.name || `image_${index}.jpg`}`;
           const localImagePath = image.path;
           
