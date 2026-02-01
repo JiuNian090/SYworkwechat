@@ -1755,13 +1755,8 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 生成备份文件名，格式为：排班备份+当天日期，确保无特殊字符
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      // 生成文件名，确保符合坚果云命名规则（无特殊字符）
-      const backupFileName = `排班备份${year}_${month}_${day}.zip`;
+      // 生成备份文件名，固定为：排班备份.zip
+      const backupFileName = `排班备份.zip`;
       // 使用持久路径，避免临时路径
       const backupFilePath = `${wx.env.USER_DATA_PATH}/${backupFileName}`;
       // 确保本地文件不存在，避免写入失败
@@ -1933,12 +1928,8 @@ Page({
         folder = `${user}排班备份`;
       }
       
-      // 生成备份文件名，格式为：排班备份+当天日期
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      const backupFileName = `排班备份${year}_${month}_${day}.zip`;
+      // 生成备份文件名，固定为：排班备份.zip
+      const backupFileName = `排班备份.zip`;
       const backupFilePath = `${wx.env.USER_DATA_PATH}/${backupFileName}`;
       
       // 生成ZIP文件
