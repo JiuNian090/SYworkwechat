@@ -11,8 +11,8 @@
     <view class="quick-nav-title">快速跳转</view>
     <view class="quick-nav-list">
       <view class="quick-nav-item {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
-        <text class="nav-icon">💝</text>
-        <text class="nav-text">项目介绍</text>
+        <text class="nav-icon">📖</text>
+        <text class="nav-text">使用方法</text>
       </view>
       <view class="quick-nav-item {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
         <text class="nav-icon">📈</text>
@@ -30,31 +30,55 @@
   </view>
 
   <view class="content">
-    <!-- 项目介绍 -->
+    <!-- 使用方法 -->
     <view class="section about-section {{activeSection === 'about' ? 'highlight' : ''}}" id="section-about">
       <view class="section-header">
         <view class="section-icon-wrapper about-icon">
-          <text class="section-icon">💝</text>
+          <text class="section-icon">📖</text>
         </view>
         <view class="section-title-wrapper">
-          <text class="section-title">项目介绍</text>
-          <text class="section-desc">为爱而生的排班助手</text>
+          <text class="section-title">使用方法</text>
+          <text class="section-desc">快速上手排班助手</text>
         </view>
       </view>
       <view class="section-content">
-        <view class="about-card">
-          <view class="about-item">
-            <text class="about-icon-small">🎯</text>
-            <text class="about-text">这是一个为作者爱人创建的便捷工时/排班管理系统，功能正在逐步完善，完全免费无广告的公益项目。</text>
+        <view class="guide-list">
+          <view class="guide-item">
+            <view class="guide-badge">1</view>
+            <view class="guide-body">
+              <text class="guide-title">添加班次模板</text>
+              <text class="guide-text">进入班次模板页面，点击添加按钮，输入班次名称、开始时间和结束时间，设置是否跨天，设置自定义工时，点击保存，排班就可以使用这个模板。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">工时无法自动计算，工时是自己计算后填上去的，默认是8小时</text>
+              </view>
+            </view>
           </view>
-          <view class="about-item">
-            <text class="about-icon-small">🤝</text>
-            <text class="about-text">若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！</text>
+
+          <view class="guide-item">
+            <view class="guide-badge">2</view>
+            <view class="guide-body">
+              <text class="guide-title">创建排班表</text>
+              <text class="guide-text">选择日期，点击日期右边单元格，从弹出的班次列表中选择对应班次，点击确定完成排班。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">当天有排班需要修改时，可以点击排班，选择其他的就可以快速替换，若不想有排班，选中当天的排班会出现删除按钮，可以删除排班。</text>
+              </view>
+            </view>
           </view>
-          <view class="about-item">
-            <text class="about-icon-small">🔒</text>
-            <text class="about-text">所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎点击最下方的联系乐乐。</text>
+
+          <view class="guide-item">
+            <view class="guide-badge">3</view>
+            <view class="guide-body">
+              <text class="guide-title">添加排班图片</text>
+              <text class="guide-text">在周视图页面的"本周排班图片"卡片中，点击"添加图片"按钮，选择图片并输入名称，即可上传排班照片并一直保留且保留在对应星期。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">支持从相册或相机拍摄选择图片，方便记录纸质排班表</text>
+              </view>
+            </view>
           </view>
+
         </view>
       </view>
     </view>
@@ -71,32 +95,40 @@
         </view>
       </view>
       <view class="section-content">
-        <view class="guide-list compact">
-          <view class="guide-item compact-item">
-            <view class="guide-badge small">1</view>
+        <view class="guide-list">
+          <view class="guide-item">
+            <view class="guide-badge">1</view>
             <view class="guide-body">
-              <text class="guide-text">点击导出报表，在弹窗中输入文件名（可按姓名+日期范围）</text>
+              <text class="guide-title">排班统计图</text>
+              <text class="guide-text">在统计页面选择日期范围，即可查看选定期间内的所有排班详情，包括总工时、班次分布，工时差额等。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">可按月份、季度或自定义时间范围查询，默认的标准工时是每周35小时</text>
+              </view>
             </view>
           </view>
 
-          <view class="guide-item compact-item">
-            <view class="guide-badge small">2</view>
+          <view class="guide-item">
+            <view class="guide-badge">2</view>
             <view class="guide-body">
-              <text class="guide-text">出现导出成功提示后，点击分享报表，可以分享给自己</text>
+              <text class="guide-title">导出与分享报表</text>
+              <text class="guide-text">点击导出报表，在弹窗中输入文件名（可按姓名+日期范围），出现导出成功提示后，点击分享报表，可以分享给自己或好友。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">在聊天界面点击CSV，选择用WPS打开，即可生成报表！</text>
+              </view>
             </view>
           </view>
 
-          <view class="guide-item compact-item">
-            <view class="guide-badge small">3</view>
+          <view class="guide-item">
+            <view class="guide-badge">3</view>
             <view class="guide-body">
-              <text class="guide-text">在聊天界面点击CSV，选择用WPS打开，即可生成报表！</text>
-            </view>
-          </view>
-
-          <view class="guide-item compact-item">
-            <view class="guide-badge small">4</view>
-            <view class="guide-body">
-              <text class="guide-text">下面排班详情会显示选定日期内的所有排班！</text>
+              <text class="guide-title">排班详情展示</text>
+              <text class="guide-text">查询后，页面下方会显示选定日期内的所有排班详情，包括每天的班次、工时等信息。</text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">可滑动查看完整的排班详情列表</text>
+              </view>
             </view>
           </view>
         </view>
@@ -111,7 +143,7 @@
         </view>
         <view class="section-title-wrapper">
           <text class="section-title">WebDAV使用说明</text>
-          <text class="section-desc">坚果云自动备份配置</text>
+          <text class="section-desc">坚果云手动备份配置</text>
         </view>
       </view>
       <view class="section-content">

@@ -8,8 +8,8 @@ page {
   --title-color: #1a1a1a;
   --text-color: #4a4a4a;
   --text-secondary: #8c8c8c;
-  --tip-bg: #fffbeb;
-  --tip-color: #fbbf24;
+  --tip-bg: #fff8e6;
+  --tip-color: #f59e0b;
   --warning-bg: #fef2f2;
   --warning-color: #f87171;
   --bg-color: #f7f8fa;
