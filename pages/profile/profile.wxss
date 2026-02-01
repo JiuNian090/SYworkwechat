@@ -311,6 +311,7 @@ page {
   align-items: center;
   padding: 30rpx;
   position: relative;
+  justify-content: space-between;
 }
 
 .section-icon {
@@ -416,7 +417,28 @@ page {
 }
 
 .share-btn {
-  background: linear-gradient(135deg, #fff7e6 0%, #fff9f0 100%);
+  background: linear-gradient(135deg, #f6ffed 0%, #f0fff0 100%);
+}
+
+.section-right {
+  display: flex;
+  align-items: center;
+}
+
+.manual-btn {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 10rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.manual-btn:active {
+  background-color: var(--primary-dark);
+  transform: scale(0.95);
 }
 
 .import-btn {

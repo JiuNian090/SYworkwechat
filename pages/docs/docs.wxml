@@ -217,7 +217,7 @@
               <text class="guide-text">导出后可快速分享给好友，也可以分享到"文件传输助手"或者小号，用来备份。</text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
-                <text class="tip-text">分享完整的数据备份</text>
+                <text class="tip-text">分享完整的数据备份，这个导出后的json或者zip文件是暂存的，暂存时间很短，请尽快分享数据。</text>
               </view>
             </view>
           </view>
