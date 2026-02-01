@@ -121,7 +121,7 @@ Page({
    */
   updateSectionRects() {
     const query = wx.createSelectorQuery();
-    const sections = ['section-data', 'section-webdav', 'section-statistics', 'section-about'];
+    const sections = ['section-about', 'section-statistics', 'section-webdav', 'section-data'];
     
     this.sectionRects = {};
     
