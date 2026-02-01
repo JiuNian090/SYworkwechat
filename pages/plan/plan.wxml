@@ -45,12 +45,16 @@
   </view>
 
   <!-- 添加模板弹窗 -->
-    <view class="modal" wx:if="{{showAddTemplate}}">
-      <view class="modal-content">
-        <view class="modal-header">
-          <text class="modal-title">添加班次模板</text>
-          <icon type="cancel" size="20" bindtap="hideAddTemplateModal" />
+  <block wx:if="{{showAddTemplate}}">
+    <view class="modal-mask show" bindtap="hideAddTemplateModal"></view>
+    <view class="modal-content show">
+      <view class="modal-header">
+        <text class="modal-title">添加班次模板</text>
+        <view class="modal-close" bindtap="hideAddTemplateModal">
+          <text class="close-icon">✕</text>
         </view>
+      </view>
+      <view class="modal-body" catchtap="stopPropagation">
         <view class="form-group">
           <text class="label">班次名称 <text style="color:red">*</text></text>
           <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name || ''}}" />
@@ -111,14 +115,19 @@
         </view>
       </view>
     </view>
+  </block>
 
-    <!-- 编辑模板弹窗 -->
-    <view class="modal" wx:if="{{showEditTemplate}}">
-      <view class="modal-content">
-        <view class="modal-header">
-          <text class="modal-title">编辑班次模板</text>
-          <icon type="cancel" size="20" bindtap="hideEditTemplateModal" />
+  <!-- 编辑模板弹窗 -->
+  <block wx:if="{{showEditTemplate}}">
+    <view class="modal-mask show" bindtap="hideEditTemplateModal"></view>
+    <view class="modal-content show">
+      <view class="modal-header">
+        <text class="modal-title">编辑班次模板</text>
+        <view class="modal-close" bindtap="hideEditTemplateModal">
+          <text class="close-icon">✕</text>
         </view>
+      </view>
+      <view class="modal-body" catchtap="stopPropagation">
         <view class="form-group">
           <text class="label">班次名称 <text style="color:red">*</text></text>
           <input class="input" placeholder="请输入班次名称" bindinput="onEditTemplateInput" data-field="name" value="{{editTemplate.name || ''}}" />
@@ -179,6 +188,7 @@
         </view>
       </view>
     </view>
+  </block>
 
     
 </view>
