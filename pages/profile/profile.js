@@ -731,7 +731,12 @@ Page({
                   filePath: image.path,
                   success: (res) => {
                     // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
-                    const yearMonth = this.getCurrentYearMonth();
+                    // 从weekKey中提取年月（格式：YYYY-MM）
+                    const weekKey = key.replace('week_images_', '');
+                    const weekDate = new Date(weekKey);
+                    const year = weekDate.getFullYear();
+                    const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                    const yearMonth = `${year}-${month}`;
                     const safeImageName = image.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
                     const imageFileName = `image/${yearMonth}/${key}_${safeImageName}.jpg`;
                     // 添加图片到ZIP
