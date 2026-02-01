@@ -3228,36 +3228,87 @@ Page({
     });
   },
   
-  // 恢复图片文件夹
+  // 恢复图片文件夹（兼容image和images两种路径）
   restoreImages(url, username, password, folder) {
-    const listUrl = this.buildWebDAVUrl(url, folder, 'images/');
+    // 尝试访问image文件夹（新路径格式）
+    const imageListUrl = this.buildWebDAVUrl(url, folder, 'image/');
     const authHeader = 'Basic ' + this.base64Encode(`${username}:${password}`);
     
     wx.request({
-      url: listUrl,
+      url: imageListUrl,
       method: 'PROPFIND',
       header: {
         'Authorization': authHeader,
-        'Depth': '1'
+        'Depth': '2' // 设置为2以递归获取子文件夹内容
       },
       success: (res) => {
         if (res.statusCode === 207) {
           const images = this.parseWebDAVImageFiles(res.data);
           this.downloadAndRestoreImages(images, url, username, password, folder);
         } else {
-          wx.hideLoading();
-          wx.showToast({
-            title: '恢复成功',
-            icon: 'success'
+          // 如果image文件夹不存在，尝试访问images文件夹（旧路径格式）
+          const imagesListUrl = this.buildWebDAVUrl(url, folder, 'images/');
+          wx.request({
+            url: imagesListUrl,
+            method: 'PROPFIND',
+            header: {
+              'Authorization': authHeader,
+              'Depth': '1'
+            },
+            success: (res2) => {
+              if (res2.statusCode === 207) {
+                const images = this.parseWebDAVImageFiles(res2.data);
+                this.downloadAndRestoreImages(images, url, username, password, folder);
+              } else {
+                wx.hideLoading();
+                wx.showToast({
+                  title: '恢复成功',
+                  icon: 'success'
+                });
+              }
+            },
+            fail: (err2) => {
+              console.error('列出images文件夹失败', err2);
+              wx.hideLoading();
+              wx.showToast({
+                title: '恢复成功（图片恢复失败）',
+                icon: 'none'
+              });
+            }
           });
         }
       },
       fail: (err) => {
-        console.error('列出图片文件失败', err);
-        wx.hideLoading();
-        wx.showToast({
-          title: '恢复成功（图片恢复失败）',
-          icon: 'none'
+        console.error('列出image文件夹失败', err);
+        // 如果image文件夹不存在，尝试访问images文件夹（旧路径格式）
+        const imagesListUrl = this.buildWebDAVUrl(url, folder, 'images/');
+        wx.request({
+          url: imagesListUrl,
+          method: 'PROPFIND',
+          header: {
+            'Authorization': authHeader,
+            'Depth': '1'
+          },
+          success: (res2) => {
+            if (res2.statusCode === 207) {
+              const images = this.parseWebDAVImageFiles(res2.data);
+              this.downloadAndRestoreImages(images, url, username, password, folder);
+            } else {
+              wx.hideLoading();
+              wx.showToast({
+                title: '恢复成功',
+                icon: 'success'
+              });
+            }
+          },
+          fail: (err2) => {
+            console.error('列出images文件夹失败', err2);
+            wx.hideLoading();
+            wx.showToast({
+              title: '恢复成功（图片恢复失败）',
+              icon: 'none'
+            });
+          }
         });
       }
     });
