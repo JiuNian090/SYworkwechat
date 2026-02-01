@@ -181,7 +181,7 @@
           <view class="calendar-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? 'current-month' : 'other-month'}} {{item.shift ? 'has-shift' : ''}}"
                 wx:for="{{item}}"
                 wx:key="date"
-                bindtap="showActionMenu"
+                bindtap="showShiftSelector"
                 bindlongpress="onDeleteShiftClick"
                 data-date="{{item.date}}"
                 style="{{item.shift ? 'background:' + item.shift.color + '4D;' : ''}}">
@@ -236,8 +236,11 @@
   <view class="bottom-picker-container show">
     <!-- 标题栏 -->
     <view class="bottom-picker-header">
-      <text class="bottom-picker-title">选择班次</text>
+      <text class="bottom-picker-title">选择班次（{{selectedDate}}）</text>
       <view class="bottom-picker-actions">
+        <view wx:if="{{selectedShift}}" class="bottom-picker-delete" bindtap="confirmDeleteShift">
+          <text class="delete-icon">✕</text>
+        </view>
         <view class="bottom-picker-confirm" bindtap="confirmShiftSelection">
           <text class="confirm-icon">✓</text>
         </view>

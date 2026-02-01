@@ -597,10 +597,27 @@ Page({
         return;
       }
 
-      // 重置选择器值
+      // 如果有排班，自动选择对应的班次
+      let pickerValue = [0];
+      let selectedTemplateIndex = 0;
+      
+      if (selectedShift) {
+        // 查找匹配的模板索引
+        const matchingIndex = templates.findIndex(template => 
+          template.name === selectedShift.name && 
+          template.startTime === selectedShift.startTime && 
+          template.endTime === selectedShift.endTime
+        );
+        
+        if (matchingIndex >= 0) {
+          pickerValue = [matchingIndex];
+          selectedTemplateIndex = matchingIndex;
+        }
+      }
+
       this.setData({
-        pickerValue: [0],
-        selectedTemplateIndex: 0,
+        pickerValue: pickerValue,
+        selectedTemplateIndex: selectedTemplateIndex,
         showShiftSelectorModal: true
       });
     } catch (error) {
@@ -767,6 +784,35 @@ Page({
     if (e && typeof e.stopPropagation === 'function') {
       e.stopPropagation();
     }
+  },
+
+  // 确认删除排班
+  confirmDeleteShift() {
+    const date = this.data.selectedDate;
+    
+    if (!date) {
+      wx.showToast({
+        title: '未选择日期',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 显示确认弹窗
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除 ${date} 的排班吗？`,
+      confirmColor: '#ff4d4f',
+      success: (res) => {
+        if (res.confirm) {
+          this.removeShift();
+          // 关闭选择器
+          this.setData({
+            showShiftSelectorModal: false
+          });
+        }
+      }
+    });
   },
 
   // 图片管理相关方法
