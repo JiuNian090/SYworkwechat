@@ -103,8 +103,8 @@ page {
 }
 
 .header-avatar-edit.positive {
-  background: #4CAF50;
-  box-shadow: 0 0 12rpx rgba(76, 175, 80, 0.8);
+  background: #9C27B0;
+  box-shadow: 0 0 12rpx rgba(156, 39, 176, 0.8);
 }
 
 .header-avatar-edit.neutral {
@@ -113,8 +113,8 @@ page {
 }
 
 .header-avatar-edit.negative {
-  background: #FF5722;
-  box-shadow: 0 0 12rpx rgba(255, 87, 34, 0.8);
+  background: #F44336;
+  box-shadow: 0 0 12rpx rgba(244, 67, 54, 0.8);
 }
 
 .header-edit-icon {
@@ -133,11 +133,31 @@ page {
   font-weight: 600;
   color: #ffffff;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+  letter-spacing: 8rpx;
 }
 
 .header-user-status {
-  font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.15);
+  padding: 4rpx 14rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.05);
+  display: inline-block;
+  margin-top: 6rpx;
+}
+
+.header-user-status.emotion-positive {
+  background: rgba(156, 39, 176, 0.15);
+}
+
+.header-user-status.emotion-neutral {
+  background: rgba(33, 150, 243, 0.15);
+}
+
+.header-user-status.emotion-negative {
+  background: rgba(244, 67, 54, 0.15);
 }
 
 /* ========== 卡片基础样式 ========== */

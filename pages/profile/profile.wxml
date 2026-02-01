@@ -14,7 +14,7 @@
         </view>
         <view class="header-user-details">
           <text class="header-username" bindtap="showUsernameModal">{{username || '点击设置用户名'}}</text>
-          <text class="header-user-status" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
+          <text class="header-user-status {{avatarType === 'emoji' && emojiEmotion ? 'emotion-' + emojiEmotion : ''}}" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
           <text class="header-user-status" wx:else>点击头像更换表情</text>
         </view>
       </view>
