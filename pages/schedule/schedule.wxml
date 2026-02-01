@@ -238,7 +238,7 @@
     <view class="bottom-picker-header">
       <text class="bottom-picker-title">选择班次（{{selectedDate}}）</text>
       <view class="bottom-picker-actions">
-        <view wx:if="{{selectedShift}}" class="bottom-picker-delete" bindtap="confirmDeleteShift">
+        <view wx:if="{{selectedShift && isSelectedShiftMatching}}" class="bottom-picker-delete" bindtap="confirmDeleteShift">
           <text class="delete-icon">✕</text>
         </view>
         <view class="bottom-picker-confirm" bindtap="confirmShiftSelection">

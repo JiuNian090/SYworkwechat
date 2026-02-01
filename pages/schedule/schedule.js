@@ -615,9 +615,16 @@ Page({
         }
       }
 
+      // 检查选中的班次是否与当天的排班对应
+      const isSelectedShiftMatching = selectedShift && templates[selectedTemplateIndex] && 
+        templates[selectedTemplateIndex].name === selectedShift.name &&
+        templates[selectedTemplateIndex].startTime === selectedShift.startTime &&
+        templates[selectedTemplateIndex].endTime === selectedShift.endTime;
+      
       this.setData({
         pickerValue: pickerValue,
         selectedTemplateIndex: selectedTemplateIndex,
+        isSelectedShiftMatching: isSelectedShiftMatching,
         showShiftSelectorModal: true
       });
     } catch (error) {
@@ -639,9 +646,19 @@ Page({
   // 滚动选择器变化事件
   onPickerChange(e) {
     const value = e.detail.value;
+    const selectedTemplateIndex = value[0];
+    const { shiftTemplates, selectedShift } = this.data;
+    
+    // 检查选中的班次是否与当天的排班对应
+    const isSelectedShiftMatching = selectedShift && shiftTemplates[selectedTemplateIndex] && 
+      shiftTemplates[selectedTemplateIndex].name === selectedShift.name &&
+      shiftTemplates[selectedTemplateIndex].startTime === selectedShift.startTime &&
+      shiftTemplates[selectedTemplateIndex].endTime === selectedShift.endTime;
+    
     this.setData({
       pickerValue: value,
-      selectedTemplateIndex: value[0]
+      selectedTemplateIndex: selectedTemplateIndex,
+      isSelectedShiftMatching: isSelectedShiftMatching
     });
   },
 
