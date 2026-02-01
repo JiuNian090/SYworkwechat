@@ -7,24 +7,26 @@
   </view>
 
   <!-- 快速导航 -->
-  <view class="quick-nav">
-    <view class="quick-nav-title">快速跳转</view>
-    <view class="quick-nav-list">
-      <view class="quick-nav-item {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
-        <text class="nav-icon">📖</text>
-        <text class="nav-text">使用方法</text>
-      </view>
-      <view class="quick-nav-item {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
-        <text class="nav-icon">📈</text>
-        <text class="nav-text">统计报表</text>
-      </view>
-      <view class="quick-nav-item {{activeSection === 'webdav' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-webdav">
-        <text class="nav-icon">☁️</text>
-        <text class="nav-text">WebDAV</text>
-      </view>
-      <view class="quick-nav-item {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
-        <text class="nav-icon">📊</text>
-        <text class="nav-text">数据管理</text>
+  <view class="quick-nav {{isNavFixed ? 'fixed' : ''}}">
+    <view class="quick-nav-content">
+      <view class="quick-nav-title">快速跳转</view>
+      <view class="quick-nav-list">
+        <view class="quick-nav-item {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
+          <text class="nav-icon">📖</text>
+          <text class="nav-text">使用方法</text>
+        </view>
+        <view class="quick-nav-item {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
+          <text class="nav-icon">📈</text>
+          <text class="nav-text">统计报表</text>
+        </view>
+        <view class="quick-nav-item {{activeSection === 'webdav' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-webdav">
+          <text class="nav-icon">☁️</text>
+          <text class="nav-text">WebDAV</text>
+        </view>
+        <view class="quick-nav-item {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
+          <text class="nav-icon">📊</text>
+          <text class="nav-text">数据管理</text>
+        </view>
       </view>
     </view>
   </view>

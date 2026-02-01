@@ -7,7 +7,8 @@ Page({
   data: {
     scrollToId: '',
     activeSection: '',
-    showBackToTop: false
+    showBackToTop: false,
+    isNavFixed: false
   },
 
   /**
@@ -97,8 +98,41 @@ Page({
       showBackToTop: scrollTop > 400
     });
 
+    // 控制导航栏固定/不固定
+    this.updateNavFixedState(scrollTop);
+
     // 更新当前活跃的区块
     this.updateActiveSection(scrollTop);
+  },
+
+  /**
+   * 更新导航栏固定状态
+   */
+  updateNavFixedState(scrollTop) {
+    if (!this.navTop) {
+      // 首次获取导航栏位置
+      this.getNavPosition();
+      return;
+    }
+
+    // 当滚动距离超过导航栏顶部位置时，固定导航栏
+    const shouldFix = scrollTop > this.navTop;
+    if (this.data.isNavFixed !== shouldFix) {
+      this.setData({ isNavFixed: shouldFix });
+    }
+  },
+
+  /**
+   * 获取导航栏位置信息
+   */
+  getNavPosition() {
+    const query = wx.createSelectorQuery();
+    query.select('.quick-nav').boundingClientRect();
+    query.exec((res) => {
+      if (res && res[0]) {
+        this.navTop = res[0].top;
+      }
+    });
   },
 
   /**
@@ -107,6 +141,8 @@ Page({
   startScrollObserver() {
     // 获取所有区块的位置信息
     this.updateSectionRects();
+    // 获取导航栏位置信息
+    this.getNavPosition();
   },
 
   /**

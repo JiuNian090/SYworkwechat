@@ -87,6 +87,33 @@ page {
   box-shadow: var(--shadow);
   position: relative;
   z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.quick-nav.fixed {
+  position: fixed;
+  top: 10rpx;
+  left: 24rpx;
+  right: 24rpx;
+  margin: 0;
+  z-index: 100;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-lg);
+}
+
+/* 为固定导航添加顶部安全区域适配 */
+.quick-nav.fixed::before {
+  content: '';
+  position: absolute;
+  top: -10rpx;
+  left: 0;
+  right: 0;
+  height: calc(10rpx + env(safe-area-inset-top));
+  background: transparent;
+}
+
+.quick-nav.fixed .quick-nav-content {
+  padding-top: env(safe-area-inset-top);
 }
 
 .quick-nav-title {
