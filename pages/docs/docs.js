@@ -184,29 +184,36 @@ Page({
       return;
     }
 
-    const offset = 200; // 偏移量，用于提前触发
+    const offset = 100; // 调整偏移量，更适合顶部区块检测
     let activeSection = '';
 
-    // 检查每个区块的位置
-    for (const [id, rect] of Object.entries(this.sectionRects)) {
+    // 检查每个区块的位置，按顺序从顶部开始
+    const sections = Object.keys(this.sectionRects);
+    for (const id of sections) {
+      const rect = this.sectionRects[id];
       const sectionTop = rect.top + scrollTop - offset;
       const sectionBottom = sectionTop + rect.height;
 
       if (scrollTop >= sectionTop && scrollTop < sectionBottom) {
         // 提取 section 类型
         const sectionType = id.replace('section-', '');
-        if (activeSection !== sectionType) {
-          activeSection = sectionType;
-        }
+        activeSection = sectionType;
         break;
       }
     }
 
-    // 如果滚动到页面底部，选中最后一个区块
+    // 特殊处理：如果滚动位置在页面顶部附近，检查第一个区块
     if (!activeSection && scrollTop > 0) {
-      const lastSection = Object.keys(this.sectionRects).pop();
-      if (lastSection) {
-        activeSection = lastSection.replace('section-', '');
+      const firstSection = sections[0];
+      if (firstSection) {
+        const rect = this.sectionRects[firstSection];
+        const sectionTop = rect.top + scrollTop - offset;
+        const sectionBottom = sectionTop + rect.height;
+        
+        // 如果滚动位置在第一个区块范围内，选中第一个区块
+        if (scrollTop >= sectionTop && scrollTop < sectionBottom) {
+          activeSection = firstSection.replace('section-', '');
+        }
       }
     }
 
