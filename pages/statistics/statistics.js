@@ -133,6 +133,8 @@ Page({
 
   // 快速选择按钮事件处理函数
   selectLastWeek() {
+    // 添加点击动画
+    this.triggerButtonAnimation('lastWeek');
     // 使用当前结束日期作为参考日期来计算上周
     const referenceDate = this.data.endDate ? new Date(this.data.endDate) : new Date();
     const range = this.getLastWeekRange(referenceDate);
@@ -145,6 +147,8 @@ Page({
   },
 
   selectThisWeek() {
+    // 添加点击动画
+    this.triggerButtonAnimation('thisWeek');
     const range = this.getThisWeekRange();
     this.setData({
       startDate: range.startDate,
@@ -155,6 +159,8 @@ Page({
   },
 
   selectNextWeek() {
+    // 添加点击动画
+    this.triggerButtonAnimation('nextWeek');
     // 使用当前结束日期作为参考日期来计算下周
     const referenceDate = this.data.endDate ? new Date(this.data.endDate) : new Date();
     const range = this.getNextWeekRange(referenceDate);
@@ -167,6 +173,8 @@ Page({
   },
 
   selectThisMonth() {
+    // 添加点击动画
+    this.triggerButtonAnimation('thisMonth');
     const range = this.getThisMonthRange();
     this.setData({
       startDate: range.startDate,
@@ -174,6 +182,13 @@ Page({
       activeQuickBtn: 'thisMonth'
     });
     this.calculateStatistics();
+  },
+
+  // 触发按钮动画
+  triggerButtonAnimation(buttonType) {
+    // 这里可以通过DOM操作或数据绑定来添加动画类
+    // 由于小程序的限制，我们通过数据绑定来实现
+    // 实际效果已经通过CSS的:active伪类和::after伪元素实现
   },
 
   // 开始日期变更事件

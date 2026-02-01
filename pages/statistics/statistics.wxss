@@ -181,16 +181,63 @@ page {
   font-size: 26rpx;
   color: var(--text-secondary);
   transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .quick-btn:active {
   transform: scale(0.95);
+  background: #e8e8e8;
 }
 
 .quick-btn.active {
   background: var(--primary-color);
   color: #ffffff;
   box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+}
+
+.quick-btn.active:active {
+  background: var(--primary-dark);
+  transform: scale(0.95);
+}
+
+/* 点击波纹效果 */
+.quick-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.quick-btn:active::after {
+  width: 300rpx;
+  height: 300rpx;
+}
+
+/* 连续点击动画 */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.5);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+    transform: scale(1);
+  }
+}
+
+.quick-btn.active.pulse {
+  animation: pulse 0.5s ease-in-out;
 }
 
 /* 班次统计卡片 */

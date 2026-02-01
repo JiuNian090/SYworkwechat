@@ -100,7 +100,7 @@
             <view class="guide-badge">1</view>
             <view class="guide-body">
               <text class="guide-title">排班统计图</text>
-              <text class="guide-text">在统计页面选择日期范围，即可查看选定期间内的所有排班详情，包括总工时、班次分布，工时差额等。</text>
+              <text class="guide-text">在统计页面选择日期范围，即可查看选定期间内的所有排班详情，包括总工时、班次分布，工时差额等。工时统计里的设置按钮⚙️可以设置自定义每周标准工时</text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">可按月份、季度或自定义时间范围查询，默认的标准工时是每周35小时</text>
