@@ -46,8 +46,8 @@
 
   <!-- 添加模板弹窗 -->
   <block wx:if="{{showAddTemplate}}">
-    <view class="modal-mask show" bindtap="hideAddTemplateModal"></view>
-    <view class="modal-content show">
+    <view class="modal-mask show" bindtap="hideAddTemplateModal" catchtouchmove="stopPropagation"></view>
+    <view class="modal-content show" catchtouchmove="stopPropagation">
       <view class="modal-header">
         <text class="modal-title">添加班次模板</text>
         <view class="modal-close" bindtap="hideAddTemplateModal">
@@ -87,11 +87,10 @@
         </view>
         <view class="form-group">
           <text class="label">开始时间 - 结束时间</text>
-          <view class="time-range-container">
+          <view class="time-input-container">
             <picker class="time-picker" mode="time" value="{{newTemplate.startTime}}" bindchange="onTemplateInput" data-field="startTime">
               <view class="picker">{{newTemplate.startTime}}</view>
             </picker>
-            <text class="time-separator">-</text>
             <picker class="time-picker" mode="time" value="{{newTemplate.endTime}}" bindchange="onTemplateInput" data-field="endTime">
               <view class="picker">{{newTemplate.endTime}}</view>
             </picker>
@@ -119,8 +118,8 @@
 
   <!-- 编辑模板弹窗 -->
   <block wx:if="{{showEditTemplate}}">
-    <view class="modal-mask show" bindtap="hideEditTemplateModal"></view>
-    <view class="modal-content show">
+    <view class="modal-mask show" bindtap="hideEditTemplateModal" catchtouchmove="stopPropagation"></view>
+    <view class="modal-content show" catchtouchmove="stopPropagation">
       <view class="modal-header">
         <text class="modal-title">编辑班次模板</text>
         <view class="modal-close" bindtap="hideEditTemplateModal">
@@ -160,11 +159,10 @@
         </view>
         <view class="form-group">
           <text class="label">开始时间 - 结束时间</text>
-          <view class="time-range-container">
+          <view class="time-input-container">
             <picker class="time-picker" mode="time" value="{{editTemplate.startTime}}" bindchange="onEditTemplateInput" data-field="startTime">
               <view class="picker">{{editTemplate.startTime}}</view>
             </picker>
-            <text class="time-separator">-</text>
             <picker class="time-picker" mode="time" value="{{editTemplate.endTime}}" bindchange="onEditTemplateInput" data-field="endTime">
               <view class="picker">{{editTemplate.endTime}}</view>
             </picker>
