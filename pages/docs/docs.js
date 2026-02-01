@@ -174,7 +174,12 @@ Page({
       }
     }
 
-    if (activeSection && this.data.activeSection !== activeSection) {
+    // 如果滚动到页面顶部，清空活跃状态
+    if (scrollTop === 0) {
+      activeSection = '';
+    }
+
+    if (this.data.activeSection !== activeSection) {
       this.setData({ activeSection });
     }
   },
