@@ -784,6 +784,33 @@ page {
   line-height: 1;
 }
 
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.modal-header .help-btn {
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #4CAF50;
+  border: 2rpx solid #45a049;
+}
+
+.modal-header .help-btn:active {
+  background: #45a049;
+}
+
+.modal-header .help-icon {
+  font-size: 20rpx;
+  color: white;
+  font-weight: bold;
+}
+
 .modal-body {
   padding: 28rpx;
 }

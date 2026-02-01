@@ -264,7 +264,12 @@
   <view class="modal-mask {{showWebDAVModal ? 'show' : ''}}" wx:if="{{showWebDAVModal}}" bindtap="hideWebDAVModal"></view>
   <view class="modal-container {{showWebDAVModal ? 'show' : ''}}" wx:if="{{showWebDAVModal}}">
     <view class="modal-header">
-      <text class="modal-title">WebDAV配置</text>
+      <view class="modal-header-left">
+        <text class="modal-title">WebDAV配置</text>
+        <view class="help-btn" bindtap="navigateToDocs" data-type="webdav">
+          <text class="help-icon">?</text>
+        </view>
+      </view>
       <view class="modal-close" bindtap="hideWebDAVModal">
         <text class="close-icon">×</text>
       </view>
