@@ -46,15 +46,15 @@
 
   <!-- 添加模板弹窗 -->
   <block wx:if="{{showAddTemplate}}">
-    <view class="modal-mask show" bindtap="hideAddTemplateModal" catchtouchmove="stopPropagation"></view>
-    <view class="modal-content show" catchtouchmove="stopPropagation">
+    <view class="modal-mask show" bindtap="hideAddTemplateModal" catchtouchmove="true"></view>
+    <view class="modal-content show" catchtouchmove="true">
       <view class="modal-header">
         <text class="modal-title">添加班次模板</text>
         <view class="modal-close" bindtap="hideAddTemplateModal">
           <text class="close-icon">✕</text>
         </view>
       </view>
-      <view class="modal-body" catchtap="stopPropagation">
+      <view class="modal-body">
         <view class="form-group">
           <text class="label">班次名称 <text style="color:red">*</text></text>
           <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name || ''}}" />
@@ -118,15 +118,15 @@
 
   <!-- 编辑模板弹窗 -->
   <block wx:if="{{showEditTemplate}}">
-    <view class="modal-mask show" bindtap="hideEditTemplateModal" catchtouchmove="stopPropagation"></view>
-    <view class="modal-content show" catchtouchmove="stopPropagation">
+    <view class="modal-mask show" bindtap="hideEditTemplateModal" catchtouchmove="true"></view>
+    <view class="modal-content show" catchtouchmove="true">
       <view class="modal-header">
         <text class="modal-title">编辑班次模板</text>
         <view class="modal-close" bindtap="hideEditTemplateModal">
           <text class="close-icon">✕</text>
         </view>
       </view>
-      <view class="modal-body" catchtap="stopPropagation">
+      <view class="modal-body">
         <view class="form-group">
           <text class="label">班次名称 <text style="color:red">*</text></text>
           <input class="input" placeholder="请输入班次名称" bindinput="onEditTemplateInput" data-field="name" value="{{editTemplate.name || ''}}" />
