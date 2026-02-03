@@ -536,12 +536,15 @@ page {
 /* ========== 响应式适配 ========== */
 @media (max-width: 375px) {
   .quick-nav-list {
-    flex-wrap: wrap;
+    gap: 12rpx;
   }
   
   .quick-nav-item {
-    flex: 0 0 calc(50% - 8rpx);
     padding: 16rpx 8rpx;
+  }
+  
+  .nav-text {
+    font-size: 20rpx;
   }
   
   .section {
@@ -565,14 +568,13 @@ page {
   }
   
   .quick-nav-list {
-    justify-content: flex-start;
-    gap: 24rpx;
+    justify-content: space-between;
+    gap: 16rpx;
   }
   
   .quick-nav-item {
-    flex: 0 0 auto;
-    min-width: 140rpx;
-    padding: 24rpx 32rpx;
+    flex: 1;
+    padding: 24rpx 20rpx;
   }
 }
 
