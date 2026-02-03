@@ -214,22 +214,16 @@ Page({
       }
     }
 
-    // 特殊处理：如果滚动位置在页面顶部附近，检查第一个区块
-    if (!activeSection && scrollTop >= 0) {
+    // 特殊处理：如果滚动位置在页面顶部附近，选中第一个区块
+    if (!activeSection && scrollTop < 100) {
       const firstSection = sections[0];
       if (firstSection) {
-        const rect = this.sectionRects[firstSection];
-        const sectionTop = rect.top + scrollTop - offset;
-        const sectionBottom = sectionTop + rect.height;
-        
-        // 如果滚动位置在第一个区块范围内，选中第一个区块
-        if (scrollTop >= sectionTop && scrollTop < sectionBottom) {
-          activeSection = firstSection.replace('section-', '');
-        }
+        activeSection = firstSection.replace('section-', '');
       }
     }
 
-    if (this.data.activeSection !== activeSection) {
+    // 只有当找到明确的活跃区块时才更新，避免滚动过程中的闪烁
+    if (activeSection && this.data.activeSection !== activeSection) {
       this.setData({ activeSection });
     }
   },
