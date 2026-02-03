@@ -155,6 +155,9 @@ Page({
         }
       });
     }, 100);
+    
+    // 监听图片加载完成事件，重新计算区块位置
+    this.observeImageLoad();
   },
 
   /**
@@ -162,6 +165,30 @@ Page({
    */
   stopScrollObserver() {
     // 清理工作
+  },
+
+  /**
+   * 监听图片加载完成事件，重新计算区块位置
+   */
+  observeImageLoad() {
+    const query = wx.createSelectorQuery();
+    query.selectAll('.step-image').fields({
+      size: true
+    });
+    query.exec((res) => {
+      if (res && res[0] && res[0].length > 0) {
+        // 当图片加载完成后，重新计算区块位置
+        setTimeout(() => {
+          this.updateSectionRects();
+          // 重新检查当前活跃区块
+          wx.createSelectorQuery().selectViewport().scrollOffset().exec((scrollRes) => {
+            if (scrollRes && scrollRes[0]) {
+              this.updateActiveSection(scrollRes[0].scrollTop);
+            }
+          });
+        }, 500);
+      }
+    });
   },
 
   /**
@@ -184,6 +211,31 @@ Page({
             this.sectionRects[id] = res[index];
           }
         });
+        // 计算每个区块的顶部位置（相对于页面顶部）
+        this.calcSectionTopPositions();
+      }
+    });
+  },
+
+  /**
+   * 计算每个区块的顶部位置（相对于页面顶部）
+   */
+  calcSectionTopPositions() {
+    this.sectionTopPositions = [];
+    const sections = ['section-about', 'section-statistics', 'section-webdav', 'section-data'];
+    
+    sections.forEach(id => {
+      if (this.sectionRects[id]) {
+        // 获取当前滚动位置
+        wx.createSelectorQuery().selectViewport().scrollOffset().exec((scrollRes) => {
+          if (scrollRes && scrollRes[0]) {
+            const scrollTop = scrollRes[0].scrollTop;
+            const rectTop = this.sectionRects[id].top;
+            // 计算区块相对于页面顶部的位置
+            const sectionTop = scrollTop + rectTop;
+            this.sectionTopPositions[sections.indexOf(id)] = sectionTop;
+          }
+        });
       }
     });
   },
@@ -192,34 +244,30 @@ Page({
    * 更新当前活跃的区块
    */
   updateActiveSection(scrollTop) {
-    if (!this.sectionRects || Object.keys(this.sectionRects).length === 0) {
+    if (!this.sectionTopPositions || this.sectionTopPositions.length === 0) {
       return;
     }
 
     const offset = 100; // 调整偏移量，更适合顶部区块检测
     let activeSection = '';
+    const sections = ['about', 'statistics', 'webdav', 'data'];
 
-    // 检查每个区块的位置，按顺序从顶部开始
-    const sections = Object.keys(this.sectionRects);
-    for (const id of sections) {
-      const rect = this.sectionRects[id];
-      const sectionTop = rect.top + scrollTop - offset;
-      const sectionBottom = sectionTop + rect.height;
-
-      if (scrollTop >= sectionTop && scrollTop < sectionBottom) {
-        // 提取 section 类型
-        const sectionType = id.replace('section-', '');
-        activeSection = sectionType;
+    // 遍历区块位置，找到当前滚动到的区块
+    for (let i = 0; i < this.sectionTopPositions.length; i++) {
+      const sectionTop = this.sectionTopPositions[i];
+      // 当滚动距离超过当前区块顶部，且未超过下一个区块顶部时，选中当前导航
+      if (
+        scrollTop >= sectionTop - offset 
+        && (i === this.sectionTopPositions.length - 1 || scrollTop < this.sectionTopPositions[i + 1] - offset)
+      ) {
+        activeSection = sections[i];
         break;
       }
     }
 
     // 特殊处理：如果滚动位置在页面顶部附近，选中第一个区块
     if (!activeSection && scrollTop < 100) {
-      const firstSection = sections[0];
-      if (firstSection) {
-        activeSection = firstSection.replace('section-', '');
-      }
+      activeSection = sections[0];
     }
 
     // 只有当找到明确的活跃区块时才更新，避免滚动过程中的闪烁
@@ -261,7 +309,13 @@ Page({
         const scrollTop = scrollOffset.scrollTop + rect.top - (navRect.top + navRect.height + 40);
         wx.pageScrollTo({
           scrollTop: scrollTop > 0 ? scrollTop : 0,
-          duration: 300
+          duration: 300,
+          success: () => {
+            // 滚动完成后，重新计算区块位置
+            setTimeout(() => {
+              this.updateSectionRects();
+            }, 350);
+          }
         });
       }
     });
@@ -273,9 +327,16 @@ Page({
   backToTop() {
     wx.pageScrollTo({
       scrollTop: 0,
-      duration: 300
+      duration: 300,
+      success: () => {
+        // 滚动完成后，更新活跃区块为第一个
+        setTimeout(() => {
+          this.setData({ activeSection: 'about' });
+          // 重新计算区块位置
+          this.updateSectionRects();
+        }, 350);
+      }
     });
-    this.setData({ activeSection: '' });
   },
 
   /**
