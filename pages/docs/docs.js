@@ -38,7 +38,10 @@ Page({
    */
   onReady() {
     if (this.data.scrollToId) {
-      this.scrollToTarget(this.data.scrollToId);
+      // 延迟执行滚动，确保页面元素已完全渲染
+      setTimeout(() => {
+        this.scrollToTarget(this.data.scrollToId);
+      }, 100);
     }
   },
 
@@ -252,13 +255,16 @@ Page({
   scrollToTarget(targetId) {
     const query = wx.createSelectorQuery();
     query.select('#' + targetId).boundingClientRect();
+    query.select('.quick-nav').boundingClientRect();
     query.selectViewport().scrollOffset();
     query.exec((res) => {
-      if (res[0] && res[1]) {
+      if (res[0] && res[1] && res[2]) {
         const rect = res[0];
-        const scrollOffset = res[1];
-        // 计算需要滚动的位置（减去一些偏移量，使内容不会被顶部遮挡）
-        const scrollTop = scrollOffset.scrollTop + rect.top - 120;
+        const navRect = res[1];
+        const scrollOffset = res[2];
+        // 计算需要滚动的位置，使板块顶部（包括标题）完全显示在导航栏下方
+        // 在板块上边界与导航栏下边界之间留一点空隙
+        const scrollTop = scrollOffset.scrollTop + rect.top - (navRect.top + navRect.height + 40);
         wx.pageScrollTo({
           scrollTop: scrollTop > 0 ? scrollTop : 0,
           duration: 300
