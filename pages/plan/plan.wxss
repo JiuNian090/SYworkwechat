@@ -166,24 +166,22 @@ page {
 }
 
 .add-template-btn {
-  background: #07c160;
-  color: #fff;
+  background: #07c160 !important;
+  color: #fff !important;
   font-size: 28rpx;
   border-radius: 30rpx;
   padding: 2rpx 16rpx;
   font-weight: 500;
   box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
-  transition: all 0.3s ease;
-  border: none;
+  border: none !important;
   white-space: nowrap;
   min-width: 120rpx;
   text-align: center;
 }
 
-.add-template-btn:active {
-  background: #059e4d;
-  box-shadow: 0 2rpx 12rpx rgba(7, 193, 96, 0.25);
-  transform: translateY(1rpx);
+.add-template-btn::after {
+  border-radius: 30rpx;
+  border: none;
 }
 
 .template-list {
@@ -282,38 +280,35 @@ page {
   padding: 0rpx 20rpx;
   border-radius: 30rpx;
   font-size: 26rpx;
-  border: none;
   min-width: 80rpx;
   text-align: center;
-  transition: all 0.3s ease;
   font-weight: 500;
-  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.1);
   height: 50rpx;
   line-height: 50rpx;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 
 .edit-btn {
-  background-color: #bae7ff;
-  color: #096dd9;
-  border: 1rpx solid #40a9ff;
+  background-color: #bae7ff !important;
+  color: #096dd9 !important;
+  border: 1rpx solid #40a9ff !important;
 }
 
-.edit-btn:active {
-  background-color: #91d5ff;
-  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.15);
-  transform: translateY(1rpx);
+.edit-btn::after {
+  border-radius: 30rpx;
+  border: none;
 }
 
 .delete-btn {
-  background-color: #ffccc7;
-  color: #cf1322;
-  border: 1rpx solid #ff7875;
+  background-color: #ffccc7 !important;
+  color: #cf1322 !important;
+  border: 1rpx solid #ff7875 !important;
 }
 
-.delete-btn:active {
-  background-color: #ff9c9c;
-  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.15);
-  transform: translateY(1rpx);
+.delete-btn::after {
+  border-radius: 30rpx;
+  border: none;
 }
 
 .select-checkbox {
