@@ -137,12 +137,12 @@ page {
   padding: 20rpx 12rpx;
   background: var(--bg-color);
   border-radius: var(--radius-md);
-  transition: all 0.3s ease;
   border: 2rpx solid transparent;
 }
 
 .quick-nav-item:active {
-  transform: scale(0.96);
+  /* 移除点击时的缩放效果，直接显示选中状态 */
+  transform: none;
 }
 
 .quick-nav-item.active {
