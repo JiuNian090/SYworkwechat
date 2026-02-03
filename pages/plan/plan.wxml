@@ -15,7 +15,7 @@
       <view class="card-icon">📋</view>
       <text class="card-title">班次列表</text>
       <view class="card-action">
-        <button class="add-template-btn" bindtap="showAddTemplateModal">添加班次模板</button>
+        <button type="default" class="add-template-btn" bindtap="showAddTemplateModal">添加班次模板</button>
       </view>
     </view>
     <view class="template-list">
@@ -32,8 +32,8 @@
             </view>
           </view>
           <view class="template-actions">
-            <button class="edit-btn" bindtap="showEditTemplateModal" data-index="{{index}}">编辑</button>
-            <button class="delete-btn" bindtap="deleteTemplate" data-index="{{index}}">删除</button>
+            <button type="default" class="edit-btn" bindtap="showEditTemplateModal" data-index="{{index}}">编辑</button>
+            <button type="default" class="delete-btn" bindtap="deleteTemplate" data-index="{{index}}">删除</button>
           </view>
         </view>
       </view>
