@@ -710,7 +710,7 @@ Page({
       }
       
       // 添加图片文件（如果用户选择了导出图片）
-      if (this.data.selectedDataTypes.includes('images')) {
+      if (this.data.selectedDataTypes.includes('scheduleImages')) {
         const images = [];
         const fs = wx.getFileSystemManager();
         const imagePromises = [];
@@ -763,8 +763,9 @@ Page({
                       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
                       yearMonth = `${year}-${month}`;
                     }
-                    const safeImageName = image.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
-                    const imageFileName = `image/${yearMonth}/${key}_${safeImageName}.jpg`;
+                    // 使用原始图片名称
+                    const imageName = image.name || `image_${index}.jpg`;
+                    const imageFileName = `image/${yearMonth}/${imageName}`;
                     // 添加图片到ZIP
                     zip.file(imageFileName, res.data);
                     // 保存图片信息
@@ -791,6 +792,42 @@ Page({
         
         // 等待所有图片处理完成
         Promise.all(imagePromises).then(() => {
+          // 生成图片周关联表
+          const imageWeekRelation = {};
+          weekImageKeys.forEach(key => {
+            const weekImages = wx.getStorageSync(key) || [];
+            imageWeekRelation[key] = [];
+            weekImages.forEach((image, index) => {
+              // 从weekKey中提取年月（格式：YYYY-MM）
+              const weekKey = key.replace('week_images_', '');
+              let yearMonth;
+              try {
+                const weekDate = new Date(weekKey);
+                if (!isNaN(weekDate.getTime())) {
+                  const year = weekDate.getFullYear();
+                  const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                  yearMonth = `${year}-${month}`;
+                } else {
+                  const currentDate = new Date();
+                  const year = currentDate.getFullYear();
+                  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                  yearMonth = `${year}-${month}`;
+                }
+              } catch (e) {
+                const currentDate = new Date();
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                yearMonth = `${year}-${month}`;
+              }
+              const imageName = image.name || `image_${index}.jpg`;
+              const imagePath = `image/${yearMonth}/${imageName}`;
+              imageWeekRelation[key].push({ name: imageName, path: imagePath });
+            });
+          });
+          
+          // 添加图片周关联表.json文件
+          zip.file('图片周关联表.json', JSON.stringify(imageWeekRelation, null, 2));
+          
           // 生成ZIP文件
           zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
             // 检查content是否为空
