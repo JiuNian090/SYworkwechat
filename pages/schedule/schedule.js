@@ -837,10 +837,17 @@ Page({
 
   // 显示添加图片弹窗
   onAddImageBtnTap() {
+    // 生成默认图片名称（年月周）
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    const week = this.getWeekOfMonth(currentDate);
+    const defaultImageName = `${year}年${month}月第${week}周`;
+    
     this.setData({
       showAddImageModal: true,
       selectedImagePath: '',
-      imageName: null
+      imageName: defaultImageName
     });
   },
 
@@ -889,9 +896,9 @@ Page({
     // 无论用户是否输入名称，都使用年月周作为基础名称，确保重复时使用年月周+数字格式
     const currentDate = new Date();
     const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    const week = String(this.getWeekOfMonth(currentDate)).padStart(2, '0');
-    const baseName = `${year}${month}${week}`;
+    const month = currentDate.getMonth() + 1;
+    const week = this.getWeekOfMonth(currentDate);
+    const baseName = `${year}年${month}月第${week}周`;
     
     // 如果用户没有输入名称，使用年月周作为默认名称
     if (!finalImageName) {
