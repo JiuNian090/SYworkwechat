@@ -884,10 +884,28 @@ Page({
     // 生成唯一ID
     const imageId = Date.now().toString();
 
+    // 生成默认图片名称（年月周）
+    let finalImageName = imageName;
+    if (!finalImageName) {
+      const currentDate = new Date();
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const week = String(this.getWeekOfMonth(currentDate)).padStart(2, '0');
+      finalImageName = `${year}${month}${week}`;
+    }
+
+    // 检查名称是否重复，如果重复则在后面加1,2,3...
+    let uniqueImageName = finalImageName;
+    let counter = 1;
+    while (weekImages.some(image => image.name === uniqueImageName)) {
+      uniqueImageName = `${finalImageName}${counter}`;
+      counter++;
+    }
+
     // 构造图片对象
     const newImage = {
       id: imageId,
-      name: imageName,
+      name: uniqueImageName,
       path: selectedImagePath,
       addedTime: new Date().toISOString()
     };
