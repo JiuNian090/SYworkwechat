@@ -2472,6 +2472,8 @@ Page({
                 success: () => {
                   uploadedCount++;
                   if (uploadedCount === imageCount) {
+                    // 更新图片最后备份时间戳
+                    wx.setStorageSync('imagesLastModified', Date.now());
                     wx.hideLoading();
                     wx.showToast({
                       title: '备份成功',
@@ -2483,6 +2485,8 @@ Page({
                   console.error('上传图片失败', err);
                   uploadedCount++;
                   if (uploadedCount === imageCount) {
+                    // 更新图片最后备份时间戳
+                    wx.setStorageSync('imagesLastModified', Date.now());
                     wx.hideLoading();
                     wx.showToast({
                       title: '备份成功（部分图片上传失败）',
@@ -2510,6 +2514,8 @@ Page({
     
     // 如果没有新图片需要上传
     if (!hasNewImages) {
+      // 更新图片最后备份时间戳
+      wx.setStorageSync('imagesLastModified', Date.now());
       wx.hideLoading();
       wx.showToast({
         title: '备份成功（无新图片）',
