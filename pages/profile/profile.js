@@ -1058,6 +1058,23 @@ Page({
   importFromZip(filePath) {
     const fs = wx.getFileSystemManager();
     
+    // 直接使用WebDAV恢复的解压和恢复逻辑
+    this.extractAndRestoreBackup(filePath, fs).then(() => {
+      this.finishImport();
+    }).catch((err) => {
+      wx.hideLoading();
+      console.error('导入失败', err);
+      wx.showToast({
+        title: '导入失败',
+        icon: 'none'
+      });
+    });
+  },
+  
+  // 原从ZIP文件导入方法（保留作为备份）
+  oldImportFromZip(filePath) {
+    const fs = wx.getFileSystemManager();
+    
     fs.readFile({
       filePath: filePath,
       success: (readRes) => {
