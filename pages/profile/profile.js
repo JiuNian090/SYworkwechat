@@ -1017,23 +1017,58 @@ Page({
         try {
           const data = JSON.parse(readRes.data);
           
-          // 验证数据格式 - 检查必需的数据结构
-          if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
-            throw new Error('数据格式不正确');
+          // 获取文件名，判断文件类型
+          const fileName = filePath.split('/').pop();
+          let importSuccess = false;
+          
+          // 处理班次模板.json文件
+          if (fileName === '班次模板.json') {
+            // 验证数据格式
+            const shiftTemplatesData = data.data || data.shiftTemplates;
+            if (Array.isArray(shiftTemplatesData)) {
+              wx.setStorageSync('shiftTemplates', shiftTemplatesData);
+              importSuccess = true;
+            } else {
+              throw new Error('班次模板数据格式不正确');
+            }
+          }
+          // 处理排班数据.json文件
+          else if (fileName === '排班数据.json') {
+            // 验证数据格式
+            const shiftsData = data.shifts;
+            if (shiftsData && typeof shiftsData === 'object') {
+              wx.setStorageSync('shifts', shiftsData);
+              if (data.customWeeklyHours !== undefined) {
+                wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
+              }
+              importSuccess = true;
+            } else {
+              throw new Error('排班数据格式不正确');
+            }
+          }
+          // 处理完整备份文件（包含两种数据）
+          else {
+            // 验证数据格式 - 检查必需的数据结构
+            if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
+              throw new Error('数据格式不正确');
+            }
+            
+            // 保存数据到本地存储
+            if (data.shiftTemplates) {
+              wx.setStorageSync('shiftTemplates', data.shiftTemplates);
+            }
+            if (data.shifts) {
+              wx.setStorageSync('shifts', data.shifts);
+            }
+            if (data.customWeeklyHours !== undefined) {
+              wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
+            }
+            importSuccess = true;
           }
           
-          // 保存数据到本地存储
-          if (data.shiftTemplates) {
-            wx.setStorageSync('shiftTemplates', data.shiftTemplates);
+          if (importSuccess) {
+            this.finishImport();
           }
-          if (data.shifts) {
-            wx.setStorageSync('shifts', data.shifts);
-          }
-          if (data.customWeeklyHours !== undefined) {
-            wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
-          }
-          
-          this.finishImport();
         } catch (e) {
           wx.hideLoading();
           console.error('解析数据失败', e);
