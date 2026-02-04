@@ -715,6 +715,7 @@ Page({
         const fs = wx.getFileSystemManager();
         const imagePromises = [];
         const processedImages = new Set(); // 用于跟踪已处理的图片
+        const validWeekImageKeys = []; // 用于跟踪包含有效图片的周
         
         // 获取所有周的图片
         // 注意：这里需要根据实际存储结构调整，例如按周存储的图片
@@ -724,69 +725,80 @@ Page({
         
         weekImageKeys.forEach(key => {
           const weekImages = wx.getStorageSync(key) || [];
-          weekImages.forEach((image, index) => {
-            // 生成图片唯一标识（基于图片路径和名称）
-            const imageKey = `${key}_${image.name}_${image.path}`;
+          const validWeekImages = weekImages.filter(image => {
+            // 过滤掉名称为"0"的图片和无效图片
+            return image && image.name !== '0' && image.path;
+          });
+          
+          // 只处理有有效图片的周
+          if (validWeekImages.length > 0) {
+            validWeekImageKeys.push(key);
             
-            // 检查图片是否已经处理过
-            if (!processedImages.has(imageKey)) {
-              processedImages.add(imageKey);
+            validWeekImages.forEach((image, index) => {
+              // 生成图片唯一标识（基于图片路径和名称）
+              const imageKey = `${key}_${image.name}_${image.path}`;
               
-              const promise = new Promise((resolve) => {
-                try {
-                  // 读取图片文件
-                  fs.readFile({
-                    filePath: image.path,
-                    success: (res) => {
-                    // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
-                    // 从weekKey中提取年月（格式：YYYY-MM）
-                    const weekKey = key.replace('week_images_', '');
-                    let yearMonth;
-                    try {
-                      const weekDate = new Date(weekKey);
-                      // 检查日期是否有效
-                      if (!isNaN(weekDate.getTime())) {
-                        const year = weekDate.getFullYear();
-                        const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-                        yearMonth = `${year}-${month}`;
-                      } else {
-                        // 如果日期无效，使用当前日期
-                        const currentDate = new Date();
-                        const year = currentDate.getFullYear();
-                        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                        yearMonth = `${year}-${month}`;
+              // 检查图片是否已经处理过
+              if (!processedImages.has(imageKey)) {
+                processedImages.add(imageKey);
+                
+                const promise = new Promise((resolve) => {
+                  try {
+                    // 读取图片文件
+                    fs.readFile({
+                      filePath: image.path,
+                      success: (res) => {
+                        // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
+                        // 从weekKey中提取年月（格式：YYYY-MM）
+                        const weekKey = key.replace('week_images_', '');
+                        let yearMonth;
+                        try {
+                          const weekDate = new Date(weekKey);
+                          // 检查日期是否有效
+                          if (!isNaN(weekDate.getTime())) {
+                            const year = weekDate.getFullYear();
+                            const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                            yearMonth = `${year}-${month}`;
+                          } else {
+                            // 如果日期无效，使用当前日期
+                            const currentDate = new Date();
+                            const year = currentDate.getFullYear();
+                            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                            yearMonth = `${year}-${month}`;
+                          }
+                        } catch (e) {
+                          // 如果发生错误，使用当前日期
+                          const currentDate = new Date();
+                          const year = currentDate.getFullYear();
+                          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                          yearMonth = `${year}-${month}`;
+                        }
+                        // 使用原始图片名称
+                        const imageName = image.name || `image_${index}.jpg`;
+                        const imageFileName = `image/${yearMonth}/${imageName}`;
+                        // 添加图片到ZIP
+                        zip.file(imageFileName, res.data);
+                        // 保存图片信息
+                        images.push({
+                          ...image,
+                          key: key,
+                          zipPath: imageFileName
+                        });
+                        resolve();
+                      },
+                      fail: (err) => {
+                        console.error('读取图片失败', err);
+                        resolve(); // 忽略失败的图片
                       }
-                    } catch (e) {
-                      // 如果发生错误，使用当前日期
-                      const currentDate = new Date();
-                      const year = currentDate.getFullYear();
-                      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                      yearMonth = `${year}-${month}`;
-                    }
-                    // 使用原始图片名称
-                    const imageName = image.name || `image_${index}.jpg`;
-                    const imageFileName = `image/${yearMonth}/${imageName}`;
-                    // 添加图片到ZIP
-                    zip.file(imageFileName, res.data);
-                    // 保存图片信息
-                    images.push({
-                      ...image,
-                      key: key,
-                      zipPath: imageFileName
                     });
+                  } catch (e) {
+                    console.error('处理图片失败', e);
                     resolve();
-                  },
-                  fail: (err) => {
-                    console.error('读取图片失败', err);
-                    resolve(); // 忽略失败的图片
                   }
                 });
-              } catch (e) {
-                console.error('处理图片失败', e);
-                resolve();
+                imagePromises.push(promise);
               }
             });
-            imagePromises.push(promise);
           }
         });
         
@@ -794,10 +806,14 @@ Page({
         Promise.all(imagePromises).then(() => {
           // 生成图片周关联表
           const imageWeekRelation = {};
-          weekImageKeys.forEach(key => {
+          validWeekImageKeys.forEach(key => {
             const weekImages = wx.getStorageSync(key) || [];
+            const validWeekImages = weekImages.filter(image => {
+              // 过滤掉名称为"0"的图片和无效图片
+              return image && image.name !== '0' && image.path;
+            });
             imageWeekRelation[key] = [];
-            weekImages.forEach((image, index) => {
+            validWeekImages.forEach((image, index) => {
               // 从weekKey中提取年月（格式：YYYY-MM）
               const weekKey = key.replace('week_images_', '');
               let yearMonth;
@@ -822,7 +838,6 @@ Page({
               const imageName = image.name || `image_${index}.jpg`;
               const imagePath = `image/${yearMonth}/${imageName}`;
               imageWeekRelation[key].push({ name: imageName, path: imagePath });
-            });
           });
           
           // 添加图片周关联表.json文件
@@ -2114,65 +2129,81 @@ Page({
         const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
         
         const imagePromises = [];
+        const validWeekImageKeys = []; // 用于跟踪包含有效图片的周
+        
         weekImageKeys.forEach(key => {
           const weekImages = wx.getStorageSync(key) || [];
-          weekImages.forEach((image, index) => {
-            // 从weekKey中提取年月（格式：YYYY-MM）
-            const weekKey = key.replace('week_images_', '');
-            let yearMonth;
-            try {
-              const weekDate = new Date(weekKey);
-              // 检查日期是否有效
-              if (!isNaN(weekDate.getTime())) {
-                const year = weekDate.getFullYear();
-                const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-                yearMonth = `${year}-${month}`;
-              } else {
-                // 如果日期无效，使用当前日期
+          const validWeekImages = weekImages.filter(image => {
+            // 过滤掉名称为"0"的图片和无效图片
+            return image && image.name !== '0' && image.path;
+          });
+          
+          // 只处理有有效图片的周
+          if (validWeekImages.length > 0) {
+            validWeekImageKeys.push(key);
+            
+            validWeekImages.forEach((image, index) => {
+              // 从weekKey中提取年月（格式：YYYY-MM）
+              const weekKey = key.replace('week_images_', '');
+              let yearMonth;
+              try {
+                const weekDate = new Date(weekKey);
+                // 检查日期是否有效
+                if (!isNaN(weekDate.getTime())) {
+                  const year = weekDate.getFullYear();
+                  const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                  yearMonth = `${year}-${month}`;
+                } else {
+                  // 如果日期无效，使用当前日期
+                  const currentDate = new Date();
+                  const year = currentDate.getFullYear();
+                  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                  yearMonth = `${year}-${month}`;
+                }
+              } catch (e) {
+                // 如果发生错误，使用当前日期
                 const currentDate = new Date();
                 const year = currentDate.getFullYear();
                 const month = String(currentDate.getMonth() + 1).padStart(2, '0');
                 yearMonth = `${year}-${month}`;
               }
-            } catch (e) {
-              // 如果发生错误，使用当前日期
-              const currentDate = new Date();
-              const year = currentDate.getFullYear();
-              const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-              yearMonth = `${year}-${month}`;
-            }
-            // 使用原始图片名称
-            const imageName = image.name || `image_${index}.jpg`;
-            const imageFileName = `image/${yearMonth}/${imageName}`;
-            const localImagePath = image.path;
-            
-            const imagePromise = new Promise((resolveImage) => {
-              fs.readFile({
-                filePath: localImagePath,
-                success: (res) => {
-                  // 添加图片到ZIP
-                  zip.file(imageFileName, res.data);
-                  resolveImage();
-                },
-                fail: (err) => {
-                  console.error('读取图片失败', err);
-                  resolveImage(); // 忽略失败的图片
-                }
+              // 使用原始图片名称
+              const imageName = image.name || `image_${index}.jpg`;
+              const imageFileName = `image/${yearMonth}/${imageName}`;
+              const localImagePath = image.path;
+              
+              const imagePromise = new Promise((resolveImage) => {
+                fs.readFile({
+                  filePath: localImagePath,
+                  success: (res) => {
+                    // 添加图片到ZIP
+                    zip.file(imageFileName, res.data);
+                    resolveImage();
+                  },
+                  fail: (err) => {
+                    console.error('读取图片失败', err);
+                    resolveImage(); // 忽略失败的图片
+                  }
+                });
               });
+              
+              imagePromises.push(imagePromise);
             });
-            
-            imagePromises.push(imagePromise);
-          });
+          }
         });
         
         // 等待所有图片处理完成
         Promise.all(imagePromises).then(() => {
           // 生成图片周关联表数据
           const imageWeekRelation = {};
-          weekImageKeys.forEach(key => {
+          validWeekImageKeys.forEach(key => {
             const weekImages = wx.getStorageSync(key) || [];
+            const validWeekImages = weekImages.filter(image => {
+              // 过滤掉名称为"0"的图片和无效图片
+              return image && image.name !== '0' && image.path;
+            });
             imageWeekRelation[key] = [];
-            weekImages.forEach((image, index) => {
+            validWeekImages.forEach((image, index) => {
               // 从weekKey中提取年月（格式：YYYY-MM）
               const weekKey = key.replace('week_images_', '');
               let yearMonth;
