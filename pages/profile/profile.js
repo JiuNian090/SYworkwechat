@@ -699,37 +699,45 @@ Page({
     try {
       const zip = new JSZip();
       
-      // 添加JSON数据文件
-      zip.file('data.json', JSON.stringify(data, null, 2));
+      // 添加班次模板文件（如果用户选择了导出班次模板）
+      if (this.data.selectedDataTypes.includes('shiftTemplates') && data.shiftTemplates) {
+        zip.file('班次模板.json', JSON.stringify({ data: data.shiftTemplates }, null, 2));
+      }
       
-      // 添加图片文件
-      const images = [];
-      const fs = wx.getFileSystemManager();
-      const imagePromises = [];
-      const processedImages = new Set(); // 用于跟踪已处理的图片
+      // 添加排班数据文件（如果用户选择了导出排班数据）
+      if (this.data.selectedDataTypes.includes('shifts') && data.shifts) {
+        zip.file('排班数据.json', JSON.stringify({ shifts: data.shifts, statistics: data.statistics }, null, 2));
+      }
       
-      // 获取所有周的图片
-      // 注意：这里需要根据实际存储结构调整，例如按周存储的图片
-      // 假设图片是按周存储的，键格式为 week_images_{weekKey}
-      const storageInfo = wx.getStorageInfoSync();
-      const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
-      
-      weekImageKeys.forEach(key => {
-        const weekImages = wx.getStorageSync(key) || [];
-        weekImages.forEach((image, index) => {
-          // 生成图片唯一标识（基于图片路径和名称）
-          const imageKey = `${key}_${image.name}_${image.path}`;
-          
-          // 检查图片是否已经处理过
-          if (!processedImages.has(imageKey)) {
-            processedImages.add(imageKey);
+      // 添加图片文件（如果用户选择了导出图片）
+      if (this.data.selectedDataTypes.includes('images')) {
+        const images = [];
+        const fs = wx.getFileSystemManager();
+        const imagePromises = [];
+        const processedImages = new Set(); // 用于跟踪已处理的图片
+        
+        // 获取所有周的图片
+        // 注意：这里需要根据实际存储结构调整，例如按周存储的图片
+        // 假设图片是按周存储的，键格式为 week_images_{weekKey}
+        const storageInfo = wx.getStorageInfoSync();
+        const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+        
+        weekImageKeys.forEach(key => {
+          const weekImages = wx.getStorageSync(key) || [];
+          weekImages.forEach((image, index) => {
+            // 生成图片唯一标识（基于图片路径和名称）
+            const imageKey = `${key}_${image.name}_${image.path}`;
             
-            const promise = new Promise((resolve) => {
-              try {
-                // 读取图片文件
-                fs.readFile({
-                  filePath: image.path,
-                  success: (res) => {
+            // 检查图片是否已经处理过
+            if (!processedImages.has(imageKey)) {
+              processedImages.add(imageKey);
+              
+              const promise = new Promise((resolve) => {
+                try {
+                  // 读取图片文件
+                  fs.readFile({
+                    filePath: image.path,
+                    success: (res) => {
                     // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
                     // 从weekKey中提取年月（格式：YYYY-MM）
                     const weekKey = key.replace('week_images_', '');
@@ -780,11 +788,64 @@ Page({
             imagePromises.push(promise);
           }
         });
-      });
-      
-      // 等待所有图片处理完成
-      Promise.all(imagePromises).then(() => {
-        // 生成ZIP文件
+        
+        // 等待所有图片处理完成
+        Promise.all(imagePromises).then(() => {
+          // 生成ZIP文件
+          zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
+            // 检查content是否为空
+            if (!content || content.byteLength === 0) {
+              wx.hideLoading();
+              wx.showToast({
+                title: '没有数据可导出',
+                icon: 'none'
+              });
+              return;
+            }
+            
+            // 创建临时文件
+            const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.zip`;
+            
+            fs.writeFile({
+              filePath: filePath,
+              data: content,
+              success: () => {
+                wx.hideLoading();
+                // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
+                this.setData({
+                  exportedFilePath: filePath,
+                  exportedFileName: fileName
+                });
+                
+                // 显示提示，让用户点击分享按钮
+                wx.showModal({
+                  title: '导出成功',
+                  content: '数据已导出为ZIP文件（包含图片），请点击下方"分享数据"按钮将文件发送给好友',
+                  showCancel: false,
+                  confirmText: '知道了'
+                });
+              },
+              fail: (err) => {
+                wx.hideLoading();
+                console.error('写入ZIP文件失败', err);
+                wx.showToast({
+                  title: '导出失败',
+                  icon: 'none'
+                });
+              }
+            });
+          }).catch((err) => {
+            wx.hideLoading();
+            console.error('生成ZIP失败', err);
+            wx.showToast({
+              title: '导出失败',
+              icon: 'none'
+            });
+          });
+        });
+        });
+      } else {
+        // 如果不需要导出图片，直接生成ZIP文件
         zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
           // 检查content是否为空
           if (!content || content.byteLength === 0) {
@@ -799,6 +860,7 @@ Page({
           // 创建临时文件
           const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.zip`;
           
+          const fs = wx.getFileSystemManager();
           fs.writeFile({
             filePath: filePath,
             data: content,
@@ -813,7 +875,7 @@ Page({
               // 显示提示，让用户点击分享按钮
               wx.showModal({
                 title: '导出成功',
-                content: '数据已导出为ZIP文件（包含图片），请点击下方"分享数据"按钮将文件发送给好友',
+                content: '数据已导出为ZIP文件，请点击下方"分享数据"按钮将文件发送给好友',
                 showCancel: false,
                 confirmText: '知道了'
               });
@@ -835,7 +897,7 @@ Page({
             icon: 'none'
           });
         });
-      });
+      }
     } catch (e) {
       wx.hideLoading();
       console.error('导出ZIP失败', e);
@@ -1003,24 +1065,116 @@ Page({
           const zip = new JSZip();
           
           zip.loadAsync(readRes.data).then((zip) => {
-            // 读取data.json文件
-            zip.file('data.json').async('string').then((jsonStr) => {
-              const data = JSON.parse(jsonStr);
-              
-              // 验证数据格式
-              if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
-                throw new Error('数据格式不正确');
-              }
-              
+            // 检查是否存在班次模板.json文件
+            const shiftTemplatesFile = zip.file('班次模板.json');
+            // 检查是否存在排班数据.json文件
+            const shiftsFile = zip.file('排班数据.json');
+            // 检查是否存在旧格式的data.json文件
+            const dataJsonFile = zip.file('data.json');
+            
+            // 用于存储导入的数据
+            const importData = {
+              shiftTemplates: [],
+              shifts: {},
+              customWeeklyHours: 35
+            };
+            
+            // 处理班次模板文件
+            const processShiftTemplates = () => {
+              return new Promise((resolve) => {
+                if (shiftTemplatesFile) {
+                  shiftTemplatesFile.async('string').then((jsonStr) => {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      if (data.data) {
+                        importData.shiftTemplates = data.data;
+                      }
+                    } catch (e) {
+                      console.error('解析班次模板.json失败', e);
+                    }
+                    resolve();
+                  }).catch((err) => {
+                    console.error('读取班次模板.json失败', err);
+                    resolve();
+                  });
+                } else {
+                  resolve();
+                }
+              });
+            };
+            
+            // 处理排班数据文件
+            const processShifts = () => {
+              return new Promise((resolve) => {
+                if (shiftsFile) {
+                  shiftsFile.async('string').then((jsonStr) => {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      if (data.shifts) {
+                        importData.shifts = data.shifts;
+                      }
+                      if (data.customWeeklyHours !== undefined) {
+                        importData.customWeeklyHours = data.customWeeklyHours;
+                      }
+                    } catch (e) {
+                      console.error('解析排班数据.json失败', e);
+                    }
+                    resolve();
+                  }).catch((err) => {
+                    console.error('读取排班数据.json失败', err);
+                    resolve();
+                  });
+                } else {
+                  resolve();
+                }
+              });
+            };
+            
+            // 处理旧格式的data.json文件
+            const processDataJson = () => {
+              return new Promise((resolve) => {
+                if (dataJsonFile && (!shiftTemplatesFile || !shiftsFile)) {
+                  dataJsonFile.async('string').then((jsonStr) => {
+                    try {
+                      const data = JSON.parse(jsonStr);
+                      if (data.shiftTemplates) {
+                        importData.shiftTemplates = data.shiftTemplates;
+                      }
+                      if (data.shifts) {
+                        importData.shifts = data.shifts;
+                      }
+                      if (data.customWeeklyHours !== undefined) {
+                        importData.customWeeklyHours = data.customWeeklyHours;
+                      }
+                    } catch (e) {
+                      console.error('解析data.json失败', e);
+                    }
+                    resolve();
+                  }).catch((err) => {
+                    console.error('读取data.json失败', err);
+                    resolve();
+                  });
+                } else {
+                  resolve();
+                }
+              });
+            };
+            
+            // 按顺序处理所有文件
+            Promise.all([
+              processShiftTemplates(),
+              processShifts(),
+              processDataJson()
+            ]).then(() => {
               // 保存数据到本地存储
-              if (data.shiftTemplates) {
-                wx.setStorageSync('shiftTemplates', data.shiftTemplates);
+              if (importData.shiftTemplates.length > 0) {
+                wx.setStorageSync('shiftTemplates', importData.shiftTemplates);
               }
-              if (data.shifts) {
-                wx.setStorageSync('shifts', data.shifts);
+              if (Object.keys(importData.shifts).length > 0) {
+                wx.setStorageSync('shifts', importData.shifts);
               }
-              if (data.customWeeklyHours !== undefined) {
-                wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
+              if (importData.customWeeklyHours !== undefined) {
+                wx.setStorageSync('customWeeklyHours', importData.customWeeklyHours);
               }
               
               // 处理图片文件（兼容新旧路径格式：image/YYYY-MM/ 或 images/）
