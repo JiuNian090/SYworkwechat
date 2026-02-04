@@ -964,6 +964,9 @@ Page({
           const weekKey = this.getWeekKey();
           wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
           
+          // 更新图片最后修改时间戳，确保下次备份时会重新备份
+          wx.setStorageSync('imagesLastModified', Date.now());
+          
           wx.showToast({
             title: '图片删除成功',
             icon: 'success'
