@@ -886,19 +886,23 @@ Page({
 
     // 生成默认图片名称（年月周）
     let finalImageName = imageName;
+    // 无论用户是否输入名称，都使用年月周作为基础名称，确保重复时使用年月周+数字格式
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const week = String(this.getWeekOfMonth(currentDate)).padStart(2, '0');
+    const baseName = `${year}${month}${week}`;
+    
+    // 如果用户没有输入名称，使用年月周作为默认名称
     if (!finalImageName) {
-      const currentDate = new Date();
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const week = String(this.getWeekOfMonth(currentDate)).padStart(2, '0');
-      finalImageName = `${year}${month}${week}`;
+      finalImageName = baseName;
     }
 
-    // 检查名称是否重复，如果重复则在后面加1,2,3...
+    // 检查名称是否重复，如果重复则在后面加1,2,3...，使用年月周+数字格式
     let uniqueImageName = finalImageName;
     let counter = 1;
     while (weekImages.some(image => image.name === uniqueImageName)) {
-      uniqueImageName = `${finalImageName}${counter}`;
+      uniqueImageName = `${baseName}${counter}`;
       counter++;
     }
 
