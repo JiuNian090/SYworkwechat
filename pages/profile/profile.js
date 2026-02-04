@@ -2104,7 +2104,9 @@ Page({
               const month = String(currentDate.getMonth() + 1).padStart(2, '0');
               yearMonth = `${year}-${month}`;
             }
-            const imageFileName = `image/${yearMonth}/${key}_${index}_${image.name || `image_${index}.jpg`}`;
+            // 使用原始图片名称
+            const imageName = image.name || `image_${index}.jpg`;
+            const imageFileName = `image/${yearMonth}/${imageName}`;
             const localImagePath = image.path;
             
             const imagePromise = new Promise((resolveImage) => {
@@ -2128,6 +2130,42 @@ Page({
         
         // 等待所有图片处理完成
         Promise.all(imagePromises).then(() => {
+          // 生成图片周关联表数据
+          const imageWeekRelation = {};
+          weekImageKeys.forEach(key => {
+            const weekImages = wx.getStorageSync(key) || [];
+            imageWeekRelation[key] = [];
+            weekImages.forEach((image, index) => {
+              // 从weekKey中提取年月（格式：YYYY-MM）
+              const weekKey = key.replace('week_images_', '');
+              let yearMonth;
+              try {
+                const weekDate = new Date(weekKey);
+                if (!isNaN(weekDate.getTime())) {
+                  const year = weekDate.getFullYear();
+                  const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                  yearMonth = `${year}-${month}`;
+                } else {
+                  const currentDate = new Date();
+                  const year = currentDate.getFullYear();
+                  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                  yearMonth = `${year}-${month}`;
+                }
+              } catch (e) {
+                const currentDate = new Date();
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                yearMonth = `${year}-${month}`;
+              }
+              const imageName = image.name || `image_${index}.jpg`;
+              const imagePath = `image/${yearMonth}/${imageName}`;
+              imageWeekRelation[key].push({ name: imageName, path: imagePath });
+            });
+          });
+          
+          // 添加图片周关联表.json文件
+          zip.file('图片周关联表.json', JSON.stringify(imageWeekRelation, null, 2));
+          
           // 生成ZIP文件
           zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
             // 写入ZIP文件
@@ -3191,8 +3229,14 @@ Page({
                 }
               });
               
+              // 提取图片周关联表
+              let imageWeekRelation = {};
+              this.extractAndRestoreFile(zip, '图片周关联表.json', (data) => {
+                imageWeekRelation = data;
+              });
+              
               // 提取并恢复图片
-              this.extractAndRestoreImages(zip, fs);
+              this.extractAndRestoreImages(zip, fs, imageWeekRelation);
               
               // 更新恢复时间戳
               wx.setStorageSync('lastRestoreTime', Date.now());
@@ -3233,7 +3277,7 @@ Page({
   },
   
   // 提取并恢复图片（兼容新旧路径格式）
-  extractAndRestoreImages(zip, fs) {
+  extractAndRestoreImages(zip, fs, imageWeekRelation = {}) {
     // 尝试获取新旧两种路径格式的图片文件夹
     const imageFolder = zip.folder('image') || zip.folder('images');
     if (!imageFolder) return;
@@ -3250,30 +3294,41 @@ Page({
         } else {
           // 处理图片文件
           file.async('arraybuffer').then((content) => {
-            // 解析图片信息，恢复到对应的周存储
-            // 文件名格式：week_images_{weekKey}_index_name.jpg
-            const fileName = relativePath.split('/').pop();
-            const fileNameParts = fileName.split('_');
-            if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
-              const weekKey = fileNameParts.slice(2, -2).join('_');
-              const weekImageKey = `week_images_${weekKey}`;
-              
-              // 获取现有图片数据
+            // 完整的图片路径
+            const fullImagePath = `${basePath}${relativePath}`;
+            
+            // 尝试从图片周关联表中查找对应的周存储
+            let weekImageKey = null;
+            let imageName = null;
+            
+            // 遍历图片周关联表，查找匹配的图片路径
+            Object.keys(imageWeekRelation).forEach(key => {
+              const images = imageWeekRelation[key] || [];
+              for (const img of images) {
+                if (img.path === fullImagePath) {
+                  weekImageKey = key;
+                  imageName = img.name;
+                  return;
+                }
+              }
+            });
+            
+            if (weekImageKey && imageName) {
+              // 使用图片周关联表中的信息恢复图片
               const existingImages = wx.getStorageSync(weekImageKey) || [];
               
-              // 生成图片唯一标识（基于文件名和内容长度）
-              const imageId = `${weekKey}_${fileNameParts[fileNameParts.length - 2]}_${content.byteLength}`;
+              // 生成图片唯一标识（基于周key、图片名和内容长度）
+              const imageId = `${weekImageKey}_${imageName}_${content.byteLength}`;
               
-              // 检查图片是否已存在（基于唯一标识）
+              // 检查图片是否已存在
               const imageExists = existingImages.some(img => 
                 img.id === imageId || 
-                (img.name === fileNameParts.slice(-1)[0].replace('.jpg', '') && 
-                 img.path.includes(fileNameParts[fileNameParts.length - 2]))
+                (img.name === imageName && img.path.includes(imageName))
               );
               
               if (!imageExists) {
                 // 生成临时图片路径
-                const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}_${fileNameParts.slice(-1)[0]}`;
+                const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}.jpg`;
                 
                 // 写入图片文件
                 fs.writeFile({
@@ -3283,13 +3338,62 @@ Page({
                     // 添加新图片
                     existingImages.push({
                       id: imageId,
-                      name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
+                      name: imageName,
                       path: tempPath,
                       addedTime: new Date().toISOString()
                     });
                     
                     // 保存图片数据
                     wx.setStorageSync(weekImageKey, existingImages);
+                  },
+                  fail: (err) => {
+                    console.error('写入图片文件失败', err);
+                  }
+                });
+              }
+            } else {
+              // 兼容处理：如果没有图片周关联表，使用原逻辑
+              const fileName = relativePath.split('/').pop();
+              // 直接使用文件名作为图片名
+              const imgName = fileName;
+              
+              // 尝试从文件名中解析周信息（如果可能）
+              let weekKey = 'unknown';
+              // 简单处理：使用当前日期作为默认周key
+              const currentDate = new Date();
+              weekKey = currentDate.toISOString().split('T')[0];
+              
+              const weekImgKey = `week_images_${weekKey}`;
+              const existingImages = wx.getStorageSync(weekImgKey) || [];
+              
+              // 生成图片唯一标识
+              const imageId = `${weekImgKey}_${imgName}_${content.byteLength}`;
+              
+              // 检查图片是否已存在
+              const imageExists = existingImages.some(img => 
+                img.id === imageId || 
+                (img.name === imgName && img.path.includes(imgName))
+              );
+              
+              if (!imageExists) {
+                // 生成临时图片路径
+                const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}.jpg`;
+                
+                // 写入图片文件
+                fs.writeFile({
+                  filePath: tempPath,
+                  data: content,
+                  success: () => {
+                    // 添加新图片
+                    existingImages.push({
+                      id: imageId,
+                      name: imgName,
+                      path: tempPath,
+                      addedTime: new Date().toISOString()
+                    });
+                    
+                    // 保存图片数据
+                    wx.setStorageSync(weekImgKey, existingImages);
                   },
                   fail: (err) => {
                     console.error('写入图片文件失败', err);
