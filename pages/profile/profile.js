@@ -733,10 +733,28 @@ Page({
                     // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
                     // 从weekKey中提取年月（格式：YYYY-MM）
                     const weekKey = key.replace('week_images_', '');
-                    const weekDate = new Date(weekKey);
-                    const year = weekDate.getFullYear();
-                    const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-                    const yearMonth = `${year}-${month}`;
+                    let yearMonth;
+                    try {
+                      const weekDate = new Date(weekKey);
+                      // 检查日期是否有效
+                      if (!isNaN(weekDate.getTime())) {
+                        const year = weekDate.getFullYear();
+                        const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                        yearMonth = `${year}-${month}`;
+                      } else {
+                        // 如果日期无效，使用当前日期
+                        const currentDate = new Date();
+                        const year = currentDate.getFullYear();
+                        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                        yearMonth = `${year}-${month}`;
+                      }
+                    } catch (e) {
+                      // 如果发生错误，使用当前日期
+                      const currentDate = new Date();
+                      const year = currentDate.getFullYear();
+                      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                      yearMonth = `${year}-${month}`;
+                    }
                     const safeImageName = image.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_');
                     const imageFileName = `image/${yearMonth}/${key}_${safeImageName}.jpg`;
                     // 添加图片到ZIP
@@ -1858,10 +1876,28 @@ Page({
           weekImages.forEach((image, index) => {
             // 从weekKey中提取年月（格式：YYYY-MM）
             const weekKey = key.replace('week_images_', '');
-            const weekDate = new Date(weekKey);
-            const year = weekDate.getFullYear();
-            const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-            const yearMonth = `${year}-${month}`;
+            let yearMonth;
+            try {
+              const weekDate = new Date(weekKey);
+              // 检查日期是否有效
+              if (!isNaN(weekDate.getTime())) {
+                const year = weekDate.getFullYear();
+                const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                yearMonth = `${year}-${month}`;
+              } else {
+                // 如果日期无效，使用当前日期
+                const currentDate = new Date();
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                yearMonth = `${year}-${month}`;
+              }
+            } catch (e) {
+              // 如果发生错误，使用当前日期
+              const currentDate = new Date();
+              const year = currentDate.getFullYear();
+              const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+              yearMonth = `${year}-${month}`;
+            }
             const imageFileName = `image/${yearMonth}/${key}_${index}_${image.name || `image_${index}.jpg`}`;
             const localImagePath = image.path;
             
@@ -2188,10 +2224,28 @@ Page({
           imageCount++;
           // 从weekKey中提取年月（格式：YYYY-MM）
           const weekKey = key.replace('week_images_', '');
-          const weekDate = new Date(weekKey);
-          const year = weekDate.getFullYear();
-          const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-          const yearMonth = `${year}-${month}`;
+          let yearMonth;
+          try {
+            const weekDate = new Date(weekKey);
+            // 检查日期是否有效
+            if (!isNaN(weekDate.getTime())) {
+              const year = weekDate.getFullYear();
+              const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+              yearMonth = `${year}-${month}`;
+            } else {
+              // 如果日期无效，使用当前日期
+              const currentDate = new Date();
+              const year = currentDate.getFullYear();
+              const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+              yearMonth = `${year}-${month}`;
+            }
+          } catch (e) {
+            // 如果发生错误，使用当前日期
+            const currentDate = new Date();
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            yearMonth = `${year}-${month}`;
+          }
           const imageFileName = `image/${yearMonth}/${key}_${index}_${image.name || `image_${index}.jpg`}`;
           const localImagePath = image.path;
           
