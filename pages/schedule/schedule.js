@@ -837,11 +837,11 @@ Page({
 
   // 显示添加图片弹窗
   onAddImageBtnTap() {
-    // 生成默认图片名称（年月周）
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    const week = this.getWeekOfMonth(currentDate);
+    // 生成默认图片名称（年月周），根据当前周视图所在的周
+    const currentViewDate = new Date(this.data.currentDate);
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth() + 1;
+    const week = this.getWeekOfMonth(currentViewDate);
     const defaultImageName = `${year}年${month}月第${week}周`;
     
     this.setData({
@@ -894,10 +894,10 @@ Page({
     // 生成默认图片名称（年月周）
     let finalImageName = imageName;
     // 无论用户是否输入名称，都使用年月周作为基础名称，确保重复时使用年月周+数字格式
-    const currentDate = new Date();
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-    const week = this.getWeekOfMonth(currentDate);
+    const currentViewDate = new Date(this.data.currentDate);
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth() + 1;
+    const week = this.getWeekOfMonth(currentViewDate);
     const baseName = `${year}年${month}月第${week}周`;
     
     // 如果用户没有输入名称，使用年月周作为默认名称
