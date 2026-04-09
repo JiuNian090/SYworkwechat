@@ -20,6 +20,7 @@ Page({
     showShiftSelectorModal: false,
     pickerValue: [0], // 滚动选择器当前值
     selectedTemplateIndex: 0, // 当前选中的模板索引
+    selectedShiftIndex: 0, // WeUI 选择器中选中的班次索引
     weekTotalHours: 0, // 本周总工时
     weekDifference: 0, // 本周工时差额/超额
     differenceType: '', // 差额类型：超额或差额
@@ -625,6 +626,7 @@ Page({
       this.setData({
         pickerValue: pickerValue,
         selectedTemplateIndex: selectedTemplateIndex,
+        selectedShiftIndex: selectedTemplateIndex,
         isSelectedShiftMatching: isSelectedShiftMatching,
         showShiftSelectorModal: true
       });
@@ -644,6 +646,25 @@ Page({
     });
   },
 
+  // WeUI 选择器班次选择事件
+  onShiftSelect(e) {
+    const index = e.currentTarget.dataset.index;
+    const { shiftTemplates, selectedShift } = this.data;
+    
+    // 检查选中的班次是否与当天的排班对应
+    const isSelectedShiftMatching = selectedShift && shiftTemplates[index] && 
+      shiftTemplates[index].name === selectedShift.name &&
+      shiftTemplates[index].startTime === selectedShift.startTime &&
+      shiftTemplates[index].endTime === selectedShift.endTime;
+    
+    this.setData({
+      selectedShiftIndex: index,
+      selectedTemplateIndex: index,
+      pickerValue: [index],
+      isSelectedShiftMatching: isSelectedShiftMatching
+    });
+  },
+
   // 滚动选择器变化事件
   onPickerChange(e) {
     const value = e.detail.value;
@@ -659,6 +680,7 @@ Page({
     this.setData({
       pickerValue: value,
       selectedTemplateIndex: selectedTemplateIndex,
+      selectedShiftIndex: selectedTemplateIndex,
       isSelectedShiftMatching: isSelectedShiftMatching
     });
   },
