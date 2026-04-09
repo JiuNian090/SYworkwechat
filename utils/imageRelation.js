@@ -167,10 +167,21 @@ function moveImageBetweenWeeks(fromWeekKey, toWeekKey, imageId) {
  */
 function validateImageExists(imagePath) {
   return new Promise((resolve) => {
+    // 添加超时处理，避免长时间等待
+    const timeoutId = setTimeout(() => {
+      resolve(false);
+    }, 500); // 500ms 超时
+
     wx.getFileInfo({
       filePath: imagePath,
-      success: () => resolve(true),
-      fail: () => resolve(false)
+      success: () => {
+        clearTimeout(timeoutId);
+        resolve(true);
+      },
+      fail: () => {
+        clearTimeout(timeoutId);
+        resolve(false);
+      }
     });
   });
 }

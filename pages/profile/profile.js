@@ -1953,11 +1953,35 @@ Page({
           });
           
           try {
-            // 清空所有相关的本地存储数据
+            // 1. 清空基础数据
             wx.removeStorageSync('shifts');
             wx.removeStorageSync('customWeeklyHours');
             wx.removeStorageSync('shiftTemplates');
-            // 可以添加其他需要清空的数据
+            wx.removeStorageSync('statData');
+            wx.removeStorageSync('statLastModified');
+            wx.removeStorageSync('standardHours');
+            wx.removeStorageSync('imagesLastModified');
+            
+            // 2. 清空图片关联表
+            wx.removeStorageSync('imageRelation');
+            
+            // 3. 查找并清空所有周图片存储 (week_images_*)
+            const info = wx.getStorageInfoSync();
+            const keys = info.keys || [];
+            keys.forEach(key => {
+              if (key.startsWith('week_images_')) {
+                wx.removeStorageSync(key);
+              }
+            });
+            
+            // 4. 清空用户数据
+            wx.removeStorageSync('cloudUserInfo');
+            wx.removeStorageSync('avatarType');
+            wx.removeStorageSync('avatarText');
+            wx.removeStorageSync('avatarEmoji');
+            
+            // 5. 清空更新数据
+            wx.removeStorageSync('lastUpdateCheck');
             
             wx.showToast({
               title: '数据已清空',
@@ -1989,6 +2013,10 @@ Page({
                   }
                   if (page.generateMonthDates) {
                     page.generateMonthDates();
+                  }
+                  // 重新加载图片数据（清空）
+                  if (page.loadWeekImages) {
+                    page.loadWeekImages();
                   }
                 } else if (page.route === 'pages/statistics/statistics') {
                   // 重新计算统计数据（应该为空）
