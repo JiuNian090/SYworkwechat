@@ -130,42 +130,58 @@
       <text class="section-title">更新日志</text>
     </view>
     <view class="section-body">
-      <view class="changelog-wrapper">
-        <scroll-view class="changelog-scroll" scroll-y wx:if="{{changelog && changelog.length > 0}}" enhanced show-scrollbar scroll-into-view="changelog-item-0">
-          <view class="changelog-list">
-            <view id="changelog-item-{{index}}" class="changelog-item {{index === 0 ? 'latest' : ''}}" wx:for="{{changelog}}" wx:key="version">
-              <view class="timeline-left">
-                <view class="timeline-dot"></view>
-                <view class="timeline-line" wx:if="{{index !== changelog.length - 1}}"></view>
+      <!-- WeUI 风格更新日志 -->
+      <view class="weui-panel weui-panel_access" wx:if="{{changelog && changelog.length > 0}}">
+        <scroll-view class="changelog-scroll" scroll-y enhanced show-scrollbar scroll-into-view="changelog-item-0">
+          <view class="weui-cells__title" wx:if="{{changelog.length > 0}}">
+            <view class="weui-cells__title-text">版本历史</view>
+          </view>
+          <view class="weui-cells">
+            <view id="changelog-item-{{index}}" class="weui-cell weui-cell_access {{index === 0 ? 'weui-cell_active' : ''}}" wx:for="{{changelog}}" wx:key="version">
+              <view class="weui-cell__hd">
+                <view class="weui-cell__icon-wrapper">
+                  <view class="weui-cell__icon {{index === 0 ? 'weui-cell__icon_latest' : ''}}"></view>
+                  <view class="weui-cell__line" wx:if="{{index !== changelog.length - 1}}"></view>
+                </view>
               </view>
-              <view class="changelog-card">
-                <view class="changelog-header">
-                  <view class="version-info">
-                    <text class="version-tag" selectable>{{item.version}}</text>
-                    <view class="latest-badge" wx:if="{{index === 0}}">最新</view>
+              <view class="weui-cell__bd">
+                <view class="weui-cell__version">
+                  <text class="weui-cell__version-tag">{{item.version}}</text>
+                  <view class="weui-badge weui-badge_dot" wx:if="{{index === 0}}">
+                    <view class="weui-badge__text">最新</view>
                   </view>
-                  <text class="version-date" selectable>{{item.date}}</text>
                 </view>
-                <view class="changelog-content">
-                  <text class="changelog-text" selectable>{{item.content}}</text>
+                <view class="weui-cell__date">{{item.date}}</view>
+                <view class="weui-cell__content">
+                  <text class="weui-cell__text">{{item.content}}</text>
                 </view>
               </view>
+              <view class="weui-cell__ft"></view>
             </view>
           </view>
         </scroll-view>
-        <view class="changelog-empty" wx:else>
-          <view class="empty-icon">📝</view>
-          <text class="empty-text">暂无更新日志</text>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="weui-msg" wx:else>
+        <view class="weui-msg__icon-area">
+          <text class="weui-msg__icon">📝</text>
+        </view>
+        <view class="weui-msg__text-area">
+          <view class="weui-msg__title">暂无更新日志</view>
+          <view class="weui-msg__desc">后续更新将在这里显示</view>
         </view>
       </view>
-      <view class="action-row">
-        <view class="action-btn contact-btn" bindtap="contactAuthor">
-          <text class="action-icon">💬</text>
-          <text class="action-text">联系乐乐</text>
+      
+      <!-- 操作按钮 -->
+      <view class="weui-btn-area">
+        <view class="weui-btn weui-btn_default" bindtap="contactAuthor">
+          <text class="weui-btn__icon">💬</text>
+          <text class="weui-btn__text">联系乐乐</text>
         </view>
-        <view class="action-btn donate-btn" bindtap="donate">
-          <text class="action-icon">❤️</text>
-          <text class="action-text">捐赠支持</text>
+        <view class="weui-btn weui-btn_primary" bindtap="donate">
+          <text class="weui-btn__icon">❤️</text>
+          <text class="weui-btn__text">捐赠支持</text>
         </view>
       </view>
     </view>
