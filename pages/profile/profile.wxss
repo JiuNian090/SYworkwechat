@@ -1237,7 +1237,105 @@ page {
   animation: fadeInUp 0.4s ease-out;
 }
 
-.section:nth-child(1) { animation-delay: 0.05s; }
-.section:nth-child(2) { animation-delay: 0.1s; }
-.section:nth-child(3) { animation-delay: 0.15s; }
-.section:nth-child(4) { animation-delay: 0.2s; }
+/* ========== 用户管理弹窗 ========== */
+.user-management-modal {
+  max-width: 560rpx;
+}
+
+.user-info-section {
+  padding: 0;
+}
+
+.user-info-header {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 28rpx;
+  background: linear-gradient(135deg, var(--primary-light) 0%, #f0fff4 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.user-avatar-text {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.user-avatar-emoji {
+  font-size: 80rpx;
+  line-height: 1;
+}
+
+.user-info-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.user-account {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-status {
+  font-size: 26rpx;
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+.user-info-divider {
+  height: 2rpx;
+  background: var(--border-color);
+  margin: 0 28rpx;
+}
+
+.user-info-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx;
+  border-bottom: 2rpx solid var(--border-color);
+}
+
+.user-info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}
+
+.info-value {
+  font-size: 28rpx;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.status-online {
+  color: var(--primary-dark);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger-color) 0%, #ef4444 100%);
+  color: #ffffff;
+}
+
+.btn-danger:active {
+  opacity: 0.9;
+}
