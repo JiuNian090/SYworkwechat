@@ -2292,16 +2292,22 @@ Page({
       
       // 生成ZIP文件
       this.generateBackupZip(backupFilePath, fs).then(() => {
-        // 上传ZIP文件到WebDAV
-        return this.uploadToWebDAV(backupFilePath, backupFileName, url, username, password, folder);
+        // 上传ZIP文件到WebDAV（不显示单独的提示）
+        return this.uploadToWebDAV(backupFilePath, backupFileName, url, username, password, folder, false);
       }).then(() => {
-        // 生成并上传索引文件
+        // 生成并上传索引文件（不显示单独的提示）
         return this.generateAndUploadBackupIndex(backupFileName, url, username, password, folder);
       }).then(() => {
         // 更新备份时间戳
         wx.setStorageSync('lastBackupTime', Date.now());
         // 删除旧的备份文件，只保留最新版本
         this.cleanupOldBackups(url, username, password, folder, backupFileName);
+        // 显示最终的成功提示
+        wx.hideLoading();
+        wx.showToast({
+          title: '备份成功',
+          icon: 'success'
+        });
       }).catch((err) => {
         console.error('备份失败', err);
         wx.hideLoading();
@@ -2361,8 +2367,8 @@ Page({
           data: JSON.stringify(backupIndex, null, 2),
           encoding: 'utf8',
           success: () => {
-            // 上传索引文件到WebDAV
-            this.uploadToWebDAV(indexFilePath, 'backup-index.json', url, username, password, folder).then(() => {
+            // 上传索引文件到WebDAV（不显示单独的提示）
+            this.uploadToWebDAV(indexFilePath, 'backup-index.json', url, username, password, folder, false).then(() => {
               resolve();
             }).catch((err) => {
               console.error('上传索引文件失败', err);
@@ -2718,7 +2724,7 @@ Page({
   },
   
   // 上传文件到WebDAV
-  uploadToWebDAV(filePath, fileName, url, username, password, folder) {
+  uploadToWebDAV(filePath, fileName, url, username, password, folder, showToast = true) {
     return new Promise((resolve, reject) => {
       const fs = wx.getFileSystemManager();
       
@@ -2757,37 +2763,46 @@ Page({
             },
             data: fileContent,
             success: (res) => {
-              wx.hideLoading();
               if (res.statusCode >= 200 && res.statusCode < 300) {
-                wx.showToast({
-                  title: '备份成功',
-                  icon: 'success'
-                });
+                if (showToast) {
+                  wx.hideLoading();
+                  wx.showToast({
+                    title: '备份成功',
+                    icon: 'success'
+                  });
+                }
                 resolve();
               } else {
-                wx.showToast({
-                  title: `备份失败: ${res.statusCode}`,
-                  icon: 'none'
-                });
+                if (showToast) {
+                  wx.hideLoading();
+                  wx.showToast({
+                    title: `备份失败: ${res.statusCode}`,
+                    icon: 'none'
+                  });
+                }
                 reject(new Error(`备份失败: ${res.statusCode}`));
               }
             },
             fail: (err) => {
-              wx.hideLoading();
-              wx.showToast({
-                title: '备份失败，请检查网络连接',
-                icon: 'none'
-              });
+              if (showToast) {
+                wx.hideLoading();
+                wx.showToast({
+                  title: '备份失败，请检查网络连接',
+                  icon: 'none'
+                });
+              }
               reject(err);
             }
           });
         },
         fail: (err) => {
-          wx.hideLoading();
-          wx.showToast({
-            title: '读取文件失败',
-            icon: 'none'
-          });
+          if (showToast) {
+            wx.hideLoading();
+            wx.showToast({
+              title: '读取文件失败',
+              icon: 'none'
+            });
+          }
           reject(err);
         }
       });
@@ -3297,19 +3312,81 @@ Page({
                 }
               });
               
-              // 提取图片周关联表
-              let imageWeekRelation = {};
-              this.extractAndRestoreFile(zip, '图片周关联表.json', (data) => {
-                imageWeekRelation = data;
-              });
-              
-              // 提取并恢复图片
-              this.extractAndRestoreImages(zip, fs, imageWeekRelation);
-              
-              // 更新恢复时间戳
-              wx.setStorageSync('lastRestoreTime', Date.now());
-              
-              resolve();
+              // 提取图片周关联表和恢复图片
+              const imageWeekRelationFile = zip.file('图片周关联表.json');
+              if (imageWeekRelationFile) {
+                imageWeekRelationFile.async('string').then((content) => {
+                  try {
+                    const imageWeekRelation = JSON.parse(content);
+                    // 先清空所有图片存储，避免重复
+                    const storageInfo = wx.getStorageInfoSync();
+                    const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+                    weekImageKeys.forEach(key => {
+                      wx.removeStorageSync(key);
+                    });
+                    // 提取并恢复图片
+                    this.extractAndRestoreImages(zip, fs, imageWeekRelation).then(() => {
+                      // 所有图片恢复完成后更新时间戳并 resolve
+                      wx.setStorageSync('lastRestoreTime', Date.now());
+                      resolve();
+                    }).catch((err) => {
+                      console.error('恢复图片失败', err);
+                      wx.setStorageSync('lastRestoreTime', Date.now());
+                      resolve();
+                    });
+                  } catch (e) {
+                    console.error('解析图片周关联表失败', e);
+                    // 先清空所有图片存储，避免重复
+                    const storageInfo = wx.getStorageInfoSync();
+                    const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+                    weekImageKeys.forEach(key => {
+                      wx.removeStorageSync(key);
+                    });
+                    // 即使解析失败，也要尝试恢复图片
+                    this.extractAndRestoreImages(zip, fs, {}).then(() => {
+                      wx.setStorageSync('lastRestoreTime', Date.now());
+                      resolve();
+                    }).catch((err) => {
+                      console.error('恢复图片失败', err);
+                      wx.setStorageSync('lastRestoreTime', Date.now());
+                      resolve();
+                    });
+                  }
+                }).catch((err) => {
+                  console.error('提取图片周关联表失败', err);
+                  // 先清空所有图片存储，避免重复
+                  const storageInfo = wx.getStorageInfoSync();
+                  const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+                  weekImageKeys.forEach(key => {
+                    wx.removeStorageSync(key);
+                  });
+                  // 即使提取失败，也要尝试恢复图片
+                  this.extractAndRestoreImages(zip, fs, {}).then(() => {
+                    wx.setStorageSync('lastRestoreTime', Date.now());
+                    resolve();
+                  }).catch((err) => {
+                    console.error('恢复图片失败', err);
+                    wx.setStorageSync('lastRestoreTime', Date.now());
+                    resolve();
+                  });
+                });
+              } else {
+                // 如果没有图片周关联表，先清空所有图片存储，避免重复
+                const storageInfo = wx.getStorageInfoSync();
+                const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+                weekImageKeys.forEach(key => {
+                  wx.removeStorageSync(key);
+                });
+                // 尝试直接恢复图片
+                this.extractAndRestoreImages(zip, fs, {}).then(() => {
+                  wx.setStorageSync('lastRestoreTime', Date.now());
+                  resolve();
+                }).catch((err) => {
+                  console.error('恢复图片失败', err);
+                  wx.setStorageSync('lastRestoreTime', Date.now());
+                  resolve();
+                });
+              }
             }).catch((err) => {
               console.error('解压ZIP文件失败', err);
               reject(err);
@@ -3420,16 +3497,35 @@ Page({
                 });
               }
             } else {
-              // 兼容处理：如果没有图片周关联表，使用原逻辑
+              // 兼容处理：如果没有图片周关联表，尝试从路径中提取日期信息
               const fileName = relativePath.split('/').pop();
+              const pathParts = basePath.split('/').filter(Boolean);
+              
+              // 尝试从路径中提取年月信息（如 YYYY-MM）
+              let yearMonth = null;
+              if (pathParts.length > 0) {
+                const lastPart = pathParts[pathParts.length - 1];
+                if (/^\d{4}-\d{2}$/.test(lastPart)) {
+                  yearMonth = lastPart;
+                }
+              }
+              
               // 直接使用文件名作为图片名
               const imgName = fileName;
               
               // 尝试从文件名中解析周信息（如果可能）
               let weekKey = 'unknown';
-              // 简单处理：使用当前日期作为默认周key
-              const currentDate = new Date();
-              weekKey = currentDate.toISOString().split('T')[0];
+              
+              // 如果有年月信息，尝试生成一个合理的周key
+              if (yearMonth) {
+                const [year, month] = yearMonth.split('-');
+                // 使用该月的第一天作为默认周key
+                weekKey = `${year}-${month}-01`;
+              } else {
+                // 简单处理：使用当前日期作为默认周key
+                const currentDate = new Date();
+                weekKey = currentDate.toISOString().split('T')[0];
+              }
               
               const weekImgKey = `week_images_${weekKey}`;
               const existingImages = wx.getStorageSync(weekImgKey) || [];
