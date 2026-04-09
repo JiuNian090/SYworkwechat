@@ -747,6 +747,7 @@ Page({
     // 检查是否已登录
     const cloudUserId = wx.getStorageSync('cloudUserId');
     const cloudAccount = wx.getStorageSync('cloudAccount') || '';
+    const cloudUserInfo = wx.getStorageSync('cloudUserInfo') || null;
     const cloudLoggedIn = !!cloudUserId;
     
     // 同步云账号到用户名：优先使用云账号
@@ -778,6 +779,7 @@ Page({
       cloudManager: cloudManager,
       cloudLoggedIn: cloudLoggedIn,
       cloudAccount: cloudAccount,
+      cloudUserInfo: cloudUserInfo,
       changelog: changelog
     });
   },
@@ -4978,13 +4980,20 @@ Page({
       wx.hideLoading();
 
       if (result.result.success) {
+        const updatedCloudUserInfo = {
+          ...cloudUserInfo,
+          account: newAccount.trim()
+        };
         this.setData({
-          cloudUserInfo: {
-            ...cloudUserInfo,
-            account: newAccount.trim()
-          },
+          cloudUserInfo: updatedCloudUserInfo,
+          cloudAccount: newAccount.trim(),
+          username: newAccount.trim(),
           showUpdateAccountModal: false
         });
+        // 同步更新本地存储
+        wx.setStorageSync('cloudUserInfo', updatedCloudUserInfo);
+        wx.setStorageSync('cloudAccount', newAccount.trim());
+        wx.setStorageSync('username', newAccount.trim());
 
         wx.showToast({
           title: '账号修改成功',
@@ -5165,16 +5174,23 @@ Page({
       wx.hideLoading();
 
       if (result.success) {
+        const cloudUserInfo = {
+          userId: result.userId,
+          account: cloudAccountInput,
+          nickname: result.nickname || cloudAccountInput
+        };
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
-          username: cloudAccountInput
+          username: cloudAccountInput,
+          cloudUserInfo: cloudUserInfo
         });
-        // 保存到本地存储
+        // 保存到本地存储（不保存密码，只保存用户信息）
         wx.setStorageSync('username', cloudAccountInput);
         wx.setStorageSync('cloudAccount', cloudAccountInput);
         wx.setStorageSync('cloudLoggedIn', true);
         wx.setStorageSync('cloudUserId', result.userId);
+        wx.setStorageSync('cloudUserInfo', cloudUserInfo);
         this.userId = result.userId;
         
         this.hideCloudLoginModal();
@@ -5227,16 +5243,23 @@ Page({
       wx.hideLoading();
 
       if (result.success) {
+        const cloudUserInfo = {
+          userId: result.userId,
+          account: cloudAccountInput,
+          nickname: result.nickname || cloudAccountInput
+        };
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
-          username: cloudAccountInput
+          username: cloudAccountInput,
+          cloudUserInfo: cloudUserInfo
         });
-        // 保存到本地存储
+        // 保存到本地存储（不保存密码，只保存用户信息）
         wx.setStorageSync('username', cloudAccountInput);
         wx.setStorageSync('cloudAccount', cloudAccountInput);
         wx.setStorageSync('cloudLoggedIn', true);
         wx.setStorageSync('cloudUserId', result.userId);
+        wx.setStorageSync('cloudUserInfo', cloudUserInfo);
         this.userId = result.userId;
         
         this.hideCloudRegisterModal();
@@ -5279,6 +5302,7 @@ Page({
           wx.removeStorageSync('cloudAccount');
           wx.removeStorageSync('cloudLoggedIn');
           wx.removeStorageSync('cloudUserId');
+          wx.removeStorageSync('cloudUserInfo');
           this.userId = null;
           
           wx.showToast({
