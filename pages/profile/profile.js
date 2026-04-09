@@ -238,7 +238,7 @@ class CloudManager {
     });
   }
   
-  // 备份数据
+  // 备份数据 - 增量备份，只上传有变化的图片
   async backup() {
     try {
       if (!this.isLoggedIn()) {
@@ -256,26 +256,80 @@ class CloudManager {
       // 使用新的图片关联表工具获取所有有效图片
       const { images: validImages, imageWeekRelation: validImageWeekRelation } = await getAllValidImages();
       
-      // 2. 备份图片到云存储
+      // 2. 获取云端备份信息，了解已有哪些图片
+      let existingImages = [];
+      try {
+        const infoResult = await wx.cloud.callFunction({
+          name: 'backupRestore',
+          data: {
+            action: 'getBackupInfo',
+            userId: this.userId
+          }
+        });
+        if (infoResult.result.success && infoResult.result.hasBackup) {
+          // 获取完整的备份数据，对比图片
+          const restoreResult = await wx.cloud.callFunction({
+            name: 'backupRestore',
+            data: {
+              action: 'restore',
+              userId: this.userId
+            }
+          });
+          if (restoreResult.result.success) {
+            existingImages = restoreResult.result.data.images || [];
+          }
+        }
+      } catch (e) {
+        console.log('获取云端备份信息失败，假设是新备份', e);
+      }
+      
+      // 3. 对比本地和云端图片，只上传新的或变化的图片
       const uploadedImages = [];
+      const existingImageMap = new Map();
+      
+      // 创建云端图片映射，用于快速查找
+      existingImages.forEach(img => {
+        if (img.remotePath) {
+          existingImageMap.set(img.remotePath, img);
+        }
+      });
+      
+      // 上传图片到云存储（只上传新的或变化的图片）
       for (const imgInfo of validImages) {
         try {
-          // 上传图片到云存储
-          const uploadResult = await wx.cloud.uploadFile({
-            cloudPath: `schedule_images/${this.userId}/${imgInfo.remotePath}`,
-            filePath: imgInfo.image.path
-          });
+          const existingImg = existingImageMap.get(imgInfo.remotePath);
+          let shouldUpload = true;
           
-          uploadedImages.push({
-            ...imgInfo,
-            fileID: uploadResult.fileID
-          });
+          // 如果云端已存在，检查是否需要重新上传
+          if (existingImg) {
+            // 这里可以添加更复杂的对比逻辑，比如检查图片大小、时间戳等
+            // 目前简化处理：如果存在就跳过，节省带宽
+            shouldUpload = false;
+            // 复用云端的 fileID
+            uploadedImages.push({
+              ...imgInfo,
+              fileID: existingImg.fileID
+            });
+          }
+          
+          if (shouldUpload) {
+            // 上传新图片到云存储
+            const uploadResult = await wx.cloud.uploadFile({
+              cloudPath: `schedule_images/${this.userId}/${imgInfo.remotePath}`,
+              filePath: imgInfo.image.path
+            });
+            
+            uploadedImages.push({
+              ...imgInfo,
+              fileID: uploadResult.fileID
+            });
+          }
         } catch (e) {
           console.error('上传图片失败', imgInfo.remotePath, e);
         }
       }
       
-      // 3. 调用云函数备份数据
+      // 4. 调用云函数备份数据（云函数会对比差异，只更新有变化的数据）
       const backupResult = await wx.cloud.callFunction({
         name: 'backupRestore',
         data: {
@@ -294,13 +348,33 @@ class CloudManager {
       wx.hideLoading();
       
       if (backupResult.result.success) {
+        const newImageCount = uploadedImages.filter(img => !existingImageMap.has(img.remotePath)).length;
+        const deletedImageCount = backupResult.result.deletedImageCount || 0;
+        
+        let message;
+        if (backupResult.result.hasChanges) {
+          if (newImageCount > 0 && deletedImageCount > 0) {
+            message = `备份成功（新增${newImageCount}张，删除${deletedImageCount}张）`;
+          } else if (newImageCount > 0) {
+            message = `备份成功（新增${newImageCount}张图片）`;
+          } else if (deletedImageCount > 0) {
+            message = `备份成功（删除${deletedImageCount}张图片）`;
+          } else {
+            message = '备份成功（有更新）';
+          }
+        } else {
+          message = '备份成功（无变化）';
+        }
+          
         wx.showToast({
-          title: `备份成功（${uploadedImages.length}张图片）`,
+          title: message,
           icon: 'success'
         });
         return {
           success: true,
-          uploadedImages: uploadedImages.length
+          uploadedImages: newImageCount,
+          deletedImages: deletedImageCount,
+          hasChanges: backupResult.result.hasChanges
         };
       } else {
         wx.showToast({
@@ -324,7 +398,7 @@ class CloudManager {
     }
   }
   
-  // 恢复数据
+  // 恢复数据 - 完全恢复，先清空本地，再完全替换为云端数据
   async restore() {
     try {
       if (!this.isLoggedIn()) {
@@ -356,7 +430,29 @@ class CloudManager {
       
       const backupData = restoreResult.result.data;
       
-      // 2. 恢复数据文件
+      // 2. 先清空本地所有相关数据（确保本地与云端完全一致）
+      
+      // 清空基础数据
+      wx.removeStorageSync('shifts');
+      wx.removeStorageSync('shiftTemplates');
+      wx.removeStorageSync('statData');
+      wx.removeStorageSync('statLastModified');
+      wx.removeStorageSync('standardHours');
+      wx.removeStorageSync('imagesLastModified');
+      
+      // 清空图片关联表
+      wx.removeStorageSync('imageRelation');
+      
+      // 清空所有周图片存储
+      const storageInfo = wx.getStorageInfoSync();
+      const keys = storageInfo.keys || [];
+      keys.forEach(key => {
+        if (key.startsWith('week_images_')) {
+          wx.removeStorageSync(key);
+        }
+      });
+      
+      // 3. 恢复数据文件（完全替换）
       if (backupData.shiftTemplates) {
         wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
       }
@@ -364,7 +460,7 @@ class CloudManager {
         wx.setStorageSync('shifts', backupData.shifts);
       }
       
-      // 3. 恢复图片
+      // 4. 恢复图片（完全替换）
       const restoredImages = [];
       const images = backupData.images || [];
       const restoredWeekKeys = new Set();
@@ -381,31 +477,25 @@ class CloudManager {
             fileID: imgInfo.fileID
           });
           
-          // 保存到本地存储
+          // 保存到本地存储（完全替换，不检查是否存在）
           const weekKey = imgInfo.weekKey;
-          const existingImages = wx.getStorageSync(weekKey) || [];
+          const weekImages = wx.getStorageSync(weekKey) || [];
           
-          const exists = existingImages.some(img => 
-            img.path === downloadResult.tempFilePath || img.name === imgInfo.imageName
-          );
+          const newImage = {
+            id: `${weekKey}_${Date.now()}`,
+            name: imgInfo.imageName,
+            path: downloadResult.tempFilePath,
+            addedTime: new Date().toISOString()
+          };
           
-          if (!exists) {
-            const newImage = {
-              id: `${weekKey}_${Date.now()}`,
-              name: imgInfo.imageName,
-              path: downloadResult.tempFilePath,
-              addedTime: new Date().toISOString()
-            };
-            
-            existingImages.push(newImage);
-            wx.setStorageSync(weekKey, existingImages);
-            
-            // 同步更新到图片关联表
-            addImageToRelation(weekKey, newImage);
-            restoredWeekKeys.add(weekKey);
-            
-            restoredImages.push(imgInfo.remotePath);
-          }
+          weekImages.push(newImage);
+          wx.setStorageSync(weekKey, weekImages);
+          
+          // 同步更新到图片关联表
+          addImageToRelation(weekKey, newImage);
+          restoredWeekKeys.add(weekKey);
+          
+          restoredImages.push(imgInfo.remotePath);
         } catch (e) {
           console.error('恢复图片失败', imgInfo.remotePath, e);
         }
