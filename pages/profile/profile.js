@@ -525,6 +525,12 @@ Page({
     showCloudPassword: false,
     // 用户管理弹窗
     showUserManagementModal: false,
+    showUpdateAccountModal: false,
+    showUpdatePasswordModal: false,
+    newAccount: '',
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
     // 数据管理使用说明弹窗
     showDataManagementHelpModal: false,
     // 更新日志数据
@@ -4887,7 +4893,213 @@ Page({
 
   hideUserManagementModal() {
     this.setData({
-      showUserManagementModal: false
+      showUserManagementModal: false,
+      showUpdateAccountModal: false,
+      showUpdatePasswordModal: false
+    });
+  },
+
+  // 显示修改账号弹窗
+  showUpdateAccountModal() {
+    this.setData({
+      showUpdateAccountModal: true,
+      newAccount: ''
+    });
+  },
+
+  // 隐藏修改账号弹窗
+  hideUpdateAccountModal() {
+    this.setData({
+      showUpdateAccountModal: false
+    });
+  },
+
+  // 确认修改账号
+  async confirmUpdateAccount() {
+    const { newAccount } = this.data;
+    const cloudUserInfo = this.data.cloudUserInfo;
+
+    if (!cloudUserInfo || !cloudUserInfo.userId) {
+      wx.showToast({
+        title: '用户信息异常，请重新登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (!newAccount || newAccount.trim().length === 0) {
+      wx.showToast({
+        title: '请输入新账号名',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showLoading({ title: '修改中...' });
+
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'userLogin',
+        data: {
+          action: 'updateAccount',
+          userId: cloudUserInfo.userId,
+          newAccount: newAccount.trim()
+        }
+      });
+
+      wx.hideLoading();
+
+      if (result.result.success) {
+        this.setData({
+          cloudUserInfo: {
+            ...cloudUserInfo,
+            account: newAccount.trim()
+          },
+          showUpdateAccountModal: false
+        });
+
+        wx.showToast({
+          title: '账号修改成功',
+          icon: 'success'
+        });
+      } else {
+        wx.showToast({
+          title: result.result.errMsg,
+          icon: 'none'
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('修改账号失败', e);
+      wx.showToast({
+        title: '修改失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 显示修改密码弹窗
+  showUpdatePasswordModal() {
+    this.setData({
+      showUpdatePasswordModal: true,
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+  },
+
+  // 隐藏修改密码弹窗
+  hideUpdatePasswordModal() {
+    this.setData({
+      showUpdatePasswordModal: false
+    });
+  },
+
+  // 确认修改密码
+  async confirmUpdatePassword() {
+    const { oldPassword, newPassword, confirmPassword } = this.data;
+    const cloudUserInfo = this.data.cloudUserInfo;
+
+    if (!cloudUserInfo || !cloudUserInfo.userId) {
+      wx.showToast({
+        title: '用户信息异常，请重新登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      wx.showToast({
+        title: '请填写完整密码信息',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      wx.showToast({
+        title: '两次输入的新密码不一致',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      wx.showToast({
+        title: '密码长度不能少于 6 位',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showLoading({ title: '修改中...' });
+
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'userLogin',
+        data: {
+          action: 'updatePassword',
+          userId: cloudUserInfo.userId,
+          password: oldPassword,
+          newPassword: newPassword
+        }
+      });
+
+      wx.hideLoading();
+
+      if (result.result.success) {
+        this.setData({
+          showUpdatePasswordModal: false,
+          oldPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+
+        wx.showToast({
+          title: '密码修改成功',
+          icon: 'success'
+        });
+      } else {
+        wx.showToast({
+          title: result.result.errMsg,
+          icon: 'none'
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('修改密码失败', e);
+      wx.showToast({
+        title: '修改失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 账号输入事件
+  onAccountInput(e) {
+    this.setData({
+      newAccount: e.detail.value
+    });
+  },
+
+  // 原密码输入事件
+  onOldPasswordInput(e) {
+    this.setData({
+      oldPassword: e.detail.value
+    });
+  },
+
+  // 新密码输入事件
+  onNewPasswordInput(e) {
+    this.setData({
+      newPassword: e.detail.value
+    });
+  },
+
+  // 确认密码输入事件
+  onConfirmPasswordInput(e) {
+    this.setData({
+      confirmPassword: e.detail.value
     });
   },
 

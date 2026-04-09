@@ -20,7 +20,7 @@ function generateSalt() {
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
-  const { action, account, password } = event;
+  const { action, account, password, newAccount, newPassword, nickname, userId } = event;
 
   try {
     if (action === 'login') {
@@ -90,6 +90,87 @@ exports.main = async (event, context) => {
           nickname: `用户${account.slice(-4)}`
         }
       };
+
+    } else if (action === 'updateAccount') {
+      // 修改账号名
+      if (!userId || !newAccount) {
+        return {
+          success: false,
+          errMsg: '参数错误'
+        };
+      }
+
+      // 检查新账号名是否已存在
+      const existingUser = await usersCollection.where({
+        account: newAccount
+      }).get();
+
+      if (existingUser.data.length > 0 && existingUser.data[0]._id !== userId) {
+        return {
+          success: false,
+          errMsg: '账号名已存在'
+        };
+      }
+
+      // 更新账号名
+      await usersCollection.doc(userId).update({
+        data: {
+          account: newAccount,
+          updateTime: new Date()
+        }
+      });
+
+      return {
+        success: true,
+        data: {
+          account: newAccount
+        }
+      };
+
+    } else if (action === 'updatePassword') {
+      // 修改密码
+      if (!userId || !password || !newPassword) {
+        return {
+          success: false,
+          errMsg: '参数错误'
+        };
+      }
+
+      // 获取用户信息
+      const user = await usersCollection.doc(userId).get();
+      if (!user.data) {
+        return {
+          success: false,
+          errMsg: '用户不存在'
+        };
+      }
+
+      // 验证旧密码
+      const encryptedOldPassword = encryptPassword(password, user.data.salt);
+      if (encryptedOldPassword !== user.data.password) {
+        return {
+          success: false,
+          errMsg: '原密码错误'
+        };
+      }
+
+      // 生成新盐并加密新密码
+      const newSalt = generateSalt();
+      const encryptedNewPassword = encryptPassword(newPassword, newSalt);
+
+      // 更新密码
+      await usersCollection.doc(userId).update({
+        data: {
+          password: encryptedNewPassword,
+          salt: newSalt,
+          updateTime: new Date()
+        }
+      });
+
+      return {
+        success: true
+      };
+
     }
 
     return {
