@@ -505,269 +505,391 @@ page {
   line-height: 1.7;
 }
 
-/* ========== 更新日志 ========== */
-/* ========== 更新日志时间线样式 ========== */
-.changelog-wrapper {
-  background: var(--bg-color);
-  border-radius: 20rpx;
+/* ==========================================
+   WeUI 风格更新日志样式
+   ========================================== */
+
+/* WeUI 面板 */
+.weui-panel {
+  background-color: #ffffff;
+  border-radius: 16rpx;
   overflow: hidden;
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
 }
 
+.weui-panel_access {
+  position: relative;
+}
+
+/* 滚动视图 */
 .changelog-scroll {
   max-height: 60vh;
-  padding: 16rpx;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 日志列表 */
-.changelog-list {
+/* WeUI 单元格标题 */
+.weui-cells__title {
+  padding: 24rpx 30rpx 16rpx;
+  color: #999999;
+  font-size: 28rpx;
+  line-height: 1.4;
+}
+
+.weui-cells__title-text {
+  font-size: 28rpx;
+  color: #999999;
+}
+
+/* WeUI 单元格组 */
+.weui-cells {
+  background-color: #ffffff;
+  line-height: 1.47058824;
+  font-size: 34rpx;
+  position: relative;
+}
+
+.weui-cells:before,
+.weui-cells:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  color: #e5e5e5;
+  background-color: #e5e5e5;
+}
+
+.weui-cells:before {
+  top: 0;
+}
+
+.weui-cells:after {
+  bottom: 0;
+}
+
+/* WeUI 单元格 */
+.weui-cell {
+  padding: 30rpx;
+  position: relative;
   display: flex;
-  flex-direction: column;
-  width: 100%;
+  align-items: flex-start;
+  transition: background-color 0.2s;
 }
 
-/* 日志项 - 使用flex布局 */
-.changelog-item {
+.weui-cell:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 1px;
+  border-top: 1rpx solid #e5e5e5;
+  color: #e5e5e5;
+  left: 30rpx;
+}
+
+.weui-cell:first-child:before {
+  display: none;
+}
+
+.weui-cell:active {
+  background-color: #ececec;
+}
+
+.weui-cell_access {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.weui-cell_active {
+  background-color: #f7f7f7;
+}
+
+/* 单元格左侧 */
+.weui-cell__hd {
   display: flex;
-  flex-direction: row;
-  width: 100%;
-  margin-bottom: 16rpx;
-  animation: fadeInLeft 0.5s ease-out;
-  animation-fill-mode: both;
-  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.changelog-item:nth-child(1) { animation-delay: 0.05s; }
-.changelog-item:nth-child(2) { animation-delay: 0.1s; }
-.changelog-item:nth-child(3) { animation-delay: 0.15s; }
-.changelog-item:nth-child(4) { animation-delay: 0.2s; }
-.changelog-item:nth-child(5) { animation-delay: 0.25s; }
-
-.changelog-item:last-child {
-  margin-bottom: 0;
-}
-
-/* 时间线左侧区域 */
-.timeline-left {
+.weui-cell__icon-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 24rpx;
-  flex-shrink: 0;
+  margin-right: 24rpx;
   position: relative;
   padding-top: 12rpx;
 }
 
-/* 时间线圆点 */
-.timeline-dot {
-  width: 14rpx;
-  height: 14rpx;
-  background: var(--card-bg);
-  border: 2rpx solid var(--primary-color);
+.weui-cell__icon {
+  width: 20rpx;
+  height: 20rpx;
   border-radius: 50%;
-  flex-shrink: 0;
+  background-color: #c9c9c9;
+  position: relative;
   z-index: 2;
 }
 
-.changelog-item.latest .timeline-dot {
-  background: var(--primary-color);
-  box-shadow: 0 0 0 3rpx rgba(7, 193, 96, 0.2);
-  animation: pulse 2s infinite;
+.weui-cell__icon_latest {
+  background-color: #07c160;
+  box-shadow: 0 0 0 6rpx rgba(7, 193, 96, 0.2);
 }
 
-/* 时间线连接线 */
-.timeline-line {
+.weui-cell__line {
   width: 2rpx;
   flex: 1;
-  min-height: 32rpx;
-  background: var(--border-color);
-  margin-top: 6rpx;
+  min-height: 80rpx;
+  background-color: #e5e5e5;
+  margin-top: 12rpx;
 }
 
-/* 日志卡片 */
-.changelog-card {
+/* 单元格主体 */
+.weui-cell__bd {
   flex: 1;
-  margin-left: 12rpx;
-  background: var(--card-bg);
-  border-radius: 12rpx;
-  padding: 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-  border: 2rpx solid transparent;
-  transition: all 0.3s ease;
   min-width: 0;
-  max-width: calc(100% - 36rpx);
-  box-sizing: border-box;
-  overflow: hidden;
 }
 
-.changelog-item.latest .changelog-card {
-  border-color: rgba(7, 193, 96, 0.15);
-  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.1);
-}
-
-.changelog-card:active {
-  transform: scale(0.98);
-}
-
-/* 头部信息 */
-.changelog-header {
+.weui-cell__version {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10rpx;
-  padding-bottom: 10rpx;
-  border-bottom: 2rpx solid var(--border-color);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.version-info {
-  display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 6rpx;
-  min-width: 0;
+  gap: 16rpx;
+  margin-bottom: 8rpx;
   flex-wrap: wrap;
-  flex: 1;
 }
 
-.version-tag {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: var(--primary-color);
-  letter-spacing: 0;
-  flex-shrink: 0;
-  line-height: 1.4;
+.weui-cell__version-tag {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #000000;
 }
 
-.latest-badge {
-  font-size: 20rpx;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  padding: 3rpx 8rpx;
-  border-radius: 6rpx;
-  font-weight: 500;
-  flex-shrink: 0;
-  line-height: 1.4;
-}
-
-.version-date {
+/* WeUI 徽章 */
+.weui-badge {
+  display: inline-block;
+  padding: 4rpx 12rpx;
   font-size: 24rpx;
-  color: var(--text-tertiary);
-  font-weight: 400;
-  flex-shrink: 0;
-  margin-left: 8rpx;
   line-height: 1.4;
+  border-radius: 8rpx;
+  background-color: #07c160;
+  color: #ffffff;
 }
 
-/* 内容区域 */
-.changelog-content {
+.weui-badge_dot {
+  background-color: #07c160;
+}
+
+.weui-badge__text {
+  font-size: 24rpx;
+  color: #ffffff;
+}
+
+.weui-cell__date {
   font-size: 26rpx;
-  color: var(--text-secondary);
-  line-height: 1.7;
-  width: 100%;
-  box-sizing: border-box;
+  color: #999999;
+  margin-bottom: 12rpx;
 }
 
-.changelog-text {
-  display: block;
-  width: 100%;
+.weui-cell__content {
+  line-height: 1.6;
+}
+
+.weui-cell__text {
+  font-size: 28rpx;
+  color: #576b95;
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: break-word;
   line-height: 1.6;
 }
 
-/* 空状态 */
-.changelog-empty {
-  height: 280rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
+/* 单元格右侧 */
+.weui-cell__ft {
+  text-align: right;
+  color: #999999;
+  padding-left: 20rpx;
 }
 
-.empty-icon {
-  font-size: 64rpx;
+/* WeUI 消息（空状态） */
+.weui-msg {
+  padding: 80rpx 60rpx;
+  text-align: center;
+}
+
+.weui-msg__icon-area {
+  margin-bottom: 30rpx;
+}
+
+.weui-msg__icon {
+  font-size: 96rpx;
   opacity: 0.4;
 }
 
-.changelog-empty .empty-text {
+.weui-msg__text-area {
+  margin-bottom: 30rpx;
+}
+
+.weui-msg__title {
+  font-weight: 400;
+  font-size: 36rpx;
+  color: #000000;
+  margin-bottom: 12rpx;
+}
+
+.weui-msg__desc {
   font-size: 28rpx;
-  color: var(--text-tertiary);
+  color: #999999;
+  line-height: 1.4;
 }
 
-/* 动画效果 */
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 6rpx rgba(7, 193, 96, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 0 10rpx rgba(7, 193, 96, 0.1);
-  }
-}
-
-.empty-text {
-  font-size: 28rpx;
-  color: var(--text-tertiary);
-}
-
-/* ========== 操作按钮行 ========== */
-.action-row {
+/* WeUI 按钮区域 */
+.weui-btn-area {
+  margin: 30rpx 0 0;
   display: flex;
   gap: 24rpx;
-  margin-top: 30rpx;
+  justify-content: center;
 }
 
-.action-btn {
+.weui-btn {
+  position: relative;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 28rpx;
+  padding-right: 28rpx;
+  box-sizing: border-box;
+  font-size: 34rpx;
+  text-align: center;
+  text-decoration: none;
+  line-height: 2.55555556;
+  border-radius: 8rpx;
+  overflow: hidden;
+  border: none;
+  appearance: none;
+}
+
+.weui-btn::after {
+  border-width: 0;
+}
+
+.weui-btn_primary {
+  background-color: #07c160;
+  color: #ffffff;
+}
+
+.weui-btn_primary:active {
+  background-color: #06ad56;
+}
+
+.weui-btn_default {
+  background-color: #f7f7f7;
+  color: #000000;
+}
+
+.weui-btn_default:active {
+  background-color: #dedede;
+}
+
+.weui-btn_mini {
+  display: inline-block;
+  padding: 0 1.5em;
+  line-height: 2.3;
+  font-size: 28rpx;
   flex: 1;
+}
+
+/* WeUI 按钮区域 */
+.weui-btn-area {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
-  padding: 28rpx 0;
-  border-radius: 16rpx;
+  gap: 24rpx;
+  margin-top: 30rpx !important;
+  padding: 0 30rpx !important;
+}
+
+/* WeUI 按钮 - 强制统一样式 */
+.weui-btn {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12rpx !important;
+  padding: 0 24rpx !important;
+  margin: 0 !important;
+  border-radius: 16rpx !important;
+  font-size: 26rpx !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
   transition: all 0.2s ease;
+  flex: 1 !important;
+  overflow: hidden !important;
+  height: 88rpx !important;
+  min-height: 88rpx !important;
+  max-height: 88rpx !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  top: 0 !important;
+  bottom: 0 !important;
 }
 
-.action-btn:active {
+/* 确保两个按钮宽度一致 */
+.weui-btn_default,
+.weui-btn_primary {
+  flex: 1 !important;
+  width: 50% !important;
+  max-width: 300rpx !important;
+}
+
+/* 按钮内部元素对齐 */
+.weui-btn__icon,
+.weui-btn__text {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.weui-btn:active {
+  opacity: 0.8;
   transform: scale(0.98);
-  opacity: 0.9;
 }
 
-.contact-btn {
-  background: linear-gradient(135deg, var(--info-color) 0%, #40a9ff 100%);
+/* WeUI 默认按钮 */
+.weui-btn_default {
+  background: linear-gradient(135deg, #f0f0f0 0%, #e5e5e5 100%);
+  color: #333333;
+  border: none;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
 }
 
-.donate-btn {
-  background: linear-gradient(135deg, var(--warning-color) 0%, #ffc53d 100%);
+.weui-btn_default:active {
+  background: linear-gradient(135deg, #e5e5e5 0%, #d9d9d9 100%);
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.08);
 }
 
-.action-icon {
-  font-size: 32rpx;
-}
-
-.action-text {
-  font-size: 28rpx;
+/* WeUI 主要按钮 */
+.weui-btn_primary {
+  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
   color: #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.25);
+}
+
+.weui-btn_primary:active {
+  background: linear-gradient(135deg, #06ad56 0%, #059a4c 100%);
+  box-shadow: 0 1rpx 4rpx rgba(7, 193, 96, 0.2);
+}
+
+/* WeUI 按钮图标 */
+.weui-btn__icon {
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+/* WeUI 按钮文字 */
+.weui-btn__text {
+  font-size: 26rpx;
   font-weight: 500;
+  line-height: 1;
 }
 
 /* ========== 弹窗样式 ========== */
@@ -1120,44 +1242,67 @@ page {
     grid-template-columns: repeat(5, 1fr);
   }
 
-  /* 更新日志小屏幕适配 */
+  /* WeUI 更新日志小屏幕适配 */
   .changelog-scroll {
     max-height: 50vh;
-    padding: 12rpx;
   }
 
-  .timeline-left {
-    width: 20rpx;
+  .weui-cells__title {
+    padding: 20rpx 24rpx 12rpx;
   }
 
-  .timeline-dot {
-    width: 12rpx;
-    height: 12rpx;
-    border-width: 2rpx;
+  .weui-cell {
+    padding: 24rpx;
   }
 
-  .changelog-card {
-    padding: 12rpx;
-    margin-left: 8rpx;
-    max-width: calc(100% - 28rpx);
+  .weui-cell:before {
+    left: 24rpx;
   }
 
-  .version-tag {
-    font-size: 26rpx;
+  .weui-cell__icon-wrapper {
+    margin-right: 20rpx;
   }
 
-  .latest-badge {
-    font-size: 18rpx;
-    padding: 2rpx 6rpx;
+  .weui-cell__icon {
+    width: 16rpx;
+    height: 16rpx;
   }
 
-  .version-date {
+  .weui-cell__line {
+    min-height: 60rpx;
+  }
+
+  .weui-cell__version-tag {
+    font-size: 28rpx;
+  }
+
+  .weui-badge {
+    padding: 2rpx 8rpx;
     font-size: 20rpx;
   }
 
-  .changelog-content {
+  .weui-cell__date {
     font-size: 22rpx;
-    line-height: 1.6;
+  }
+
+  .weui-cell__text {
+    font-size: 24rpx;
+  }
+
+  .weui-msg {
+    padding: 60rpx 40rpx;
+  }
+
+  .weui-msg__icon {
+    font-size: 80rpx;
+  }
+
+  .weui-msg__title {
+    font-size: 32rpx;
+  }
+
+  .weui-msg__desc {
+    font-size: 24rpx;
   }
 }
 
@@ -1176,48 +1321,72 @@ page {
     grid-template-columns: repeat(4, 1fr);
   }
 
-  /* 更新日志大屏幕适配 */
+  /* WeUI 更新日志大屏幕适配 */
   .changelog-scroll {
     max-height: 70vh;
-    padding: 24rpx;
   }
 
-  .timeline-left {
-    width: 32rpx;
+  .weui-cells__title {
+    padding: 28rpx 36rpx 20rpx;
   }
 
-  .timeline-dot {
-    width: 18rpx;
-    height: 18rpx;
-    border-width: 3rpx;
+  .weui-cell {
+    padding: 36rpx;
   }
 
-  .changelog-item.latest .timeline-dot {
-    box-shadow: 0 0 0 5rpx rgba(7, 193, 96, 0.2);
+  .weui-cell:before {
+    left: 36rpx;
   }
 
-  .changelog-card {
-    padding: 24rpx;
-    margin-left: 16rpx;
-    max-width: calc(100% - 48rpx);
+  .weui-cell__icon-wrapper {
+    margin-right: 32rpx;
   }
 
-  .version-tag {
-    font-size: 34rpx;
+  .weui-cell__icon {
+    width: 24rpx;
+    height: 24rpx;
   }
 
-  .latest-badge {
-    font-size: 24rpx;
-    padding: 4rpx 12rpx;
+  .weui-cell__icon_latest {
+    box-shadow: 0 0 0 8rpx rgba(7, 193, 96, 0.2);
   }
 
-  .version-date {
+  .weui-cell__line {
+    min-height: 100rpx;
+  }
+
+  .weui-cell__version-tag {
+    font-size: 36rpx;
+  }
+
+  .weui-badge {
+    padding: 6rpx 16rpx;
     font-size: 28rpx;
   }
 
-  .changelog-content {
+  .weui-cell__date {
     font-size: 30rpx;
-    line-height: 1.9;
+  }
+
+  .weui-cell__text {
+    font-size: 32rpx;
+    line-height: 1.8;
+  }
+
+  .weui-msg {
+    padding: 100rpx 80rpx;
+  }
+
+  .weui-msg__icon {
+    font-size: 120rpx;
+  }
+
+  .weui-msg__title {
+    font-size: 40rpx;
+  }
+
+  .weui-msg__desc {
+    font-size: 32rpx;
   }
 }
 
