@@ -837,12 +837,12 @@ Page({
 
   // 显示添加图片弹窗
   onAddImageBtnTap() {
-    // 生成默认图片名称（年月周），根据当前周视图所在的周
+    // 生成默认图片名称（年 - 月 - 当月周数字），根据当前周视图所在的周
     const currentViewDate = new Date(this.data.currentDate);
     const year = currentViewDate.getFullYear();
-    const month = currentViewDate.getMonth() + 1;
+    const month = String(currentViewDate.getMonth() + 1).padStart(2, '0');
     const week = this.getWeekOfMonth(currentViewDate);
-    const defaultImageName = `${year}年${month}月第${week}周`;
+    const defaultImageName = `${year}-${month}-${week}`;
     
     this.setData({
       showAddImageModal: true,
@@ -888,28 +888,27 @@ Page({
   addImage() {
     const { selectedImagePath, imageName, weekImages } = this.data;
 
-    // 生成唯一ID
+    // 生成唯一 ID
     const imageId = Date.now().toString();
 
-    // 生成默认图片名称（年月周）
+    // 生成新格式图片名称（年 - 月 - 当月周数字）
     let finalImageName = imageName;
-    // 无论用户是否输入名称，都使用年月周作为基础名称，确保重复时使用年月周+数字格式
     const currentViewDate = new Date(this.data.currentDate);
     const year = currentViewDate.getFullYear();
-    const month = currentViewDate.getMonth() + 1;
+    const month = String(currentViewDate.getMonth() + 1).padStart(2, '0');
     const week = this.getWeekOfMonth(currentViewDate);
-    const baseName = `${year}年${month}月第${week}周`;
+    const newNameFormat = `${year}-${month}-${week}`;
     
-    // 如果用户没有输入名称，使用年月周作为默认名称
+    // 如果用户没有输入名称，使用新格式作为默认名称
     if (!finalImageName) {
-      finalImageName = baseName;
+      finalImageName = newNameFormat;
     }
 
-    // 检查名称是否重复，如果重复则在后面加1,2,3...，使用年月周+数字格式
+    // 检查名称是否重复，如果重复则在后面加_1,_2,3...
     let uniqueImageName = finalImageName;
     let counter = 1;
     while (weekImages.some(image => image.name === uniqueImageName)) {
-      uniqueImageName = `${baseName}${counter}`;
+      uniqueImageName = `${newNameFormat}_${counter}`;
       counter++;
     }
 
@@ -927,8 +926,7 @@ Page({
       weekImages: updatedImages
     });
     
-    // 保存到本地存储（这里可以根据需要保存到合适的存储位置）
-    // 由于用户要求图片放在本地，且不会被导出，我们可以保存到特定的存储键
+    // 保存到本地存储
     const weekKey = this.getWeekKey();
     wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
     
@@ -1001,9 +999,45 @@ Page({
   // 加载本周图片
   loadWeekImages() {
     const weekKey = this.getWeekKey();
-    const weekImages = wx.getStorageSync(`week_images_${weekKey}`) || [];
+    let weekImages = wx.getStorageSync(`week_images_${weekKey}`) || [];
+    
+    // 检测并更新旧格式图片名称
+    let hasOldFormat = false;
+    const updatedImages = weekImages.map(image => {
+      // 检查是否为旧格式：包含"年"、"月"、"周"等中文字符
+      if (image.name && (image.name.includes('年') || image.name.includes('月') || image.name.includes('第') || image.name.includes('周'))) {
+        hasOldFormat = true;
+        // 转换为新格式：年 - 月 - 周数字
+        try {
+          // 从旧格式中提取年月周信息
+          const match = image.name.match(/(\d{4}) 年 (\d{1,2}) 月第 (\d+) 周/);
+          if (match) {
+            const year = match[1];
+            const month = String(match[2]).padStart(2, '0');
+            const week = match[3];
+            const newName = `${year}-${month}-${week}`;
+            console.log(`更新图片名称：${image.name} -> ${newName}`);
+            return {
+              ...image,
+              name: newName,
+              updatedTime: new Date().toISOString()
+            };
+          }
+        } catch (e) {
+          console.error('解析旧格式图片名称失败', e);
+        }
+      }
+      return image;
+    });
+    
+    // 如果有旧格式图片，更新存储
+    if (hasOldFormat) {
+      wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
+      console.log(`已更新 ${updatedImages.length} 张图片的名称格式`);
+    }
+    
     this.setData({
-      weekImages: weekImages
+      weekImages: updatedImages
     });
   },
 
