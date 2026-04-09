@@ -2,6 +2,7 @@
 const api = require('../../utils/api.js');
 const changelogData = require('../../utils/changelog.js');
 const JSZip = require('../../utils/jszip.min.js');
+const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation } = require('../../utils/imageRelation.js');
 
 /**
  * 云开发工具类 - 增量备份和恢复
@@ -217,13 +218,24 @@ class CloudManager {
     
     return { images, imageWeekRelation };
   }
-  
+
   // 获取某个日期是当月的第几周
   getWeekOfMonth(date) {
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
     const dayOfWeek = firstDay.getDay();
     const adjustedDate = date.getDate() + dayOfWeek;
     return Math.ceil(adjustedDate / 7);
+  }
+
+  // 验证图片文件是否存在
+  validateImageExists(imagePath) {
+    return new Promise((resolve) => {
+      wx.getFileInfo({
+        filePath: imagePath,
+        success: () => resolve(true),
+        fail: () => resolve(false)
+      });
+    });
   }
   
   // 备份数据
@@ -240,11 +252,13 @@ class CloudManager {
       
       // 1. 获取本地数据
       const localData = this.getLocalData();
-      const { images, imageWeekRelation } = this.getAllLocalImages();
+      
+      // 使用新的图片关联表工具获取所有有效图片
+      const { images: validImages, imageWeekRelation: validImageWeekRelation } = await getAllValidImages();
       
       // 2. 备份图片到云存储
       const uploadedImages = [];
-      for (const imgInfo of images) {
+      for (const imgInfo of validImages) {
         try {
           // 上传图片到云存储
           const uploadResult = await wx.cloud.uploadFile({
@@ -271,7 +285,7 @@ class CloudManager {
             shiftTemplates: localData.shiftTemplates.data,
             shifts: localData.shifts.data,
             images: uploadedImages,
-            imageWeekRelation: imageWeekRelation,
+            imageWeekRelation: validImageWeekRelation,
             backupIndex: {}
           }
         }
@@ -353,6 +367,12 @@ class CloudManager {
       // 3. 恢复图片
       const restoredImages = [];
       const images = backupData.images || [];
+      const restoredWeekKeys = new Set();
+      
+      // 导入图片周关联表到新的图片关联表
+      if (backupData.imageWeekRelation) {
+        importImageWeekRelation(backupData.imageWeekRelation);
+      }
       
       for (const imgInfo of images) {
         try {
@@ -370,20 +390,31 @@ class CloudManager {
           );
           
           if (!exists) {
-            existingImages.push({
+            const newImage = {
               id: `${weekKey}_${Date.now()}`,
               name: imgInfo.imageName,
               path: downloadResult.tempFilePath,
               addedTime: new Date().toISOString()
-            });
+            };
             
+            existingImages.push(newImage);
             wx.setStorageSync(weekKey, existingImages);
+            
+            // 同步更新到图片关联表
+            addImageToRelation(weekKey, newImage);
+            restoredWeekKeys.add(weekKey);
+            
             restoredImages.push(imgInfo.remotePath);
           }
         } catch (e) {
           console.error('恢复图片失败', imgInfo.remotePath, e);
         }
       }
+      
+      // 同步所有恢复过的周的关联表
+      restoredWeekKeys.forEach(weekKey => {
+        syncRelationWithLocal(weekKey);
+      });
       
       wx.hideLoading();
       wx.showToast({

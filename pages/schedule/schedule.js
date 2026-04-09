@@ -1,5 +1,6 @@
 // pages/schedule/schedule.js
 const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/colorUtils.js');
+const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation.js');
 
 Page({
   data: {
@@ -950,7 +951,11 @@ Page({
     
     // 保存到本地存储
     const weekKey = this.getWeekKey();
-    wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
+    const storageKey = `week_images_${weekKey}`;
+    wx.setStorageSync(storageKey, updatedImages);
+    
+    // 同步更新到图片关联表
+    addImageToRelation(storageKey, newImage);
     
     // 关闭弹窗
     this.hideAddImageModal();
@@ -978,6 +983,7 @@ Page({
   deleteImage(e) {
     const index = e.currentTarget.dataset.index;
     const { weekImages } = this.data;
+    const imageToDelete = weekImages[index];
     
     // 显示确认对话框
     wx.showModal({
@@ -993,7 +999,13 @@ Page({
           
           // 更新本地存储
           const weekKey = this.getWeekKey();
-          wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
+          const storageKey = `week_images_${weekKey}`;
+          wx.setStorageSync(storageKey, updatedImages);
+          
+          // 同步更新到图片关联表
+          if (imageToDelete && imageToDelete.id) {
+            removeImageFromRelation(storageKey, imageToDelete.id);
+          }
           
           // 更新图片最后修改时间戳，确保下次备份时会重新备份
           wx.setStorageSync('imagesLastModified', Date.now());
@@ -1021,7 +1033,8 @@ Page({
   // 加载本周图片
   loadWeekImages() {
     const weekKey = this.getWeekKey();
-    let weekImages = wx.getStorageSync(`week_images_${weekKey}`) || [];
+    const storageKey = `week_images_${weekKey}`;
+    let weekImages = wx.getStorageSync(storageKey) || [];
     
     // 检测并更新旧格式图片名称
     let hasOldFormat = false;
@@ -1054,9 +1067,12 @@ Page({
     
     // 如果有旧格式图片，更新存储
     if (hasOldFormat) {
-      wx.setStorageSync(`week_images_${weekKey}`, updatedImages);
+      wx.setStorageSync(storageKey, updatedImages);
       console.log(`已更新 ${updatedImages.length} 张图片的名称格式`);
     }
+    
+    // 同步更新到图片关联表
+    syncRelationWithLocal(storageKey);
     
     this.setData({
       weekImages: updatedImages
