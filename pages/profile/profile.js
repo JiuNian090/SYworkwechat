@@ -4,417 +4,212 @@ const changelogData = require('../../utils/changelog.js');
 const JSZip = require('../../utils/jszip.min.js');
 
 /**
- * WebDAV 工具类 - 增量备份和恢复
- * 支持坚果云 WebDAV 协议
+ * 云开发工具类 - 增量备份和恢复
+ * 支持微信云开发，通过账号密码实现数据同步
  */
-class WebDAVManager {
-  constructor(config) {
-    this.baseUrl = config.url;
-    this.username = config.username;
-    this.password = config.password;
-    this.folder = config.folder;
-    this.authHeader = 'Basic ' + this.base64Encode(`${this.username}:${this.password}`);
+class CloudManager {
+  constructor() {
+    this.userId = null;
   }
   
-  // Base64 编码
-  base64Encode(str) {
-    return wx.getFileSystemManager().readFileSync(wx.getFileSystemManager().writeFileSync({
-      filePath: `${wx.env.USER_DATA_PATH}/temp.txt`,
-      data: str
-    }), 'base64');
-  }
-  
-  // 构建完整的 WebDAV URL
-  buildUrl(path = '') {
-    let url = this.baseUrl.endsWith('/') ? this.baseUrl : this.baseUrl + '/';
-    if (this.folder) {
-      url += this.folder.endsWith('/') ? this.folder : this.folder + '/';
-    }
-    if (path) {
-      url += path;
-    }
-    return url;
-  }
-  
-  // 创建文件夹（MKCOL 方法）
-  createFolder(folderPath) {
-    return new Promise((resolve, reject) => {
-      const url = this.buildUrl(folderPath);
-      wx.request({
-        url: url,
-        method: 'MKCOL',
-        header: {
-          'Authorization': this.authHeader
-        },
-        success: (res) => {
-          if (res.statusCode === 201 || res.statusCode === 409) {
-            // 201: 创建成功，409: 文件夹已存在
-            resolve({ success: true, exists: res.statusCode === 409 });
-          } else {
-            reject(new Error(`创建文件夹失败：${res.statusCode}`));
-          }
-        },
-        fail: (err) => {
-          reject(err);
+  // 用户注册
+  async register(account, password) {
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'userLogin',
+        data: {
+          action: 'register',
+          account: account,
+          password: password
         }
       });
-    });
-  }
-  
-  // 上传文件（PUT 方法）
-  uploadFile(filePath, remotePath, contentType = 'application/octet-stream') {
-    return new Promise((resolve, reject) => {
-      const fs = wx.getFileSystemManager();
-      const url = this.buildUrl(remotePath);
       
-      fs.readFile({
-        filePath: filePath,
-        success: (res) => {
-          wx.request({
-            url: url,
-            method: 'PUT',
-            header: {
-              'Authorization': this.authHeader,
-              'Content-Type': contentType
-            },
-            data: res.data,
-            success: (res) => {
-              if (res.statusCode >= 200 && res.statusCode < 300) {
-                resolve({ success: true });
-              } else {
-                reject(new Error(`上传文件失败：${res.statusCode}`));
-              }
-            },
-            fail: (err) => {
-              reject(err);
-            }
-          });
-        },
-        fail: (err) => {
-          reject(err);
-        }
-      });
-    });
-  }
-  
-  // 下载文件（GET 方法）
-  downloadFile(remotePath, localFilePath, responseType = 'arraybuffer') {
-    return new Promise((resolve, reject) => {
-      const url = this.buildUrl(remotePath);
-      
-      wx.request({
-        url: url,
-        method: 'GET',
-        header: {
-          'Authorization': this.authHeader
-        },
-        responseType: responseType,
-        success: (res) => {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            const fs = wx.getFileSystemManager();
-            fs.writeFile({
-              filePath: localFilePath,
-              data: res.data,
-              success: () => {
-                resolve({ success: true, data: res.data });
-              },
-              fail: (err) => {
-                reject(err);
-              }
-            });
-          } else {
-            reject(new Error(`下载文件失败：${res.statusCode}`));
-          }
-        },
-        fail: (err) => {
-          reject(err);
-        }
-      });
-    });
-  }
-  
-  // 列出文件和文件夹（PROPFIND 方法）
-  listFiles(path = '') {
-    return new Promise((resolve, reject) => {
-      const url = this.buildUrl(path);
-      
-      wx.request({
-        url: url,
-        method: 'PROPFIND',
-        header: {
-          'Authorization': this.authHeader,
-          'Depth': '1'
-        },
-        success: (res) => {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            // 解析 XML 响应
-            const xml = res.data;
-            const files = this.parsePropfindXml(xml);
-            resolve({ success: true, files: files });
-          } else {
-            reject(new Error(`列出文件失败：${res.statusCode}`));
-          }
-        },
-        fail: (err) => {
-          reject(err);
-        }
-      });
-    });
-  }
-  
-  // 解析 PROPFIND 返回的 XML
-  parsePropfindXml(xml) {
-    const files = [];
-    // 简单解析 XML，提取文件名和属性
-    // 实际实现可能需要更复杂的解析逻辑
-    const responseRegex = /<D:response>([\s\S]*?)<\/D:response>/g;
-    let match;
-    
-    while ((match = responseRegex.exec(xml)) !== null) {
-      const response = match[1];
-      const hrefMatch = response.match(/<D:href>([^<]+)<\/D:href>/);
-      const displayNameMatch = response.match(/<D:displayname>([^<]+)<\/D:displayname>/);
-      const isCollection = response.includes('<D:collection/>');
-      
-      if (hrefMatch) {
-        const href = hrefMatch[1];
-        const name = href.split('/').filter(Boolean).pop() || displayNameMatch?.[1] || '未知';
-        
-        files.push({
-          href: href,
-          name: decodeURIComponent(name),
-          isFolder: isCollection,
-          path: href.replace(/\/dav\/[^\/]+\//, '')
-        });
-      }
-    }
-    
-    return files;
-  }
-  
-  // 检查文件是否存在
-  async fileExists(remotePath) {
-    try {
-      const result = await this.listFiles('');
-      return result.files.some(f => f.path === remotePath);
-    } catch (e) {
-      return false;
-    }
-  }
-  
-  // 获取文件信息（大小、修改时间等）
-  async getFileInfo(remotePath) {
-    try {
-      const result = await this.listFiles('');
-      const file = result.files.find(f => f.path === remotePath);
-      return file || null;
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  // 计算文件哈希值（用于差异检测）
-  calculateHash(data) {
-    // 简单实现：使用数据长度和部分内容作为哈希
-    // 实际项目中可以使用 crypto-js 等库
-    const str = typeof data === 'string' ? data : JSON.stringify(data);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash.toString(16);
-  }
-  
-  // 读取本地数据并计算哈希
-  getLocalDataHash(key) {
-    try {
-      const data = wx.getStorageSync(key);
-      if (!data) return null;
-      
-      const hash = this.calculateHash(data);
-      const size = JSON.stringify(data).length;
-      
-      return {
-        key: key,
-        hash: hash,
-        size: size,
-        modified: new Date().toISOString(),
-        data: data
-      };
-    } catch (e) {
-      console.error(`读取本地数据失败：${key}`, e);
-      return null;
-    }
-  }
-  
-  // 下载并解析索引文件
-  async downloadIndexFile() {
-    try {
-      const localPath = `${wx.env.USER_DATA_PATH}/backup-index.json`;
-      await this.downloadFile('backup-index.json', localPath, 'text');
-      
-      const fs = wx.getFileSystemManager();
-      const content = fs.readFileSync(localPath, 'utf8');
-      return JSON.parse(content);
-    } catch (e) {
-      console.error('下载索引文件失败', e);
-      return null;
-    }
-  }
-  
-  // 上传索引文件
-  async uploadIndexFile(indexData) {
-    try {
-      const fs = wx.getFileSystemManager();
-      const localPath = `${wx.env.USER_DATA_PATH}/backup-index.json`;
-      
-      fs.writeFileSync(localPath, JSON.stringify(indexData, null, 2), 'utf8');
-      
-      await this.uploadFile(localPath, 'backup-index.json', 'application/json');
-      return true;
-    } catch (e) {
-      console.error('上传索引文件失败', e);
-      return false;
-    }
-  }
-  
-  // 对比本地和云端数据，计算差异
-  async calculateDiff() {
-    const diff = {
-      toUpload: [],    // 需要上传的文件
-      toDownload: [],  // 需要下载的文件
-      unchanged: []    // 未变化的文件
-    };
-    
-    // 获取本地数据
-    const localData = {
-      shiftTemplates: this.getLocalDataHash('shiftTemplates'),
-      shifts: this.getLocalDataHash('shifts')
-    };
-    
-    // 获取云端索引
-    const cloudIndex = await this.downloadIndexFile();
-    
-    if (!cloudIndex) {
-      // 云端没有索引，说明是首次备份，全部上传
-      Object.keys(localData).forEach(key => {
-        if (localData[key]) {
-          diff.toUpload.push({
-            key: key,
-            type: 'data',
-            local: localData[key]
-          });
-        }
-      });
-      return diff;
-    }
-    
-    // 对比数据
-    Object.keys(localData).forEach(key => {
-      const local = localData[key];
-      if (!local) return;
-      
-      const cloudFile = cloudIndex.files?.[`${key}.json`];
-      
-      if (!cloudFile) {
-        // 云端没有，需要上传
-        diff.toUpload.push({
-          key: key,
-          type: 'data',
-          local: local,
-          remotePath: `${key}.json`
-        });
-      } else if (local.hash !== cloudFile.hash) {
-        // 哈希值不同，需要上传
-        diff.toUpload.push({
-          key: key,
-          type: 'data',
-          local: local,
-          remotePath: `${key}.json`
-        });
+      if (result.result.success) {
+        this.userId = result.result.data.userId;
+        wx.setStorageSync('cloudUserId', this.userId);
+        wx.setStorageSync('cloudAccount', account);
+        return result.result;
       } else {
-        diff.unchanged.push(key);
+        return result.result;
       }
-    });
-    
-    return diff;
-  }
-  
-  // 生成图片的远程路径（年 - 月 - 周格式）
-  generateImagePath(weekKey, imageIndex, imageName) {
-    try {
-      // 从 weekKey 中提取日期信息
-      const weekDate = new Date(weekKey);
-      if (isNaN(weekDate.getTime())) {
-        throw new Error('无效的日期格式');
-      }
-      
-      const year = weekDate.getFullYear();
-      const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-      
-      // 计算当月第几周（只写数字）
-      const firstDayOfMonth = new Date(year, weekDate.getMonth(), 1);
-      const weekOfMonth = Math.ceil((weekDate.getDate() - firstDayOfMonth.getDay()) / 7);
-      
-      // 生成图片名称：年 - 月 - 当月周
-      const imageFileName = `${year}-${month}-${weekOfMonth}_${imageIndex}.jpg`;
-      
-      // 生成远程路径：images/年 - 月/年 - 月 - 周_索引.jpg
-      const remotePath = `images/${year}-${month}/${imageFileName}`;
-      
-      return {
-        remotePath: remotePath,
-        imageFileName: imageFileName,
-        yearMonth: `${year}-${month}`,
-        weekOfMonth: weekOfMonth
-      };
     } catch (e) {
-      console.error('生成图片路径失败', e);
-      // 使用默认路径
-      const defaultPath = `images/unknown/image_${imageIndex}.jpg`;
+      console.error('注册失败', e);
       return {
-        remotePath: defaultPath,
-        imageFileName: `image_${imageIndex}.jpg`,
-        yearMonth: 'unknown',
-        weekOfMonth: 0
+        success: false,
+        errMsg: e.message || '注册失败'
       };
     }
   }
   
-  // 获取本地所有图片数据
+  // 用户登录
+  async login(account, password) {
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'userLogin',
+        data: {
+          action: 'login',
+          account: account,
+          password: password
+        }
+      });
+      
+      if (result.result.success) {
+        this.userId = result.result.data.userId;
+        wx.setStorageSync('cloudUserId', this.userId);
+        wx.setStorageSync('cloudAccount', account);
+        return result.result;
+      } else {
+        return result.result;
+      }
+    } catch (e) {
+      console.error('登录失败', e);
+      return {
+        success: false,
+        errMsg: e.message || '登录失败'
+      };
+    }
+  }
+  
+  // 检查是否已登录
+  isLoggedIn() {
+    if (!this.userId) {
+      this.userId = wx.getStorageSync('cloudUserId');
+    }
+    return !!this.userId;
+  }
+  
+  // 退出登录
+  logout() {
+    this.userId = null;
+    wx.removeStorageSync('cloudUserId');
+    wx.removeStorageSync('cloudAccount');
+  }
+  
+  // 获取当前账号
+  getCurrentAccount() {
+    return wx.getStorageSync('cloudAccount') || '';
+  }
+  
+  // 计算哈希值（用于差异检测）
+  calculateHash(data) {
+    if (typeof data === 'string') {
+      let hash = 0;
+      for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return hash.toString(16);
+    }
+    return '0';
+  }
+  
+  // 获取本地数据
+  getLocalData() {
+    const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+    const shifts = wx.getStorageSync('shifts') || {};
+    
+    const shiftTemplatesJson = JSON.stringify(shiftTemplates);
+    const shiftsJson = JSON.stringify(shifts);
+    
+    return {
+      shiftTemplates: {
+        data: shiftTemplates,
+        hash: this.calculateHash(shiftTemplatesJson),
+        size: shiftTemplatesJson.length
+      },
+      shifts: {
+        data: shifts,
+        hash: this.calculateHash(shiftsJson),
+        size: shiftsJson.length
+      }
+    };
+  }
+  
+  // 检测并更新旧格式图片名称
+  checkAndUpdateOldImageNames() {
+    const storageInfo = wx.getStorageInfoSync();
+    const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+    
+    let hasUpdated = false;
+    
+    weekImageKeys.forEach(weekKey => {
+      const weekImages = wx.getStorageSync(weekKey) || [];
+      
+      // 检测并更新旧格式图片
+      const updatedImages = weekImages.map(image => {
+        // 检查是否为旧格式：包含"年"、"月"、"周"等中文字符
+        if (image.name && (image.name.includes('年') || image.name.includes('月') || 
+            image.name.includes('第') || image.name.includes('周'))) {
+          hasUpdated = true;
+          
+          // 从 weekKey 中提取日期信息
+          const weekDateStr = weekKey.replace('week_images_', '');
+          const weekDate = new Date(weekDateStr);
+          const year = weekDate.getFullYear();
+          const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+          const week = this.getWeekOfMonth(weekDate);
+          
+          // 生成新格式名称：年 - 月 - 周数字
+          const newName = `${year}-${month}-${week}`;
+          
+          return {
+            ...image,
+            name: newName,
+            updatedTime: new Date().toISOString()
+          };
+        }
+        return image;
+      });
+      
+      // 如果有更新，保存到本地存储
+      if (hasUpdated) {
+        wx.setStorageSync(weekKey, updatedImages);
+        console.log(`已更新周 ${weekKey} 的图片名称格式`);
+      }
+    });
+    
+    return hasUpdated;
+  }
+  
+  // 获取本地所有图片
   getAllLocalImages() {
+    // 首先检测并更新旧格式图片名称
+    this.checkAndUpdateOldImageNames();
+    
     const storageInfo = wx.getStorageInfoSync();
     const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
     
     const images = [];
     const imageWeekRelation = {};
     
-    weekImageKeys.forEach(key => {
-      const weekImages = wx.getStorageSync(key) || [];
-      const validWeekImages = weekImages.filter(image => {
-        return image && image.name !== '0' && image.path;
-      });
-      
-      if (validWeekImages.length > 0) {
-        imageWeekRelation[key] = [];
+    weekImageKeys.forEach(weekKey => {
+      const weekImages = wx.getStorageSync(weekKey) || [];
+      if (weekImages.length > 0) {
+        imageWeekRelation[weekKey] = weekImages.map(img => ({
+          name: img.name,
+          path: img.path
+        }));
         
-        validWeekImages.forEach((image, index) => {
-          const pathInfo = this.generateImagePath(key, index, image.name);
+        weekImages.forEach((image, index) => {
+          // 解析周信息，生成新格式图片名：年 - 月 - 周数字
+          const weekDateStr = weekKey.replace('week_images_', '');
+          const weekDate = new Date(weekDateStr);
+          const year = weekDate.getFullYear();
+          const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+          const week = this.getWeekOfMonth(weekDate);
+          
+          const yearMonth = `${year}-${month}`;
+          const imageName = `${year}-${month}-${week}`;
+          const remotePath = `images/${yearMonth}/${imageName}_${index}.jpg`;
           
           images.push({
-            weekKey: key,
+            weekKey: weekKey,
             image: image,
-            remotePath: pathInfo.remotePath,
-            yearMonth: pathInfo.yearMonth,
-            weekOfMonth: pathInfo.weekOfMonth
-          });
-          
-          imageWeekRelation[key].push({
-            name: image.name,
-            remotePath: pathInfo.remotePath,
-            weekOfMonth: pathInfo.weekOfMonth
+            yearMonth: yearMonth,
+            imageName: imageName,
+            remotePath: remotePath,
+            index: index
           });
         });
       }
@@ -423,234 +218,83 @@ class WebDAVManager {
     return { images, imageWeekRelation };
   }
   
-  // 备份图片（增量备份）
-  async backupImages(cloudIndex = null) {
-    const { images, imageWeekRelation } = this.getAllLocalImages();
-    const uploadedImages = [];
-    const skippedImages = [];
-    
-    // 创建 images 文件夹
-    await this.createFolder('images');
-    
-    // 逐个备份图片
-    for (const imgInfo of images) {
-      try {
-        const { weekKey, image, remotePath } = imgInfo;
-        
-        // 检查云端是否已存在该图片
-        if (cloudIndex && cloudIndex.files?.[remotePath]) {
-          // 检查本地文件
-          const fs = wx.getFileSystemManager();
-          const localData = fs.readFileSync(image.path, 'arraybuffer');
-          const localHash = this.calculateHash(localData);
-          
-          // 如果哈希值相同，跳过
-          if (localHash === cloudIndex.files[remotePath].hash) {
-            skippedImages.push(remotePath);
-            continue;
-          }
-        }
-        
-        // 上传新图片或已修改的图片
-        const yearMonthFolder = `images/${imgInfo.yearMonth}`;
-        await this.createFolder(yearMonthFolder);
-        
-        const fs = wx.getFileSystemManager();
-        const tempPath = `${wx.env.USER_DATA_PATH}/temp_upload.jpg`;
-        fs.copyFileSync(image.path, tempPath);
-        
-        await this.uploadFile(tempPath, remotePath, 'image/jpeg');
-        
-        uploadedImages.push({
-          remotePath: remotePath,
-          weekKey: weekKey,
-          hash: this.calculateHash(fs.readFileSync(image.path, 'arraybuffer'))
-        });
-        
-      } catch (e) {
-        console.error('备份图片失败', remotePath, e);
-        skippedImages.push(remotePath);
-      }
-    }
-    
-    return {
-      uploaded: uploadedImages,
-      skipped: skippedImages,
-      imageWeekRelation: imageWeekRelation
-    };
+  // 获取某个日期是当月的第几周
+  getWeekOfMonth(date) {
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    const dayOfWeek = firstDay.getDay();
+    const adjustedDate = date.getDate() + dayOfWeek;
+    return Math.ceil(adjustedDate / 7);
   }
   
-  // 恢复图片（增量恢复）
-  async restoreImages(cloudIndex) {
-    const restoredImages = [];
-    const failedImages = [];
-    
-    if (!cloudIndex || !cloudIndex.files) {
-      return { restored: [], failed: [] };
-    }
-    
-    // 筛选出图片文件
-    const imageFiles = Object.keys(cloudIndex.files)
-      .filter(path => path.startsWith('images/'))
-      .filter(path => path.endsWith('.jpg') || path.endsWith('.png'));
-    
-    // 按年 - 月分组
-    const yearMonthGroups = {};
-    imageFiles.forEach(path => {
-      const parts = path.split('/');
-      if (parts.length >= 2) {
-        const yearMonth = parts[1];
-        if (!yearMonthGroups[yearMonth]) {
-          yearMonthGroups[yearMonth] = [];
-        }
-        yearMonthGroups[yearMonth].push(path);
-      }
-    });
-    
-    // 逐组恢复图片
-    for (const [yearMonth, paths] of Object.entries(yearMonthGroups)) {
-      // 创建本地文件夹对应的 storage key
-      const weekKeys = this.getWeekKeysFromYearMonth(yearMonth);
-      
-      for (const remotePath of paths) {
-        try {
-          // 下载图片
-          const localPath = `${wx.env.USER_DATA_PATH}/${remotePath.replace(/\//g, '_')}`;
-          await this.downloadFile(remotePath, localPath, 'arraybuffer');
-          
-          // 解析图片信息
-          const fileName = remotePath.split('/').pop();
-          const parts = fileName.split('_');
-          if (parts.length >= 2) {
-            const weekOfMonth = parseInt(parts[0].split('-')[2]);
-            const imageIndex = parseInt(parts[1].replace('.jpg', ''));
-            
-            // 找到对应的周 key
-            const targetWeekKey = weekKeys[weekOfMonth - 1] || weekKeys[0];
-            
-            if (targetWeekKey) {
-              // 保存到本地存储
-              const existingImages = wx.getStorageSync(targetWeekKey) || [];
-              
-              // 检查是否已存在
-              const exists = existingImages.some(img => 
-                img.path === localPath || img.name === fileName
-              );
-              
-              if (!exists) {
-                existingImages.push({
-                  id: `${targetWeekKey}_${fileName}`,
-                  name: fileName,
-                  path: localPath,
-                  addedTime: new Date().toISOString()
-                });
-                
-                wx.setStorageSync(targetWeekKey, existingImages);
-                restoredImages.push(remotePath);
-              }
-            }
-          }
-        } catch (e) {
-          console.error('恢复图片失败', remotePath, e);
-          failedImages.push(remotePath);
-        }
-      }
-    }
-    
-    return { restored: restoredImages, failed: failedImages };
-  }
-  
-  // 根据年 - 月获取对应的周 keys
-  getWeekKeysFromYearMonth(yearMonth) {
-    const [year, month] = yearMonth.split('-');
-    const weekKeys = [];
-    
-    // 获取该月的所有周
-    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-    const endDate = new Date(parseInt(year), parseInt(month), 0);
-    
-    let currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      const weekKey = currentDate.toISOString().split('T')[0];
-      weekKeys.push(`week_images_${weekKey}`);
-      currentDate.setDate(currentDate.getDate() + 7);
-    }
-    
-    return weekKeys;
-  }
-  
-  // 执行完整备份
+  // 备份数据
   async backup() {
     try {
+      if (!this.isLoggedIn()) {
+        return {
+          success: false,
+          errMsg: '请先登录'
+        };
+      }
+      
       wx.showLoading({ title: '备份中...' });
       
-      // 1. 创建文件夹结构
-      await this.createFolder('');
-      await this.createFolder('images');
+      // 1. 获取本地数据
+      const localData = this.getLocalData();
+      const { images, imageWeekRelation } = this.getAllLocalImages();
       
-      // 2. 获取云端索引
-      const cloudIndex = await this.downloadIndexFile();
-      
-      // 3. 计算差异
-      const diff = await this.calculateDiff();
-      
-      // 4. 备份数据文件
-      for (const item of diff.toUpload) {
-        if (item.type === 'data') {
-          const fs = wx.getFileSystemManager();
-          const localPath = `${wx.env.USER_DATA_PATH}/${item.key}.json`;
-          fs.writeFileSync(localPath, JSON.stringify(item.local.data, null, 2), 'utf8');
+      // 2. 备份图片到云存储
+      const uploadedImages = [];
+      for (const imgInfo of images) {
+        try {
+          // 上传图片到云存储
+          const uploadResult = await wx.cloud.uploadFile({
+            cloudPath: `schedule_images/${this.userId}/${imgInfo.remotePath}`,
+            filePath: imgInfo.image.path
+          });
           
-          await this.uploadFile(localPath, item.remotePath, 'application/json');
+          uploadedImages.push({
+            ...imgInfo,
+            fileID: uploadResult.fileID
+          });
+        } catch (e) {
+          console.error('上传图片失败', imgInfo.remotePath, e);
         }
       }
       
-      // 5. 备份图片
-      const imageResult = await this.backupImages(cloudIndex);
-      
-      // 6. 生成新的索引
-      const newIndex = {
-        version: '2.0',
-        backupTime: new Date().toISOString(),
-        files: {}
-      };
-      
-      // 添加数据文件信息
-      diff.toUpload.forEach(item => {
-        if (item.type === 'data') {
-          newIndex.files[`${item.key}.json`] = {
-            hash: item.local.hash,
-            size: item.local.size,
-            modified: new Date().toISOString()
-          };
+      // 3. 调用云函数备份数据
+      const backupResult = await wx.cloud.callFunction({
+        name: 'backupRestore',
+        data: {
+          action: 'backup',
+          userId: this.userId,
+          data: {
+            shiftTemplates: localData.shiftTemplates.data,
+            shifts: localData.shifts.data,
+            images: uploadedImages,
+            imageWeekRelation: imageWeekRelation,
+            backupIndex: {}
+          }
         }
       });
       
-      // 添加图片文件信息
-      imageResult.uploaded.forEach(img => {
-        newIndex.files[img.remotePath] = {
-          hash: img.hash,
-          size: 0, // 实际应该获取文件大小
-          modified: new Date().toISOString(),
-          weekKey: img.weekKey
-        };
-      });
-      
-      // 7. 上传索引文件
-      await this.uploadIndexFile(newIndex);
-      
       wx.hideLoading();
-      wx.showToast({
-        title: `备份成功（${diff.toUpload.length}个文件，${imageResult.uploaded.length}张图片）`,
-        icon: 'success'
-      });
       
-      return {
-        success: true,
-        uploadedFiles: diff.toUpload.length,
-        uploadedImages: imageResult.uploaded.length,
-        skippedImages: imageResult.skipped.length
-      };
+      if (backupResult.result.success) {
+        wx.showToast({
+          title: `备份成功（${uploadedImages.length}张图片）`,
+          icon: 'success'
+        });
+        return {
+          success: true,
+          uploadedImages: uploadedImages.length
+        };
+      } else {
+        wx.showToast({
+          title: backupResult.result.errMsg || '备份失败',
+          icon: 'none'
+        });
+        return backupResult.result;
+      }
       
     } catch (e) {
       console.error('备份失败', e);
@@ -659,82 +303,107 @@ class WebDAVManager {
         title: '备份失败',
         icon: 'none'
       });
-      
       return {
         success: false,
-        error: e.message
+        errMsg: e.message
       };
     }
   }
   
-  // 执行完整恢复
+  // 恢复数据
   async restore() {
     try {
-      wx.showLoading({ title: '恢复中...' });
-      
-      // 1. 下载索引文件
-      const cloudIndex = await this.downloadIndexFile();
-      
-      if (!cloudIndex) {
-        wx.hideLoading();
-        wx.showToast({
-          title: '云端没有备份数据',
-          icon: 'none'
-        });
-        return { success: false, error: '云端没有备份数据' };
+      if (!this.isLoggedIn()) {
+        return {
+          success: false,
+          errMsg: '请先登录'
+        };
       }
       
-      // 2. 清空本地数据（可选）
-      // 这里选择不清空，而是增量恢复
+      wx.showLoading({ title: '恢复中...' });
       
-      // 3. 恢复数据文件
-      const dataFiles = ['shiftTemplates.json', 'shifts.json'];
-      const restoredFiles = [];
+      // 1. 调用云函数获取备份数据
+      const restoreResult = await wx.cloud.callFunction({
+        name: 'backupRestore',
+        data: {
+          action: 'restore',
+          userId: this.userId
+        }
+      });
       
-      for (const fileName of dataFiles) {
-        const key = fileName.replace('.json', '');
-        const localPath = `${wx.env.USER_DATA_PATH}/${fileName}`;
-        
+      if (!restoreResult.result.success) {
+        wx.hideLoading();
+        wx.showToast({
+          title: restoreResult.result.errMsg || '恢复失败',
+          icon: 'none'
+        });
+        return restoreResult.result;
+      }
+      
+      const backupData = restoreResult.result.data;
+      
+      // 2. 恢复数据文件
+      if (backupData.shiftTemplates) {
+        wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
+      }
+      if (backupData.shifts) {
+        wx.setStorageSync('shifts', backupData.shifts);
+      }
+      
+      // 3. 恢复图片
+      const restoredImages = [];
+      const images = backupData.images || [];
+      
+      for (const imgInfo of images) {
         try {
-          await this.downloadFile(fileName, localPath, 'text');
+          // 从云存储下载图片
+          const downloadResult = await wx.cloud.downloadFile({
+            fileID: imgInfo.fileID
+          });
           
-          const fs = wx.getFileSystemManager();
-          const content = fs.readFileSync(localPath, 'utf8');
-          const data = JSON.parse(content);
+          // 保存到本地存储
+          const weekKey = imgInfo.weekKey;
+          const existingImages = wx.getStorageSync(weekKey) || [];
           
-          wx.setStorageSync(key, data);
-          restoredFiles.push(fileName);
+          const exists = existingImages.some(img => 
+            img.path === downloadResult.tempFilePath || img.name === imgInfo.imageName
+          );
+          
+          if (!exists) {
+            existingImages.push({
+              id: `${weekKey}_${Date.now()}`,
+              name: imgInfo.imageName,
+              path: downloadResult.tempFilePath,
+              addedTime: new Date().toISOString()
+            });
+            
+            wx.setStorageSync(weekKey, existingImages);
+            restoredImages.push(imgInfo.remotePath);
+          }
         } catch (e) {
-          console.error(`恢复文件失败：${fileName}`, e);
+          console.error('恢复图片失败', imgInfo.remotePath, e);
         }
       }
       
-      // 4. 恢复图片
-      const imageResult = await this.restoreImages(cloudIndex);
-      
       wx.hideLoading();
       wx.showToast({
-        title: `恢复成功（${restoredFiles.length}个文件，${imageResult.restored.length}张图片）`,
+        title: `恢复成功（${restoredImages.length}张图片）`,
         icon: 'success'
       });
       
-      // 5. 刷新页面数据
+      // 4. 刷新页面数据
       setTimeout(() => {
         const pages = getCurrentPages();
         pages.forEach(page => {
-          if (page.route === 'pages/profile/profile') {
-            if (page.refreshPageData) {
-              page.refreshPageData();
-            }
+          if (page.refreshPageData) {
+            page.refreshPageData();
           }
         });
       }, 500);
       
       return {
         success: true,
-        restoredFiles: restoredFiles.length,
-        restoredImages: imageResult.restored.length,
-        failedImages: imageResult.failed.length
+        restoredImages: restoredImages.length
       };
       
     } catch (e) {
@@ -744,10 +413,37 @@ class WebDAVManager {
         title: '恢复失败',
         icon: 'none'
       });
-      
       return {
         success: false,
-        error: e.message
+        errMsg: e.message
+      };
+    }
+  }
+  
+  // 获取备份信息
+  async getBackupInfo() {
+    try {
+      if (!this.isLoggedIn()) {
+        return {
+          success: false,
+          errMsg: '请先登录'
+        };
+      }
+      
+      const result = await wx.cloud.callFunction({
+        name: 'backupRestore',
+        data: {
+          action: 'getBackupInfo',
+          userId: this.userId
+        }
+      });
+      
+      return result.result;
+    } catch (e) {
+      console.error('获取备份信息失败', e);
+      return {
+        success: false,
+        errMsg: e.message
       };
     }
   }
@@ -785,21 +481,21 @@ Page({
       { id: 'shifts', name: '排班数据', checked: false },
       { id: 'scheduleImages', name: '排班图片', checked: false }
     ],
-    // WebDAV备份设置
-    webdavConfig: {
-      url: '',
-      username: '',
-      password: '',
-      folder: ''
-    },
-    // WebDAV配置弹窗
-    showWebDAVModal: false,
-    // WebDAV使用说明弹窗
-    showWebDAVHelpModal: false,
+    // 云备份设置
+    cloudManager: null,
+    cloudLoggedIn: false,
+    cloudAccount: '',
+    // 云备份登录/注册弹窗
+    showCloudLoginModal: false,
+    showCloudRegisterModal: false,
+    cloudAccountInput: '',
+    cloudPasswordInput: '',
+    cloudConfirmPassword: '',
+    showCloudPassword: false,
+    // 用户管理弹窗
+    showUserManagementModal: false,
     // 数据管理使用说明弹窗
     showDataManagementHelpModal: false,
-    // 密码显示/隐藏状态
-    showPassword: false,
     // 更新日志数据
     changelog: [],
     emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
@@ -994,19 +690,36 @@ Page({
   },
 
   onLoad() {
-    const username = wx.getStorageSync('username') || '';
     // 读取本地存储的头像信息
     const avatarType = wx.getStorageSync('avatarType') || 'text';
     const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
     
-    // 读取WebDAV配置
-    const savedWebdavConfig = wx.getStorageSync('webdavConfig') || {};
-    const webdavConfig = {
-      url: savedWebdavConfig.url || '',
-      username: savedWebdavConfig.username || '',
-      password: savedWebdavConfig.password || '',
-      folder: savedWebdavConfig.folder || ''
-    };
+    // 初始化云开发
+    if (!wx.cloud) {
+      console.error('请使用 2.2.3 或以上的基础库以使用云能力');
+    } else {
+      wx.cloud.init({
+        env: 'cloudbase-1gar7d7f967d8a60',
+        traceUser: true,
+      });
+    }
+    
+    // 创建云开发管理器
+    const cloudManager = new CloudManager();
+    
+    // 检查是否已登录
+    const cloudUserId = wx.getStorageSync('cloudUserId');
+    const cloudAccount = wx.getStorageSync('cloudAccount') || '';
+    const cloudLoggedIn = !!cloudUserId;
+    
+    // 同步云账号到用户名：优先使用云账号
+    let username = wx.getStorageSync('username') || '';
+    if (cloudLoggedIn && cloudAccount) {
+      username = cloudAccount;
+      // 确保本地存储的 username 与 cloudAccount 同步
+      wx.setStorageSync('username', cloudAccount);
+    }
+    this.userId = cloudUserId;
     
     // 生成头像文字
     const avatarText = this.generateAvatarText(username);
@@ -1025,7 +738,9 @@ Page({
       avatarType: avatarType,
       emojiText: emojiText,
       emojiEmotion: emojiEmotion,
-      webdavConfig: webdavConfig,
+      cloudManager: cloudManager,
+      cloudLoggedIn: cloudLoggedIn,
+      cloudAccount: cloudAccount,
       changelog: changelog
     });
   },
@@ -5029,6 +4744,342 @@ Page({
             wx.setStorageSync('lastRestoreTime', Date.now());
           }
           
+        } catch (e) {
+          console.error('恢复失败', e);
+          wx.showToast({
+            title: '恢复失败',
+            icon: 'none'
+          });
+        }
+      }
+    });
+  },
+
+  // 云开发登录/注册弹窗相关方法
+  showCloudLoginOrRegisterModal() {
+    console.log('showCloudLoginOrRegisterModal 被调用');
+    console.log('cloudLoggedIn:', this.data.cloudLoggedIn);
+    
+    // 根据当前是否已登录，选择显示用户管理或登录/注册弹窗
+    if (this.data.cloudLoggedIn) {
+      console.log('已登录，显示用户管理弹窗');
+      // 已登录：显示用户管理弹窗
+      this.setData({
+        showUserManagementModal: true
+      });
+      return;
+    }
+    
+    console.log('未登录，显示选择弹窗');
+    // 未登录：显示选择弹窗
+    wx.showActionSheet({
+      itemList: ['登录已有账号', '注册新账号'],
+      success: (res) => {
+        console.log('用户选择:', res.tapIndex);
+        if (res.tapIndex === 0) {
+          console.log('显示登录弹窗');
+          this.showCloudLoginModal();
+        } else if (res.tapIndex === 1) {
+          console.log('显示注册弹窗');
+          this.showCloudRegisterModal();
+        }
+      },
+      fail: (err) => {
+        console.error('showActionSheet 失败:', err);
+      }
+    });
+  },
+  
+  showCloudLoginModal() {
+    console.log('showCloudLoginModal 被调用');
+    this.setData({
+      showCloudLoginModal: true,
+      cloudAccountInput: '',
+      cloudPasswordInput: ''
+    });
+    console.log('设置 showCloudLoginModal 为 true');
+  },
+
+  hideCloudLoginModal() {
+    this.setData({
+      showCloudLoginModal: false
+    });
+  },
+
+  showCloudRegisterModal() {
+    console.log('showCloudRegisterModal 被调用');
+    this.setData({
+      showCloudRegisterModal: true,
+      cloudAccountInput: '',
+      cloudPasswordInput: '',
+      cloudConfirmPassword: ''
+    });
+    console.log('设置 showCloudRegisterModal 为 true');
+  },
+
+  hideCloudRegisterModal() {
+    this.setData({
+      showCloudRegisterModal: false
+    });
+  },
+
+  onCloudAccountInput(e) {
+    this.setData({
+      cloudAccountInput: e.detail.value
+    });
+  },
+
+  onCloudPasswordInput(e) {
+    this.setData({
+      cloudPasswordInput: e.detail.value
+    });
+  },
+
+  onCloudConfirmPasswordInput(e) {
+    this.setData({
+      cloudConfirmPassword: e.detail.value
+    });
+  },
+
+  toggleCloudPasswordVisibility() {
+    this.setData({
+      showCloudPassword: !this.data.showCloudPassword
+    });
+  },
+
+  // 用户管理弹窗相关方法
+  showUserManagementModal() {
+    this.setData({
+      showUserManagementModal: true
+    });
+  },
+
+  hideUserManagementModal() {
+    this.setData({
+      showUserManagementModal: false
+    });
+  },
+
+  confirmLogout() {
+    wx.showModal({
+      title: '确认退出',
+      content: '确定要退出登录吗？',
+      success: (res) => {
+        if (res.confirm) {
+          this.hideUserManagementModal();
+          this.logoutFromCloud();
+        }
+      }
+    });
+  },
+
+  // 登录到云开发
+  async loginToCloud() {
+    const { cloudAccountInput, cloudPasswordInput } = this.data;
+
+    if (!cloudAccountInput || !cloudPasswordInput) {
+      wx.showToast({
+        title: '请输入账号和密码',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showLoading({ title: '登录中...' });
+
+    try {
+      const cloudManager = this.data.cloudManager;
+      const result = await cloudManager.login(cloudAccountInput, cloudPasswordInput);
+
+      wx.hideLoading();
+
+      if (result.success) {
+        this.setData({
+          cloudLoggedIn: true,
+          cloudAccount: cloudAccountInput,
+          username: cloudAccountInput
+        });
+        // 保存到本地存储
+        wx.setStorageSync('username', cloudAccountInput);
+        wx.setStorageSync('cloudAccount', cloudAccountInput);
+        wx.setStorageSync('cloudLoggedIn', true);
+        wx.setStorageSync('cloudUserId', result.userId);
+        this.userId = result.userId;
+        
+        this.hideCloudLoginModal();
+        wx.showToast({
+          title: '登录成功',
+          icon: 'success'
+        });
+      } else {
+        wx.showToast({
+          title: result.errMsg || '登录失败',
+          icon: 'none'
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('登录失败', e);
+      wx.showToast({
+        title: '登录失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 注册到云开发
+  async registerToCloud() {
+    const { cloudAccountInput, cloudPasswordInput, cloudConfirmPassword } = this.data;
+
+    if (!cloudAccountInput || !cloudPasswordInput || !cloudConfirmPassword) {
+      wx.showToast({
+        title: '请填写完整信息',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (cloudPasswordInput !== cloudConfirmPassword) {
+      wx.showToast({
+        title: '两次密码不一致',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showLoading({ title: '注册中...' });
+
+    try {
+      const cloudManager = this.data.cloudManager;
+      const result = await cloudManager.register(cloudAccountInput, cloudPasswordInput);
+
+      wx.hideLoading();
+
+      if (result.success) {
+        this.setData({
+          cloudLoggedIn: true,
+          cloudAccount: cloudAccountInput,
+          username: cloudAccountInput
+        });
+        // 保存到本地存储
+        wx.setStorageSync('username', cloudAccountInput);
+        wx.setStorageSync('cloudAccount', cloudAccountInput);
+        wx.setStorageSync('cloudLoggedIn', true);
+        wx.setStorageSync('cloudUserId', result.userId);
+        this.userId = result.userId;
+        
+        this.hideCloudRegisterModal();
+        wx.showToast({
+          title: '注册成功',
+          icon: 'success'
+        });
+      } else {
+        wx.showToast({
+          title: result.errMsg || '注册失败',
+          icon: 'none'
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('注册失败', e);
+      wx.showToast({
+        title: '注册失败',
+        icon: 'none'
+      });
+    }
+  },
+
+  // 退出云开发登录
+  logoutFromCloud() {
+    wx.showModal({
+      title: '确认退出',
+      content: '确定要退出登录吗？',
+      success: (res) => {
+        if (res.confirm) {
+          const cloudManager = this.data.cloudManager;
+          cloudManager.logout();
+          this.setData({
+            cloudLoggedIn: false,
+            cloudAccount: '',
+            username: ''
+          });
+          // 清空本地存储
+          wx.removeStorageSync('username');
+          wx.removeStorageSync('cloudAccount');
+          wx.removeStorageSync('cloudLoggedIn');
+          wx.removeStorageSync('cloudUserId');
+          this.userId = null;
+          
+          wx.showToast({
+            title: '已退出登录',
+            icon: 'success'
+          });
+        }
+      }
+    });
+  },
+
+  // 备份到云开发
+  async backupToCloud() {
+    if (!this.data.cloudLoggedIn) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showModal({
+      title: '确认备份',
+      content: '备份操作将把本地数据同步到云端，是否继续？',
+      success: async (res) => {
+        if (!res.confirm) {
+          return;
+        }
+
+        try {
+          const cloudManager = this.data.cloudManager;
+          const result = await cloudManager.backup();
+
+          if (result.success) {
+            wx.setStorageSync('lastBackupTime', Date.now());
+          }
+        } catch (e) {
+          console.error('备份失败', e);
+          wx.showToast({
+            title: '备份失败',
+            icon: 'none'
+          });
+        }
+      }
+    });
+  },
+
+  // 从云开发恢复
+  async restoreFromCloud() {
+    if (!this.data.cloudLoggedIn) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showModal({
+      title: '确认恢复',
+      content: '恢复操作将把云端数据同步到本地，是否继续？',
+      success: async (res) => {
+        if (!res.confirm) {
+          return;
+        }
+
+        try {
+          const cloudManager = this.data.cloudManager;
+          const result = await cloudManager.restore();
+
+          if (result.success) {
+            wx.setStorageSync('lastRestoreTime', Date.now());
+          }
         } catch (e) {
           console.error('恢复失败', e);
           wx.showToast({
