@@ -3,6 +3,7 @@ const api = require('../../utils/api.js');
 const changelogData = require('../../utils/changelog.js');
 const JSZip = require('../../utils/jszip.min.js');
 const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation } = require('../../utils/imageRelation.js');
+const emojiManager = require('../../utils/emojiManager.js');
 
 /**
  * 云开发工具类 - 增量备份和恢复
@@ -629,187 +630,10 @@ Page({
     showDataManagementHelpModal: false,
     // 更新日志数据
     changelog: [],
-    emojiList: ['😊', '😃', '😄', '😁', '😆', '😂', '🤣', '😅', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😚', '😋', '😛', '😝', '😜', '🤪', '😎', '🤩', '🥳', '😏', '🤓', '🧐', '🤨', '🤔', '🤗', '🤭', '😮', '😯', '😲', '😧', '😦', '😨', '😱', '😖', '😣', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '😳', '🥵', '🥶', '😴', '😪', '🤤', '😓', '😟', '😔', '😞', '😒', '🙁', '☹️', '😕', '🤫', '😶', '😐', '😑', '😬', '🙄', '😵', '🤐', '🥴', '🤯', '🤥', '🤢', '🤮', '🤧', '😷', '🤒', '🤕', '🤑'], // 表情列表，按情绪从积极到消极排列
-    selectedEmoji: '', // 当前选中的表情
-    emojiTextMap: {
-      '😊': '微笑',
-      '😃': '开心',
-      '😄': '大笑',
-      '😁': '露齿笑',
-      '😆': '大笑',
-      '😅': '汗颜',
-      '🤣': '捧腹大笑',
-      '😂': '笑哭',
-      '🙂': '略微微笑',
-      '🙃': '倒脸',
-      '😉': '眨眼',
-      '😌': '安心',
-      '😍': '爱心眼',
-      '🥰': '爱慕',
-      '😘': '飞吻',
-      '😗': '亲吻',
-      '😙': '亲吻',
-      '😚': '闭唇亲吻',
-      '😋': '美味',
-      '😛': '吐舌',
-      '😝': '调皮吐舌',
-      '😜': '眨眼吐舌',
-      '🤪': '搞怪',
-      '🤨': '挑眉',
-      '🧐': '思考',
-      '🤓': '书呆子',
-      '😎': '酷',
-      '🤩': '崇拜',
-      '🥳': '庆祝',
-      '😏': '得意',
-      '😒': '无语',
-      '😞': '失望',
-      '😔': '难过',
-      '😟': '担心',
-      '😕': '困惑',
-      '🙁': '沮丧',
-      '☹️': '不满',
-      '😣': '痛苦',
-      '😖': '折磨',
-      '😫': '压力',
-      '😩': '好累',
-      '🥺': '恳求',
-      '😢': '哭泣',
-      '😭': '痛哭',
-      '😤': '生气',
-      '😠': '愤怒',
-      '😡': '暴怒',
-      '🤬': '暴怒',
-      '🤯': '爆炸',
-      '😳': '脸红',
-      '🥵': '热',
-      '🥶': '冷',
-      '😱': '尖叫',
-      '😨': '害怕',
-      '😰': '冷汗',
-      '😥': '担忧',
-      '😓': '汗',
-      '🤗': '拥抱',
-      '🤔': '思考',
-      '🤭': '捂嘴笑',
-      '🤫': '安静',
-      '🤥': '说谎',
-      '😶': '无语',
-      '😐': '中性',
-      '😑': '无奈',
-      '😬': '尴尬',
-      '🙄': '翻白眼',
-      '😯': '惊讶',
-      '😦': '震惊',
-      '😧': '惊恐',
-      '😮': '惊讶',
-      '😲': '震惊',
-      '🥱': '打哈欠',
-      '😴': '睡觉',
-      '🤤': '流口水',
-      '😪': '困倦',
-      '😵': '头晕',
-      '🤐': '闭嘴',
-      '🥴': '眩晕',
-      '🤢': '恶心',
-      '🤮': '呕吐',
-      '🤧': '打喷嚏',
-      '😷': '口罩',
-      '🤒': '发烧',
-      '🤕': '受伤',
-      '🤑': '金钱眼'
-    }, // 表情对应的文字信息
-    emojiEmotionMap: {
-      // 积极情绪
-      '😊': 'positive',
-      '😃': 'positive',
-      '😄': 'positive',
-      '😁': 'positive',
-      '😆': 'positive',
-      '🤣': 'positive',
-      '😂': 'positive',
-      '🙂': 'positive',
-      '😉': 'positive',
-      '😌': 'positive',
-      '😍': 'positive',
-      '🥰': 'positive',
-      '😘': 'positive',
-      '😗': 'positive',
-      '😙': 'positive',
-      '😚': 'positive',
-      '😋': 'positive',
-      '😛': 'positive',
-      '😝': 'positive',
-      '😜': 'positive',
-      '🤪': 'positive',
-      '😎': 'positive',
-      '🤩': 'positive',
-      '🥳': 'positive',
-      '😏': 'positive',
-      '🤗': 'positive',
-      '🤭': 'positive',
-      '🤑': 'positive',
-      // 中性情绪
-      '😅': 'neutral',
-      '🙃': 'neutral',
-      '🤨': 'neutral',
-      '🧐': 'neutral',
-      '🤓': 'neutral',
-      '🤔': 'neutral',
-      '🤫': 'neutral',
-      '😶': 'neutral',
-      '😐': 'neutral',
-      '😑': 'neutral',
-      '😬': 'neutral',
-      '🙄': 'neutral',
-      '😯': 'neutral',
-      '😮': 'neutral',
-      '🥱': 'neutral',
-      '😴': 'neutral',
-      '🤤': 'neutral',
-      '😪': 'neutral',
-      '😵': 'neutral',
-      '🤐': 'neutral',
-      '🥴': 'neutral',
-      '😷': 'neutral',
-      '🤒': 'neutral',
-      '🤕': 'neutral',
-      '😧': 'neutral',
-      '😲': 'neutral',
-      // 消极情绪
-      '😒': 'negative',
-      '😞': 'negative',
-      '😔': 'negative',
-      '😟': 'negative',
-      '😕': 'negative',
-      '🙁': 'negative',
-      '☹️': 'negative',
-      '😣': 'negative',
-      '😖': 'negative',
-      '😫': 'negative',
-      '😩': 'negative',
-      '🥺': 'negative',
-      '😢': 'negative',
-      '😭': 'negative',
-      '😤': 'negative',
-      '😠': 'negative',
-      '😡': 'negative',
-      '🤬': 'negative',
-      '🤯': 'negative',
-      '😳': 'negative',
-      '🥵': 'negative',
-      '🥶': 'negative',
-      '😱': 'negative',
-      '😨': 'negative',
-      '😰': 'negative',
-      '😥': 'negative',
-      '😓': 'negative',
-      '🤥': 'negative',
-      '😦': 'negative',
-      '🤢': 'negative',
-      '🤮': 'negative',
-      '🤧': 'negative'
-    } // 表情对应的情绪类型
+    // 表情相关数据
+    emojiCategories: emojiManager.getCategories(),
+    currentEmojiCategory: 'face', // 当前选中的表情分类
+    selectedEmoji: '' // 当前选中的表情
   },
 
   // 跳转到使用说明页面
@@ -857,8 +681,8 @@ Page({
     const avatarText = this.generateAvatarText(username);
     
     // 获取表情对应的文字和情绪类型
-    const emojiText = avatarType === 'emoji' && avatarEmoji ? this.data.emojiTextMap[avatarEmoji] || '' : '';
-    const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? this.data.emojiEmotionMap[avatarEmoji] || 'neutral' : '';
+    const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
+    const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
     
     // 解析更新日志
     const changelog = this.parseChangelog();
@@ -940,9 +764,19 @@ Page({
 
   // 显示表情选择弹窗
   showEmojiModal() {
+    this.updateCurrentCategoryEmojis();
     this.setData({
       showEmojiModal: true,
       selectedEmoji: this.data.avatarEmoji
+    });
+  },
+  
+  // 更新当前分类的表情
+  updateCurrentCategoryEmojis() {
+    const currentEmojiCategory = this.data.currentEmojiCategory;
+    const currentCategoryEmojis = emojiManager.getCategoryEmojis(currentEmojiCategory);
+    this.setData({
+      currentCategoryEmojis: currentCategoryEmojis
     });
   },
 
@@ -951,6 +785,15 @@ Page({
     this.setData({
       showEmojiModal: false
     });
+  },
+
+  // 切换表情分类
+  switchEmojiCategory(e) {
+    const categoryId = e.currentTarget.dataset.category;
+    this.setData({
+      currentEmojiCategory: categoryId
+    });
+    this.updateCurrentCategoryEmojis();
   },
 
   // 选择表情
@@ -973,8 +816,8 @@ Page({
     }
     
     // 获取表情对应的文字和情绪类型
-    const emojiText = this.data.emojiTextMap[emoji] || '';
-    const emojiEmotion = this.data.emojiEmotionMap[emoji] || 'neutral';
+    const emojiText = emojiManager.getEmojiText(emoji) || '';
+    const emojiEmotion = emojiManager.getEmojiEmotion(emoji) || 'neutral';
     
     this.setData({
       avatarEmoji: emoji,
@@ -992,7 +835,7 @@ Page({
     this.updateAvatarInOtherPages();
     
     wx.showToast({
-      title: '表情已设置为头像',
+      title: '表情已设为头像',
       icon: 'success'
     });
   },
