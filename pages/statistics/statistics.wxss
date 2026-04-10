@@ -256,23 +256,27 @@ page {
 }
 
 .shift-stat-item.day-shift {
-  background: linear-gradient(145deg, #fff8f0 0%, #ffeed9 100%);
-  border-color: rgba(255, 149, 0, 0.2);
+  background: linear-gradient(145deg, #ffeedd 0%, #ffd4a8 100%);
+  border-color: rgba(255, 149, 0, 0.3);
 }
 
 .shift-stat-item.night-shift {
-  background: linear-gradient(145deg, #f0f4ff 0%, #e1e8ff 100%);
-  border-color: rgba(87, 107, 149, 0.2);
+  background: linear-gradient(145deg, #9ca3af 0%, #6b7280 100%);
+  border-color: rgba(107, 114, 128, 0.3);
 }
 
 .shift-stat-item.off-day {
-  background: linear-gradient(145deg, #f5f5f5 0%, #ebebeb 100%);
-  border-color: rgba(153, 153, 153, 0.2);
+  background: linear-gradient(145deg, #f3e8ff 0%, #e9d5ff 100%);
+  border-color: rgba(168, 85, 247, 0.3);
 }
 
 .stat-icon {
   font-size: 48rpx;
   margin-bottom: 12rpx;
+}
+
+.shift-stat-item.night-shift .stat-icon {
+  filter: brightness(1.5);
 }
 
 .stat-value {
@@ -288,11 +292,19 @@ page {
 }
 
 .shift-stat-item.night-shift .stat-value {
-  color: var(--night-shift-color);
+  color: #ffffff;
+}
+
+.shift-stat-item.night-shift .stat-label {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .shift-stat-item.off-day .stat-value {
-  color: var(--off-day-color);
+  color: #9333ea;
+}
+
+.shift-stat-item.off-day .stat-label {
+  color: #7c3aed;
 }
 
 .stat-label {
@@ -562,18 +574,18 @@ page {
 }
 
 .type-tag.day {
-  background: rgba(255, 149, 0, 0.15);
-  color: var(--day-shift-color);
+  background: linear-gradient(145deg, #ffeedd 0%, #ffd4a8 100%);
+  color: #d97706;
 }
 
 .type-tag.night {
-  background: rgba(87, 107, 149, 0.15);
-  color: var(--night-shift-color);
+  background: linear-gradient(145deg, #9ca3af 0%, #6b7280 100%);
+  color: #ffffff;
 }
 
 .type-tag.off {
-  background: rgba(153, 153, 153, 0.15);
-  color: var(--off-day-color);
+  background: linear-gradient(145deg, #f3e8ff 0%, #e9d5ff 100%);
+  color: #9333ea;
 }
 
 .schedule-time {

@@ -634,6 +634,14 @@ page {
   font-weight: 500;
 }
 
+/* 图片板块内的周导航 */
+.nav-card-inside {
+  margin-top: 30rpx;
+  padding: 20rpx;
+  background: var(--bg-color);
+  border-radius: 16rpx;
+}
+
 /* 月历卡片 */
 .calendar-card {
   padding: 20rpx;
