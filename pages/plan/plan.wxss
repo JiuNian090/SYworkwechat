@@ -43,9 +43,12 @@ page {
 /* 页面标题区 - WeUI样式 */
 .page-header {
   position: relative;
+  margin: 30rpx 30rpx 30rpx;
   padding: 40rpx 30rpx 40rpx;
-  background: #ffffff;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
   border-bottom: 2rpx solid var(--border-color);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  border-radius: 24rpx;
 }
 
 .header-content {
@@ -58,14 +61,16 @@ page {
   display: block;
   font-size: 40rpx;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
   margin-bottom: 16rpx;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
 }
 
 .header-subtitle {
   display: block;
   font-size: 26rpx;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 卡片基础样式 */
