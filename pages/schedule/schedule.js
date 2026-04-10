@@ -21,7 +21,7 @@ Page({
     showShiftSelectorModal: false,
     pickerValue: [0], // 滚动选择器当前值
     selectedTemplateIndex: 0, // 当前选中的模板索引
-    selectedShiftIndex: 0, // WeUI 选择器中选中的班次索引
+    selectedShiftIndex: -1, // WeUI 选择器中选中的班次索引，-1 表示未选中
     weekTotalHours: 0, // 本周总工时
     weekDifference: 0, // 本周工时差额/超额
     differenceType: '', // 差额类型：超额或差额
@@ -600,35 +600,15 @@ Page({
         return;
       }
 
-      // 如果有排班，自动选择对应的班次
+      // 默认不选中任何班次，让用户自己选择
       let pickerValue = [0];
-      let selectedTemplateIndex = 0;
-      
-      if (selectedShift) {
-        // 查找匹配的模板索引
-        const matchingIndex = templates.findIndex(template => 
-          template.name === selectedShift.name && 
-          template.startTime === selectedShift.startTime && 
-          template.endTime === selectedShift.endTime
-        );
-        
-        if (matchingIndex >= 0) {
-          pickerValue = [matchingIndex];
-          selectedTemplateIndex = matchingIndex;
-        }
-      }
-
-      // 检查选中的班次是否与当天的排班对应
-      const isSelectedShiftMatching = selectedShift && templates[selectedTemplateIndex] && 
-        templates[selectedTemplateIndex].name === selectedShift.name &&
-        templates[selectedTemplateIndex].startTime === selectedShift.startTime &&
-        templates[selectedTemplateIndex].endTime === selectedShift.endTime;
+      let selectedTemplateIndex = -1;
+      let selectedShiftIndex = -1;
       
       this.setData({
         pickerValue: pickerValue,
         selectedTemplateIndex: selectedTemplateIndex,
-        selectedShiftIndex: selectedTemplateIndex,
-        isSelectedShiftMatching: isSelectedShiftMatching,
+        selectedShiftIndex: selectedShiftIndex,
         showShiftSelectorModal: true
       });
     } catch (error) {
@@ -650,20 +630,23 @@ Page({
   // WeUI 选择器班次选择事件
   onShiftSelect(e) {
     const index = e.currentTarget.dataset.index;
-    const { shiftTemplates, selectedShift } = this.data;
+    const { selectedShiftIndex } = this.data;
     
-    // 检查选中的班次是否与当天的排班对应
-    const isSelectedShiftMatching = selectedShift && shiftTemplates[index] && 
-      shiftTemplates[index].name === selectedShift.name &&
-      shiftTemplates[index].startTime === selectedShift.startTime &&
-      shiftTemplates[index].endTime === selectedShift.endTime;
-    
-    this.setData({
-      selectedShiftIndex: index,
-      selectedTemplateIndex: index,
-      pickerValue: [index],
-      isSelectedShiftMatching: isSelectedShiftMatching
-    });
+    // 如果点击的是当前已选中的班次，则取消选中
+    if (selectedShiftIndex === index) {
+      this.setData({
+        selectedShiftIndex: -1,
+        selectedTemplateIndex: -1,
+        pickerValue: [0]
+      });
+    } else {
+      // 否则选中该班次
+      this.setData({
+        selectedShiftIndex: index,
+        selectedTemplateIndex: index,
+        pickerValue: [index]
+      });
+    }
   },
 
   // 滚动选择器变化事件
@@ -691,27 +674,31 @@ Page({
     try {
       const templates = this.data.shiftTemplates;
       const selectedIndex = this.data.selectedTemplateIndex;
-      const selectedTemplate = templates[selectedIndex];
-
-      if (!selectedTemplate) {
-        wx.showToast({
-          title: '请选择有效的班次',
-          icon: 'none'
-        });
-        return;
-      }
 
       // 隐藏选择器
       this.setData({
         showShiftSelectorModal: false
       });
 
-      // 直接保存排班
-      this.saveShift(selectedTemplate);
+      if (selectedIndex === -1) {
+        // 如果未选择任何班次，则删除排班
+        this.removeShift();
+      } else {
+        // 否则保存选中的排班
+        const selectedTemplate = templates[selectedIndex];
+        if (!selectedTemplate) {
+          wx.showToast({
+            title: '请选择有效的班次',
+            icon: 'none'
+          });
+          return;
+        }
+        this.saveShift(selectedTemplate);
+      }
     } catch (error) {
       console.error('确认选择班次失败:', error);
       wx.showToast({
-        title: '选择班次失败',
+        title: '操作失败，请重试',
         icon: 'none'
       });
       // 确保选择器关闭

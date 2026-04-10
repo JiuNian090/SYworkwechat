@@ -253,18 +253,7 @@
       </view>
     </view>
     
-    <!-- 删除按钮 -->
-    <view wx:if="{{selectedShift && isSelectedShiftMatching}}" class="weui-sheet__bd">
-      <view class="weui-cells weui-cells_radio">
-        <view class="weui-cell weui-cell_access weui-cell_warn" bindtap="confirmDeleteShift">
-          <view class="weui-cell__bd">
-            <text class="weui-cell__warn-text">删除当前班次</text>
-          </view>
-          <view class="weui-cell__ft">
-          </view>
-        </view>
-      </view>
-    </view>
+
     
     <!-- 班次列表 - WeUI 风格 -->
     <view class="weui-sheet__bd">
