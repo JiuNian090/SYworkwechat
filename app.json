@@ -13,27 +13,35 @@
     "navigationBarTextStyle": "black"
   },
   "tabBar": {
-    "color": "#7A7E83",
-    "selectedColor": "#3cc51f",
+    "color": "#000000",
+    "selectedColor": "#07C160",
     "borderStyle": "black",
     "backgroundColor": "#ffffff",
     "position": "bottom",
     "list": [
       {
         "pagePath": "pages/plan/plan",
-        "text": "📋计划"
+        "text": "计划",
+        "iconPath": "images/list-add.png",
+        "selectedIconPath": "images/list-add-1.png"
       },
       {
         "pagePath": "pages/schedule/schedule",
-        "text": "📅排班"
+        "text": "排班",
+        "iconPath": "images/schedule.png",
+        "selectedIconPath": "images/schedule-1.png"
       },
       {
         "pagePath": "pages/statistics/statistics",
-        "text": "📊统计"
+        "text": "统计",
+        "iconPath": "images/status.png",
+        "selectedIconPath": "images/status-1.png"
       },
       {
         "pagePath": "pages/profile/profile",
-        "text": "👤我的"
+        "text": "我的",
+        "iconPath": "images/me.png",
+        "selectedIconPath": "images/me-1.png"
       }
     ]
   },
