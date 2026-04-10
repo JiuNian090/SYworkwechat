@@ -178,10 +178,10 @@
       
       <!-- 操作按钮 -->
       <view class="weui-btn-area">
-        <view class="weui-btn weui-btn_default" bindtap="contactAuthor">
+        <button open-type="contact" class="weui-btn weui-btn_default">
           <text class="weui-btn__icon">💬</text>
           <text class="weui-btn__text">联系乐乐</text>
-        </view>
+        </button>
         <view class="weui-btn weui-btn_primary" bindtap="donate">
           <text class="weui-btn__icon">❤️</text>
           <text class="weui-btn__text">捐赠支持</text>
