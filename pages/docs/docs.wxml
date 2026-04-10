@@ -6,26 +6,36 @@
     <view class="nav-subtitle">快速了解排班助手功能</view>
   </view>
 
-  <!-- 快速导航 -->
-  <view class="quick-nav {{isNavFixed ? 'fixed' : ''}}">
-    <view class="quick-nav-content">
-      <view class="quick-nav-title">快速跳转</view>
-      <view class="quick-nav-list">
-        <view class="quick-nav-item {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
-          <text class="nav-icon">📖</text>
-          <text class="nav-text">使用方法</text>
+  <!-- 快速导航 - WeUI样式 -->
+  <view class="weui-navbar {{isNavFixed ? 'fixed' : ''}}">
+    <view class="weui-navbar__wrapper">
+      <view class="weui-navbar__title">快速跳转</view>
+    </view>
+    <view class="weui-navbar__content">
+      <view class="weui-tabbar">
+        <view class="weui-tabbar__item {{activeSection === 'about' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-about">
+          <view class="weui-tabbar__icon">
+            <text class="nav-icon">📖</text>
+          </view>
+          <view class="weui-tabbar__label">使用方法</view>
         </view>
-        <view class="quick-nav-item {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
-          <text class="nav-icon">📈</text>
-          <text class="nav-text">统计报表</text>
+        <view class="weui-tabbar__item {{activeSection === 'statistics' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
+          <view class="weui-tabbar__icon">
+            <text class="nav-icon">📈</text>
+          </view>
+          <view class="weui-tabbar__label">统计报表</view>
         </view>
-        <view class="quick-nav-item {{activeSection === 'cloud' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-cloud">
-          <text class="nav-icon">☁️</text>
-          <text class="nav-text">云备份</text>
+        <view class="weui-tabbar__item {{activeSection === 'cloud' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-cloud">
+          <view class="weui-tabbar__icon">
+            <text class="nav-icon">☁️</text>
+          </view>
+          <view class="weui-tabbar__label">云备份</view>
         </view>
-        <view class="quick-nav-item {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
-          <text class="nav-icon">📊</text>
-          <text class="nav-text">数据管理</text>
+        <view class="weui-tabbar__item {{activeSection === 'data' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-data">
+          <view class="weui-tabbar__icon">
+            <text class="nav-icon">📊</text>
+          </view>
+          <view class="weui-tabbar__label">数据管理</view>
         </view>
       </view>
     </view>

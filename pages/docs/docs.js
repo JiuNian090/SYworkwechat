@@ -130,7 +130,7 @@ Page({
    */
   getNavPosition() {
     const query = wx.createSelectorQuery();
-    query.select('.quick-nav').boundingClientRect();
+    query.select('.weui-navbar').boundingClientRect();
     query.exec((res) => {
       if (res && res[0]) {
         this.navTop = res[0].top;
@@ -297,7 +297,7 @@ Page({
   scrollToTarget(targetId) {
     const query = wx.createSelectorQuery();
     query.select('#' + targetId).boundingClientRect();
-    query.select('.quick-nav').boundingClientRect();
+    query.select('.weui-navbar').boundingClientRect();
     query.selectViewport().scrollOffset();
     query.exec((res) => {
       if (res[0] && res[1] && res[2]) {

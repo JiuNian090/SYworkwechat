@@ -59,6 +59,9 @@
         <text class="icon-text">☁️</text>
       </view>
       <text class="section-title">云备份</text>
+      <view class="help-btn" bindtap="navigateToDocs" data-type="cloud">
+        <text class="help-icon">?</text>
+      </view>
     </view>
     <view class="section-body">
       <view wx:if="{{cloudLoggedIn}}" class="cloud-info">

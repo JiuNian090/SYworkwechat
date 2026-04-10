@@ -78,19 +78,19 @@ page {
   z-index: 1;
 }
 
-/* ========== 快速导航 ========== */
-.quick-nav {
+/* ========== WeUI导航栏样式 ========== */
+.weui-navbar {
   background: var(--card-bg);
   margin: -30rpx 24rpx 24rpx;
-  padding: 24rpx;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   position: relative;
   z-index: 2;
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
-.quick-nav.fixed {
+.weui-navbar.fixed {
   position: fixed;
   top: 5rpx;
   left: 24rpx;
@@ -102,7 +102,7 @@ page {
 }
 
 /* 为固定导航添加顶部安全区域适配 */
-.quick-nav.fixed::before {
+.weui-navbar.fixed::before {
   content: '';
   position: absolute;
   top: -5rpx;
@@ -112,57 +112,70 @@ page {
   background: transparent;
 }
 
-.quick-nav.fixed .quick-nav-content {
+.weui-navbar.fixed .weui-navbar__content {
   padding-top: env(safe-area-inset-top);
 }
 
-.quick-nav-title {
-  font-size: 24rpx;
-  color: var(--text-secondary);
-  margin-bottom: 20rpx;
-  font-weight: 500;
+.weui-navbar__wrapper {
+  padding: 16rpx 24rpx;
+  border-bottom: 2rpx solid var(--border-color);
 }
 
-.quick-nav-list {
+.weui-navbar__title {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+.weui-navbar__content {
+  padding: 16rpx 24rpx;
+}
+
+.weui-tabbar {
   display: flex;
   justify-content: space-between;
   gap: 16rpx;
 }
 
-.quick-nav-item {
+.weui-tabbar__item {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20rpx 12rpx;
-  background: var(--bg-color);
+  padding: 16rpx 12rpx;
   border-radius: var(--radius-md);
-  border: 2rpx solid transparent;
+  transition: all 0.3s ease;
 }
 
-.quick-nav-item:active {
-  /* 移除点击时的缩放效果，直接显示选中状态 */
-  transform: none;
+.weui-tabbar__item:active {
+  background: var(--bg-color);
 }
 
-.quick-nav-item.active {
-  background: var(--primary-light);
-  border-color: var(--primary-color);
+.weui-tabbar__item--active {
+  color: var(--primary-color);
+}
+
+.weui-tabbar__icon {
+  margin-bottom: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-icon {
   font-size: 40rpx;
-  margin-bottom: 8rpx;
 }
 
-.nav-text {
+.weui-tabbar__label {
   font-size: 22rpx;
   color: var(--text-color);
   font-weight: 500;
 }
 
-.quick-nav-item.active .nav-text {
+.weui-tabbar__item--active .weui-tabbar__label {
   color: var(--primary-color);
+  font-weight: 600;
 }
 
 /* ========== 内容区域 ========== */
