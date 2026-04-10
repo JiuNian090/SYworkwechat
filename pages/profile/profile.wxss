@@ -34,7 +34,7 @@ page {
 .page-header {
   position: relative;
   margin: 30rpx 30rpx 30rpx;
-  padding: 40rpx 30rpx 40rpx;
+  padding: 60rpx 30rpx 60rpx;
   background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
   border-bottom: 2rpx solid var(--border-color);
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
@@ -59,8 +59,8 @@ page {
 }
 
 .header-avatar {
-  width: 100rpx;
-  height: 100rpx;
+  width: 120rpx;
+  height: 120rpx;
   border-radius: 50%;
   background: #f7f7f7;
   display: flex;
@@ -71,13 +71,13 @@ page {
 }
 
 .header-avatar-text {
-  font-size: 40rpx;
+  font-size: 48rpx;
   font-weight: bold;
   color: var(--primary-color);
 }
 
 .header-avatar-emoji {
-  font-size: 70rpx;
+  font-size: 80rpx;
   line-height: 1;
 }
 
@@ -85,8 +85,8 @@ page {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 28rpx;
-  height: 28rpx;
+  width: 32rpx;
+  height: 32rpx;
   background: var(--primary-color);
   border-radius: 50%;
   display: flex;
@@ -112,7 +112,7 @@ page {
 }
 
 .header-edit-icon {
-  font-size: 18rpx;
+  font-size: 20rpx;
   color: #ffffff;
 }
 
@@ -354,16 +354,20 @@ page {
 .help-btn {
   width: 44rpx;
   height: 44rpx;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.25);
+  transition: all 0.2s ease;
 }
 
 .help-btn:active {
+  opacity: 0.8;
   transform: scale(0.95);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 1rpx 4rpx rgba(7, 193, 96, 0.2);
 }
 
 .help-icon {
@@ -425,19 +429,40 @@ page {
 }
 
 .manual-btn {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 10rpx 20rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8rpx !important;
+  padding: 0 20rpx !important;
+  margin: 0 !important;
+  border-radius: 12rpx !important;
+  font-size: 24rpx !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  transition: all 0.2s ease;
+  overflow: hidden !important;
+  height: 64rpx !important;
+  min-height: 64rpx !important;
+  max-height: 64rpx !important;
+  box-sizing: border-box !important;
+  vertical-align: middle !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  color: #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.25);
 }
 
 .manual-btn:active {
-  background-color: var(--primary-dark);
-  transform: scale(0.95);
+  opacity: 0.8;
+  transform: scale(0.98);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 1rpx 4rpx rgba(7, 193, 96, 0.2);
+}
+
+.manual-btn .btn-text {
+  color: #ffffff !important;
 }
 
 .import-btn {
