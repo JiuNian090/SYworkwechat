@@ -29,21 +29,12 @@ page {
   padding-bottom: 40rpx;
 }
 
-/* 页面标题区 */
+/* 页面标题区 - WeUI样式 */
 .page-header {
   position: relative;
-  padding: 60rpx 30rpx 80rpx;
-  overflow: hidden;
-}
-
-.header-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-  border-radius: 0 0 40rpx 40rpx;
+  padding: 40rpx 30rpx 40rpx;
+  background: #ffffff;
+  border-bottom: 2rpx solid var(--border-color);
 }
 
 .header-content {
@@ -54,17 +45,16 @@ page {
 
 .header-title {
   display: block;
-  font-size: 48rpx;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: var(--text-primary);
   margin-bottom: 16rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
 .header-subtitle {
   display: block;
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 26rpx;
+  color: var(--text-secondary);
 }
 
 /* 卡片基础样式 */
@@ -118,7 +108,7 @@ page {
 
 /* 视图切换卡片 */
 .view-switch-card {
-  margin-top: -40rpx;
+  margin-top: 0;
   position: relative;
   z-index: 2;
   padding: 20rpx;
