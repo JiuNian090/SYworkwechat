@@ -46,7 +46,7 @@
         </view>
         <view class="about-item">
           <text class="about-dot">🔒</text>
-          <text class="about-text">数据保存在本地，若您使用云备份，请保管好您的账号密码，请保管好您的数据，如有问题反馈欢迎联系作者。</text>
+          <text class="about-text">数据默认保存在本地，安全可靠。若使用云备份功能，请妥善保管您的账号密码，定期备份重要数据。如有任何问题或建议，欢迎随时联系作者反馈。</text>
         </view>
       </view>
     </view>

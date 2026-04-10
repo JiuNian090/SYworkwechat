@@ -108,7 +108,7 @@ page {
 
 /* 视图切换卡片 */
 .view-switch-card {
-  margin-top: 0;
+  margin: 30rpx 30rpx 30rpx;
   position: relative;
   z-index: 2;
   padding: 20rpx;

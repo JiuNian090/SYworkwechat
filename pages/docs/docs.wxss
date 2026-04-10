@@ -33,7 +33,7 @@ page {
 /* ========== 顶部导航栏 - WeUI样式 ========== */
 .nav-header {
   background: #ffffff;
-  padding: 40rpx 32rpx 32rpx;
+  padding: 40rpx 30rpx 40rpx;
   text-align: center;
   border-bottom: 2rpx solid var(--border-color);
 }
@@ -54,7 +54,7 @@ page {
 /* ========== WeUI导航栏样式 ========== */
 .weui-navbar {
   background: var(--card-bg);
-  margin: -30rpx 24rpx 24rpx;
+  margin: 30rpx 24rpx 24rpx;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   position: relative;

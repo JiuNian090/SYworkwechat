@@ -72,7 +72,7 @@ page {
 .card {
   background: var(--card-bg);
   border-radius: 24rpx;
-  margin: 0 30rpx 30rpx;
+  margin: 30rpx 30rpx 30rpx;
   padding: 30rpx;
   box-shadow: 0 4rpx 20rpx var(--shadow-color);
   position: relative;
