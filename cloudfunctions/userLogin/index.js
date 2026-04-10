@@ -7,6 +7,7 @@ cloud.init({
 
 const db = cloud.database();
 const usersCollection = db.collection('schedule_users');
+const backupCollection = db.collection('schedule_backups');
 
 // 密码加密
 function encryptPassword(password, salt) {
@@ -70,13 +71,14 @@ exports.main = async (event, context) => {
 
       const salt = generateSalt();
       const encryptedPassword = encryptPassword(password, salt);
+      const userNickname = nickname || `用户${account.slice(-4)}`;
 
       const result = await usersCollection.add({
         data: {
           account: account,
           password: encryptedPassword,
           salt: salt,
-          nickname: `用户${account.slice(-4)}`,
+          nickname: userNickname,
           createTime: new Date(),
           updateTime: new Date()
         }
@@ -87,35 +89,23 @@ exports.main = async (event, context) => {
         data: {
           userId: result._id,
           account: account,
-          nickname: `用户${account.slice(-4)}`
+          nickname: userNickname
         }
       };
 
-    } else if (action === 'updateAccount') {
-      // 修改账号名
-      if (!userId || !newAccount) {
+    } else if (action === 'updateNickname') {
+      // 修改昵称
+      if (!userId) {
         return {
           success: false,
           errMsg: '参数错误'
         };
       }
 
-      // 检查新账号名是否已存在
-      const existingUser = await usersCollection.where({
-        account: newAccount
-      }).get();
-
-      if (existingUser.data.length > 0 && existingUser.data[0]._id !== userId) {
-        return {
-          success: false,
-          errMsg: '账号名已存在'
-        };
-      }
-
-      // 更新账号名
+      // 更新昵称
       await usersCollection.doc(userId).update({
         data: {
-          account: newAccount,
+          nickname: nickname || '',
           updateTime: new Date()
         }
       });
@@ -123,7 +113,7 @@ exports.main = async (event, context) => {
       return {
         success: true,
         data: {
-          account: newAccount
+          nickname: nickname || ''
         }
       };
 
@@ -169,6 +159,70 @@ exports.main = async (event, context) => {
 
       return {
         success: true
+      };
+
+    } else if (action === 'deleteAccount') {
+      // 删除账户
+      if (!userId || !password) {
+        return {
+          success: false,
+          errMsg: '参数错误'
+        };
+      }
+
+      // 获取用户信息
+      const user = await usersCollection.doc(userId).get();
+      if (!user.data) {
+        return {
+          success: false,
+          errMsg: '用户不存在'
+        };
+      }
+
+      // 验证密码
+      const encryptedPassword = encryptPassword(password, user.data.salt);
+      if (encryptedPassword !== user.data.password) {
+        return {
+          success: false,
+          errMsg: '密码错误'
+        };
+      }
+
+      // 删除用户的备份数据
+      try {
+        const backupResult = await backupCollection.where({
+          userId: userId
+        }).get();
+        
+        if (backupResult.data.length > 0) {
+          const backup = backupResult.data[0];
+          
+          // 删除云存储中的图片
+          if (backup.images && backup.images.length > 0) {
+            const fileIDs = backup.images
+              .filter(img => img.fileID)
+              .map(img => img.fileID);
+            
+            if (fileIDs.length > 0) {
+              await cloud.deleteFile({
+                fileList: fileIDs
+              });
+            }
+          }
+          
+          // 删除备份记录
+          await backupCollection.doc(backup._id).remove();
+        }
+      } catch (e) {
+        console.error('删除备份数据失败', e);
+      }
+
+      // 删除用户记录
+      await usersCollection.doc(userId).remove();
+
+      return {
+        success: true,
+        message: '账户删除成功'
       };
 
     }

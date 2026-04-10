@@ -13,7 +13,7 @@
           <view class="header-avatar-edit {{avatarType === 'emoji' && emojiEmotion ? emojiEmotion : ''}}"></view>
         </view>
         <view class="header-user-details">
-          <text class="header-username" bindtap="showCloudLoginOrRegisterModal">{{username || '点击设置云备份账号'}}</text>
+          <text class="header-username" bindtap="showCloudLoginOrRegisterModal">{{username || '点击登录云账号'}}</text>
           <text class="header-user-status {{avatarType === 'emoji' && emojiEmotion ? 'emotion-' + emojiEmotion : ''}}" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
           <text class="header-user-status" wx:else>点击头像更换表情</text>
         </view>
@@ -327,6 +327,10 @@
         <input class="form-input" placeholder="请输入账号" value="{{cloudAccountInput}}" bindinput="onCloudAccountInput"></input>
       </view>
       <view class="form-group">
+        <text class="form-label">昵称（可选）</text>
+        <input class="form-input" placeholder="请输入昵称" value="{{cloudNicknameInput}}" bindinput="onCloudNicknameInput"></input>
+      </view>
+      <view class="form-group">
         <text class="form-label">密码</text>
         <view class="password-wrapper">
           <input class="form-input password-input" placeholder="请输入密码" value="{{cloudPasswordInput}}" bindinput="onCloudPasswordInput" password="{{!showCloudPassword}}"></input>
@@ -373,12 +377,16 @@
           </view>
         </view>
         <view class="user-info-divider"></view>
-        <view class="user-info-item" bindtap="showUpdateAccountModal">
-          <text class="info-label">账号</text>
+        <view class="user-info-item" bindtap="showUpdateNicknameModal">
+          <text class="info-label">昵称</text>
           <view class="info-value-row">
-            <text class="info-value">{{cloudUserInfo.account}}</text>
+            <text class="info-value">{{cloudUserInfo.nickname || cloudUserInfo.account}}</text>
             <text class="arrow-icon">›</text>
           </view>
+        </view>
+        <view class="user-info-item">
+          <text class="info-label">账号</text>
+          <text class="info-value">{{cloudUserInfo.account}}</text>
         </view>
         <view class="user-info-item" bindtap="showUpdatePasswordModal">
           <text class="info-label">密码</text>
@@ -394,29 +402,55 @@
       </view>
     </view>
     <view class="modal-footer">
+      <button class="modal-btn btn-delete-account" bindtap="showDeleteAccountModal">删除账户</button>
       <button class="modal-btn btn-cancel" bindtap="hideUserManagementModal">关闭</button>
       <button class="modal-btn btn-danger" bindtap="confirmLogout">退出登录</button>
     </view>
   </view>
 
-  <!-- 修改账号弹窗 -->
-  <view class="modal-mask {{showUpdateAccountModal ? 'show' : ''}}" wx:if="{{showUpdateAccountModal}}" bindtap="hideUpdateAccountModal"></view>
-  <view class="modal-container {{showUpdateAccountModal ? 'show' : ''}}" wx:if="{{showUpdateAccountModal}}">
+  <!-- 删除账户弹窗 -->
+  <view class="modal-mask {{showDeleteAccountModal ? 'show' : ''}}" wx:if="{{showDeleteAccountModal}}" bindtap="hideDeleteAccountModal"></view>
+  <view class="modal-container delete-account-modal {{showDeleteAccountModal ? 'show' : ''}}" wx:if="{{showDeleteAccountModal}}">
     <view class="modal-header">
-      <text class="modal-title">修改账号</text>
-      <view class="modal-close" bindtap="hideUpdateAccountModal">
+      <text class="modal-title">删除账户</text>
+      <view class="modal-close" bindtap="hideDeleteAccountModal">
+        <text class="close-icon">×</text>
+      </view>
+    </view>
+    <view class="modal-body">
+      <view class="warning-text">
+        <text class="warning-icon">⚠️</text>
+        <text class="warning-content">删除账户将同时删除所有云端备份数据，此操作不可恢复！</text>
+      </view>
+      <view class="form-group">
+        <text class="form-label">请输入密码确认</text>
+        <input class="form-input" type="password" placeholder="请输入密码" value="{{deleteAccountPassword}}" bindinput="onDeleteAccountPasswordInput" />
+      </view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn btn-cancel" bindtap="hideDeleteAccountModal">取消</button>
+      <button class="modal-btn btn-delete-confirm" bindtap="confirmDeleteAccount">确认删除</button>
+    </view>
+  </view>
+
+  <!-- 修改昵称弹窗 -->
+  <view class="modal-mask {{showUpdateNicknameModal ? 'show' : ''}}" wx:if="{{showUpdateNicknameModal}}" bindtap="hideUpdateNicknameModal"></view>
+  <view class="modal-container {{showUpdateNicknameModal ? 'show' : ''}}" wx:if="{{showUpdateNicknameModal}}">
+    <view class="modal-header">
+      <text class="modal-title">修改昵称</text>
+      <view class="modal-close" bindtap="hideUpdateNicknameModal">
         <text class="close-icon">×</text>
       </view>
     </view>
     <view class="modal-body">
       <view class="form-group">
-        <text class="form-label">新账号</text>
-        <input class="form-input" placeholder="请输入新账号" value="{{newAccount}}" bindinput="onAccountInput" maxlength="20" />
+        <text class="form-label">新昵称</text>
+        <input class="form-input" placeholder="请输入新昵称" value="{{newNickname}}" bindinput="onNicknameInput" maxlength="20" />
       </view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn btn-cancel" bindtap="hideUpdateAccountModal">取消</button>
-      <button class="modal-btn btn-confirm" bindtap="confirmUpdateAccount">确定</button>
+      <button class="modal-btn btn-cancel" bindtap="hideUpdateNicknameModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="confirmUpdateNickname">确定</button>
     </view>
   </view>
 

@@ -1,5 +1,6 @@
 {
   "cloudfunctionRoot": "cloudfunctions/",
+  "cloudEnv": "cloudbase-1gar7d7f967d8a60",
   "setting": {
     "es6": true,
     "postcss": true,
