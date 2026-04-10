@@ -106,7 +106,7 @@ page {
 
 /* 日期选择卡片 */
 .date-card {
-  margin-top: 0;
+  margin: 30rpx 30rpx 30rpx;
   position: relative;
   z-index: 2;
 }
