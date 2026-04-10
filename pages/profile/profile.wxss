@@ -1569,3 +1569,45 @@ page {
 .btn-danger:active {
   opacity: 0.9;
 }
+
+/* ========== 删除账户相关样式 ========== */
+.btn-delete-account {
+  background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
+  color: #ffffff;
+}
+
+.btn-delete-account:active {
+  opacity: 0.9;
+}
+
+.btn-delete-confirm {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  color: #ffffff;
+}
+
+.btn-delete-confirm:active {
+  opacity: 0.9;
+}
+
+.warning-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+  padding: 32rpx 24rpx;
+  background: #fff7e6;
+  border-radius: 16rpx;
+  border: 2rpx solid #ffd591;
+  margin-bottom: 32rpx;
+}
+
+.warning-icon {
+  font-size: 64rpx;
+}
+
+.warning-content {
+  font-size: 28rpx;
+  color: #d46b08;
+  text-align: center;
+  line-height: 1.6;
+}

@@ -14,14 +14,15 @@ class CloudManager {
   }
   
   // 用户注册
-  async register(account, password) {
+  async register(account, password, nickname) {
     try {
       const result = await wx.cloud.callFunction({
         name: 'userLogin',
         data: {
           action: 'register',
           account: account,
-          password: password
+          password: password,
+          nickname: nickname
         }
       });
       
@@ -612,15 +613,18 @@ Page({
     cloudAccountInput: '',
     cloudPasswordInput: '',
     cloudConfirmPassword: '',
+    cloudNicknameInput: '',
     showCloudPassword: false,
     // 用户管理弹窗
     showUserManagementModal: false,
-    showUpdateAccountModal: false,
+    showUpdateNicknameModal: false,
     showUpdatePasswordModal: false,
-    newAccount: '',
+    showDeleteAccountModal: false,
+    newNickname: '',
     oldPassword: '',
     newPassword: '',
     confirmPassword: '',
+    deleteAccountPassword: '',
     // 数据管理使用说明弹窗
     showDataManagementHelpModal: false,
     // 更新日志数据
@@ -840,12 +844,12 @@ Page({
     const cloudUserInfo = wx.getStorageSync('cloudUserInfo') || null;
     const cloudLoggedIn = !!cloudUserId;
     
-    // 同步云账号到用户名：优先使用云账号
+    // 同步云账号到用户名：优先使用云昵称
     let username = wx.getStorageSync('username') || '';
-    if (cloudLoggedIn && cloudAccount) {
-      username = cloudAccount;
-      // 确保本地存储的 username 与 cloudAccount 同步
-      wx.setStorageSync('username', cloudAccount);
+    if (cloudLoggedIn && cloudUserInfo) {
+      username = cloudUserInfo.nickname || cloudAccount;
+      // 确保本地存储的 username 与昵称同步
+      wx.setStorageSync('username', username);
     }
     this.userId = cloudUserId;
     
@@ -4976,7 +4980,8 @@ Page({
 
   hideCloudRegisterModal() {
     this.setData({
-      showCloudRegisterModal: false
+      showCloudRegisterModal: false,
+      cloudNicknameInput: ''
     });
   },
 
@@ -4998,6 +5003,12 @@ Page({
     });
   },
 
+  onCloudNicknameInput(e) {
+    this.setData({
+      cloudNicknameInput: e.detail.value
+    });
+  },
+
   toggleCloudPasswordVisibility() {
     this.setData({
       showCloudPassword: !this.data.showCloudPassword
@@ -5014,42 +5025,47 @@ Page({
   hideUserManagementModal() {
     this.setData({
       showUserManagementModal: false,
-      showUpdateAccountModal: false,
-      showUpdatePasswordModal: false
+      showUpdateNicknameModal: false,
+      showUpdatePasswordModal: false,
+      showDeleteAccountModal: false
     });
   },
 
-  // 显示修改账号弹窗
-  showUpdateAccountModal() {
+  // 显示修改昵称弹窗
+  showUpdateNicknameModal() {
+    let cloudUserInfo = this.data.cloudUserInfo;
+    if (!cloudUserInfo) {
+      cloudUserInfo = wx.getStorageSync('cloudUserInfo');
+    }
+    console.log('显示修改昵称弹窗 - cloudUserInfo:', cloudUserInfo);
     this.setData({
-      showUpdateAccountModal: true,
-      newAccount: ''
+      showUpdateNicknameModal: true,
+      newNickname: cloudUserInfo?.nickname || ''
     });
   },
 
-  // 隐藏修改账号弹窗
-  hideUpdateAccountModal() {
+  // 隐藏修改昵称弹窗
+  hideUpdateNicknameModal() {
     this.setData({
-      showUpdateAccountModal: false
+      showUpdateNicknameModal: false
     });
   },
 
-  // 确认修改账号
-  async confirmUpdateAccount() {
-    const { newAccount } = this.data;
-    const cloudUserInfo = this.data.cloudUserInfo;
+  // 确认修改昵称
+  async confirmUpdateNickname() {
+    const { newNickname } = this.data;
+    let cloudUserInfo = this.data.cloudUserInfo;
+    
+    // 如果 data 中没有 cloudUserInfo，尝试从本地存储获取
+    if (!cloudUserInfo) {
+      cloudUserInfo = wx.getStorageSync('cloudUserInfo');
+    }
+
+    console.log('修改昵称 - cloudUserInfo:', cloudUserInfo);
 
     if (!cloudUserInfo || !cloudUserInfo.userId) {
       wx.showToast({
         title: '用户信息异常，请重新登录',
-        icon: 'none'
-      });
-      return;
-    }
-
-    if (!newAccount || newAccount.trim().length === 0) {
-      wx.showToast({
-        title: '请输入新账号名',
         icon: 'none'
       });
       return;
@@ -5061,9 +5077,9 @@ Page({
       const result = await wx.cloud.callFunction({
         name: 'userLogin',
         data: {
-          action: 'updateAccount',
+          action: 'updateNickname',
           userId: cloudUserInfo.userId,
-          newAccount: newAccount.trim()
+          nickname: newNickname.trim()
         }
       });
 
@@ -5072,21 +5088,19 @@ Page({
       if (result.result.success) {
         const updatedCloudUserInfo = {
           ...cloudUserInfo,
-          account: newAccount.trim()
+          nickname: newNickname.trim()
         };
         this.setData({
           cloudUserInfo: updatedCloudUserInfo,
-          cloudAccount: newAccount.trim(),
-          username: newAccount.trim(),
-          showUpdateAccountModal: false
+          username: newNickname.trim(),
+          showUpdateNicknameModal: false
         });
         // 同步更新本地存储
         wx.setStorageSync('cloudUserInfo', updatedCloudUserInfo);
-        wx.setStorageSync('cloudAccount', newAccount.trim());
-        wx.setStorageSync('username', newAccount.trim());
+        wx.setStorageSync('username', newNickname.trim());
 
         wx.showToast({
-          title: '账号修改成功',
+          title: '昵称修改成功',
           icon: 'success'
         });
       } else {
@@ -5097,7 +5111,7 @@ Page({
       }
     } catch (e) {
       wx.hideLoading();
-      console.error('修改账号失败', e);
+      console.error('修改昵称失败', e);
       wx.showToast({
         title: '修改失败',
         icon: 'none'
@@ -5202,10 +5216,10 @@ Page({
     }
   },
 
-  // 账号输入事件
-  onAccountInput(e) {
+  // 昵称输入事件
+  onNicknameInput(e) {
     this.setData({
-      newAccount: e.detail.value
+      newNickname: e.detail.value
     });
   },
 
@@ -5227,6 +5241,101 @@ Page({
   onConfirmPasswordInput(e) {
     this.setData({
       confirmPassword: e.detail.value
+    });
+  },
+
+  // 显示删除账户弹窗
+  showDeleteAccountModal() {
+    this.setData({
+      showDeleteAccountModal: true,
+      deleteAccountPassword: ''
+    });
+  },
+
+  // 隐藏删除账户弹窗
+  hideDeleteAccountModal() {
+    this.setData({
+      showDeleteAccountModal: false,
+      deleteAccountPassword: ''
+    });
+  },
+
+  // 删除账户密码输入事件
+  onDeleteAccountPasswordInput(e) {
+    this.setData({
+      deleteAccountPassword: e.detail.value
+    });
+  },
+
+  // 确认删除账户
+  async confirmDeleteAccount() {
+    const { deleteAccountPassword } = this.data;
+    const cloudUserInfo = this.data.cloudUserInfo;
+
+    if (!cloudUserInfo || !cloudUserInfo.userId) {
+      wx.showToast({
+        title: '用户信息异常，请重新登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (!deleteAccountPassword) {
+      wx.showToast({
+        title: '请输入密码',
+        icon: 'none'
+      });
+      return;
+    }
+
+    // 二次确认
+    wx.showModal({
+      title: '警告',
+      content: '删除账户将同时删除所有云端备份数据，此操作不可恢复！确定要继续吗？',
+      confirmText: '确认删除',
+      confirmColor: '#ff4d4f',
+      success: async (res) => {
+        if (res.confirm) {
+          wx.showLoading({ title: '删除中...' });
+
+          try {
+            const result = await wx.cloud.callFunction({
+              name: 'userLogin',
+              data: {
+                action: 'deleteAccount',
+                userId: cloudUserInfo.userId,
+                password: deleteAccountPassword
+              }
+            });
+
+            wx.hideLoading();
+
+            if (result.result.success) {
+              // 清除本地登录信息
+              this.hideDeleteAccountModal();
+              this.hideUserManagementModal();
+              this.logoutFromCloud();
+
+              wx.showToast({
+                title: '账户已删除',
+                icon: 'success'
+              });
+            } else {
+              wx.showToast({
+                title: result.result.errMsg,
+                icon: 'none'
+              });
+            }
+          } catch (e) {
+            wx.hideLoading();
+            console.error('删除账户失败', e);
+            wx.showToast({
+              title: '删除失败',
+              icon: 'none'
+            });
+          }
+        }
+      }
     });
   },
 
@@ -5265,23 +5374,24 @@ Page({
 
       if (result.success) {
         const cloudUserInfo = {
-          userId: result.userId,
+          userId: result.data.userId,
           account: cloudAccountInput,
-          nickname: result.nickname || cloudAccountInput
+          nickname: result.data.nickname || cloudAccountInput
         };
+        const displayUsername = result.data.nickname || cloudAccountInput;
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
-          username: cloudAccountInput,
+          username: displayUsername,
           cloudUserInfo: cloudUserInfo
         });
         // 保存到本地存储（不保存密码，只保存用户信息）
-        wx.setStorageSync('username', cloudAccountInput);
+        wx.setStorageSync('username', displayUsername);
         wx.setStorageSync('cloudAccount', cloudAccountInput);
         wx.setStorageSync('cloudLoggedIn', true);
-        wx.setStorageSync('cloudUserId', result.userId);
+        wx.setStorageSync('cloudUserId', result.data.userId);
         wx.setStorageSync('cloudUserInfo', cloudUserInfo);
-        this.userId = result.userId;
+        this.userId = result.data.userId;
         
         this.hideCloudLoginModal();
         wx.showToast({
@@ -5306,7 +5416,7 @@ Page({
 
   // 注册到云开发
   async registerToCloud() {
-    const { cloudAccountInput, cloudPasswordInput, cloudConfirmPassword } = this.data;
+    const { cloudAccountInput, cloudPasswordInput, cloudConfirmPassword, cloudNicknameInput } = this.data;
 
     if (!cloudAccountInput || !cloudPasswordInput || !cloudConfirmPassword) {
       wx.showToast({
@@ -5327,30 +5437,39 @@ Page({
     wx.showLoading({ title: '注册中...' });
 
     try {
-      const cloudManager = this.data.cloudManager;
-      const result = await cloudManager.register(cloudAccountInput, cloudPasswordInput);
+      // 直接调用云函数，传递昵称
+      const result = await wx.cloud.callFunction({
+        name: 'userLogin',
+        data: {
+          action: 'register',
+          account: cloudAccountInput,
+          password: cloudPasswordInput,
+          nickname: cloudNicknameInput || ''
+        }
+      });
 
       wx.hideLoading();
 
-      if (result.success) {
+      if (result.result.success) {
         const cloudUserInfo = {
-          userId: result.userId,
+          userId: result.result.data.userId,
           account: cloudAccountInput,
-          nickname: result.nickname || cloudAccountInput
+          nickname: result.result.data.nickname || cloudAccountInput
         };
+        const displayUsername = result.result.data.nickname || cloudAccountInput;
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
-          username: cloudAccountInput,
+          username: displayUsername,
           cloudUserInfo: cloudUserInfo
         });
         // 保存到本地存储（不保存密码，只保存用户信息）
-        wx.setStorageSync('username', cloudAccountInput);
+        wx.setStorageSync('username', displayUsername);
         wx.setStorageSync('cloudAccount', cloudAccountInput);
         wx.setStorageSync('cloudLoggedIn', true);
-        wx.setStorageSync('cloudUserId', result.userId);
+        wx.setStorageSync('cloudUserId', result.result.data.userId);
         wx.setStorageSync('cloudUserInfo', cloudUserInfo);
-        this.userId = result.userId;
+        this.userId = result.result.data.userId;
         
         this.hideCloudRegisterModal();
         wx.showToast({
@@ -5359,7 +5478,7 @@ Page({
         });
       } else {
         wx.showToast({
-          title: result.errMsg || '注册失败',
+          title: result.result.errMsg || '注册失败',
           icon: 'none'
         });
       }
