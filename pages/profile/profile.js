@@ -5396,8 +5396,16 @@ Page({
         this.hideCloudLoginModal();
         wx.showToast({
           title: '登录成功',
-          icon: 'success'
+          icon: 'success',
+          duration: 1500
         });
+        
+        // 延迟打开用户管理弹窗，让用户先看到成功提示
+        setTimeout(() => {
+          this.setData({
+            showUserManagementModal: true
+          });
+        }, 1500);
       } else {
         wx.showToast({
           title: result.errMsg || '登录失败',
@@ -5474,8 +5482,16 @@ Page({
         this.hideCloudRegisterModal();
         wx.showToast({
           title: '注册成功',
-          icon: 'success'
+          icon: 'success',
+          duration: 1500
         });
+        
+        // 延迟打开用户管理弹窗，让用户先看到成功提示
+        setTimeout(() => {
+          this.setData({
+            showUserManagementModal: true
+          });
+        }, 1500);
       } else {
         wx.showToast({
           title: result.result.errMsg || '注册失败',
