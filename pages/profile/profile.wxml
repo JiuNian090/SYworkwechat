@@ -46,7 +46,7 @@
         </view>
         <view class="about-item">
           <text class="about-dot">🔒</text>
-          <text class="about-text">所有的数据都保存在本地，没有数据上传请保管好自己的数据，如有问题反馈欢迎联系作者。</text>
+          <text class="about-text">数据保存在本地，若您使用云备份，请保管好您的账号密码，请保管好您的数据，如有问题反馈欢迎联系作者。</text>
         </view>
       </view>
     </view>
