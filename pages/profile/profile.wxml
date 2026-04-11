@@ -407,6 +407,13 @@
           </view>
         </view>
         <view class="user-info-divider"></view>
+        <view class="user-info-item" bindtap="showEmojiModal">
+          <text class="info-label">头像</text>
+          <view class="info-value-row">
+            <text class="info-value">{{avatarType === 'text' ? avatarText : avatarEmoji}}</text>
+            <text class="arrow-icon">›</text>
+          </view>
+        </view>
         <view class="user-info-item" bindtap="showUpdateNicknameModal">
           <text class="info-label">昵称</text>
           <view class="info-value-row">

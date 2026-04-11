@@ -52,7 +52,10 @@ exports.main = async (event, context) => {
         data: {
           userId: user._id,
           account: user.account,
-          nickname: user.nickname
+          nickname: user.nickname,
+          avatarType: user.avatarType || 'emoji',
+          avatarEmoji: user.avatarEmoji || '😊',
+          avatarText: user.avatarText || ''
         }
       };
 
@@ -79,6 +82,9 @@ exports.main = async (event, context) => {
           password: encryptedPassword,
           salt: salt,
           nickname: userNickname,
+          avatarType: 'emoji',
+          avatarEmoji: '😊',
+          avatarText: '',
           createTime: new Date(),
           updateTime: new Date()
         }
@@ -89,7 +95,10 @@ exports.main = async (event, context) => {
         data: {
           userId: result._id,
           account: account,
-          nickname: userNickname
+          nickname: userNickname,
+          avatarType: 'emoji',
+          avatarEmoji: '😊',
+          avatarText: ''
         }
       };
 
@@ -159,6 +168,36 @@ exports.main = async (event, context) => {
 
       return {
         success: true
+      };
+
+    } else if (action === 'updateAvatar') {
+      // 更新头像信息
+      if (!userId) {
+        return {
+          success: false,
+          errMsg: '参数错误'
+        };
+      }
+
+      const { avatarType, avatarEmoji, avatarText } = event;
+
+      // 更新头像信息
+      await usersCollection.doc(userId).update({
+        data: {
+          avatarType: avatarType || 'emoji',
+          avatarEmoji: avatarEmoji || '😊',
+          avatarText: avatarText || '',
+          updateTime: new Date()
+        }
+      });
+
+      return {
+        success: true,
+        data: {
+          avatarType: avatarType || 'text',
+          avatarEmoji: avatarEmoji || '',
+          avatarText: avatarText || ''
+        }
       };
 
     } else if (action === 'deleteAccount') {
