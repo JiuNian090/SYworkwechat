@@ -1338,39 +1338,31 @@ Page({
 
   // 退出云开发登录
   logoutFromCloud() {
-    wx.showModal({
-      title: '确认退出',
-      content: '确定要退出登录吗？',
-      success: (res) => {
-        if (res.confirm) {
-          const cloudManager = this.data.cloudManager;
-          cloudManager.logout();
-          this.setData({
-            cloudLoggedIn: false,
-            cloudAccount: '',
-            username: '',
-            avatarType: 'emoji',
-            avatarText: '',
-            avatarEmoji: '😊',
-            emojiText: '',
-            emojiEmotion: 'neutral'
-          });
-          // 清空本地存储
-          wx.removeStorageSync('username');
-          wx.removeStorageSync('avatarType');
-          wx.removeStorageSync('avatarEmoji');
-          wx.removeStorageSync('cloudAccount');
-          wx.removeStorageSync('cloudLoggedIn');
-          wx.removeStorageSync('cloudUserId');
-          wx.removeStorageSync('cloudUserInfo');
-          this.userId = null;
-          
-          wx.showToast({
-            title: '已退出登录',
-            icon: 'success'
-          });
-        }
-      }
+    const cloudManager = this.data.cloudManager;
+    cloudManager.logout();
+    this.setData({
+      cloudLoggedIn: false,
+      cloudAccount: '',
+      username: '',
+      avatarType: 'emoji',
+      avatarText: '',
+      avatarEmoji: '😊',
+      emojiText: '',
+      emojiEmotion: 'neutral'
+    });
+    // 清空本地存储
+    wx.removeStorageSync('username');
+    wx.removeStorageSync('avatarType');
+    wx.removeStorageSync('avatarEmoji');
+    wx.removeStorageSync('cloudAccount');
+    wx.removeStorageSync('cloudLoggedIn');
+    wx.removeStorageSync('cloudUserId');
+    wx.removeStorageSync('cloudUserInfo');
+    this.userId = null;
+    
+    wx.showToast({
+      title: '已退出登录',
+      icon: 'success'
     });
   },
 
