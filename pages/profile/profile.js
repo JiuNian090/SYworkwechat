@@ -1,642 +1,13 @@
 // pages/profile/profile.js
 const api = require('../../utils/api.js');
 const changelogData = require('../../utils/changelog.js');
-const JSZip = require('../../utils/jszip.min.js');
-const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation } = require('../../utils/imageRelation.js');
 const emojiManager = require('../../utils/emojiManager.js');
-
-/**
- * 云开发工具类 - 增量备份和恢复
- * 支持微信云开发，通过账号密码实现数据同步
- */
-class CloudManager {
-  constructor() {
-    this.userId = null;
-  }
-  
-  // 检查云开发是否初始化成功
-  isCloudInitialized() {
-    const app = getApp();
-    return app.globalData.cloudInitialized;
-  }
-  
-  // 用户注册
-  async register(account, password, nickname) {
-    try {
-      // 检查云开发是否初始化成功
-      if (!this.isCloudInitialized()) {
-        return {
-          success: false,
-          errMsg: '云开发未初始化，请稍后重试'
-        };
-      }
-      
-      const result = await wx.cloud.callFunction({
-        name: 'userLogin',
-        data: {
-          action: 'register',
-          account: account,
-          password: password,
-          nickname: nickname
-        }
-      });
-      
-      if (result.result.success) {
-        this.userId = result.result.data.userId;
-        wx.setStorageSync('cloudUserId', this.userId);
-        wx.setStorageSync('cloudAccount', account);
-        return result.result;
-      } else {
-        return result.result;
-      }
-    } catch (e) {
-      console.error('注册失败', e);
-      return {
-        success: false,
-        errMsg: e.message || '注册失败'
-      };
-    }
-  }
-  
-  // 用户登录
-  async login(account, password) {
-    try {
-      // 检查云开发是否初始化成功
-      if (!this.isCloudInitialized()) {
-        return {
-          success: false,
-          errMsg: '云开发未初始化，请稍后重试'
-        };
-      }
-      
-      const result = await wx.cloud.callFunction({
-        name: 'userLogin',
-        data: {
-          action: 'login',
-          account: account,
-          password: password
-        }
-      });
-      
-      if (result.result.success) {
-        this.userId = result.result.data.userId;
-        wx.setStorageSync('cloudUserId', this.userId);
-        wx.setStorageSync('cloudAccount', account);
-        return result.result;
-      } else {
-        return result.result;
-      }
-    } catch (e) {
-      console.error('登录失败', e);
-      return {
-        success: false,
-        errMsg: e.message || '登录失败'
-      };
-    }
-  }
-  
-  // 检查是否已登录
-  isLoggedIn() {
-    if (!this.userId) {
-      this.userId = wx.getStorageSync('cloudUserId');
-    }
-    return !!this.userId;
-  }
-  
-  // 退出登录
-  logout() {
-    this.userId = null;
-    wx.removeStorageSync('cloudUserId');
-    wx.removeStorageSync('cloudAccount');
-  }
-  
-  // 获取当前账号
-  getCurrentAccount() {
-    return wx.getStorageSync('cloudAccount') || '';
-  }
-  
-  // 计算哈希值（用于差异检测）
-  calculateHash(data) {
-    if (typeof data === 'string') {
-      let hash = 0;
-      for (let i = 0; i < data.length; i++) {
-        const char = data.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-      }
-      return hash.toString(16);
-    }
-    return '0';
-  }
-  
-  // 获取本地数据
-  getLocalData() {
-    const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
-    const shifts = wx.getStorageSync('shifts') || {};
-    
-    const shiftTemplatesJson = JSON.stringify(shiftTemplates);
-    const shiftsJson = JSON.stringify(shifts);
-    
-    return {
-      shiftTemplates: {
-        data: shiftTemplates,
-        hash: this.calculateHash(shiftTemplatesJson),
-        size: shiftTemplatesJson.length
-      },
-      shifts: {
-        data: shifts,
-        hash: this.calculateHash(shiftsJson),
-        size: shiftsJson.length
-      }
-    };
-  }
-  
-  // 检测并更新旧格式图片名称
-  checkAndUpdateOldImageNames() {
-    const storageInfo = wx.getStorageInfoSync();
-    const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
-    
-    let hasUpdated = false;
-    
-    weekImageKeys.forEach(weekKey => {
-      const weekImages = wx.getStorageSync(weekKey) || [];
-      
-      // 检测并更新旧格式图片
-      const updatedImages = weekImages.map(image => {
-        // 检查是否为旧格式：包含"年"、"月"、"周"等中文字符
-        if (image.name && (image.name.includes('年') || image.name.includes('月') || 
-            image.name.includes('第') || image.name.includes('周'))) {
-          hasUpdated = true;
-          
-          // 从 weekKey 中提取日期信息
-          const weekDateStr = weekKey.replace('week_images_', '');
-          const weekDate = new Date(weekDateStr);
-          const year = weekDate.getFullYear();
-          const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-          const week = this.getWeekOfMonth(weekDate);
-          
-          // 生成新格式名称：年 - 月 - 周数字
-          const newName = `${year}-${month}-${week}`;
-          
-          return {
-            ...image,
-            name: newName,
-            updatedTime: new Date().toISOString()
-          };
-        }
-        return image;
-      });
-      
-      // 如果有更新，保存到本地存储
-      if (hasUpdated) {
-        wx.setStorageSync(weekKey, updatedImages);
-        console.log(`已更新周 ${weekKey} 的图片名称格式`);
-      }
-    });
-    
-    return hasUpdated;
-  }
-  
-  // 获取本地所有图片
-  getAllLocalImages() {
-    // 首先检测并更新旧格式图片名称
-    this.checkAndUpdateOldImageNames();
-    
-    const storageInfo = wx.getStorageInfoSync();
-    const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
-    
-    const images = [];
-    const imageWeekRelation = {};
-    
-    weekImageKeys.forEach(weekKey => {
-      const weekImages = wx.getStorageSync(weekKey) || [];
-      if (weekImages.length > 0) {
-        imageWeekRelation[weekKey] = weekImages.map(img => ({
-          name: img.name,
-          path: img.path
-        }));
-        
-        weekImages.forEach((image, index) => {
-          // 解析周信息，生成新格式图片名：年 - 月 - 周数字
-          const weekDateStr = weekKey.replace('week_images_', '');
-          const weekDate = new Date(weekDateStr);
-          const year = weekDate.getFullYear();
-          const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-          const week = this.getWeekOfMonth(weekDate);
-          
-          const yearMonth = `${year}-${month}`;
-          const imageName = `${year}-${month}-${week}`;
-          const remotePath = `images/${yearMonth}/${imageName}_${index}.jpg`;
-          
-          images.push({
-            weekKey: weekKey,
-            image: image,
-            yearMonth: yearMonth,
-            imageName: imageName,
-            remotePath: remotePath,
-            index: index
-          });
-        });
-      }
-    });
-    
-    return { images, imageWeekRelation };
-  }
-
-  // 获取某个日期是当月的第几周
-  getWeekOfMonth(date) {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const dayOfWeek = firstDay.getDay();
-    const adjustedDate = date.getDate() + dayOfWeek;
-    return Math.ceil(adjustedDate / 7);
-  }
-
-  // 验证图片文件是否存在
-  validateImageExists(imagePath) {
-    return new Promise((resolve) => {
-      wx.getFileInfo({
-        filePath: imagePath,
-        success: () => resolve(true),
-        fail: () => resolve(false)
-      });
-    });
-  }
-  
-  // 备份数据 - 增量备份，只上传有变化的图片
-  async backup() {
-    try {
-      // 检查云开发是否初始化成功
-      if (!this.isCloudInitialized()) {
-        return {
-          success: false,
-          errMsg: '云开发未初始化，请稍后重试'
-        };
-      }
-      
-      if (!this.isLoggedIn()) {
-        return {
-          success: false,
-          errMsg: '请先登录'
-        };
-      }
-      
-      wx.showLoading({ title: '备份中...' });
-      
-      // 1. 获取本地数据
-      const localData = this.getLocalData();
-      
-      // 使用新的图片关联表工具获取所有有效图片
-      const { images: validImages, imageWeekRelation: validImageWeekRelation } = await getAllValidImages();
-      
-      // 2. 获取云端备份信息，了解已有哪些图片
-      let existingImages = [];
-      try {
-        const infoResult = await wx.cloud.callFunction({
-          name: 'backupRestore',
-          data: {
-            action: 'getBackupInfo',
-            userId: this.userId
-          }
-        });
-        if (infoResult.result.success && infoResult.result.hasBackup) {
-          // 获取完整的备份数据，对比图片
-          const restoreResult = await wx.cloud.callFunction({
-            name: 'backupRestore',
-            data: {
-              action: 'restore',
-              userId: this.userId
-            }
-          });
-          if (restoreResult.result.success) {
-            existingImages = restoreResult.result.data.images || [];
-          }
-        }
-      } catch (e) {
-        console.log('获取云端备份信息失败，假设是新备份', e);
-      }
-      
-      // 3. 对比本地和云端图片，只上传新的或变化的图片
-      const uploadedImages = [];
-      const existingImageMap = new Map();
-      
-      // 创建云端图片映射，用于快速查找
-      existingImages.forEach(img => {
-        if (img.remotePath) {
-          existingImageMap.set(img.remotePath, img);
-        }
-      });
-      
-      // 上传图片到云存储（只上传新的或变化的图片）
-      for (const imgInfo of validImages) {
-        try {
-          const existingImg = existingImageMap.get(imgInfo.remotePath);
-          let shouldUpload = true;
-          
-          // 如果云端已存在，检查是否需要重新上传
-          if (existingImg) {
-            // 这里可以添加更复杂的对比逻辑，比如检查图片大小、时间戳等
-            // 目前简化处理：如果存在就跳过，节省带宽
-            shouldUpload = false;
-            // 复用云端的 fileID
-            uploadedImages.push({
-              ...imgInfo,
-              fileID: existingImg.fileID
-            });
-          }
-          
-          if (shouldUpload) {
-            // 上传新图片到云存储
-            const uploadResult = await wx.cloud.uploadFile({
-              cloudPath: `schedule_images/${this.userId}/${imgInfo.remotePath}`,
-              filePath: imgInfo.image.path
-            });
-            
-            uploadedImages.push({
-              ...imgInfo,
-              fileID: uploadResult.fileID
-            });
-          }
-        } catch (e) {
-          console.error('上传图片失败', imgInfo.remotePath, e);
-        }
-      }
-      
-      // 获取头像信息
-      const avatarInfo = {
-        avatarType: wx.getStorageSync('avatarType') || 'text',
-        avatarEmoji: wx.getStorageSync('avatarEmoji') || '',
-        username: wx.getStorageSync('username') || ''
-      };
-      
-      // 4. 调用云函数备份数据（云函数会对比差异，只更新有变化的数据）
-      const backupResult = await wx.cloud.callFunction({
-        name: 'backupRestore',
-        data: {
-          action: 'backup',
-          userId: this.userId,
-          data: {
-            shiftTemplates: localData.shiftTemplates.data,
-            shifts: localData.shifts.data,
-            images: uploadedImages,
-            imageWeekRelation: validImageWeekRelation,
-            avatarInfo: avatarInfo,
-            backupIndex: {}
-          }
-        }
-      });
-      
-      wx.hideLoading();
-      
-      if (backupResult.result.success) {
-        const newImageCount = uploadedImages.filter(img => !existingImageMap.has(img.remotePath)).length;
-        const deletedImageCount = backupResult.result.deletedImageCount || 0;
-        
-        let message;
-        if (backupResult.result.hasChanges) {
-          if (newImageCount > 0 && deletedImageCount > 0) {
-            message = `备份成功（新增${newImageCount}张，删除${deletedImageCount}张）`;
-          } else if (newImageCount > 0) {
-            message = `备份成功（新增${newImageCount}张图片）`;
-          } else if (deletedImageCount > 0) {
-            message = `备份成功（删除${deletedImageCount}张图片）`;
-          } else {
-            message = '备份成功（有更新）';
-          }
-        } else {
-          message = '备份成功（无变化）';
-        }
-          
-        wx.showToast({
-          title: message,
-          icon: 'success'
-        });
-        return {
-          success: true,
-          uploadedImages: newImageCount,
-          deletedImages: deletedImageCount,
-          hasChanges: backupResult.result.hasChanges
-        };
-      } else {
-        wx.showToast({
-          title: backupResult.result.errMsg || '备份失败',
-          icon: 'none'
-        });
-        return backupResult.result;
-      }
-      
-    } catch (e) {
-      console.error('备份失败', e);
-      wx.hideLoading();
-      wx.showToast({
-        title: '备份失败',
-        icon: 'none'
-      });
-      return {
-        success: false,
-        errMsg: e.message
-      };
-    }
-  }
-  
-  // 恢复数据 - 完全恢复，先清空本地，再完全替换为云端数据
-  async restore() {
-    try {
-      // 检查云开发是否初始化成功
-      if (!this.isCloudInitialized()) {
-        return {
-          success: false,
-          errMsg: '云开发未初始化，请稍后重试'
-        };
-      }
-      
-      if (!this.isLoggedIn()) {
-        return {
-          success: false,
-          errMsg: '请先登录'
-        };
-      }
-      
-      wx.showLoading({ title: '恢复中...' });
-      
-      // 1. 调用云函数获取备份数据
-      const restoreResult = await wx.cloud.callFunction({
-        name: 'backupRestore',
-        data: {
-          action: 'restore',
-          userId: this.userId
-        }
-      });
-      
-      if (!restoreResult.result.success) {
-        wx.hideLoading();
-        wx.showToast({
-          title: restoreResult.result.errMsg || '恢复失败',
-          icon: 'none'
-        });
-        return restoreResult.result;
-      }
-      
-      const backupData = restoreResult.result.data;
-      
-      // 2. 先清空本地所有相关数据（确保本地与云端完全一致）
-      
-      // 清空基础数据
-      wx.removeStorageSync('shifts');
-      wx.removeStorageSync('shiftTemplates');
-      wx.removeStorageSync('statData');
-      wx.removeStorageSync('statLastModified');
-      wx.removeStorageSync('standardHours');
-      wx.removeStorageSync('imagesLastModified');
-      
-      // 清空图片关联表
-      wx.removeStorageSync('imageRelation');
-      
-      // 清空所有周图片存储
-      const storageInfo = wx.getStorageInfoSync();
-      const keys = storageInfo.keys || [];
-      keys.forEach(key => {
-        if (key.startsWith('week_images_')) {
-          wx.removeStorageSync(key);
-        }
-      });
-      
-      // 3. 恢复数据文件（完全替换）
-      if (backupData.shiftTemplates) {
-        wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
-      }
-      if (backupData.shifts) {
-        wx.setStorageSync('shifts', backupData.shifts);
-      }
-      // 恢复头像信息
-      if (backupData.avatarInfo) {
-        if (backupData.avatarInfo.avatarType) {
-          wx.setStorageSync('avatarType', backupData.avatarInfo.avatarType);
-        }
-        if (backupData.avatarInfo.avatarEmoji) {
-          wx.setStorageSync('avatarEmoji', backupData.avatarInfo.avatarEmoji);
-        }
-        if (backupData.avatarInfo.username) {
-          wx.setStorageSync('username', backupData.avatarInfo.username);
-        }
-      }
-      
-      // 4. 恢复图片（完全替换）
-      const restoredImages = [];
-      const images = backupData.images || [];
-      const restoredWeekKeys = new Set();
-      
-      // 导入图片周关联表到新的图片关联表
-      if (backupData.imageWeekRelation) {
-        importImageWeekRelation(backupData.imageWeekRelation);
-      }
-      
-      for (const imgInfo of images) {
-        try {
-          // 从云存储下载图片
-          const downloadResult = await wx.cloud.downloadFile({
-            fileID: imgInfo.fileID
-          });
-          
-          // 保存到本地存储（完全替换，不检查是否存在）
-          const weekKey = imgInfo.weekKey;
-          const weekImages = wx.getStorageSync(weekKey) || [];
-          
-          const newImage = {
-            id: `${weekKey}_${Date.now()}`,
-            name: imgInfo.imageName,
-            path: downloadResult.tempFilePath,
-            addedTime: new Date().toISOString()
-          };
-          
-          weekImages.push(newImage);
-          wx.setStorageSync(weekKey, weekImages);
-          
-          // 同步更新到图片关联表
-          addImageToRelation(weekKey, newImage);
-          restoredWeekKeys.add(weekKey);
-          
-          restoredImages.push(imgInfo.remotePath);
-        } catch (e) {
-          console.error('恢复图片失败', imgInfo.remotePath, e);
-        }
-      }
-      
-      // 同步所有恢复过的周的关联表
-      restoredWeekKeys.forEach(weekKey => {
-        syncRelationWithLocal(weekKey);
-      });
-      
-      wx.hideLoading();
-      wx.showToast({
-        title: `恢复成功（${restoredImages.length}张图片）`,
-        icon: 'success'
-      });
-      
-      // 4. 刷新页面数据
-      setTimeout(() => {
-        const pages = getCurrentPages();
-        pages.forEach(page => {
-          if (page.refreshPageData) {
-            page.refreshPageData();
-          }
-        });
-      }, 500);
-      
-      return {
-        success: true,
-        restoredImages: restoredImages.length
-      };
-      
-    } catch (e) {
-      console.error('恢复失败', e);
-      wx.hideLoading();
-      wx.showToast({
-        title: '恢复失败',
-        icon: 'none'
-      });
-      return {
-        success: false,
-        errMsg: e.message
-      };
-    }
-  }
-  
-  // 获取备份信息
-  async getBackupInfo() {
-    try {
-      // 检查云开发是否初始化成功
-      if (!this.isCloudInitialized()) {
-        return {
-          success: false,
-          errMsg: '云开发未初始化，请稍后重试'
-        };
-      }
-      
-      if (!this.isLoggedIn()) {
-        return {
-          success: false,
-          errMsg: '请先登录'
-        };
-      }
-      
-      const result = await wx.cloud.callFunction({
-        name: 'backupRestore',
-        data: {
-          action: 'getBackupInfo',
-          userId: this.userId
-        }
-      });
-      
-      return result.result;
-    } catch (e) {
-      console.error('获取备份信息失败', e);
-      return {
-        success: false,
-        errMsg: e.message
-      };
-    }
-  }
-}
+const CloudManager = require('../../utils/cloudManager.js');
+const AvatarManager = require('../../utils/avatarManager.js');
+const DataExportManager = require('../../utils/dataExportManager.js');
+const DataImportManager = require('../../utils/dataImportManager.js');
+const DataClearManager = require('../../utils/dataClearManager.js');
+const WebDAVManager = require('../../utils/webdavManager.js');
 
 Page({
   data: {
@@ -699,25 +70,44 @@ Page({
     // 表情相关数据
     emojiCategories: emojiManager.getCategories(),
     currentEmojiCategory: 'face', // 当前选中的表情分类
-    selectedEmoji: '' // 当前选中的表情
+    selectedEmoji: '', // 当前选中的表情
+    // WebDAV配置
+    showWebDAVModal: false,
+    showWebDAVHelpModal: false,
+    showPassword: false,
+    webdavConfig: {
+      url: '',
+      username: '',
+      password: '',
+      folder: ''
+    }
   },
-
-  // 跳转到使用说明页面
-  navigateToDocs(e) {
-    const type = e.currentTarget.dataset.type;
-    wx.navigateTo({
-      url: '/pages/docs/docs?type=' + type
-    });
-  },
-
+  
+  // 初始化各个管理器
   onLoad() {
+    // 初始化云开发管理器
+    this.cloudManager = new CloudManager();
+    // 初始化头像管理器
+    this.avatarManager = new AvatarManager();
+    // 初始化数据导出管理器
+    this.dataExportManager = new DataExportManager();
+    // 初始化数据导入管理器
+    this.dataImportManager = new DataImportManager();
+    // 初始化数据清空管理器
+    this.dataClearManager = new DataClearManager();
+    // 初始化WebDAV管理器
+    this.webDAVManager = new WebDAVManager();
+    
+    // 调用原有的onLoad逻辑
+    this.initPageData();
+  },
+  
+  // 初始化页面数据
+  initPageData() {
     // 云开发已在 app.js 中初始化
     const app = getApp();
     const cloudInitialized = app.globalData.cloudInitialized;
     console.log('云开发初始化状态:', cloudInitialized);
-    
-    // 创建云开发管理器
-    const cloudManager = new CloudManager();
     
     // 检查是否已登录
     const cloudUserId = wx.getStorageSync('cloudUserId');
@@ -734,44 +124,27 @@ Page({
     }
     this.userId = cloudUserId;
     
-    // 读取头像信息：优先从云端用户信息获取，其次从本地存储获取，最后使用默认值
-    let avatarType = 'emoji';
-    let avatarEmoji = '😊';
-    
+    // 初始化头像信息
+    let avatarInfo;
     if (cloudLoggedIn && cloudUserInfo) {
-      // 从云端用户信息获取头像信息
-      avatarType = cloudUserInfo.avatarType || 'emoji';
-      avatarEmoji = cloudUserInfo.avatarEmoji || '😊';
-      // 同步到本地存储
-      wx.setStorageSync('avatarType', avatarType);
-      wx.setStorageSync('avatarEmoji', avatarEmoji);
+      // 从云端用户信息初始化头像
+      avatarInfo = this.avatarManager.initAvatarFromCloud(cloudUserInfo);
     } else {
-      // 从本地存储获取头像信息
-      avatarType = wx.getStorageSync('avatarType') || 'emoji';
-      avatarEmoji = wx.getStorageSync('avatarEmoji') || '😊';
+      // 从本地存储初始化头像
+      avatarInfo = this.avatarManager.initAvatarInfo();
     }
-    
-    // 生成头像文字（仅当使用文字头像时）
-    const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
-    
-    // 确保表情头像有默认值
-    const finalAvatarEmoji = avatarType === 'emoji' && avatarEmoji ? avatarEmoji : '😊';
-    
-    // 获取表情对应的文字和情绪类型
-    const emojiText = avatarType === 'emoji' ? emojiManager.getEmojiText(finalAvatarEmoji) || '' : '';
-    const emojiEmotion = avatarType === 'emoji' ? emojiManager.getEmojiEmotion(finalAvatarEmoji) || 'neutral' : '';
     
     // 解析更新日志
     const changelog = this.parseChangelog();
     
     this.setData({
-      username: username,
-      avatarText: avatarText,
-      avatarEmoji: finalAvatarEmoji,
-      avatarType: avatarType,
-      emojiText: emojiText,
-      emojiEmotion: emojiEmotion,
-      cloudManager: cloudManager,
+      username: avatarInfo.username,
+      avatarText: avatarInfo.avatarText,
+      avatarEmoji: avatarInfo.avatarEmoji,
+      avatarType: avatarInfo.avatarType,
+      emojiText: avatarInfo.emojiText,
+      emojiEmotion: avatarInfo.emojiEmotion,
+      cloudManager: this.cloudManager,
       cloudLoggedIn: cloudLoggedIn,
       cloudAccount: cloudAccount,
       cloudUserInfo: cloudUserInfo,
@@ -783,79 +156,39 @@ Page({
       this.getLatestAvatarFromCloud();
     }
   },
+
+  // 跳转到使用说明页面
+  navigateToDocs(e) {
+    const type = e.currentTarget.dataset.type;
+    wx.navigateTo({
+      url: '/pages/docs/docs?type=' + type
+    });
+  },
   
   // 从云端获取最新的头像信息
   async getLatestAvatarFromCloud() {
     try {
       const { cloudUserInfo } = this.data;
-      if (cloudUserInfo && cloudUserInfo.userId) {
-        // 调用云函数获取用户信息
-        const result = await wx.cloud.callFunction({
-          name: 'userLogin',
-          data: {
-            action: 'getUserInfo',
-            userId: cloudUserInfo.userId
-          }
+      const avatarInfo = await this.avatarManager.getLatestAvatarFromCloud(cloudUserInfo);
+      if (avatarInfo) {
+        // 更新页面数据
+        this.setData({
+          username: avatarInfo.username,
+          avatarType: avatarInfo.avatarType,
+          avatarEmoji: avatarInfo.avatarEmoji,
+          avatarText: avatarInfo.avatarText,
+          emojiText: avatarInfo.emojiText,
+          emojiEmotion: avatarInfo.emojiEmotion,
+          cloudUserInfo: avatarInfo.cloudUserInfo
         });
         
-        if (result.result.success && result.result.data) {
-          const userData = result.result.data;
-          // 检查是否有头像信息
-          if (userData.avatarType || userData.avatarEmoji) {
-            const avatarType = userData.avatarType || 'emoji';
-            const avatarEmoji = userData.avatarEmoji || '😊';
-            const username = userData.nickname || this.data.username;
-            
-            // 生成头像文字
-            const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
-            const emojiText = avatarType === 'emoji' ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
-            const emojiEmotion = avatarType === 'emoji' ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
-            
-            // 更新本地存储
-            wx.setStorageSync('avatarType', avatarType);
-            wx.setStorageSync('avatarEmoji', avatarEmoji);
-            if (username) {
-              wx.setStorageSync('username', username);
-            }
-            
-            // 更新本地用户信息
-            const updatedUserInfo = {
-              ...cloudUserInfo,
-              avatarType: avatarType,
-              avatarEmoji: avatarEmoji,
-              nickname: username
-            };
-            wx.setStorageSync('cloudUserInfo', updatedUserInfo);
-            
-            // 更新页面数据
-            this.setData({
-              username: username,
-              avatarType: avatarType,
-              avatarEmoji: avatarEmoji,
-              avatarText: avatarText,
-              emojiText: emojiText,
-              emojiEmotion: emojiEmotion,
-              cloudUserInfo: updatedUserInfo
-            });
-            
-            // 通知其他页面更新头像信息
-            this.updateAvatarInOtherPages();
-          }
-        }
+        // 通知其他页面更新头像信息
+        this.updateAvatarInOtherPages();
       }
     } catch (e) {
       console.error('从云端获取头像信息失败', e);
       // 获取失败不影响本地操作
     }
-  },
-
-  // 生成头像文字
-  generateAvatarText(username) {
-    if (!username) {
-      return '用';
-    }
-    // 取用户名的第一个字符作为头像文字
-    return username.charAt(0).toUpperCase();
   },
 
   // 显示用户名设置弹窗
@@ -1134,883 +467,31 @@ Page({
     this.hideFileNameModal();
     
     // 导出选择的数据类型
-    this.exportSelectedData(customFileName);
-  },
-
-  // 导出选择的数据类型
-  exportSelectedData(customFileName) {
-    wx.showLoading({
-      title: '正在导出...'
+    this.dataExportManager.exportSelectedData(this.data.selectedDataTypes, customFileName, (result) => {
+      if (result) {
+        // 更新页面数据
+        this.setData({
+          exportedFilePath: result.filePath,
+          exportedFileName: result.fileName
+        });
+      }
     });
-    
-    try {
-      // 构造导出数据结构
-      const data = {};
-      
-      // 根据选择的数据类型获取对应的数据
-      if (this.data.selectedDataTypes.includes('shiftTemplates')) {
-        // 获取班次模板数据
-        data.shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
-      }
-      
-      if (this.data.selectedDataTypes.includes('shifts')) {
-        // 获取排班数据
-        data.shifts = wx.getStorageSync('shifts') || {};
-      }
-      
-      // 添加统计数据（如果包含排班数据）
-      if (data.shifts) {
-        let totalHours = 0;
-        let workDays = 0;
-        let offDays = 0;
-        let totalDays = 0;
-        
-        // 计算统计数据
-        Object.keys(data.shifts).forEach(date => {
-          const shift = data.shifts[date];
-          totalHours += parseFloat(shift.workHours) || 0;
-          totalDays++;
-          
-          // 按班次类型统计工作班次和休息日
-          const shiftType = shift.type;
-          if (shiftType === '白天班' || shiftType === '跨夜班') {
-            workDays++;
-          } else if (shiftType === '休息日') {
-            offDays++;
-          }
-        });
-        
-        // 添加统计数据到导出数据中
-        data.statistics = {
-          totalHours: totalHours.toFixed(1),
-          totalDays: totalDays,
-          workDays: workDays,
-          offDays: offDays
-        };
-      }
-      
-      // 检查数据是否为空
-      const isDataEmpty = Object.keys(data).length === 0 || 
-        (Object.keys(data).length === 1 && data.shiftTemplates && data.shiftTemplates.length === 0) ||
-        (Object.keys(data).length === 1 && data.shifts && Object.keys(data.shifts).length === 0);
-      
-      if (isDataEmpty) {
-        wx.hideLoading();
-        wx.showToast({
-          title: '没有数据可导出',
-          icon: 'none'
-        });
-        return;
-      }
-      
-      // 使用用户输入的文件名
-      const fileName = customFileName;
-      const fs = wx.getFileSystemManager();
-      
-      // 检查是否选择了图片
-      const includeImages = this.data.selectedDataTypes.includes('scheduleImages');
-      
-      if (includeImages) {
-        // 生成ZIP文件
-        this.exportAsZip(fileName, data);
-      } else {
-        // 生成JSON文件
-        const jsonData = JSON.stringify(data, null, 2);
-        const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.json`;
-        
-        // 检查jsonData是否为空
-        if (!jsonData || jsonData === '{}') {
-          wx.hideLoading();
-          wx.showToast({
-            title: '没有数据可导出',
-            icon: 'none'
-          });
-          return;
-        }
-        
-        fs.writeFile({
-          filePath: filePath,
-          data: jsonData,
-          encoding: 'utf8',
-          success: () => {
-            wx.hideLoading();
-            // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
-            this.setData({
-              exportedFilePath: filePath,
-              exportedFileName: fileName
-            });
-            
-            // 显示提示，让用户点击分享按钮
-            wx.showModal({
-              title: '导出成功',
-              content: '数据已导出为JSON文件，请点击下方"分享数据"按钮将文件发送给好友',
-              showCancel: false,
-              confirmText: '知道了'
-            });
-          },
-          fail: (err) => {
-            wx.hideLoading();
-            console.error('写入文件失败', err);
-            wx.showToast({
-              title: '导出失败',
-              icon: 'none'
-            });
-          }
-        });
-      }
-    } catch (e) {
-      wx.hideLoading();
-      console.error('导出数据失败', e);
-      wx.showToast({
-        title: '导出失败',
-        icon: 'none'
-      });
-    }
-  },
-  
-  // 导出为ZIP文件
-  exportAsZip(fileName, data) {
-    try {
-      const zip = new JSZip();
-      
-      // 添加班次模板文件（如果用户选择了导出班次模板）
-      if (this.data.selectedDataTypes.includes('shiftTemplates') && data.shiftTemplates) {
-        zip.file('班次模板.json', JSON.stringify({ data: data.shiftTemplates }, null, 2));
-      }
-      
-      // 添加排班数据文件（如果用户选择了导出排班数据）
-      if (this.data.selectedDataTypes.includes('shifts') && data.shifts) {
-        zip.file('排班数据.json', JSON.stringify({ shifts: data.shifts, statistics: data.statistics }, null, 2));
-      }
-      
-      // 添加图片文件（如果用户选择了导出图片）
-      if (this.data.selectedDataTypes.includes('scheduleImages')) {
-        const images = [];
-        const fs = wx.getFileSystemManager();
-        const imagePromises = [];
-        const processedImages = new Set(); // 用于跟踪已处理的图片
-        const validWeekImageKeys = []; // 用于跟踪包含有效图片的周
-        
-        // 获取所有周的图片
-        // 注意：这里需要根据实际存储结构调整，例如按周存储的图片
-        // 假设图片是按周存储的，键格式为 week_images_{weekKey}
-        const storageInfo = wx.getStorageInfoSync();
-        const weekImageKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
-        
-        weekImageKeys.forEach(key => {
-          const weekImages = wx.getStorageSync(key) || [];
-          const validWeekImages = weekImages.filter(image => {
-            // 过滤掉名称为"0"的图片和无效图片
-            return image && image.name !== '0' && image.path;
-          });
-          
-          // 只处理有有效图片的周
-          if (validWeekImages.length > 0) {
-            validWeekImageKeys.push(key);
-            
-            validWeekImages.forEach((image, index) => {
-              // 生成图片唯一标识（基于图片路径和名称）
-              const imageKey = `${key}_${image.name}_${image.path}`;
-              
-              // 检查图片是否已经处理过
-              if (!processedImages.has(imageKey)) {
-                processedImages.add(imageKey);
-                
-                const promise = new Promise((resolve) => {
-                  try {
-                    // 读取图片文件
-                    fs.readFile({
-                      filePath: image.path,
-                      success: (res) => {
-                        // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
-                        // 从weekKey中提取年月（格式：YYYY-MM）
-                        const weekKey = key.replace('week_images_', '');
-                        let yearMonth;
-                        try {
-                          const weekDate = new Date(weekKey);
-                          // 检查日期是否有效
-                          if (!isNaN(weekDate.getTime())) {
-                            const year = weekDate.getFullYear();
-                            const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-                            yearMonth = `${year}-${month}`;
-                          } else {
-                            // 如果日期无效，使用当前日期
-                            const currentDate = new Date();
-                            const year = currentDate.getFullYear();
-                            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                            yearMonth = `${year}-${month}`;
-                          }
-                        } catch (e) {
-                          // 如果发生错误，使用当前日期
-                          const currentDate = new Date();
-                          const year = currentDate.getFullYear();
-                          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                          yearMonth = `${year}-${month}`;
-                        }
-                        // 使用原始图片名称
-                        const imageName = image.name || `image_${index}.jpg`;
-                        const imageFileName = `image/${yearMonth}/${imageName}`;
-                        // 添加图片到ZIP
-                        zip.file(imageFileName, res.data);
-                        // 保存图片信息
-                        images.push({
-                          ...image,
-                          key: key,
-                          zipPath: imageFileName
-                        });
-                        resolve();
-                      },
-                      fail: (err) => {
-                        console.error('读取图片失败', err);
-                        resolve(); // 忽略失败的图片
-                      }
-                    });
-                  } catch (e) {
-                    console.error('处理图片失败', e);
-                    resolve();
-                  }
-                });
-                imagePromises.push(promise);
-              }
-            });
-          }
-        });
-        
-        // 等待所有图片处理完成
-        Promise.all(imagePromises).then(() => {
-          // 生成图片周关联表
-          const imageWeekRelation = {};
-          validWeekImageKeys.forEach(key => {
-            const weekImages = wx.getStorageSync(key) || [];
-            const validWeekImages = weekImages.filter(image => {
-              // 过滤掉名称为"0"的图片和无效图片
-              return image && image.name !== '0' && image.path;
-            });
-            imageWeekRelation[key] = [];
-            validWeekImages.forEach((image, index) => {
-              // 从weekKey中提取年月（格式：YYYY-MM）
-              const weekKey = key.replace('week_images_', '');
-              let yearMonth;
-              try {
-                const weekDate = new Date(weekKey);
-                if (!isNaN(weekDate.getTime())) {
-                  const year = weekDate.getFullYear();
-                  const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-                  yearMonth = `${year}-${month}`;
-                } else {
-                  const currentDate = new Date();
-                  const year = currentDate.getFullYear();
-                  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                  yearMonth = `${year}-${month}`;
-                }
-              } catch (e) {
-                const currentDate = new Date();
-                const year = currentDate.getFullYear();
-                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                yearMonth = `${year}-${month}`;
-              }
-              const imageName = image.name || `image_${index}.jpg`;
-              const imagePath = `image/${yearMonth}/${imageName}`;
-              imageWeekRelation[key].push({ name: imageName, path: imagePath });
-            });
-          });
-          
-          // 添加图片周关联表.json文件
-          zip.file('图片周关联表.json', JSON.stringify(imageWeekRelation, null, 2));
-          
-          // 生成ZIP文件
-          zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
-            // 检查content是否为空
-            if (!content || content.byteLength === 0) {
-              wx.hideLoading();
-              wx.showToast({
-                title: '没有数据可导出',
-                icon: 'none'
-              });
-              return;
-            }
-            
-            // 创建临时文件
-            const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.zip`;
-            
-            fs.writeFile({
-              filePath: filePath,
-              data: content,
-              success: () => {
-                wx.hideLoading();
-                // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
-                this.setData({
-                  exportedFilePath: filePath,
-                  exportedFileName: fileName
-                });
-                
-                // 显示提示，让用户点击分享按钮
-                wx.showModal({
-                  title: '导出成功',
-                  content: '数据已导出为ZIP文件（包含图片），请点击下方"分享数据"按钮将文件发送给好友',
-                  showCancel: false,
-                  confirmText: '知道了'
-                });
-              },
-              fail: (err) => {
-                wx.hideLoading();
-                console.error('写入ZIP文件失败', err);
-                wx.showToast({
-                  title: '导出失败',
-                  icon: 'none'
-                });
-              }
-            });
-          }).catch((err) => {
-            wx.hideLoading();
-            console.error('生成ZIP失败', err);
-            wx.showToast({
-              title: '导出失败',
-              icon: 'none'
-            });
-          });
-        });
-      } else {
-        // 如果不需要导出图片，直接生成ZIP文件
-        zip.generateAsync({ type: 'arraybuffer' }).then((content) => {
-          // 检查content是否为空
-          if (!content || content.byteLength === 0) {
-            wx.hideLoading();
-            wx.showToast({
-              title: '没有数据可导出',
-              icon: 'none'
-            });
-            return;
-          }
-          
-          // 创建临时文件
-          const filePath = `${wx.env.USER_DATA_PATH}/${fileName}.zip`;
-          
-          const fs = wx.getFileSystemManager();
-          fs.writeFile({
-            filePath: filePath,
-            data: content,
-            success: () => {
-              wx.hideLoading();
-              // 保存文件路径和文件名到页面数据中，等待用户点击分享按钮
-              this.setData({
-                exportedFilePath: filePath,
-                exportedFileName: fileName
-              });
-              
-              // 显示提示，让用户点击分享按钮
-              wx.showModal({
-                title: '导出成功',
-                content: '数据已导出为ZIP文件，请点击下方"分享数据"按钮将文件发送给好友',
-                showCancel: false,
-                confirmText: '知道了'
-              });
-            },
-            fail: (err) => {
-              wx.hideLoading();
-              console.error('写入ZIP文件失败', err);
-              wx.showToast({
-                title: '导出失败',
-                icon: 'none'
-              });
-            }
-          });
-        }).catch((err) => {
-          wx.hideLoading();
-          console.error('生成ZIP失败', err);
-          wx.showToast({
-            title: '导出失败',
-            icon: 'none'
-          });
-        });
-      }
-    } catch (e) {
-      wx.hideLoading();
-      console.error('导出ZIP失败', e);
-      wx.showToast({
-        title: '导出失败',
-        icon: 'none'
-      });
-    }
   },
 
   // 分享导出的文件给好友
   shareExportedFile() {
-    // 检查是否有导出的文件
-    if (this.data.exportedFilePath && this.data.exportedFileName) {
-      this.shareFile(this.data.exportedFilePath, this.data.exportedFileName);
-    } else {
-      wx.showToast({
-        title: '请先导出数据',
-        icon: 'none'
-      });
-    }
+    this.dataExportManager.shareExportedFile();
   },
 
   // 分享导出的模板文件给好友
   shareTemplate() {
-    // 检查是否有导出的模板文件
-    if (this.data.exportedTemplateFilePath && this.data.exportedTemplateFileName) {
-      this.shareFile(this.data.exportedTemplateFilePath, this.data.exportedTemplateFileName);
-    } else {
-      wx.showToast({
-        title: '请先导出模板',
-        icon: 'none'
-      });
-    }
-  },
-
-  // 分享文件给好友
-  shareFile(filePath, fileName) {
-    // 检查是否支持分享文件
-    if (wx.shareFileMessage) {
-      // 确定文件扩展名
-      const extension = filePath.endsWith('.zip') ? '.zip' : '.json';
-      
-      wx.shareFileMessage({
-        filePath: filePath,
-        fileName: `${fileName}${extension}`,
-        success: () => {
-          wx.showToast({
-            title: '分享成功',
-            icon: 'success'
-          });
-        },
-        fail: (err) => {
-          console.error('分享失败', err);
-          wx.showToast({
-            title: '分享失败',
-            icon: 'none'
-          });
-        }
-      });
-    } else {
-      // 如果不支持分享文件，则提示用户手动发送
-      wx.showModal({
-        title: '提示',
-        content: '当前微信版本不支持直接分享文件，您可以手动发送文件给好友。文件已保存到本地。',
-        showCancel: false,
-        confirmText: '知道了'
-      });
-    }
+    this.dataExportManager.shareTemplate();
   },
 
   importData() {
-    wx.chooseMessageFile({
-      count: 1,
-      type: 'file',
-      extension: ['json', 'zip'],
-      // 提示用户选择JSON或ZIP文件，提高用户体验
-      success: (res) => {
-        const fileName = res.tempFiles[0].name;
-        const filePath = res.tempFiles[0].path;
-        
-        wx.showLoading({
-          title: '正在导入...'
-        });
-        
-        if (fileName.toLowerCase().endsWith('.zip')) {
-          // 处理ZIP文件
-          this.importFromZip(filePath);
-        } else if (fileName.toLowerCase().endsWith('.json')) {
-          // 处理JSON文件
-          this.importFromJson(filePath);
-        } else {
-          wx.hideLoading();
-          wx.showToast({
-            title: '请选择JSON或ZIP格式文件',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        if (err.errMsg && !err.errMsg.includes('cancel')) {
-          wx.showToast({
-            title: '选择文件失败',
-            icon: 'none'
-          });
-        }
-      }
-    });
+    this.dataImportManager.importData();
   },
-  
-  // 从JSON文件导入
-  importFromJson(filePath) {
-    wx.getFileSystemManager().readFile({
-      filePath: filePath,
-      encoding: 'utf-8',
-      success: (readRes) => {
-        try {
-          const data = JSON.parse(readRes.data);
-          
-          // 获取文件名，判断文件类型
-          const fileName = filePath.split('/').pop();
-          let importSuccess = false;
-          
-          // 处理班次模板.json文件
-          if (fileName === '班次模板.json') {
-            // 验证数据格式
-            const shiftTemplatesData = data.data || data.shiftTemplates;
-            if (Array.isArray(shiftTemplatesData)) {
-              wx.setStorageSync('shiftTemplates', shiftTemplatesData);
-              importSuccess = true;
-            } else {
-              throw new Error('班次模板数据格式不正确');
-            }
-          }
-          // 处理排班数据.json文件
-          else if (fileName === '排班数据.json') {
-            // 验证数据格式
-            const shiftsData = data.shifts;
-            if (shiftsData && typeof shiftsData === 'object') {
-              wx.setStorageSync('shifts', shiftsData);
-              if (data.customWeeklyHours !== undefined) {
-                wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
-              }
-              importSuccess = true;
-            } else {
-              throw new Error('排班数据格式不正确');
-            }
-          }
-          // 处理完整备份文件（包含两种数据）
-          else {
-            // 验证数据格式 - 检查必需的数据结构
-            if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
-              throw new Error('数据格式不正确');
-            }
-            
-            // 保存数据到本地存储
-            if (data.shiftTemplates) {
-              wx.setStorageSync('shiftTemplates', data.shiftTemplates);
-            }
-            if (data.shifts) {
-              wx.setStorageSync('shifts', data.shifts);
-            }
-            if (data.customWeeklyHours !== undefined) {
-              wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
-            }
-            importSuccess = true;
-          }
-          
-          if (importSuccess) {
-            this.finishImport();
-          }
-        } catch (e) {
-          wx.hideLoading();
-          console.error('解析数据失败', e);
-          wx.showToast({
-            title: '数据格式错误',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        console.error('读取文件失败', err);
-        wx.showToast({
-          title: '读取文件失败',
-          icon: 'none'
-        });
-      }
-    });
-  },
-  
-  // 从ZIP文件导入
-  importFromZip(filePath) {
-    const fs = wx.getFileSystemManager();
-    
-    // 直接使用WebDAV恢复的解压和恢复逻辑
-    this.extractAndRestoreBackup(filePath, fs).then(() => {
-      this.finishImport();
-    }).catch((err) => {
-      wx.hideLoading();
-      console.error('导入失败', err);
-      wx.showToast({
-        title: '导入失败',
-        icon: 'none'
-      });
-    });
-  },
-  
-  // 原从ZIP文件导入方法（保留作为备份）
-  oldImportFromZip(filePath) {
-    const fs = wx.getFileSystemManager();
-    
-    fs.readFile({
-      filePath: filePath,
-      success: (readRes) => {
-        try {
-          const zip = new JSZip();
-          
-          zip.loadAsync(readRes.data).then((zip) => {
-            // 检查是否存在班次模板.json文件
-            const shiftTemplatesFile = zip.file('班次模板.json');
-            // 检查是否存在排班数据.json文件
-            const shiftsFile = zip.file('排班数据.json');
-            // 检查是否存在旧格式的data.json文件
-            const dataJsonFile = zip.file('data.json');
-            
-            // 用于存储导入的数据
-            const importData = {
-              shiftTemplates: [],
-              shifts: {},
-              customWeeklyHours: 35
-            };
-            
-            // 处理班次模板文件
-            const processShiftTemplates = () => {
-              return new Promise((resolve) => {
-                if (shiftTemplatesFile) {
-                  shiftTemplatesFile.async('string').then((jsonStr) => {
-                    try {
-                      const data = JSON.parse(jsonStr);
-                      if (data.data) {
-                        importData.shiftTemplates = data.data;
-                      }
-                    } catch (e) {
-                      console.error('解析班次模板.json失败', e);
-                    }
-                    resolve();
-                  }).catch((err) => {
-                    console.error('读取班次模板.json失败', err);
-                    resolve();
-                  });
-                } else {
-                  resolve();
-                }
-              });
-            };
-            
-            // 处理排班数据文件
-            const processShifts = () => {
-              return new Promise((resolve) => {
-                if (shiftsFile) {
-                  shiftsFile.async('string').then((jsonStr) => {
-                    try {
-                      const data = JSON.parse(jsonStr);
-                      if (data.shifts) {
-                        importData.shifts = data.shifts;
-                      }
-                      if (data.customWeeklyHours !== undefined) {
-                        importData.customWeeklyHours = data.customWeeklyHours;
-                      }
-                    } catch (e) {
-                      console.error('解析排班数据.json失败', e);
-                    }
-                    resolve();
-                  }).catch((err) => {
-                    console.error('读取排班数据.json失败', err);
-                    resolve();
-                  });
-                } else {
-                  resolve();
-                }
-              });
-            };
-            
-            // 处理旧格式的data.json文件
-            const processDataJson = () => {
-              return new Promise((resolve) => {
-                if (dataJsonFile && (!shiftTemplatesFile || !shiftsFile)) {
-                  dataJsonFile.async('string').then((jsonStr) => {
-                    try {
-                      const data = JSON.parse(jsonStr);
-                      if (data.shiftTemplates) {
-                        importData.shiftTemplates = data.shiftTemplates;
-                      }
-                      if (data.shifts) {
-                        importData.shifts = data.shifts;
-                      }
-                      if (data.customWeeklyHours !== undefined) {
-                        importData.customWeeklyHours = data.customWeeklyHours;
-                      }
-                    } catch (e) {
-                      console.error('解析data.json失败', e);
-                    }
-                    resolve();
-                  }).catch((err) => {
-                    console.error('读取data.json失败', err);
-                    resolve();
-                  });
-                } else {
-                  resolve();
-                }
-              });
-            };
-            
-            // 按顺序处理所有文件
-            Promise.all([
-              processShiftTemplates(),
-              processShifts(),
-              processDataJson()
-            ]).then(() => {
-              // 保存数据到本地存储
-              if (importData.shiftTemplates.length > 0) {
-                wx.setStorageSync('shiftTemplates', importData.shiftTemplates);
-              }
-              if (Object.keys(importData.shifts).length > 0) {
-                wx.setStorageSync('shifts', importData.shifts);
-              }
-              if (importData.customWeeklyHours !== undefined) {
-                wx.setStorageSync('customWeeklyHours', importData.customWeeklyHours);
-              }
-              
-              // 处理图片文件（兼容新旧路径格式：image/YYYY-MM/ 或 images/）
-              const imageDir = zip.folder('image') || zip.folder('images');
-              if (imageDir) {
-                const imagePromises = [];
-                
-                // 递归处理图片文件夹中的所有文件
-                const processImageFolder = (folder, basePath = '') => {
-                  folder.forEach((relativePath, file) => {
-                    if (file.dir) {
-                      // 如果是子文件夹（如 YYYY-MM），递归处理
-                      const subFolder = folder.folder(relativePath);
-                      if (subFolder) {
-                        processImageFolder(subFolder, `${basePath}${relativePath}/`);
-                      }
-                    } else {
-                      // 处理图片文件
-                      const promise = file.async('arraybuffer').then((content) => {
-                        // 生成临时图片路径
-                        const fileName = relativePath.split('/').pop();
-                        const tempPath = `${wx.env.USER_DATA_PATH}/${Date.now()}_${fileName}`;
-                        // 写入图片文件
-                        fs.writeFile({
-                          filePath: tempPath,
-                          data: content,
-                          success: () => {
-                            // 解析图片信息，恢复到对应的周存储
-                            // 文件名格式：week_images_{weekKey}_index_name.jpg
-                            const fileNameParts = fileName.split('_');
-                            if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
-                              const weekKey = fileNameParts.slice(2, -2).join('_');
-                              const weekImageKey = `week_images_${weekKey}`;
-                              
-                              // 获取现有图片数据
-                              const existingImages = wx.getStorageSync(weekImageKey) || [];
-                              
-                              // 添加新图片
-                              existingImages.push({
-                                id: Date.now().toString(),
-                                name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
-                                path: tempPath,
-                                addedTime: new Date().toISOString()
-                              });
-                              
-                              // 保存图片数据
-                              wx.setStorageSync(weekImageKey, existingImages);
-                            }
-                          },
-                          fail: (err) => {
-                            console.error('保存图片失败', err);
-                          }
-                        });
-                      });
-                      imagePromises.push(promise);
-                    }
-                  });
-                };
-                
-                processImageFolder(imageDir);
-                
-                // 等待所有图片处理完成
-                Promise.all(imagePromises).then(() => {
-                  this.finishImport();
-                });
-              } else {
-                this.finishImport();
-              }
-            }).catch((err) => {
-              wx.hideLoading();
-              console.error('解析JSON失败', err);
-              wx.showToast({
-                title: '数据格式错误',
-                icon: 'none'
-              });
-            });
-          }).catch((err) => {
-            wx.hideLoading();
-            console.error('解压ZIP失败', err);
-            wx.showToast({
-              title: '压缩包格式错误',
-              icon: 'none'
-            });
-          });
-        } catch (e) {
-          wx.hideLoading();
-          console.error('导入失败', e);
-          wx.showToast({
-            title: '导入失败',
-            icon: 'none'
-          });
-        }
-      },
-      fail: (err) => {
-        wx.hideLoading();
-        console.error('读取文件失败', err);
-        wx.showToast({
-          title: '读取文件失败',
-          icon: 'none'
-        });
-      }
-    });
-  },
-  
-  // 完成导入，刷新页面数据
-  finishImport() {
-    wx.showToast({
-      title: '导入成功',
-      icon: 'success'
-    });
-    
-    // 延迟一段时间确保数据保存完成后再刷新页面
-    setTimeout(() => {
-      // 刷新所有相关页面数据
-      const pages = getCurrentPages();
-      for (let i = 0; i < pages.length; i++) {
-        const page = pages[i];
-        if (page.route === 'pages/plan/plan') {
-          // 重新加载班次模板数据
-          if (page.loadShiftTemplates) {
-            page.loadShiftTemplates();
-          }
-        } else if (page.route === 'pages/schedule/schedule') {
-          // 重新加载排班数据和班次模板
-          if (page.loadShifts) {
-            page.loadShifts();
-          }
-          if (page.loadShiftTemplates) {
-            page.loadShiftTemplates();
-          }
-          // 重新生成日期数据
-          if (page.generateWeekDates) {
-            page.generateWeekDates();
-          }
-          if (page.generateMonthDates) {
-            page.generateMonthDates();
-          }
-          // 重新加载图片数据
-          if (page.loadWeekImages) {
-            page.loadWeekImages();
-          }
-        } else if (page.route === 'pages/statistics/statistics') {
-          // 重新计算统计数据
-          if (page.calculateStatistics) {
-            page.calculateStatistics();
-          }
-        }
-      }
-      
-      // 如果当前在tab页面，也需要刷新当前页面数据
-      if (this.loadUserData && typeof this.loadUserData === 'function') {
-        this.loadUserData();
-      }
-      
-      // 隐藏loading
-      wx.hideLoading();
-    }, 500);
-  },
+
 
   
 
@@ -2018,105 +499,9 @@ Page({
   
   // 清空所有数据（包括班次模板）
   clearAllData() {
-    wx.showModal({
-      title: '确认清空',
-      content: '确定要清空所有数据吗？此操作将清空包括班次模板在内的所有数据，且不可恢复！',
-      confirmColor: '#ff4d4f',
-      success: (res) => {
-        if (res.confirm) {
-          wx.showLoading({
-            title: '正在清空...'
-          });
-          
-          try {
-            // 1. 清空基础数据
-            wx.removeStorageSync('shifts');
-            wx.removeStorageSync('customWeeklyHours');
-            wx.removeStorageSync('shiftTemplates');
-            wx.removeStorageSync('statData');
-            wx.removeStorageSync('statLastModified');
-            wx.removeStorageSync('standardHours');
-            wx.removeStorageSync('imagesLastModified');
-            
-            // 2. 清空图片关联表
-            wx.removeStorageSync('imageRelation');
-            
-            // 3. 查找并清空所有周图片存储 (week_images_*)
-            const info = wx.getStorageInfoSync();
-            const keys = info.keys || [];
-            keys.forEach(key => {
-              if (key.startsWith('week_images_')) {
-                wx.removeStorageSync(key);
-              }
-            });
-            
-            // 4. 清空用户数据
-            wx.removeStorageSync('cloudUserInfo');
-            wx.removeStorageSync('avatarType');
-            wx.removeStorageSync('avatarText');
-            wx.removeStorageSync('avatarEmoji');
-            
-            // 5. 清空更新数据
-            wx.removeStorageSync('lastUpdateCheck');
-            
-            wx.showToast({
-              title: '数据已清空',
-              icon: 'success'
-              });
-            
-            // 延迟一段时间确保数据清空完成后再刷新页面
-            setTimeout(() => {
-              // 通知所有相关页面刷新数据
-              const pages = getCurrentPages();
-              for (let i = 0; i < pages.length; i++) {
-                const page = pages[i];
-                if (page.route === 'pages/plan/plan') {
-                  // 重新加载班次模板数据（保留原有数据）
-                  if (page.loadShiftTemplates) {
-                    page.loadShiftTemplates();
-                  }
-                } else if (page.route === 'pages/schedule/schedule') {
-                  // 重新加载排班数据（空对象）和班次模板
-                  if (page.loadShifts) {
-                    page.loadShifts();
-                  }
-                  if (page.loadShiftTemplates) {
-                    page.loadShiftTemplates();
-                  }
-                  // 重新生成日期数据
-                  if (page.generateWeekDates) {
-                    page.generateWeekDates();
-                  }
-                  if (page.generateMonthDates) {
-                    page.generateMonthDates();
-                  }
-                  // 重新加载图片数据（清空）
-                  if (page.loadWeekImages) {
-                    page.loadWeekImages();
-                  }
-                } else if (page.route === 'pages/statistics/statistics') {
-                  // 重新计算统计数据（应该为空）
-                  if (page.calculateStatistics) {
-                    page.calculateStatistics();
-                  }
-                }
-              }
-              
-              // 隐藏loading
-              wx.hideLoading();
-            }, 500);
-          } catch (e) {
-            wx.hideLoading();
-            console.error('清空数据失败', e);
-            wx.showToast({
-              title: '清空失败',
-              icon: 'none'
-            });
-          }
-        }
-      }
-    });
+    this.dataClearManager.clearAllData();
   },
+
 
   // 联系作者功能
   contactAuthor() {
@@ -2191,56 +576,19 @@ Page({
 
   // 通知其他页面更新头像信息
   updateAvatarInOtherPages() {
-    // 获取当前所有页面实例
-    const pages = getCurrentPages();
-    const avatarType = this.data.avatarType;
-    const avatarText = this.data.avatarText;
-    const avatarEmoji = this.data.avatarEmoji;
-    
-    // 遍历所有页面，更新头像信息
-    pages.forEach(page => {
-      // 排除当前页面
-      if (page.route !== 'pages/profile/profile') {
-        // 更新头像信息
-        page.setData({
-          avatarType: avatarType,
-          avatarText: avatarText,
-          avatarEmoji: avatarEmoji
-        });
-      }
-    });
+    const { avatarType, avatarText, avatarEmoji } = this.data;
+    this.avatarManager.updateAvatarInOtherPages(avatarType, avatarText, avatarEmoji);
   },
   
   // 同步头像信息到云端
   async syncAvatarToCloud(avatarType, avatarEmoji, avatarText) {
     try {
       const { cloudLoggedIn, cloudUserInfo } = this.data;
-      if (cloudLoggedIn && cloudUserInfo && cloudUserInfo.userId) {
-        // 调用云函数更新头像信息
-        const result = await wx.cloud.callFunction({
-          name: 'userLogin',
-          data: {
-            action: 'updateAvatar',
-            userId: cloudUserInfo.userId,
-            avatarType: avatarType,
-            avatarEmoji: avatarEmoji,
-            avatarText: avatarText
-          }
+      const updatedUserInfo = await this.avatarManager.syncAvatarToCloud(avatarType, avatarEmoji, avatarText, cloudLoggedIn, cloudUserInfo);
+      if (updatedUserInfo) {
+        this.setData({
+          cloudUserInfo: updatedUserInfo
         });
-        
-        if (result.result.success) {
-          // 更新本地存储的用户信息
-          const updatedUserInfo = {
-            ...cloudUserInfo,
-            avatarType: avatarType,
-            avatarEmoji: avatarEmoji,
-            avatarText: avatarText
-          };
-          wx.setStorageSync('cloudUserInfo', updatedUserInfo);
-          this.setData({
-            cloudUserInfo: updatedUserInfo
-          });
-        }
       }
     } catch (e) {
       console.error('同步头像信息到云端失败', e);
@@ -2441,8 +789,8 @@ Page({
       return;
     }
     
-    // 保存配置到本地存储
-    wx.setStorageSync('webdavConfig', this.data.webdavConfig);
+    // 保存配置到WebDAV管理器
+    this.webDAVManager.saveWebDAVConfig(this.data.webdavConfig);
     
     // 关闭弹窗
     this.hideWebDAVModal();
@@ -2455,116 +803,9 @@ Page({
   
   // 测试WebDAV连接
   testWebDAVConnection() {
-    const { url, username, password } = this.data.webdavConfig;
-    
-    if (!url || !username || !password) {
-      wx.showToast({
-        title: '请先填写完整的服务器信息',
-        icon: 'none'
-      });
-      return;
-    }
-    
-    // 验证URL格式
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      wx.showToast({
-        title: 'URL格式错误，请包含http://或https://',
-        icon: 'none'
-      });
-      return;
-    }
-    
-    wx.showLoading({
-      title: '测试连接中...'
-    });
-    
-    try {
-      // 生成测试文件内容
-      const testContent = JSON.stringify({
-        test: true,
-        timestamp: new Date().toISOString(),
-        message: 'WebDAV连接测试文件'
-      }, null, 2);
-      
-      // 生成测试文件名
-      const testFileName = `webdav_test_${Date.now()}.json`;
-      const testFilePath = `${wx.env.USER_DATA_PATH}/${testFileName}`;
-      const fs = wx.getFileSystemManager();
-      
-      // 写入测试文件
-      fs.writeFile({
-        filePath: testFilePath,
-        data: testContent,
-        encoding: 'utf8',
-        success: () => {
-          // 生成固定的测试文件夹名
-          let folder = this.data.webdavConfig.folder;
-          if (!folder) {
-            const user = this.data.username || '未命名用户';
-            folder = `${user}排班备份`;
-          }
-          
-          // 上传测试文件到WebDAV
-          this.uploadToWebDAV(testFilePath, testFileName, url, username, password, folder).then(() => {
-            // 上传成功后，检查文件是否存在
-            this.checkWebDAVFileExists(url, username, password, folder, testFileName).then((exists) => {
-              if (exists) {
-                // 文件存在，连接成功
-                // 删除测试文件
-                this.deleteWebDAVFile(url, username, password, folder, testFileName);
-                // 删除本地测试文件
-                fs.unlinkSync(testFilePath);
-                wx.hideLoading();
-                wx.showToast({
-                  title: '连接成功',
-                  icon: 'success'
-                });
-              } else {
-                // 文件不存在，连接失败
-                fs.unlinkSync(testFilePath);
-                wx.hideLoading();
-                wx.showToast({
-                  title: '连接失败：无法验证文件上传',
-                  icon: 'none'
-                });
-              }
-            }).catch((err) => {
-              console.error('检查测试文件失败', err);
-              fs.unlinkSync(testFilePath);
-              wx.hideLoading();
-              wx.showToast({
-                title: '连接失败：无法验证文件上传',
-                icon: 'none'
-              });
-            });
-          }).catch((err) => {
-            console.error('上传测试文件失败', err);
-            fs.unlinkSync(testFilePath);
-            wx.hideLoading();
-            wx.showToast({
-              title: '连接失败：无法上传测试文件',
-              icon: 'none'
-            });
-          });
-        },
-        fail: (err) => {
-          console.error('创建测试文件失败', err);
-          wx.hideLoading();
-          wx.showToast({
-            title: '连接失败：无法创建测试文件',
-            icon: 'none'
-          });
-        }
-      });
-    } catch (e) {
-      console.error('测试连接失败', e);
-      wx.hideLoading();
-      wx.showToast({
-        title: '连接失败：测试过程中出现错误',
-        icon: 'none'
-      });
-    }
+    this.webDAVManager.testWebDAVConnection();
   },
+
   
   // 检查WebDAV服务器上文件是否存在
   checkWebDAVFileExists(url, username, password, folder, fileName) {
