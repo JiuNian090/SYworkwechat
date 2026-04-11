@@ -5,7 +5,7 @@
     <view class="header-bg"></view>
     <view class="header-content">
       <view class="header-user-info">
-        <view class="header-avatar-wrapper" bindtap="showEmojiModal">
+        <view class="header-avatar-wrapper" bindtap="showCloudLoginOrRegisterModal">
           <view class="header-avatar">
             <text class="header-avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
             <text class="header-avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
@@ -15,7 +15,7 @@
         <view class="header-user-details">
           <text class="header-username" bindtap="showCloudLoginOrRegisterModal">{{username || '点击登录云账号'}}</text>
           <text class="header-user-status {{avatarType === 'emoji' && emojiEmotion ? 'emotion-' + emojiEmotion : ''}}" wx:if="{{avatarType === 'emoji' && emojiText}}">{{emojiText}}</text>
-          <text class="header-user-status" wx:else>点击头像更换表情</text>
+          <text class="header-user-status" wx:else>点击头像进入用户管理</text>
         </view>
       </view>
     </view>

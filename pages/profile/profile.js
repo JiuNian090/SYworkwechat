@@ -331,6 +331,13 @@ class CloudManager {
         }
       }
       
+      // 获取头像信息
+      const avatarInfo = {
+        avatarType: wx.getStorageSync('avatarType') || 'text',
+        avatarEmoji: wx.getStorageSync('avatarEmoji') || '',
+        username: wx.getStorageSync('username') || ''
+      };
+      
       // 4. 调用云函数备份数据（云函数会对比差异，只更新有变化的数据）
       const backupResult = await wx.cloud.callFunction({
         name: 'backupRestore',
@@ -342,6 +349,7 @@ class CloudManager {
             shifts: localData.shifts.data,
             images: uploadedImages,
             imageWeekRelation: validImageWeekRelation,
+            avatarInfo: avatarInfo,
             backupIndex: {}
           }
         }
@@ -460,6 +468,18 @@ class CloudManager {
       }
       if (backupData.shifts) {
         wx.setStorageSync('shifts', backupData.shifts);
+      }
+      // 恢复头像信息
+      if (backupData.avatarInfo) {
+        if (backupData.avatarInfo.avatarType) {
+          wx.setStorageSync('avatarType', backupData.avatarInfo.avatarType);
+        }
+        if (backupData.avatarInfo.avatarEmoji) {
+          wx.setStorageSync('avatarEmoji', backupData.avatarInfo.avatarEmoji);
+        }
+        if (backupData.avatarInfo.username) {
+          wx.setStorageSync('username', backupData.avatarInfo.username);
+        }
       }
       
       // 4. 恢复图片（完全替换）
@@ -4789,7 +4809,10 @@ Page({
         }
       },
       fail: (err) => {
-        console.error('showActionSheet 失败:', err);
+        // 用户取消操作是正常行为，不视为错误
+        if (err.errMsg !== 'showActionSheet:fail cancel') {
+          console.error('showActionSheet 失败:', err);
+        }
       }
     });
   },
