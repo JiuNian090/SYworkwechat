@@ -161,7 +161,7 @@ page {
 }
 
 .add-template-btn {
-  background: #07c160 !important;
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%) !important;
   color: #fff !important;
   font-size: 28rpx;
   border-radius: 30rpx;
