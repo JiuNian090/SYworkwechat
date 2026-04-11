@@ -62,6 +62,20 @@ App({
     }
   },
   
+  // 清除登录信息
+  clearLoginInfo() {
+    try {
+      wx.removeStorageSync('cloudUserId');
+      wx.removeStorageSync('cloudUserInfo');
+      wx.removeStorageSync('avatarType');
+      wx.removeStorageSync('avatarEmoji');
+      wx.removeStorageSync('username');
+      console.log('本地登录信息已清除');
+    } catch (e) {
+      console.error('清除登录信息失败:', e);
+    }
+  },
+
   // 自动同步云端用户信息
   async syncUserInfoFromCloud() {
     try {
@@ -112,9 +126,13 @@ App({
         console.log('云端用户信息同步成功');
       } else {
         console.log('获取云端用户信息失败:', result.result.errMsg);
+        // 如果获取用户信息失败，清除本地登录信息
+        this.clearLoginInfo();
       }
     } catch (e) {
       console.error('同步云端用户信息失败:', e);
+      // 同步失败也清除本地登录信息
+      this.clearLoginInfo();
     }
   },
 

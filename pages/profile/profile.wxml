@@ -213,57 +213,7 @@
     </view>
   </view>
 
-  <!-- 表情选择弹窗 -->
-  <view class="modal-mask {{showEmojiModal ? 'show' : ''}}" wx:if="{{showEmojiModal}}" bindtap="hideEmojiModal"></view>
-  <view class="modal-container emoji-modal {{showEmojiModal ? 'show' : ''}}" wx:if="{{showEmojiModal}}">
-    <view class="modal-header">
-      <text class="modal-title">选择表情头像</text>
-      <view class="modal-close" bindtap="hideEmojiModal">
-        <text class="close-icon">×</text>
-      </view>
-    </view>
-    <view class="modal-body">
-      <!-- 表情分类标签 -->
-      <view class="emoji-tabs-container">
-        <view class="emoji-tabs">
-          <view 
-            class="emoji-tab-item {{currentEmojiCategory === item.id ? 'active' : ''}}" 
-            wx:for="{{emojiCategories}}" 
-            wx:key="id"
-            bindtap="switchEmojiCategory" 
-            data-category="{{item.id}}"
-          >
-            <text class="emoji-tab-icon">{{item.icon}}</text>
-            <text class="emoji-tab-name">{{item.name}}</text>
-          </view>
-        </view>
-      </view>
-      <!-- 表情网格 -->
-      <scroll-view class="emoji-scroll" scroll-y="true">
-        <view class="emoji-grid">
-          <view 
-            class="emoji-item {{selectedEmoji === item ? 'selected' : ''}}" 
-            wx:for="{{currentCategoryEmojis}}" 
-            wx:key="index"
-            bindtap="selectEmoji" 
-            data-emoji="{{item}}"
-          >
-            <text class="emoji-char">{{item}}</text>
-          </view>
-        </view>
-      </scroll-view>
-      <!-- 表情预览 -->
-      <view class="emoji-preview" wx:if="{{selectedEmoji}}">
-        <text class="preview-label">已选择：</text>
-        <text class="preview-emoji">{{selectedEmoji}}</text>
-        <text class="preview-text">{{emojiTextMap[selectedEmoji]}}</text>
-      </view>
-    </view>
-    <view class="modal-footer">
-      <button class="modal-btn btn-cancel" bindtap="hideEmojiModal">取消</button>
-      <button class="modal-btn btn-confirm" bindtap="confirmEmoji">确定</button>
-    </view>
-  </view>
+
 
   <!-- 数据类型选择弹窗 -->
   <view class="modal-mask {{showDataTypeModal ? 'show' : ''}}" wx:if="{{showDataTypeModal}}" bindtap="hideDataTypeModal"></view>
@@ -394,7 +344,8 @@
       </view>
       <text class="modal-title">{{currentUserPage === 'main' ? '用户管理' : 
         (currentUserPage === 'updateNickname' ? '修改昵称' : 
-        (currentUserPage === 'updatePassword' ? '修改密码' : '删除账户'))}}</text>
+        (currentUserPage === 'updatePassword' ? '修改密码' : 
+        (currentUserPage === 'avatar' ? '选择头像' : '删除账户')))}}</text>
       <view class="modal-close" bindtap="hideUserManagementModal">
         <text class="close-icon">×</text>
       </view>
@@ -414,6 +365,10 @@
             </view>
           </view>
           <view class="user-info-divider"></view>
+          <view class="user-info-item">
+            <text class="info-label">账号</text>
+            <text class="info-value">{{cloudUserInfo.account}}</text>
+          </view>
           <view class="user-info-item" bindtap="switchUserPage" data-page="avatar">
             <text class="info-label">头像</text>
             <view class="info-value-row">
@@ -427,10 +382,6 @@
               <text class="info-value">{{cloudUserInfo.nickname || cloudUserInfo.account}}</text>
               <text class="arrow-icon">›</text>
             </view>
-          </view>
-          <view class="user-info-item">
-            <text class="info-label">账号</text>
-            <text class="info-value">{{cloudUserInfo.account}}</text>
           </view>
           <view class="user-info-item" bindtap="switchUserPage" data-page="updatePassword">
             <text class="info-label">密码</text>
@@ -481,6 +432,45 @@
           <input class="form-input" type="password" placeholder="请输入密码" value="{{deleteAccountPassword}}" bindinput="onDeleteAccountPasswordInput" />
         </view>
       </view>
+      
+      <!-- 表情选择页面 -->
+      <view class="user-page user-page-emoji-select" wx:if="{{currentUserPage === 'avatar'}}">
+        <!-- 表情分类标签 -->
+        <view class="emoji-tabs-container">
+          <view class="emoji-tabs">
+            <view 
+              class="emoji-tab-item {{currentEmojiCategory === item.id ? 'active' : ''}}" 
+              wx:for="{{emojiCategories}}" 
+              wx:key="id"
+              bindtap="switchEmojiCategory" 
+              data-category="{{item.id}}"
+            >
+              <text class="emoji-tab-icon">{{item.icon}}</text>
+              <text class="emoji-tab-name">{{item.name}}</text>
+            </view>
+          </view>
+        </view>
+        <!-- 表情网格 -->
+        <scroll-view class="emoji-scroll" scroll-y="true">
+          <view class="emoji-grid">
+            <view 
+              class="emoji-item {{selectedEmoji === item ? 'selected' : ''}}" 
+              wx:for="{{currentCategoryEmojis}}" 
+              wx:key="index"
+              bindtap="selectEmoji" 
+              data-emoji="{{item}}"
+            >
+              <text class="emoji-char">{{item}}</text>
+            </view>
+          </view>
+        </scroll-view>
+        <!-- 表情预览 -->
+        <view class="emoji-preview" wx:if="{{selectedEmoji}}">
+          <text class="preview-label">已选择：</text>
+          <text class="preview-emoji">{{selectedEmoji}}</text>
+          <text class="preview-text">{{emojiTextMap[selectedEmoji]}}</text>
+        </view>
+      </view>
     </view>
     <view class="modal-footer">
       <!-- 主页面按钮 -->
@@ -505,6 +495,12 @@
       <view wx:if="{{currentUserPage === 'deleteAccount'}}">
         <button class="modal-btn btn-cancel" bindtap="goBackToUserManagement">取消</button>
         <button class="modal-btn btn-delete-confirm" bindtap="confirmDeleteAccount">确认删除</button>
+      </view>
+      
+      <!-- 表情选择页面按钮 -->
+      <view wx:if="{{currentUserPage === 'avatar'}}">
+        <button class="modal-btn btn-cancel" bindtap="goBackToUserManagement">取消</button>
+        <button class="modal-btn btn-confirm" bindtap="confirmEmoji">确定</button>
       </view>
     </view>
   </view>

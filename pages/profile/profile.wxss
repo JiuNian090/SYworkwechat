@@ -961,7 +961,7 @@ page {
 .modal-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 28rpx;
   border-bottom: 2rpx solid var(--border-color);
   position: relative;
@@ -976,12 +976,17 @@ page {
 }
 
 .back-icon {
-  font-size: 48rpx;
+  font-size: 32rpx;
   color: var(--text-primary);
   line-height: 1;
-  padding: 8rpx;
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  background-color: transparent;
 }
 
 .back-icon:active {
@@ -992,6 +997,10 @@ page {
   font-size: 32rpx;
   font-weight: 600;
   color: var(--text-primary);
+  flex: 1;
+  text-align: left;
+  padding-left: 72rpx;
+  padding-right: 48rpx;
 }
 
 .modal-close {
@@ -1043,6 +1052,15 @@ page {
 
 .modal-body {
   padding: 28rpx;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 用户管理弹窗的body需要特殊处理 */
+.user-management-modal .modal-body {
+  max-height: 60vh;
+  overflow: hidden;
 }
 
 .modal-footer {
@@ -1223,9 +1241,9 @@ page {
 
 .emoji-modal .modal-container {
   z-index: 1001 !important;
-  width: 90vw !important;
-  max-width: 650rpx !important;
-  max-height: 90vh !important;
+  width: 80vw !important;
+  max-width: 550rpx !important;
+  max-height: 80vh !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1313,17 +1331,17 @@ page {
   padding: 0;
   min-height: 0;
   box-sizing: border-box;
-  max-height: 55vh;
   border-radius: 12rpx;
   background: #f7f7f7;
   padding: 20rpx;
+  max-height: 400rpx;
 }
 
 .emoji-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16rpx;
-  padding-bottom: 16rpx;
+  gap: 12rpx;
+  padding-bottom: 12rpx;
 }
 
 .emoji-item {
@@ -1332,7 +1350,7 @@ page {
   align-items: center;
   justify-content: center;
   background: #f7f7f7;
-  border-radius: 12rpx;
+  border-radius: 10rpx;
   transition: all 0.2s ease;
 }
 
@@ -1343,11 +1361,11 @@ page {
 
 .emoji-item.selected {
   background: #e8f7ef;
-  border: 3rpx solid #07C160;
+  border: 2rpx solid #07C160;
 }
 
 .emoji-char {
-  font-size: 40rpx;
+  font-size: 36rpx;
   line-height: 1;
 }
 
@@ -1355,26 +1373,26 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
-  padding: 16rpx;
+  gap: 10rpx;
+  padding: 12rpx;
   background: #f7f7f7;
-  border-radius: 12rpx;
-  margin-top: 20rpx;
+  border-radius: 10rpx;
+  margin-top: 16rpx;
   flex-shrink: 0;
   box-sizing: border-box;
 }
 
 .preview-label {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #999;
 }
 
 .preview-emoji {
-  font-size: 44rpx;
+  font-size: 36rpx;
 }
 
 .preview-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #333;
   font-weight: 500;
 }
@@ -1586,8 +1604,16 @@ page {
 /* 其他页面样式 */
 .user-page-update-nickname,
 .user-page-update-password,
-.user-page-delete-account {
+.user-page-delete-account,
+.user-page-emoji-select {
   width: 100%;
+}
+
+.user-page-emoji-select {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
 }
 
 .user-info-section {
@@ -1631,25 +1657,40 @@ page {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 12rpx;
+  justify-content: center;
 }
 
 .user-nickname {
   font-size: 36rpx;
   font-weight: 600;
   color: var(--text-primary);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-account {
-  font-size: 28rpx;
-  color: var(--text-secondary);
-  margin-top: 4rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-status {
-  font-size: 26rpx;
+  font-size: 22rpx;
   color: var(--primary-dark);
   font-weight: 500;
+  line-height: 1.2;
+  background-color: rgba(16, 185, 129, 0.1);
+  padding: 2rpx 12rpx;
+  border-radius: 12rpx;
+  align-self: flex-start;
+  margin-top: 4rpx;
 }
 
 .user-info-divider {
