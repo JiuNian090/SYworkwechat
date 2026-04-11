@@ -2162,11 +2162,13 @@ Page({
   },
   
   onShow() {
-    // 页面显示时重新解析更新日志，确保内容同步
+    // 页面显示时只在更新日志发生变化时重新解析
     const changelog = this.parseChangelog();
-    this.setData({
-      changelog: changelog
-    });
+    if (JSON.stringify(changelog) !== JSON.stringify(this.data.changelog)) {
+      this.setData({
+        changelog: changelog
+      });
+    }
   },
   
   onShareTimeline() {

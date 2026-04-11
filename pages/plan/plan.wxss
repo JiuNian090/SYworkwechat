@@ -38,6 +38,8 @@ page {
 .container {
   min-height: 100vh;
   padding-bottom: 40rpx;
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 
 /* 页面标题区 - 与profile页面头像标题区一致 */
@@ -49,6 +51,9 @@ page {
   border-bottom: 2rpx solid var(--border-color);
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   border-radius: 24rpx;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease-in-out;
 }
 
 .header-content {

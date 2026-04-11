@@ -75,7 +75,7 @@ Page({
   },
 
   onShow() {
-    // 页面显示时重新加载班次模板和排班数据，确保数据同步
+    // 页面显示时只更新必要的数据，减少重复加载
     // 读取自定义每周标准工时
     const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
     // 读取用户头像信息
@@ -85,23 +85,43 @@ Page({
     // 生成头像文字
     const avatarText = username ? username.charAt(0).toUpperCase() : '用';
     
-    this.setData({
-      customWeeklyHours: customWeeklyHours,
-      // 更新用户头像信息
-      avatarType: avatarType,
-      avatarEmoji: avatarEmoji,
-      avatarText: avatarText
-    });
-    this.loadShiftTemplates();
-    this.loadShifts();
-    this.generateWeekDates();
-    this.generateMonthDates();
+    // 只有当数据发生变化时才更新，减少不必要的setData
+    if (customWeeklyHours !== this.data.customWeeklyHours || 
+        avatarType !== this.data.avatarType || 
+        avatarEmoji !== this.data.avatarEmoji || 
+        avatarText !== this.data.avatarText) {
+      this.setData({
+        customWeeklyHours: customWeeklyHours,
+        // 更新用户头像信息
+        avatarType: avatarType,
+        avatarEmoji: avatarEmoji,
+        avatarText: avatarText
+      });
+    }
+    
+    // 只在必要时重新加载数据
+    const shifts = wx.getStorageSync('shifts') || {};
+    const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+    
+    if (JSON.stringify(shifts) !== JSON.stringify(this.data.shifts) || 
+        JSON.stringify(shiftTemplates) !== JSON.stringify(this.data.shiftTemplates)) {
+      this.setData({
+        shifts: shifts,
+        shiftTemplates: shiftTemplates
+      });
+      // 重新生成日期数据
+      this.generateWeekDates();
+      this.generateMonthDates();
+    }
+    
     // 确保在onShow中也正确初始化当前月份的判断
     const currentDate = new Date(this.data.currentDate);
     const isCurrentMonth = this.isCurrentMonth(currentDate);
-    this.setData({
-      isCurrentMonth: isCurrentMonth
-    });
+    if (isCurrentMonth !== this.data.isCurrentMonth) {
+      this.setData({
+        isCurrentMonth: isCurrentMonth
+      });
+    }
     
     // 加载本周图片
     this.loadWeekImages();

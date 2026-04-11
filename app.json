@@ -10,7 +10,9 @@
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",
     "navigationBarTitleText": "SYwork",
-    "navigationBarTextStyle": "black"
+    "navigationBarTextStyle": "black",
+    "animationDuration": 300,
+    "animationTimingFunction": "ease-in-out"
   },
   "tabBar": {
     "color": "#000000",
