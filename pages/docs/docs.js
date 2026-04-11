@@ -6,9 +6,7 @@ Page({
    */
   data: {
     scrollToId: '',
-    activeSection: '',
-    showBackToTop: false,
-    isNavFixed: false
+    activeSection: ''
   },
 
   /**
@@ -95,47 +93,16 @@ Page({
    */
   onPageScroll(e) {
     const scrollTop = e.scrollTop;
-    
-    // 控制返回顶部按钮显示/隐藏
-    this.setData({
-      showBackToTop: scrollTop > 400
-    });
-
-    // 控制导航栏固定/不固定
-    this.updateNavFixedState(scrollTop);
 
     // 更新当前活跃的区块
     this.updateActiveSection(scrollTop);
   },
 
   /**
-   * 更新导航栏固定状态
-   */
-  updateNavFixedState(scrollTop) {
-    if (!this.navTop) {
-      // 首次获取导航栏位置
-      this.getNavPosition();
-      return;
-    }
-
-    // 当滚动距离超过导航栏顶部位置时，固定导航栏
-    const shouldFix = scrollTop > this.navTop;
-    if (this.data.isNavFixed !== shouldFix) {
-      this.setData({ isNavFixed: shouldFix });
-    }
-  },
-
-  /**
    * 获取导航栏位置信息
    */
   getNavPosition() {
-    const query = wx.createSelectorQuery();
-    query.select('.weui-navbar').boundingClientRect();
-    query.exec((res) => {
-      if (res && res[0]) {
-        this.navTop = res[0].top;
-      }
-    });
+    // 导航栏固定在底部，不需要获取位置信息
   },
 
   /**
@@ -297,16 +264,14 @@ Page({
   scrollToTarget(targetId) {
     const query = wx.createSelectorQuery();
     query.select('#' + targetId).boundingClientRect();
-    query.select('.weui-navbar').boundingClientRect();
     query.selectViewport().scrollOffset();
     query.exec((res) => {
-      if (res[0] && res[1] && res[2]) {
+      if (res[0] && res[1]) {
         const rect = res[0];
-        const navRect = res[1];
-        const scrollOffset = res[2];
-        // 计算需要滚动的位置，使板块顶部（包括标题）完全显示在导航栏下方
-        // 在板块上边界与导航栏下边界之间留一点空隙
-        const scrollTop = scrollOffset.scrollTop + rect.top - (navRect.top + navRect.height + 40);
+        const scrollOffset = res[1];
+        // 计算需要滚动的位置，使板块顶部（包括标题）完全显示
+        // 留一点顶部空隙
+        const scrollTop = scrollOffset.scrollTop + rect.top - 80;
         wx.pageScrollTo({
           scrollTop: scrollTop > 0 ? scrollTop : 0,
           duration: 300,
@@ -321,23 +286,7 @@ Page({
     });
   },
 
-  /**
-   * 返回顶部
-   */
-  backToTop() {
-    wx.pageScrollTo({
-      scrollTop: 0,
-      duration: 300,
-      success: () => {
-        // 滚动完成后，更新活跃区块为第一个
-        setTimeout(() => {
-          this.setData({ activeSection: 'about' });
-          // 重新计算区块位置
-          this.updateSectionRects();
-        }, 350);
-      }
-    });
-  },
+
 
   /**
    * 预览图片

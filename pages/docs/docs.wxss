@@ -56,67 +56,27 @@ page {
   text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
 }
 
-/* ========== WeUI导航栏样式 ========== */
-.weui-navbar {
-  background: var(--card-bg);
-  margin: 30rpx 24rpx 24rpx;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  position: relative;
-  z-index: 2;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-.weui-navbar.fixed {
+/* ========== 底部导航栏样式 - 微信小程序官方风格 ========== */
+.bottom-nav {
   position: fixed;
-  top: 5rpx;
-  left: 24rpx;
-  right: 24rpx;
-  margin: 0;
-  z-index: 100;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
-  border-radius: var(--radius-lg);
-}
-
-/* 为固定导航添加顶部安全区域适配 */
-.weui-navbar.fixed::before {
-  content: '';
-  position: absolute;
-  top: -5rpx;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: calc(5rpx + env(safe-area-inset-top));
-  background: transparent;
+  background: var(--card-bg);
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+  border-top: 2rpx solid var(--border-color);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-.weui-navbar.fixed .weui-navbar__content {
-  padding-top: env(safe-area-inset-top);
-}
-
-.weui-navbar__wrapper {
-  padding: 16rpx 24rpx;
-  border-bottom: 2rpx solid var(--border-color);
-}
-
-.weui-navbar__title {
-  font-size: 24rpx;
-  color: var(--text-secondary);
-  font-weight: 500;
-  text-align: center;
-}
-
-.weui-navbar__content {
-  padding: 16rpx 24rpx;
-}
-
-.weui-tabbar {
+.nav-tabs {
   display: flex;
   justify-content: space-between;
   gap: 16rpx;
+  padding: 16rpx 24rpx;
 }
 
-.weui-tabbar__item {
+.nav-tab {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -124,34 +84,42 @@ page {
   padding: 16rpx 12rpx;
   border-radius: var(--radius-md);
   transition: all 0.3s ease;
+  position: relative;
 }
 
-.weui-tabbar__item:active {
+.nav-tab:active {
   background: var(--bg-color);
+  transform: scale(0.98);
 }
 
-.weui-tabbar__item--active {
+.nav-tab.active {
   color: var(--primary-color);
+  background: var(--primary-light);
 }
 
-.weui-tabbar__icon {
+/* 移除激活状态的绿色条 */
+
+.nav-tab-icon {
+  font-size: 40rpx;
   margin-bottom: 8rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.3s ease;
 }
 
-.nav-icon {
-  font-size: 40rpx;
+.nav-tab.active .nav-tab-icon {
+  transform: scale(1.1);
 }
 
-.weui-tabbar__label {
+.nav-tab-label {
   font-size: 22rpx;
   color: var(--text-color);
   font-weight: 500;
+  transition: all 0.3s ease;
 }
 
-.weui-tabbar__item--active .weui-tabbar__label {
+.nav-tab.active .nav-tab-label {
   color: var(--primary-color);
   font-weight: 600;
 }
@@ -159,6 +127,7 @@ page {
 /* ========== 内容区域 ========== */
 .content {
   padding: 0 24rpx;
+  padding-bottom: 160rpx; /* 为底部导航栏留出空间 */
 }
 
 /* ========== 区块卡片 ========== */
@@ -488,41 +457,7 @@ page {
   flex: 1;
 }
 
-/* ========== 返回顶部按钮 ========== */
-.back-to-top {
-  position: fixed;
-  right: 32rpx;
-  bottom: 48rpx;
-  width: 88rpx;
-  height: 88rpx;
-  background: var(--card-bg);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
-  opacity: 0;
-  transform: translateY(20rpx);
-  transition: all 0.3s ease;
-  z-index: 100;
-  border: 2rpx solid var(--border-color);
-}
 
-.back-to-top.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.back-to-top:active {
-  transform: scale(0.9);
-  background: var(--bg-color);
-}
-
-.back-to-top-icon {
-  font-size: 40rpx;
-  color: var(--primary-color);
-  font-weight: bold;
-}
 
 /* ========== 响应式适配 ========== */
 @media (max-width: 375px) {

@@ -6,41 +6,6 @@
     <view class="nav-subtitle">快速了解排班助手功能</view>
   </view>
 
-  <!-- 快速导航 - WeUI样式 -->
-  <view class="weui-navbar {{isNavFixed ? 'fixed' : ''}}">
-    <view class="weui-navbar__wrapper">
-      <view class="weui-navbar__title">快速跳转</view>
-    </view>
-    <view class="weui-navbar__content">
-      <view class="weui-tabbar">
-        <view class="weui-tabbar__item {{activeSection === 'about' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-about">
-          <view class="weui-tabbar__icon">
-            <text class="nav-icon">📖</text>
-          </view>
-          <view class="weui-tabbar__label">使用方法</view>
-        </view>
-        <view class="weui-tabbar__item {{activeSection === 'statistics' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
-          <view class="weui-tabbar__icon">
-            <text class="nav-icon">📈</text>
-          </view>
-          <view class="weui-tabbar__label">统计报表</view>
-        </view>
-        <view class="weui-tabbar__item {{activeSection === 'cloud' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-cloud">
-          <view class="weui-tabbar__icon">
-            <text class="nav-icon">☁️</text>
-          </view>
-          <view class="weui-tabbar__label">云备份</view>
-        </view>
-        <view class="weui-tabbar__item {{activeSection === 'data' ? 'weui-tabbar__item--active' : ''}}" bindtap="scrollToSection" data-id="section-data">
-          <view class="weui-tabbar__icon">
-            <text class="nav-icon">📊</text>
-          </view>
-          <view class="weui-tabbar__label">数据管理</view>
-        </view>
-      </view>
-    </view>
-  </view>
-
   <view class="content">
     <!-- 使用方法 -->
     <view class="section about-section {{activeSection === 'about' ? 'highlight' : ''}}" id="section-about">
@@ -180,7 +145,7 @@
             <view class="step-number">02</view>
             <view class="step-content">
               <text class="step-title">账号管理</text>
-              <text class="step-desc"> - 注册后，会自动登录，弹出用户管理界面，点击头像旁的昵称也可以打开用户管理界面
+              <text class="step-desc"> - 注册后，会自动登录，弹出用户管理界面，点击头像或者昵称也可以打开用户管理界面
                - 用户管理界面可以选择退出账号，修改昵称，修改密码，删除账号（若是共享账号，谨慎操作！）</text>
             </view>
           </view>
@@ -189,7 +154,7 @@
             <view class="step-number">03</view>
             <view class="step-content">
               <text class="step-title">多设备使用</text>
-              <text class="step-desc"> - 在其他设备上打开此小程序，登录同一账号即可自动同步所有数据，包括排班、模板和图片
+              <text class="step-desc"> - 在其他设备上打开此小程序，登录同一账号即可手动同步所有数据，包括排班、模板和图片
                - 账号主在本地填写好数据后，点击备份到云端，共享人可以点击恢复，恢复数据到本地</text>
             </view>
           </view>
@@ -262,8 +227,27 @@
     </view>
   </view>
 
-  <!-- 返回顶部按钮 -->
-  <view class="back-to-top {{showBackToTop ? 'visible' : ''}}" bindtap="backToTop">
-    <text class="back-to-top-icon">↑</text>
+  <!-- 底部导航栏 - 微信小程序官方样式 -->
+  <view class="bottom-nav">
+    <view class="nav-tabs">
+      <view class="nav-tab {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
+        <text class="nav-tab-icon">📖</text>
+        <text class="nav-tab-label">使用方法</text>
+      </view>
+      <view class="nav-tab {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
+        <text class="nav-tab-icon">📈</text>
+        <text class="nav-tab-label">统计报表</text>
+      </view>
+      <view class="nav-tab {{activeSection === 'cloud' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-cloud">
+        <text class="nav-tab-icon">☁️</text>
+        <text class="nav-tab-label">云备份</text>
+      </view>
+      <view class="nav-tab {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
+        <text class="nav-tab-icon">📊</text>
+        <text class="nav-tab-label">数据管理</text>
+      </view>
+    </view>
   </view>
+
+
 </view>
