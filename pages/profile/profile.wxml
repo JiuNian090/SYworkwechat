@@ -67,7 +67,7 @@
   <!-- 云备份区块 -->
   <view class="section">
     <view class="section-header">
-      <view class="section-icon webdav-icon">
+      <view class="section-icon cloud-icon">
         <text class="icon-text">☁️</text>
       </view>
       <text class="section-title">云备份</text>
