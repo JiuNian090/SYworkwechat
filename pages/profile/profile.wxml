@@ -364,7 +364,6 @@
               <text class="user-status">已登录</text>
             </view>
           </view>
-          <view class="user-info-divider"></view>
           <view class="user-info-item">
             <text class="info-label">账号</text>
             <text class="info-value">{{cloudUserInfo.account}}</text>

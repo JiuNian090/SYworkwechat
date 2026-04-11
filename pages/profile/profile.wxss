@@ -1624,9 +1624,11 @@ page {
   display: flex;
   align-items: center;
   gap: 24rpx;
-  padding: 28rpx;
+  padding: 36rpx;
   background: linear-gradient(135deg, var(--primary-light) 0%, #f0fff4 100%);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--radius-lg);
+  margin: 0 28rpx 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 .user-avatar {
