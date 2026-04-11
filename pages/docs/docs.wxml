@@ -1,9 +1,11 @@
 <!-- pages/docs/docs.wxml -->
 <view class="container">
-  <!-- 顶部导航栏 -->
-  <view class="nav-header">
-    <view class="nav-title">使用说明</view>
-    <view class="nav-subtitle">快速了解排班助手功能</view>
+  <!-- 页面标题区 -->
+  <view class="page-header">
+    <view class="header-content">
+      <text class="header-title">📖 使用说明</text>
+      <text class="header-subtitle">快速了解排班助手功能</text>
+    </view>
   </view>
 
   <view class="content">
