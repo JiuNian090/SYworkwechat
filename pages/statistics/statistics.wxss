@@ -27,11 +27,11 @@ page {
   padding-bottom: 40rpx;
 }
 
-/* 页面标题区 - WeUI样式 */
+/* 页面标题区 - 与profile页面头像标题区一致 */
 .page-header {
   position: relative;
   margin: 30rpx 30rpx 30rpx;
-  padding: 60rpx 30rpx 60rpx;
+  padding: 71rpx 30rpx 71rpx;
   background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
   border-bottom: 2rpx solid var(--border-color);
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
