@@ -1329,7 +1329,8 @@ Page({
               const imageName = image.name || `image_${index}.jpg`;
               const imagePath = `image/${yearMonth}/${imageName}`;
               imageWeekRelation[key].push({ name: imageName, path: imagePath });
-        });
+            });
+          });
           
           // 添加图片周关联表.json文件
           zip.file('图片周关联表.json', JSON.stringify(imageWeekRelation, null, 2));
@@ -1385,7 +1386,6 @@ Page({
               icon: 'none'
             });
           });
-        });
         });
       } else {
         // 如果不需要导出图片，直接生成ZIP文件
