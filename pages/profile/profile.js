@@ -4085,136 +4085,177 @@ Page({
             }
           } else {
             // 处理图片文件
-            file.async('arraybuffer').then((content) => {
-              // 完整的图片路径
-              const fullImagePath = `${basePath}${relativePath}`;
-              
-              // 尝试从图片周关联表中查找对应的周存储
-              let weekImageKey = null;
-              let imageName = null;
-              
-              // 遍历图片周关联表，查找匹配的图片路径
-              Object.keys(imageWeekRelation).forEach(key => {
-                const images = imageWeekRelation[key] || [];
-                for (const img of images) {
-                  if (img.path === fullImagePath) {
-                    weekImageKey = key;
-                    imageName = img.name;
-                    return;
+            const promise = file.async('arraybuffer').then((content) => {
+              return new Promise((resolveImage) => {
+                // 完整的图片路径
+                const fullImagePath = `${basePath}${relativePath}`;
+                
+                // 尝试从图片周关联表中查找对应的周存储
+                let weekImageKey = null;
+                let imageName = null;
+                
+                // 遍历图片周关联表，查找匹配的图片路径
+                Object.keys(imageWeekRelation).forEach(key => {
+                  const images = imageWeekRelation[key] || [];
+                  for (const img of images) {
+                    if (img.path === fullImagePath) {
+                      weekImageKey = key;
+                      imageName = img.name;
+                      return;
+                    }
+                  }
+                });
+                
+                if (weekImageKey && imageName) {
+                  // 使用图片周关联表中的信息恢复图片
+                  const existingImages = wx.getStorageSync(weekImageKey) || [];
+                  
+                  // 生成图片唯一标识（基于周 key、图片名和内容长度）
+                  const imageId = `${weekImageKey}_${imageName}_${content.byteLength}`;
+                  
+                  // 检查图片是否已存在
+                  const imageExists = existingImages.some(img => 
+                    img.id === imageId || 
+                    (img.name === imageName && img.path.includes(imageName))
+                  );
+                  
+                  if (!imageExists) {
+                    // 生成临时图片路径
+                    const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}.jpg`;
+                    
+                    // 写入图片文件
+                    fs.writeFile({
+                      filePath: tempPath,
+                      data: content,
+                      success: () => {
+                        // 添加新图片
+                        existingImages.push({
+                          id: imageId,
+                          name: imageName,
+                          path: tempPath,
+                          addedTime: new Date().toISOString()
+                        });
+                        
+                        // 保存图片数据
+                        wx.setStorageSync(weekImageKey, existingImages);
+                        
+                        // 同步更新到图片关联表
+                        try {
+                          const { addImageToRelation } = require('../../utils/imageRelation.js');
+                          addImageToRelation(weekImageKey, {
+                            id: imageId,
+                            name: imageName,
+                            path: tempPath,
+                            addedTime: new Date().toISOString()
+                          });
+                        } catch (e) {
+                          console.error('更新图片关联表失败', e);
+                        }
+                        
+                        resolveImage();
+                      },
+                      fail: (err) => {
+                        console.error('写入图片文件失败', err);
+                        resolveImage();
+                      }
+                    });
+                  } else {
+                    resolveImage();
+                  }
+                } else {
+                  // 兼容处理：如果没有图片周关联表，尝试从路径中提取日期信息
+                  const fileName = relativePath.split('/').pop();
+                  const pathParts = basePath.split('/').filter(Boolean);
+                  
+                  // 尝试从路径中提取年月信息（如 YYYY-MM）
+                  let yearMonth = null;
+                  if (pathParts.length > 0) {
+                    const lastPart = pathParts[pathParts.length - 1];
+                    if (/^\d{4}-\d{2}$/.test(lastPart)) {
+                      yearMonth = lastPart;
+                    }
+                  }
+                  
+                  // 直接使用文件名作为图片名
+                  const imgName = fileName;
+                  
+                  // 尝试从文件名中解析周信息（如果可能）
+                  let weekKey = 'unknown';
+                  
+                  // 如果有年月信息，尝试生成一个合理的周 key
+                  if (yearMonth) {
+                    const [year, month] = yearMonth.split('-');
+                    // 使用该月的第一天作为默认周 key
+                    weekKey = `${year}-${month}-01`;
+                  } else {
+                    // 简单处理：使用当前日期作为默认周 key
+                    const currentDate = new Date();
+                    weekKey = currentDate.toISOString().split('T')[0];
+                  }
+                  
+                  const weekImgKey = `week_images_${weekKey}`;
+                  const existingImages = wx.getStorageSync(weekImgKey) || [];
+                  
+                  // 生成图片唯一标识
+                  const imageId = `${weekImgKey}_${imgName}_${content.byteLength}`;
+                  
+                  // 检查图片是否已存在
+                  const imageExists = existingImages.some(img => 
+                    img.id === imageId || 
+                    (img.name === imgName && img.path.includes(imgName))
+                  );
+                  
+                  if (!imageExists) {
+                    // 生成临时图片路径
+                    const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}.jpg`;
+                    
+                    // 写入图片文件
+                    fs.writeFile({
+                      filePath: tempPath,
+                      data: content,
+                      success: () => {
+                        // 添加新图片
+                        existingImages.push({
+                          id: imageId,
+                          name: imgName,
+                          path: tempPath,
+                          addedTime: new Date().toISOString()
+                        });
+                        
+                        // 保存图片数据
+                        wx.setStorageSync(weekImgKey, existingImages);
+                        
+                        // 同步更新到图片关联表
+                        try {
+                          const { addImageToRelation } = require('../../utils/imageRelation.js');
+                          addImageToRelation(weekImgKey, {
+                            id: imageId,
+                            name: imgName,
+                            path: tempPath,
+                            addedTime: new Date().toISOString()
+                          });
+                        } catch (e) {
+                          console.error('更新图片关联表失败', e);
+                        }
+                        
+                        resolveImage();
+                      },
+                      fail: (err) => {
+                        console.error('写入图片文件失败', err);
+                        resolveImage();
+                      }
+                    });
+                  } else {
+                    resolveImage();
                   }
                 }
               });
-              
-              if (weekImageKey && imageName) {
-                // 使用图片周关联表中的信息恢复图片
-                const existingImages = wx.getStorageSync(weekImageKey) || [];
-                
-                // 生成图片唯一标识（基于周 key、图片名和内容长度）
-                const imageId = `${weekImageKey}_${imageName}_${content.byteLength}`;
-                
-                // 检查图片是否已存在
-                const imageExists = existingImages.some(img => 
-                  img.id === imageId || 
-                  (img.name === imageName && img.path.includes(imageName))
-                );
-                
-                if (!imageExists) {
-                  // 生成临时图片路径
-                  const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}.jpg`;
-                  
-                  // 写入图片文件
-                  fs.writeFile({
-                    filePath: tempPath,
-                    data: content,
-                    success: () => {
-                      // 添加新图片
-                      existingImages.push({
-                        id: imageId,
-                        name: imageName,
-                        path: tempPath,
-                        addedTime: new Date().toISOString()
-                      });
-                      
-                      // 保存图片数据
-                      wx.setStorageSync(weekImageKey, existingImages);
-                    },
-                    fail: (err) => {
-                      console.error('写入图片文件失败', err);
-                    }
-                  });
-                }
-              } else {
-                // 兼容处理：如果没有图片周关联表，尝试从路径中提取日期信息
-                const fileName = relativePath.split('/').pop();
-                const pathParts = basePath.split('/').filter(Boolean);
-                
-                // 尝试从路径中提取年月信息（如 YYYY-MM）
-                let yearMonth = null;
-                if (pathParts.length > 0) {
-                  const lastPart = pathParts[pathParts.length - 1];
-                  if (/^\d{4}-\d{2}$/.test(lastPart)) {
-                    yearMonth = lastPart;
-                  }
-                }
-                
-                // 直接使用文件名作为图片名
-                const imgName = fileName;
-                
-                // 尝试从文件名中解析周信息（如果可能）
-                let weekKey = 'unknown';
-                
-                // 如果有年月信息，尝试生成一个合理的周 key
-                if (yearMonth) {
-                  const [year, month] = yearMonth.split('-');
-                  // 使用该月的第一天作为默认周 key
-                  weekKey = `${year}-${month}-01`;
-                } else {
-                  // 简单处理：使用当前日期作为默认周 key
-                  const currentDate = new Date();
-                  weekKey = currentDate.toISOString().split('T')[0];
-                }
-                
-                const weekImgKey = `week_images_${weekKey}`;
-                const existingImages = wx.getStorageSync(weekImgKey) || [];
-                
-                // 生成图片唯一标识
-                const imageId = `${weekImgKey}_${imgName}_${content.byteLength}`;
-                
-                // 检查图片是否已存在
-                const imageExists = existingImages.some(img => 
-                  img.id === imageId || 
-                  (img.name === imgName && img.path.includes(imgName))
-                );
-                
-                if (!imageExists) {
-                  // 生成临时图片路径
-                  const tempPath = `${wx.env.USER_DATA_PATH}/${imageId}.jpg`;
-                  
-                  // 写入图片文件
-                  fs.writeFile({
-                    filePath: tempPath,
-                    data: content,
-                    success: () => {
-                      // 添加新图片
-                      existingImages.push({
-                        id: imageId,
-                        name: imgName,
-                        path: tempPath,
-                        addedTime: new Date().toISOString()
-                      });
-                      
-                      // 保存图片数据
-                      wx.setStorageSync(weekImgKey, existingImages);
-                    },
-                    fail: (err) => {
-                      console.error('写入图片文件失败', err);
-                    }
-                  });
-                }
-              }
             }).catch((err) => {
               console.error('提取图片失败', err);
+              return Promise.resolve();
             });
+            
+            imagePromises.push(promise);
           }
         });
       };
@@ -4224,6 +4265,17 @@ Page({
     // 等待所有图片处理完成
     Promise.all(imagePromises).then(() => {
       console.log(`图片恢复完成，共恢复 ${imagePromises.length} 张图片`);
+      
+      // 同步所有周的关联表
+      try {
+        const { syncRelationWithLocal } = require('../../utils/imageRelation.js');
+        Object.keys(imageWeekRelation).forEach(weekKey => {
+          syncRelationWithLocal(weekKey);
+        });
+      } catch (e) {
+        console.error('同步图片关联表失败', e);
+      }
+      
       resolve();
     }).catch((err) => {
       console.error('恢复图片失败', err);
