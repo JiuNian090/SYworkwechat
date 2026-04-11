@@ -218,11 +218,11 @@
       </view>
     </view>
     
-    <!-- 当月工时统计卡片 -->
+    <!-- 本月工时统计卡片 -->
     <view class="card stats-card">
       <view class="card-header">
         <view class="card-icon">⏱️</view>
-        <text class="card-title">当月工时</text>
+        <text class="card-title">本月工时</text>
       </view>
       <view class="stats-content">
         <view class="stat-row primary">
