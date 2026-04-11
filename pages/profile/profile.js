@@ -230,12 +230,12 @@ Page({
     });
   },
 
-  // 显示表情选择弹窗
+  // 显示表情选择弹窗（已改为页面切换）
   showEmojiModal() {
     this.updateCurrentCategoryEmojis();
     this.setData({
-      showEmojiModal: true,
-      selectedEmoji: this.data.avatarEmoji
+      selectedEmoji: this.data.avatarEmoji,
+      currentUserPage: 'avatar'
     });
   },
   
@@ -248,10 +248,10 @@ Page({
     });
   },
 
-  // 隐藏表情选择弹窗
+  // 隐藏表情选择弹窗（已改为页面切换）
   hideEmojiModal() {
     this.setData({
-      showEmojiModal: false
+      currentUserPage: 'main'
     });
   },
 
@@ -292,7 +292,7 @@ Page({
       avatarType: 'emoji',
       emojiText: emojiText,
       emojiEmotion: emojiEmotion,
-      showEmojiModal: false
+      currentUserPage: 'main'
     });
     
     // 保存到本地存储
