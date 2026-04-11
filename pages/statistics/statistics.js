@@ -586,8 +586,16 @@ Page({
   },
   
   onShow() {
-    // 页面显示时重新计算统计数据，确保数据同步
-    this.calculateStatistics();
+    // 页面显示时只在排班数据发生变化时重新计算统计数据
+    const allShifts = wx.getStorageSync('shifts') || {};
+    const currentShifts = this.data.shifts;
+    
+    // 检查排班数据是否发生变化
+    const shiftsChanged = JSON.stringify(allShifts) !== JSON.stringify(currentShifts);
+    
+    if (shiftsChanged) {
+      this.calculateStatistics();
+    }
   },
 
   // 好友分享功能

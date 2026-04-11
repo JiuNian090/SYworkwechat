@@ -131,8 +131,13 @@ Page({
   },
 
   onShow() {
-    // 页面显示时重新加载班次模板，确保数据同步
-    this.loadShiftTemplates();
+    // 页面显示时只在数据发生变化时重新加载班次模板
+    const templates = wx.getStorageSync('shiftTemplates') || [];
+    if (JSON.stringify(templates) !== JSON.stringify(this.data.shiftTemplates)) {
+      this.setData({
+        shiftTemplates: templates
+      });
+    }
   },
 
   loadShiftTemplates() {
