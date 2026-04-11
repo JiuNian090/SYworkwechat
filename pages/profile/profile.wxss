@@ -1183,7 +1183,7 @@ page {
 
 /* ========== 表情选择弹窗 ========== */
 .emoji-modal {
-  max-height: 80vh;
+  max-height: 90vh;
   z-index: 1001 !important;
 }
 
@@ -1195,7 +1195,7 @@ page {
   z-index: 1001 !important;
   width: 90vw !important;
   max-width: 650rpx !important;
-  max-height: 80vh !important;
+  max-height: 90vh !important;
   overflow: hidden !important;
   display: flex !important;
   flex-direction: column !important;
@@ -1208,7 +1208,7 @@ page {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  max-height: 50vh;
+  max-height: 70vh;
   box-sizing: border-box;
 }
 
@@ -1226,8 +1226,7 @@ page {
   content: '→';
   position: absolute;
   right: 16rpx;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 12rpx;
   font-size: 20rpx;
   color: #999;
   opacity: 0.6;
@@ -1284,7 +1283,7 @@ page {
   padding: 0;
   min-height: 0;
   box-sizing: border-box;
-  max-height: 35vh;
+  max-height: 55vh;
   border-radius: 12rpx;
   background: #f7f7f7;
   padding: 20rpx;
