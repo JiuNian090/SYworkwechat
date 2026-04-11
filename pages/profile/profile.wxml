@@ -440,7 +440,6 @@
     </view>
     <view class="modal-footer">
       <button class="modal-btn btn-delete-account" bindtap="showDeleteAccountModal">删除账户</button>
-      <button class="modal-btn btn-cancel" bindtap="hideUserManagementModal">关闭</button>
       <button class="modal-btn btn-danger" bindtap="confirmLogout">退出登录</button>
     </view>
   </view>
