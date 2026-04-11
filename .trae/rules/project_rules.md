@@ -7,6 +7,7 @@
 - 采用这个网址的中的微信小程序服务端API规范：https://developers.weixin.qq.com/miniprogram/dev/framework/api/
 - 采用这个网址的中的微信小程序UI设计规范：https://github.com/Tencent/weui-wxss/
 - 采用这个网址来查询小程序连接腾讯云数据库的文档：https://developers.weixin.qq.com/miniprogram/dev/wxcloudservice/wxcloud/guide
+- 采用下面这个网址来查看小程序框架云开发模板：https://github.com/TencentCloudBase/awesome-cloudbase-examples/tree/master/miniprogram/cloudbase-miniprogram-template
 - 依赖：@babel/runtime ^7.23.10
 - 构建工具：Gulp ^4.0.3
 ## 2. 开发规范
