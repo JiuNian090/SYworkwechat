@@ -54,6 +54,7 @@ Page({
     showCloudPassword: false,
     // 用户管理弹窗
     showUserManagementModal: false,
+    currentUserPage: 'main', // main, updateNickname, updatePassword, deleteAccount, avatar
     showUpdateNicknameModal: false,
     showUpdatePasswordModal: false,
     showDeleteAccountModal: false,
@@ -788,37 +789,72 @@ Page({
   // 用户管理弹窗相关方法
   showUserManagementModal() {
     this.setData({
-      showUserManagementModal: true
+      showUserManagementModal: true,
+      currentUserPage: 'main'
     });
   },
 
   hideUserManagementModal() {
     this.setData({
       showUserManagementModal: false,
+      currentUserPage: 'main',
       showUpdateNicknameModal: false,
       showUpdatePasswordModal: false,
       showDeleteAccountModal: false
     });
   },
 
-  // 显示修改昵称弹窗
-  showUpdateNicknameModal() {
-    let cloudUserInfo = this.data.cloudUserInfo;
-    if (!cloudUserInfo) {
-      cloudUserInfo = wx.getStorageSync('cloudUserInfo');
+  // 切换用户管理页面
+  switchUserPage(e) {
+    const page = e.currentTarget.dataset.page;
+    
+    // 特殊处理头像页面，仍然使用原有的表情选择弹窗
+    if (page === 'avatar') {
+      this.showEmojiModal();
+      return;
     }
-    console.log('显示修改昵称弹窗 - cloudUserInfo:', cloudUserInfo);
+    
+    // 重置相应页面的表单数据
+    if (page === 'updateNickname') {
+      let cloudUserInfo = this.data.cloudUserInfo;
+      if (!cloudUserInfo) {
+        cloudUserInfo = wx.getStorageSync('cloudUserInfo');
+      }
+      this.setData({
+        newNickname: cloudUserInfo?.nickname || ''
+      });
+    } else if (page === 'updatePassword') {
+      this.setData({
+        oldPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } else if (page === 'deleteAccount') {
+      this.setData({
+        deleteAccountPassword: ''
+      });
+    }
+    
     this.setData({
-      showUpdateNicknameModal: true,
-      newNickname: cloudUserInfo?.nickname || ''
+      currentUserPage: page
     });
   },
 
-  // 隐藏修改昵称弹窗
-  hideUpdateNicknameModal() {
+  // 返回用户管理主页面
+  goBackToUserManagement() {
     this.setData({
-      showUpdateNicknameModal: false
+      currentUserPage: 'main'
     });
+  },
+
+  // 显示修改昵称弹窗（已改为页面切换）
+  showUpdateNicknameModal() {
+    this.switchUserPage({ currentTarget: { dataset: { page: 'updateNickname' } } });
+  },
+
+  // 隐藏修改昵称弹窗（已改为页面切换）
+  hideUpdateNicknameModal() {
+    this.goBackToUserManagement();
   },
 
   // 确认修改昵称
@@ -864,7 +900,7 @@ Page({
         this.setData({
           cloudUserInfo: updatedCloudUserInfo,
           username: newNickname.trim(),
-          showUpdateNicknameModal: false
+          currentUserPage: 'main'
         });
         // 同步更新本地存储
         wx.setStorageSync('cloudUserInfo', updatedCloudUserInfo);
@@ -890,21 +926,14 @@ Page({
     }
   },
 
-  // 显示修改密码弹窗
+  // 显示修改密码弹窗（已改为页面切换）
   showUpdatePasswordModal() {
-    this.setData({
-      showUpdatePasswordModal: true,
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
+    this.switchUserPage({ currentTarget: { dataset: { page: 'updatePassword' } } });
   },
 
-  // 隐藏修改密码弹窗
+  // 隐藏修改密码弹窗（已改为页面切换）
   hideUpdatePasswordModal() {
-    this.setData({
-      showUpdatePasswordModal: false
-    });
+    this.goBackToUserManagement();
   },
 
   // 确认修改密码
@@ -961,7 +990,7 @@ Page({
 
       if (result.result.success) {
         this.setData({
-          showUpdatePasswordModal: false,
+          currentUserPage: 'main',
           oldPassword: '',
           newPassword: '',
           confirmPassword: ''
@@ -1015,20 +1044,14 @@ Page({
     });
   },
 
-  // 显示删除账户弹窗
+  // 显示删除账户弹窗（已改为页面切换）
   showDeleteAccountModal() {
-    this.setData({
-      showDeleteAccountModal: true,
-      deleteAccountPassword: ''
-    });
+    this.switchUserPage({ currentTarget: { dataset: { page: 'deleteAccount' } } });
   },
 
-  // 隐藏删除账户弹窗
+  // 隐藏删除账户弹窗（已改为页面切换）
   hideDeleteAccountModal() {
-    this.setData({
-      showDeleteAccountModal: false,
-      deleteAccountPassword: ''
-    });
+    this.goBackToUserManagement();
   },
 
   // 删除账户密码输入事件
@@ -1083,7 +1106,7 @@ Page({
 
             if (result.result.success) {
               // 清除本地登录信息
-              this.hideDeleteAccountModal();
+              this.setData({ currentUserPage: 'main' });
               this.hideUserManagementModal();
               this.logoutFromCloud();
 

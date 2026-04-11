@@ -389,133 +389,123 @@
   <view class="modal-mask {{showUserManagementModal ? 'show' : ''}}" wx:if="{{showUserManagementModal}}" bindtap="hideUserManagementModal"></view>
   <view class="modal-container user-management-modal {{showUserManagementModal ? 'show' : ''}}" wx:if="{{showUserManagementModal}}">
     <view class="modal-header">
-      <text class="modal-title">用户管理</text>
+      <view class="header-left" bindtap="goBackToUserManagement" wx:if="{{currentUserPage !== 'main'}}">
+        <text class="back-icon">←</text>
+      </view>
+      <text class="modal-title">{{currentUserPage === 'main' ? '用户管理' : 
+        (currentUserPage === 'updateNickname' ? '修改昵称' : 
+        (currentUserPage === 'updatePassword' ? '修改密码' : '删除账户'))}}</text>
       <view class="modal-close" bindtap="hideUserManagementModal">
         <text class="close-icon">×</text>
       </view>
     </view>
     <view class="modal-body">
-      <view class="user-info-section">
-        <view class="user-info-header">
-          <view class="user-avatar" bindtap="showEmojiModal">
-            <text class="user-avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
-            <text class="user-avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
+      <!-- 主页面 -->
+      <view class="user-page user-page-main" wx:if="{{currentUserPage === 'main'}}">
+        <view class="user-info-section">
+          <view class="user-info-header">
+            <view class="user-avatar" bindtap="switchUserPage" data-page="avatar">
+              <text class="user-avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
+              <text class="user-avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
+            </view>
+            <view class="user-info-details">
+              <text class="user-account">{{cloudUserInfo.account}}</text>
+              <text class="user-status">已登录</text>
+            </view>
           </view>
-          <view class="user-info-details">
-            <text class="user-account">{{cloudUserInfo.account}}</text>
-            <text class="user-status">已登录</text>
+          <view class="user-info-divider"></view>
+          <view class="user-info-item" bindtap="switchUserPage" data-page="avatar">
+            <text class="info-label">头像</text>
+            <view class="info-value-row">
+              <text class="info-value">{{avatarType === 'text' ? avatarText : avatarEmoji}}</text>
+              <text class="arrow-icon">›</text>
+            </view>
+          </view>
+          <view class="user-info-item" bindtap="switchUserPage" data-page="updateNickname">
+            <text class="info-label">昵称</text>
+            <view class="info-value-row">
+              <text class="info-value">{{cloudUserInfo.nickname || cloudUserInfo.account}}</text>
+              <text class="arrow-icon">›</text>
+            </view>
+          </view>
+          <view class="user-info-item">
+            <text class="info-label">账号</text>
+            <text class="info-value">{{cloudUserInfo.account}}</text>
+          </view>
+          <view class="user-info-item" bindtap="switchUserPage" data-page="updatePassword">
+            <text class="info-label">密码</text>
+            <view class="info-value-row">
+              <text class="info-value">••••••</text>
+              <text class="arrow-icon">›</text>
+            </view>
+          </view>
+          <view class="user-info-item">
+            <text class="info-label">登录状态</text>
+            <text class="info-value status-online">在线</text>
           </view>
         </view>
-        <view class="user-info-divider"></view>
-        <view class="user-info-item" bindtap="showEmojiModal">
-          <text class="info-label">头像</text>
-          <view class="info-value-row">
-            <text class="info-value">{{avatarType === 'text' ? avatarText : avatarEmoji}}</text>
-            <text class="arrow-icon">›</text>
-          </view>
+      </view>
+      
+      <!-- 修改昵称页面 -->
+      <view class="user-page user-page-update-nickname" wx:if="{{currentUserPage === 'updateNickname'}}">
+        <view class="form-group">
+          <text class="form-label">新昵称</text>
+          <input class="form-input" placeholder="请输入新昵称" value="{{newNickname}}" bindinput="onNicknameInput" maxlength="20" />
         </view>
-        <view class="user-info-item" bindtap="showUpdateNicknameModal">
-          <text class="info-label">昵称</text>
-          <view class="info-value-row">
-            <text class="info-value">{{cloudUserInfo.nickname || cloudUserInfo.account}}</text>
-            <text class="arrow-icon">›</text>
-          </view>
+      </view>
+      
+      <!-- 修改密码页面 -->
+      <view class="user-page user-page-update-password" wx:if="{{currentUserPage === 'updatePassword'}}">
+        <view class="form-group">
+          <text class="form-label">原密码</text>
+          <input class="form-input" type="password" placeholder="请输入原密码" value="{{oldPassword}}" bindinput="onOldPasswordInput" />
         </view>
-        <view class="user-info-item">
-          <text class="info-label">账号</text>
-          <text class="info-value">{{cloudUserInfo.account}}</text>
+        <view class="form-group">
+          <text class="form-label">新密码</text>
+          <input class="form-input" type="password" placeholder="请输入新密码（至少 6 位）" value="{{newPassword}}" bindinput="onNewPasswordInput" />
         </view>
-        <view class="user-info-item" bindtap="showUpdatePasswordModal">
-          <text class="info-label">密码</text>
-          <view class="info-value-row">
-            <text class="info-value">••••••</text>
-            <text class="arrow-icon">›</text>
-          </view>
+        <view class="form-group">
+          <text class="form-label">确认新密码</text>
+          <input class="form-input" type="password" placeholder="请再次输入新密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput" />
         </view>
-        <view class="user-info-item">
-          <text class="info-label">登录状态</text>
-          <text class="info-value status-online">在线</text>
+      </view>
+      
+      <!-- 删除账户页面 -->
+      <view class="user-page user-page-delete-account" wx:if="{{currentUserPage === 'deleteAccount'}}">
+        <view class="warning-text">
+          <text class="warning-icon">⚠️</text>
+          <text class="warning-content">删除账户将同时删除所有云端备份数据，此操作不可恢复！</text>
+        </view>
+        <view class="form-group">
+          <text class="form-label">请输入密码确认</text>
+          <input class="form-input" type="password" placeholder="请输入密码" value="{{deleteAccountPassword}}" bindinput="onDeleteAccountPasswordInput" />
         </view>
       </view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn btn-delete-account" bindtap="showDeleteAccountModal">删除账户</button>
-      <button class="modal-btn btn-danger" bindtap="confirmLogout">退出登录</button>
-    </view>
-  </view>
-
-  <!-- 删除账户弹窗 -->
-  <view class="modal-mask {{showDeleteAccountModal ? 'show' : ''}}" wx:if="{{showDeleteAccountModal}}" bindtap="hideDeleteAccountModal"></view>
-  <view class="modal-container delete-account-modal {{showDeleteAccountModal ? 'show' : ''}}" wx:if="{{showDeleteAccountModal}}">
-    <view class="modal-header">
-      <text class="modal-title">删除账户</text>
-      <view class="modal-close" bindtap="hideDeleteAccountModal">
-        <text class="close-icon">×</text>
+      <!-- 主页面按钮 -->
+      <view wx:if="{{currentUserPage === 'main'}}">
+        <button class="modal-btn btn-delete-account" bindtap="switchUserPage" data-page="deleteAccount">删除账户</button>
+        <button class="modal-btn btn-danger" bindtap="confirmLogout">退出登录</button>
       </view>
-    </view>
-    <view class="modal-body">
-      <view class="warning-text">
-        <text class="warning-icon">⚠️</text>
-        <text class="warning-content">删除账户将同时删除所有云端备份数据，此操作不可恢复！</text>
+      
+      <!-- 修改昵称页面按钮 -->
+      <view wx:if="{{currentUserPage === 'updateNickname'}}">
+        <button class="modal-btn btn-cancel" bindtap="goBackToUserManagement">取消</button>
+        <button class="modal-btn btn-confirm" bindtap="confirmUpdateNickname">确定</button>
       </view>
-      <view class="form-group">
-        <text class="form-label">请输入密码确认</text>
-        <input class="form-input" type="password" placeholder="请输入密码" value="{{deleteAccountPassword}}" bindinput="onDeleteAccountPasswordInput" />
+      
+      <!-- 修改密码页面按钮 -->
+      <view wx:if="{{currentUserPage === 'updatePassword'}}">
+        <button class="modal-btn btn-cancel" bindtap="goBackToUserManagement">取消</button>
+        <button class="modal-btn btn-confirm" bindtap="confirmUpdatePassword">确定</button>
       </view>
-    </view>
-    <view class="modal-footer">
-      <button class="modal-btn btn-cancel" bindtap="hideDeleteAccountModal">取消</button>
-      <button class="modal-btn btn-delete-confirm" bindtap="confirmDeleteAccount">确认删除</button>
-    </view>
-  </view>
-
-  <!-- 修改昵称弹窗 -->
-  <view class="modal-mask {{showUpdateNicknameModal ? 'show' : ''}}" wx:if="{{showUpdateNicknameModal}}" bindtap="hideUpdateNicknameModal"></view>
-  <view class="modal-container {{showUpdateNicknameModal ? 'show' : ''}}" wx:if="{{showUpdateNicknameModal}}">
-    <view class="modal-header">
-      <text class="modal-title">修改昵称</text>
-      <view class="modal-close" bindtap="hideUpdateNicknameModal">
-        <text class="close-icon">×</text>
+      
+      <!-- 删除账户页面按钮 -->
+      <view wx:if="{{currentUserPage === 'deleteAccount'}}">
+        <button class="modal-btn btn-cancel" bindtap="goBackToUserManagement">取消</button>
+        <button class="modal-btn btn-delete-confirm" bindtap="confirmDeleteAccount">确认删除</button>
       </view>
-    </view>
-    <view class="modal-body">
-      <view class="form-group">
-        <text class="form-label">新昵称</text>
-        <input class="form-input" placeholder="请输入新昵称" value="{{newNickname}}" bindinput="onNicknameInput" maxlength="20" />
-      </view>
-    </view>
-    <view class="modal-footer">
-      <button class="modal-btn btn-cancel" bindtap="hideUpdateNicknameModal">取消</button>
-      <button class="modal-btn btn-confirm" bindtap="confirmUpdateNickname">确定</button>
-    </view>
-  </view>
-
-  <!-- 修改密码弹窗 -->
-  <view class="modal-mask {{showUpdatePasswordModal ? 'show' : ''}}" wx:if="{{showUpdatePasswordModal}}" bindtap="hideUpdatePasswordModal"></view>
-  <view class="modal-container {{showUpdatePasswordModal ? 'show' : ''}}" wx:if="{{showUpdatePasswordModal}}">
-    <view class="modal-header">
-      <text class="modal-title">修改密码</text>
-      <view class="modal-close" bindtap="hideUpdatePasswordModal">
-        <text class="close-icon">×</text>
-      </view>
-    </view>
-    <view class="modal-body">
-      <view class="form-group">
-        <text class="form-label">原密码</text>
-        <input class="form-input" type="password" placeholder="请输入原密码" value="{{oldPassword}}" bindinput="onOldPasswordInput" />
-      </view>
-      <view class="form-group">
-        <text class="form-label">新密码</text>
-        <input class="form-input" type="password" placeholder="请输入新密码（至少 6 位）" value="{{newPassword}}" bindinput="onNewPasswordInput" />
-      </view>
-      <view class="form-group">
-        <text class="form-label">确认新密码</text>
-        <input class="form-input" type="password" placeholder="请再次输入新密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput" />
-      </view>
-    </view>
-    <view class="modal-footer">
-      <button class="modal-btn btn-cancel" bindtap="hideUpdatePasswordModal">取消</button>
-      <button class="modal-btn btn-confirm" bindtap="confirmUpdatePassword">确定</button>
     </view>
   </view>
 </view>
