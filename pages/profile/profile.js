@@ -712,8 +712,8 @@ Page({
 
   onLoad() {
     // 读取本地存储的头像信息
-    const avatarType = wx.getStorageSync('avatarType') || 'text';
-    const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
+    const avatarType = wx.getStorageSync('avatarType') || 'emoji';
+    const avatarEmoji = wx.getStorageSync('avatarEmoji') || '😊';
     
     // 云开发已在 app.js 中初始化
     const app = getApp();
@@ -738,12 +738,15 @@ Page({
     }
     this.userId = cloudUserId;
     
-    // 生成头像文字
-    const avatarText = this.generateAvatarText(username);
+    // 生成头像文字（仅当使用文字头像时）
+    const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
+    
+    // 确保表情头像有默认值
+    const finalAvatarEmoji = avatarType === 'emoji' && avatarEmoji ? avatarEmoji : '😊';
     
     // 获取表情对应的文字和情绪类型
-    const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
-    const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
+    const emojiText = avatarType === 'emoji' ? emojiManager.getEmojiText(finalAvatarEmoji) || '' : '';
+    const emojiEmotion = avatarType === 'emoji' ? emojiManager.getEmojiEmotion(finalAvatarEmoji) || 'neutral' : '';
     
     // 解析更新日志
     const changelog = this.parseChangelog();
@@ -751,7 +754,7 @@ Page({
     this.setData({
       username: username,
       avatarText: avatarText,
-      avatarEmoji: avatarEmoji,
+      avatarEmoji: finalAvatarEmoji,
       avatarType: avatarType,
       emojiText: emojiText,
       emojiEmotion: emojiEmotion,
@@ -892,6 +895,9 @@ Page({
     wx.setStorageSync('avatarType', 'emoji');
     wx.setStorageSync('avatarEmoji', emoji);
     
+    // 同步到云端
+    this.syncAvatarToCloud('emoji', emoji, '');
+    
     // 通知其他页面更新头像信息
     this.updateAvatarInOtherPages();
     
@@ -901,28 +907,11 @@ Page({
     });
   },
 
-  // 切换回文字头像
+  // 切换回文字头像 - 已禁用
   switchToTextAvatar() {
-    const username = this.data.username;
-    const avatarText = this.generateAvatarText(username);
-    
-    this.setData({
-      avatarType: 'text',
-      avatarText: avatarText,
-      emojiText: '',
-      emojiEmotion: ''
-    });
-    
-    // 保存到本地存储
-    wx.setStorageSync('avatarType', 'text');
-    wx.removeStorageSync('avatarEmoji');
-    
-    // 通知其他页面更新头像信息
-    this.updateAvatarInOtherPages();
-    
     wx.showToast({
-      title: '已切换到文字头像',
-      icon: 'success'
+      title: '文字头像功能已关闭',
+      icon: 'none'
     });
   },
 
@@ -2133,6 +2122,43 @@ Page({
         });
       }
     });
+  },
+  
+  // 同步头像信息到云端
+  async syncAvatarToCloud(avatarType, avatarEmoji, avatarText) {
+    try {
+      const { cloudLoggedIn, cloudUserInfo } = this.data;
+      if (cloudLoggedIn && cloudUserInfo && cloudUserInfo.userId) {
+        // 调用云函数更新头像信息
+        const result = await wx.cloud.callFunction({
+          name: 'userLogin',
+          data: {
+            action: 'updateAvatar',
+            userId: cloudUserInfo.userId,
+            avatarType: avatarType,
+            avatarEmoji: avatarEmoji,
+            avatarText: avatarText
+          }
+        });
+        
+        if (result.result.success) {
+          // 更新本地存储的用户信息
+          const updatedUserInfo = {
+            ...cloudUserInfo,
+            avatarType: avatarType,
+            avatarEmoji: avatarEmoji,
+            avatarText: avatarText
+          };
+          wx.setStorageSync('cloudUserInfo', updatedUserInfo);
+          this.setData({
+            cloudUserInfo: updatedUserInfo
+          });
+        }
+      }
+    } catch (e) {
+      console.error('同步头像信息到云端失败', e);
+      // 同步失败不影响本地操作
+    }
   },
 
   // 好友分享功能
@@ -4999,6 +5025,7 @@ Page({
           ...cloudUserInfo,
           nickname: newNickname.trim()
         };
+        
         this.setData({
           cloudUserInfo: updatedCloudUserInfo,
           username: newNickname.trim(),
@@ -5285,17 +5312,35 @@ Page({
         const cloudUserInfo = {
           userId: result.data.userId,
           account: cloudAccountInput,
-          nickname: result.data.nickname || cloudAccountInput
+          nickname: result.data.nickname || cloudAccountInput,
+          avatarType: result.data.avatarType || 'emoji',
+          avatarEmoji: result.data.avatarEmoji || '😊',
+          avatarText: result.data.avatarText || ''
         };
         const displayUsername = result.data.nickname || cloudAccountInput;
+        const avatarType = result.data.avatarType || 'emoji';
+        const avatarEmoji = result.data.avatarEmoji || '😊';
+        const avatarText = '';
+        
+        // 获取表情对应的文字和情绪类型
+        const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
+        const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
+        
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
           username: displayUsername,
+          avatarType: avatarType,
+          avatarEmoji: avatarEmoji,
+          avatarText: avatarText,
+          emojiText: emojiText,
+          emojiEmotion: emojiEmotion,
           cloudUserInfo: cloudUserInfo
         });
         // 保存到本地存储（不保存密码，只保存用户信息）
         wx.setStorageSync('username', displayUsername);
+        wx.setStorageSync('avatarType', avatarType);
+        wx.setStorageSync('avatarEmoji', avatarEmoji);
         wx.setStorageSync('cloudAccount', cloudAccountInput);
         wx.setStorageSync('cloudLoggedIn', true);
         wx.setStorageSync('cloudUserId', result.data.userId);
@@ -5303,18 +5348,17 @@ Page({
         this.userId = result.data.userId;
         
         this.hideCloudLoginModal();
+        // 显示成功提示并立即打开用户管理弹窗
         wx.showToast({
           title: '登录成功',
           icon: 'success',
-          duration: 1500
+          duration: 1000
         });
         
-        // 延迟打开用户管理弹窗，让用户先看到成功提示
-        setTimeout(() => {
-          this.setData({
-            showUserManagementModal: true
-          });
-        }, 1500);
+        // 立即打开用户管理弹窗，不需要延迟
+        this.setData({
+          showUserManagementModal: true
+        });
       } else {
         wx.showToast({
           title: result.errMsg || '登录失败',
@@ -5371,17 +5415,35 @@ Page({
         const cloudUserInfo = {
           userId: result.result.data.userId,
           account: cloudAccountInput,
-          nickname: result.result.data.nickname || cloudAccountInput
+          nickname: result.result.data.nickname || cloudAccountInput,
+          avatarType: result.result.data.avatarType || 'emoji',
+          avatarEmoji: result.result.data.avatarEmoji || '😊',
+          avatarText: result.result.data.avatarText || ''
         };
         const displayUsername = result.result.data.nickname || cloudAccountInput;
+        const avatarType = result.result.data.avatarType || 'emoji';
+        const avatarEmoji = result.result.data.avatarEmoji || '😊';
+        const avatarText = '';
+        
+        // 获取表情对应的文字和情绪类型
+        const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
+        const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
+        
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
           username: displayUsername,
+          avatarType: avatarType,
+          avatarEmoji: avatarEmoji,
+          avatarText: avatarText,
+          emojiText: emojiText,
+          emojiEmotion: emojiEmotion,
           cloudUserInfo: cloudUserInfo
         });
         // 保存到本地存储（不保存密码，只保存用户信息）
         wx.setStorageSync('username', displayUsername);
+        wx.setStorageSync('avatarType', avatarType);
+        wx.setStorageSync('avatarEmoji', avatarEmoji);
         wx.setStorageSync('cloudAccount', cloudAccountInput);
         wx.setStorageSync('cloudLoggedIn', true);
         wx.setStorageSync('cloudUserId', result.result.data.userId);
@@ -5389,18 +5451,17 @@ Page({
         this.userId = result.result.data.userId;
         
         this.hideCloudRegisterModal();
+        // 显示成功提示并立即打开用户管理弹窗
         wx.showToast({
           title: '注册成功',
           icon: 'success',
-          duration: 1500
+          duration: 1000
         });
         
-        // 延迟打开用户管理弹窗，让用户先看到成功提示
-        setTimeout(() => {
-          this.setData({
-            showUserManagementModal: true
-          });
-        }, 1500);
+        // 立即打开用户管理弹窗，不需要延迟
+        this.setData({
+          showUserManagementModal: true
+        });
       } else {
         wx.showToast({
           title: result.result.errMsg || '注册失败',
@@ -5429,10 +5490,17 @@ Page({
           this.setData({
             cloudLoggedIn: false,
             cloudAccount: '',
-            username: ''
+            username: '',
+            avatarType: 'emoji',
+            avatarText: '',
+            avatarEmoji: '😊',
+            emojiText: '',
+            emojiEmotion: 'neutral'
           });
           // 清空本地存储
           wx.removeStorageSync('username');
+          wx.removeStorageSync('avatarType');
+          wx.removeStorageSync('avatarEmoji');
           wx.removeStorageSync('cloudAccount');
           wx.removeStorageSync('cloudLoggedIn');
           wx.removeStorageSync('cloudUserId');
