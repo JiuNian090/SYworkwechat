@@ -50,5 +50,6 @@
     "request": [],
     "webview": []
   },
-  "projectArchitecture": "multiPlatform"
+  "projectArchitecture": "multiPlatform",
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
 }

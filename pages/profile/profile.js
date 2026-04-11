@@ -14,9 +14,23 @@ class CloudManager {
     this.userId = null;
   }
   
+  // 检查云开发是否初始化成功
+  isCloudInitialized() {
+    const app = getApp();
+    return app.globalData.cloudInitialized;
+  }
+  
   // 用户注册
   async register(account, password, nickname) {
     try {
+      // 检查云开发是否初始化成功
+      if (!this.isCloudInitialized()) {
+        return {
+          success: false,
+          errMsg: '云开发未初始化，请稍后重试'
+        };
+      }
+      
       const result = await wx.cloud.callFunction({
         name: 'userLogin',
         data: {
@@ -47,6 +61,14 @@ class CloudManager {
   // 用户登录
   async login(account, password) {
     try {
+      // 检查云开发是否初始化成功
+      if (!this.isCloudInitialized()) {
+        return {
+          success: false,
+          errMsg: '云开发未初始化，请稍后重试'
+        };
+      }
+      
       const result = await wx.cloud.callFunction({
         name: 'userLogin',
         data: {
@@ -243,6 +265,14 @@ class CloudManager {
   // 备份数据 - 增量备份，只上传有变化的图片
   async backup() {
     try {
+      // 检查云开发是否初始化成功
+      if (!this.isCloudInitialized()) {
+        return {
+          success: false,
+          errMsg: '云开发未初始化，请稍后重试'
+        };
+      }
+      
       if (!this.isLoggedIn()) {
         return {
           success: false,
@@ -411,6 +441,14 @@ class CloudManager {
   // 恢复数据 - 完全恢复，先清空本地，再完全替换为云端数据
   async restore() {
     try {
+      // 检查云开发是否初始化成功
+      if (!this.isCloudInitialized()) {
+        return {
+          success: false,
+          errMsg: '云开发未初始化，请稍后重试'
+        };
+      }
+      
       if (!this.isLoggedIn()) {
         return {
           success: false,
@@ -566,6 +604,14 @@ class CloudManager {
   // 获取备份信息
   async getBackupInfo() {
     try {
+      // 检查云开发是否初始化成功
+      if (!this.isCloudInitialized()) {
+        return {
+          success: false,
+          errMsg: '云开发未初始化，请稍后重试'
+        };
+      }
+      
       if (!this.isLoggedIn()) {
         return {
           success: false,
@@ -669,15 +715,10 @@ Page({
     const avatarType = wx.getStorageSync('avatarType') || 'text';
     const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
     
-    // 初始化云开发
-    if (!wx.cloud) {
-      console.error('请使用 2.2.3 或以上的基础库以使用云能力');
-    } else {
-      wx.cloud.init({
-        env: 'YOUR_CLOUD_ENV_ID',
-        traceUser: true,
-      });
-    }
+    // 云开发已在 app.js 中初始化
+    const app = getApp();
+    const cloudInitialized = app.globalData.cloudInitialized;
+    console.log('云开发初始化状态:', cloudInitialized);
     
     // 创建云开发管理器
     const cloudManager = new CloudManager();
