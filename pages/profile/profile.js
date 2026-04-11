@@ -711,10 +711,6 @@ Page({
   },
 
   onLoad() {
-    // 读取本地存储的头像信息
-    const avatarType = wx.getStorageSync('avatarType') || 'emoji';
-    const avatarEmoji = wx.getStorageSync('avatarEmoji') || '😊';
-    
     // 云开发已在 app.js 中初始化
     const app = getApp();
     const cloudInitialized = app.globalData.cloudInitialized;
@@ -737,6 +733,23 @@ Page({
       wx.setStorageSync('username', username);
     }
     this.userId = cloudUserId;
+    
+    // 读取头像信息：优先从云端用户信息获取，其次从本地存储获取，最后使用默认值
+    let avatarType = 'emoji';
+    let avatarEmoji = '😊';
+    
+    if (cloudLoggedIn && cloudUserInfo) {
+      // 从云端用户信息获取头像信息
+      avatarType = cloudUserInfo.avatarType || 'emoji';
+      avatarEmoji = cloudUserInfo.avatarEmoji || '😊';
+      // 同步到本地存储
+      wx.setStorageSync('avatarType', avatarType);
+      wx.setStorageSync('avatarEmoji', avatarEmoji);
+    } else {
+      // 从本地存储获取头像信息
+      avatarType = wx.getStorageSync('avatarType') || 'emoji';
+      avatarEmoji = wx.getStorageSync('avatarEmoji') || '😊';
+    }
     
     // 生成头像文字（仅当使用文字头像时）
     const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
@@ -764,6 +777,76 @@ Page({
       cloudUserInfo: cloudUserInfo,
       changelog: changelog
     });
+    
+    // 如果已登录，尝试从云端获取最新的头像信息
+    if (cloudLoggedIn && cloudInitialized) {
+      this.getLatestAvatarFromCloud();
+    }
+  },
+  
+  // 从云端获取最新的头像信息
+  async getLatestAvatarFromCloud() {
+    try {
+      const { cloudUserInfo } = this.data;
+      if (cloudUserInfo && cloudUserInfo.userId) {
+        // 调用云函数获取用户信息
+        const result = await wx.cloud.callFunction({
+          name: 'userLogin',
+          data: {
+            action: 'getUserInfo',
+            userId: cloudUserInfo.userId
+          }
+        });
+        
+        if (result.result.success && result.result.data) {
+          const userData = result.result.data;
+          // 检查是否有头像信息
+          if (userData.avatarType || userData.avatarEmoji) {
+            const avatarType = userData.avatarType || 'emoji';
+            const avatarEmoji = userData.avatarEmoji || '😊';
+            const username = userData.nickname || this.data.username;
+            
+            // 生成头像文字
+            const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
+            const emojiText = avatarType === 'emoji' ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
+            const emojiEmotion = avatarType === 'emoji' ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
+            
+            // 更新本地存储
+            wx.setStorageSync('avatarType', avatarType);
+            wx.setStorageSync('avatarEmoji', avatarEmoji);
+            if (username) {
+              wx.setStorageSync('username', username);
+            }
+            
+            // 更新本地用户信息
+            const updatedUserInfo = {
+              ...cloudUserInfo,
+              avatarType: avatarType,
+              avatarEmoji: avatarEmoji,
+              nickname: username
+            };
+            wx.setStorageSync('cloudUserInfo', updatedUserInfo);
+            
+            // 更新页面数据
+            this.setData({
+              username: username,
+              avatarType: avatarType,
+              avatarEmoji: avatarEmoji,
+              avatarText: avatarText,
+              emojiText: emojiText,
+              emojiEmotion: emojiEmotion,
+              cloudUserInfo: updatedUserInfo
+            });
+            
+            // 通知其他页面更新头像信息
+            this.updateAvatarInOtherPages();
+          }
+        }
+      }
+    } catch (e) {
+      console.error('从云端获取头像信息失败', e);
+      // 获取失败不影响本地操作
+    }
   },
 
   // 生成头像文字
