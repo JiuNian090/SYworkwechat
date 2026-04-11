@@ -264,6 +264,36 @@ exports.main = async (event, context) => {
         message: '账户删除成功'
       };
 
+    } else if (action === 'getUserInfo') {
+      // 获取用户信息
+      if (!userId) {
+        return {
+          success: false,
+          errMsg: '参数错误'
+        };
+      }
+
+      // 获取用户信息
+      const user = await usersCollection.doc(userId).get();
+      if (!user.data) {
+        return {
+          success: false,
+          errMsg: '用户不存在'
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          userId: user.data._id,
+          account: user.data.account,
+          nickname: user.data.nickname,
+          avatarType: user.data.avatarType || 'emoji',
+          avatarEmoji: user.data.avatarEmoji || '😊',
+          avatarText: user.data.avatarText || ''
+        }
+      };
+
     }
 
     return {
