@@ -1990,6 +1990,10 @@ Page({
           if (page.generateMonthDates) {
             page.generateMonthDates();
           }
+          // 重新加载图片数据
+          if (page.loadWeekImages) {
+            page.loadWeekImages();
+          }
         } else if (page.route === 'pages/statistics/statistics') {
           // 重新计算统计数据
           if (page.calculateStatistics) {
