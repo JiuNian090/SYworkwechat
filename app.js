@@ -18,6 +18,9 @@ App({
     
     // 初始化云开发
     this.initCloud();
+    
+    // 自动同步云端用户信息
+    this.syncUserInfoFromCloud();
   },
   
   // 初始化云开发
@@ -56,6 +59,62 @@ App({
       }
     } catch (e) {
       console.error('初始化设备信息失败:', e);
+    }
+  },
+  
+  // 自动同步云端用户信息
+  async syncUserInfoFromCloud() {
+    try {
+      // 检查是否已登录
+      const cloudUserId = wx.getStorageSync('cloudUserId');
+      if (!cloudUserId) {
+        console.log('用户未登录，跳过云端同步');
+        return;
+      }
+      
+      // 检查云开发是否初始化成功
+      if (!this.globalData.cloudInitialized) {
+        console.log('云开发未初始化，跳过云端同步');
+        return;
+      }
+      
+      console.log('开始同步云端用户信息...');
+      
+      // 调用云函数获取用户信息
+      const result = await wx.cloud.callFunction({
+        name: 'userLogin',
+        data: {
+          action: 'getUserInfo',
+          userId: cloudUserId
+        }
+      });
+      
+      if (result.result.success && result.result.data) {
+        const userData = result.result.data;
+        
+        // 更新本地存储的用户信息
+        const cloudUserInfo = {
+          userId: userData.userId,
+          account: userData.account,
+          nickname: userData.nickname,
+          avatarType: userData.avatarType || 'emoji',
+          avatarEmoji: userData.avatarEmoji || '😊',
+          avatarText: userData.avatarText || ''
+        };
+        
+        wx.setStorageSync('cloudUserInfo', cloudUserInfo);
+        
+        // 同步头像信息到本地存储
+        wx.setStorageSync('avatarType', userData.avatarType || 'emoji');
+        wx.setStorageSync('avatarEmoji', userData.avatarEmoji || '😊');
+        wx.setStorageSync('username', userData.nickname || '');
+        
+        console.log('云端用户信息同步成功');
+      } else {
+        console.log('获取云端用户信息失败:', result.result.errMsg);
+      }
+    } catch (e) {
+      console.error('同步云端用户信息失败:', e);
     }
   },
 
