@@ -24,7 +24,13 @@
             <view class="guide-badge">1</view>
             <view class="guide-body">
               <text class="guide-title">添加班次模板</text>
-              <text class="guide-text">进入班次模板页面，点击添加按钮，输入班次名称、开始时间和结束时间，设置是否跨天，设置自定义工时，点击保存，排班就可以使用这个模板。</text>
+              <text class="guide-text">
+                - 进入班次模板页面，点击添加按钮
+                - 输入班次名称、开始时间和结束时间
+                - 设置是否跨天
+                - 设置自定义工时
+                - 点击保存，排班就可以使用这个模板
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">工时无法自动计算，工时是自己计算后填上去的，默认是8小时</text>
@@ -36,7 +42,12 @@
             <view class="guide-badge">2</view>
             <view class="guide-body">
               <text class="guide-title">创建排班表</text>
-              <text class="guide-text">选择日期，点击日期右边单元格，从弹出的班次列表中选择对应班次，点击确定完成排班。</text>
+              <text class="guide-text">
+                - 选择日期
+                - 点击日期右边单元格
+                - 从弹出的班次列表中选择对应班次
+                - 点击确定完成排班
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">当天有排班需要修改时，可以点击排班，选择其他的就可以快速替换，若不想有排班，选中当天的排班会出现删除按钮，可以删除排班。</text>
@@ -48,7 +59,12 @@
             <view class="guide-badge">3</view>
             <view class="guide-body">
               <text class="guide-title">添加排班图片</text>
-              <text class="guide-text">在周视图页面的"本周排班图片"卡片中，点击"添加图片"按钮，选择图片并输入名称，即可上传排班照片并一直保留且保留在对应星期。</text>
+              <text class="guide-text">
+                - 在周视图页面的"本周排班图片"卡片中
+                - 点击"添加图片"按钮
+                - 选择图片并输入名称
+                - 即可上传排班照片并一直保留且保留在对应星期
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">支持从相册或相机拍摄选择图片，方便记录纸质排班表</text>
@@ -77,7 +93,12 @@
             <view class="guide-badge">1</view>
             <view class="guide-body">
               <text class="guide-title">排班统计图</text>
-              <text class="guide-text">在统计页面选择日期范围，即可查看选定期间内的所有排班详情，包括总工时、班次分布，工时差额等。工时统计里的设置按钮⚙️可以设置自定义每周标准工时</text>
+              <text class="guide-text">
+                - 在统计页面选择日期范围
+                - 即可查看选定期间内的所有排班详情
+                - 包括总工时、班次分布，工时差额等
+                - 工时统计里的设置按钮⚙️可以设置自定义每周标准工时
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">可按月份、季度或自定义时间范围查询，默认的标准工时是每周35小时</text>
@@ -89,7 +110,12 @@
             <view class="guide-badge">2</view>
             <view class="guide-body">
               <text class="guide-title">导出与分享报表</text>
-              <text class="guide-text">点击导出报表，在弹窗中输入文件名（可按姓名+日期范围），出现导出成功提示后，点击分享报表，可以分享给自己或好友。</text>
+              <text class="guide-text">
+                - 点击导出报表
+                - 在弹窗中输入文件名（可按姓名+日期范围）
+                - 出现导出成功提示后，点击分享报表
+                - 可以分享给自己或好友
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">在聊天界面点击CSV，选择用WPS打开，即可生成报表！</text>
@@ -101,7 +127,10 @@
             <view class="guide-badge">3</view>
             <view class="guide-body">
               <text class="guide-title">排班详情展示</text>
-              <text class="guide-text">查询后，页面下方会显示选定日期内的所有排班详情，包括每天的班次、工时等信息。</text>
+              <text class="guide-text">
+                - 查询后，页面下方会显示选定日期内的所有排班详情
+                - 包括每天的班次、工时等信息
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">可滑动查看完整的排班详情列表</text>
@@ -124,38 +153,93 @@
         </view>
       </view>
       <view class="section-content">
-        <view class="step-progress">
-          <view class="progress-line"></view>
-          <view class="progress-dot active"></view>
-          <view class="progress-dot"></view>
-          <view class="progress-dot"></view>
-        </view>
-
-        <view class="step-list">
-          <view class="step-item">
-            <view class="step-number">01</view>
-            <view class="step-content">
-              <text class="step-title">开启云备份</text>
-              <text class="step-desc"> - 找到云备份板块，可选择注册或者登录（没有账号先注册）
-               - 注册时填写账号和密码，可以选填昵称，昵称用在头像旁边的昵称显示</text>
+        <view class="guide-list">
+          <view class="guide-item">
+            <view class="guide-badge">1</view>
+            <view class="guide-body">
+              <text class="guide-title">开启云备份</text>
+              <text class="guide-text">
+                - 在首页或个人中心找到云备份板块，点击进入
+                - 首次使用需要注册账号，已有账号直接登录
+                - 注册时需填写账号、密码，可选择填写昵称
+                - 昵称将显示在头像旁边，便于识别
+              </text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">建议使用复杂账号密码，请妥善保管好。</text>
+              </view>
             </view>
           </view>
 
-          <view class="step-item">
-            <view class="step-number">02</view>
-            <view class="step-content">
-              <text class="step-title">账号管理</text>
-              <text class="step-desc"> - 注册后，会自动登录，弹出用户管理界面，点击头像或者昵称也可以打开用户管理界面
-               - 用户管理界面可以选择退出账号，修改昵称，修改密码，删除账号（若是共享账号，谨慎操作！）</text>
+          <view class="guide-item">
+            <view class="guide-badge">2</view>
+            <view class="guide-body">
+              <text class="guide-title">账号管理</text>
+              <text class="guide-text">
+                - 注册后会自动登录，弹出用户管理界面
+                - 点击头像或昵称也可以打开用户管理界面
+                - 在用户管理界面可以：
+                - 退出账号：安全退出当前登录
+                - 修改昵称：更新显示名称
+                - 修改密码：定期更新密码确保安全
+                - 删除账号：谨慎操作，删除后数据无法恢复
+              </text>
+              <view class="guide-tip warning-tip">
+                <text class="tip-icon">⚠️</text>
+                <text class="tip-text">若是共享账号，删除操作会影响所有使用该账号的用户，请谨慎操作！</text>
+              </view>
             </view>
           </view>
 
-          <view class="step-item">
-            <view class="step-number">03</view>
-            <view class="step-content">
-              <text class="step-title">多设备使用</text>
-              <text class="step-desc"> - 在其他设备上打开此小程序，登录同一账号即可手动同步所有数据，包括排班、模板和图片
-               - 账号主在本地填写好数据后，点击备份到云端，共享人可以点击恢复，恢复数据到本地</text>
+          <view class="guide-item">
+            <view class="guide-badge">3</view>
+            <view class="guide-body">
+              <text class="guide-title">多设备使用</text>
+              <text class="guide-text">
+                - 在其他设备上打开此小程序，登录同一账号
+                - 登录后可手动同步所有数据，包括排班、模板和图片
+                - 数据同步流程：
+                - 账号主：在本地填写好数据后，点击"备份到云端"
+                - 共享人：在其他设备上登录同一账号，点击"恢复"，将数据恢复到本地
+                - 所有设备的数据将保持一致
+              </text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">建议定期备份数据，确保重要信息不会丢失</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="guide-item">
+            <view class="guide-badge">4</view>
+            <view class="guide-body">
+              <text class="guide-title">数据安全</text>
+              <text class="guide-text">
+                - 云备份数据采用微信云存储，保障数据安全
+                - 请妥善保管账号密码，不要分享给陌生人
+                - 定期修改密码，增强账号安全性
+                - 若账号密码丢失，目前无法找回！
+              </text>
+              <view class="guide-tip warning-tip">
+                <text class="tip-icon">⚠️</text>
+                <text class="tip-text">请勿使用简单密码，建议包含字母、数字和特殊字符</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="guide-item">
+            <view class="guide-badge">5</view>
+            <view class="guide-body">
+              <text class="guide-title">常见问题</text>
+              <text class="guide-text">
+                - 备份失败：请检查网络连接，确保网络畅通
+                - 恢复失败：请检查账号权限和网络连接
+                - 数据不同步：尝试重新登录账号后再次同步
+              </text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">如果遇到其他问题，请联系开发者获取帮助</text>
+              </view>
             </view>
           </view>
         </view>
@@ -179,7 +263,12 @@
             <view class="guide-badge">1</view>
             <view class="guide-body">
               <text class="guide-title">导出数据</text>
-              <text class="guide-text">点击导出数据，在弹窗中输入自定义文件名后点击确定，可暂存数据文件到剪贴板。当选了图片之后，导出为zip。</text>
+              <text class="guide-text">
+                - 点击导出数据
+                - 在弹窗中输入自定义文件名后点击确定
+                - 可暂存数据文件到剪贴板
+                - 当选了图片之后，导出为zip
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">可自选需要导出的数据：排班数据、班次模板、排班图片</text>
@@ -191,7 +280,10 @@
             <view class="guide-badge">2</view>
             <view class="guide-body">
               <text class="guide-title">分享数据</text>
-              <text class="guide-text">导出后可快速分享给好友，也可以分享到"文件传输助手"或者小号，用来备份。</text>
+              <text class="guide-text">
+                - 导出后可快速分享给好友
+                - 也可以分享到"文件传输助手"或者小号，用来备份
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">分享完整的数据备份，这个导出后的json或者zip文件是暂存的，暂存时间很短，请尽快分享数据。</text>
@@ -203,7 +295,9 @@
             <view class="guide-badge">3</view>
             <view class="guide-body">
               <text class="guide-title">导入数据</text>
-              <text class="guide-text">选择好友通过微信分享给你的json文件，或者zip文件。</text>
+              <text class="guide-text">
+                - 选择好友通过微信分享给你的json文件，或者zip文件
+              </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">可以将json文件或者zip转发给"文件传输助手"，点击导入，选择"文件传输助手"，找到对应的文件，即可替换本地的模板、排班、图片等</text>
@@ -215,7 +309,10 @@
             <view class="guide-badge">4</view>
             <view class="guide-body">
               <text class="guide-title">清空数据</text>
-              <text class="guide-text">清空请谨慎操作，但也可以通过每周导出的备份来进行恢复！</text>
+              <text class="guide-text">
+                - 清空请谨慎操作
+                - 但也可以通过每周导出的备份来进行恢复
+              </text>
               <view class="guide-tip warning-tip">
                 <text class="tip-icon">⚠️</text>
                 <text class="tip-text">清空所有数据，如要恢复，请导入之前分享出去的json或zip文件！</text>
