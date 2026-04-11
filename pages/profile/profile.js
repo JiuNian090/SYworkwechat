@@ -4107,6 +4107,17 @@ Page({
             const fullImagePath = `${basePath}${relativePath}`;
             console.log('处理图片:', fullImagePath);
             
+            // 路径规范化函数
+            const normalizePath = (path) => {
+              // 移除 "image/" 前缀
+              let normalized = path.replace(/^image\//, '');
+              // 替换双斜杠为单斜杠
+              normalized = normalized.replace(/\/\//g, '/');
+              // 移除首尾斜杠
+              normalized = normalized.replace(/^\/|\/$/g, '');
+              return normalized;
+            };
+            
             // 尝试从图片周关联表中查找对应的周存储
             let weekImageKey = null;
             let imageName = null;
@@ -4115,8 +4126,10 @@ Page({
             Object.keys(imageWeekRelation).forEach(key => {
               const images = imageWeekRelation[key] || [];
               for (const img of images) {
-                console.log('检查关联表项:', img.path, 'vs', fullImagePath);
-                if (img.path === fullImagePath) {
+                const normalizedImgPath = normalizePath(img.path);
+                const normalizedFullPath = normalizePath(fullImagePath);
+                console.log('检查关联表项:', normalizedImgPath, 'vs', normalizedFullPath);
+                if (normalizedImgPath === normalizedFullPath) {
                   weekImageKey = key;
                   imageName = img.name;
                   console.log('找到匹配的关联表项:', weekImageKey, imageName);
