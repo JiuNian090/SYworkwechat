@@ -762,8 +762,8 @@ Page({
       // 清除画布
       ctx.clearRect(0, 0, chartWidth, chartHeight);
 
-      // 绘制网格
-      ctx.strokeStyle = '#e5e5e5';
+      // 绘制网格 - 优化UI
+      ctx.strokeStyle = '#f0f0f0'; // 更浅的网格颜色
       ctx.lineWidth = 1;
       
       // 纵轴网格
@@ -786,10 +786,12 @@ Page({
         ctx.stroke();
       }
 
-      // 绘制数据线条
+      // 绘制数据线条 - 优化UI
       if (chartData.data.length > 0) {
-        ctx.strokeStyle = '#34d399';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#34d399'; // 绿色
+        ctx.lineWidth = 3; // 稍微加粗线条
+        ctx.lineCap = 'round'; // 线条端点圆润
+        ctx.lineJoin = 'round'; // 线条连接处圆润
         ctx.beginPath();
         
         const yRange = chartData.yAxisMax - chartData.yAxisMin;
@@ -814,43 +816,50 @@ Page({
         }
         ctx.stroke();
 
-        // 绘制数据点
-        ctx.fillStyle = '#34d399';
+        // 绘制数据点 - 优化UI
+        ctx.fillStyle = '#34d399'; // 与线条相同的颜色
+        ctx.strokeStyle = '#FFFFFF'; // 白色边框
+        ctx.lineWidth = 2; // 边框宽度
         for (let i = 0; i < chartData.data.length; i++) {
           const x = padding + xStep * i;
           const y = chartHeight - padding - (chartData.data[i] - chartData.yAxisMin) * yScale;
           ctx.beginPath();
-          ctx.arc(x, y, 4, 0, 2 * Math.PI);
+          ctx.arc(x, y, 5, 0, 2 * Math.PI); // 稍微增大点的大小
           ctx.fill();
+          ctx.stroke();
         }
       }
 
-      // 绘制标签
-      ctx.fillStyle = '#666';
+      // 绘制标签 - 优化UI
       ctx.font = '12px Arial';
       
       // 纵轴标签 - 只显示数字，确保不超出边界
       ctx.textAlign = 'right';
+      ctx.fillStyle = '#999'; // 更柔和的颜色
       for (let i = 0; i <= 5; i++) {
         const y = padding + yStep * i;
         const value = chartData.yAxisMax - (chartData.yAxisMax - chartData.yAxisMin) / 5 * i;
-        ctx.fillText(value.toFixed(0), padding - 5, y + 4); // 调整位置，确保不超出左边界
+        ctx.fillText(value.toFixed(0), padding - 8, y + 4); // 调整位置，确保不超出左边界
       }
 
-      // 纵轴单位
+      // 纵轴单位 - 优化UI
       ctx.textAlign = 'right';
-      ctx.fillText('h', padding - 5, padding - 15); // 调整位置，确保不超出左边界
+      ctx.fillStyle = '#34d399'; // 使用与数据线条相同的颜色
+      ctx.font = '14px Arial'; // 稍微增大字体
+      ctx.fillText('小时', padding - 8, padding - 20); // 调整位置，确保不超出左边界
 
       // 横轴标签 - 只显示数字
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
+      ctx.fillStyle = '#999'; // 更柔和的颜色
+      ctx.font = '12px Arial'; // 恢复默认字体
       
       for (let i = 0; i < chartData.labels.length; i++) {
         const x = padding + xStep * i;
-        ctx.fillText((i + 1).toString(), x, chartHeight - padding + 5);
+        ctx.fillText((i + 1).toString(), x, chartHeight - padding + 8); // 调整位置
       }
 
-      // 横轴单位
+      // 横轴单位 - 优化UI
       let xAxisUnit = '';
       if (this.data.chartTimeUnit === 'day') {
         xAxisUnit = '星期';
@@ -860,14 +869,16 @@ Page({
         xAxisUnit = '月';
       }
       ctx.textAlign = 'center';
-      ctx.fillText(xAxisUnit, chartWidth - padding + 15, chartHeight - padding + 5);
+      ctx.fillStyle = '#34d399'; // 使用与数据线条相同的颜色
+      ctx.font = '14px Arial'; // 稍微增大字体
+      ctx.fillText(xAxisUnit, chartWidth - padding + 20, chartHeight - padding + 3); // 调整位置，往左边移动
 
-      // 绘制标题
+      // 绘制标题 - 优化UI
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
+      ctx.font = '16px Arial'; // 增大标题字体
       ctx.fillStyle = '#333';
-      ctx.fillText('工时趋势', chartWidth / 2, 10);
+      ctx.fillText('工时趋势', chartWidth / 2, 15); // 调整位置
     });
   },
 
