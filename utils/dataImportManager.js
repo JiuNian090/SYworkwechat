@@ -280,8 +280,8 @@ class DataImportManager {
                 wx.setStorageSync('customWeeklyHours', importData.customWeeklyHours);
               }
               
-              // 处理图片文件（兼容新旧路径格式：image/YYYY-MM/ 或 images/）
-              const imageDir = zip.folder('image') || zip.folder('images');
+              // 处理图片文件（统一使用images文件夹）
+              const imageDir = zip.folder('images') || zip.folder('image');
               if (imageDir) {
                 const imagePromises = [];
                 // 用于存储已处理的图片路径
@@ -311,21 +311,28 @@ class DataImportManager {
                             
                             // 检查是否有图片周关联表，如果有则使用关联表恢复图片
                             if (Object.keys(imageWeekRelation).length > 0) {
+                              // 处理路径格式，确保与关联表中的路径格式一致
+                              let normalizedPath = relativePath;
+                              // 确保路径以'images/'开头
+                              if (!normalizedPath.startsWith('images/')) {
+                                normalizedPath = normalizedPath.replace('image/', 'images/');
+                              }
+                              
                               // 遍历关联表，找到匹配的图片路径
                               for (const weekKey in imageWeekRelation) {
                                 const weekImages = imageWeekRelation[weekKey];
-                                const matchingImage = weekImages.find(img => img.path === relativePath);
-                                if (matchingImage) {
+                                const matchingImageIndex = weekImages.findIndex(img => img.path === normalizedPath);
+                                if (matchingImageIndex !== -1) {
                                   // 获取现有图片数据
                                   const existingImages = wx.getStorageSync(weekKey) || [];
                                   
                                   // 检查图片是否已存在
-                                  const imageExists = existingImages.some(img => img.name === matchingImage.name);
+                                  const imageExists = existingImages.some(img => img.name === weekImages[matchingImageIndex].name);
                                   if (!imageExists) {
                                     // 添加新图片
                                     existingImages.push({
                                       id: Date.now().toString(),
-                                      name: matchingImage.name,
+                                      name: weekImages[matchingImageIndex].name,
                                       path: tempPath,
                                       addedTime: new Date().toISOString()
                                     });
@@ -333,6 +340,9 @@ class DataImportManager {
                                     // 保存图片数据
                                     wx.setStorageSync(weekKey, existingImages);
                                   }
+                                  
+                                  // 更新关联表中的路径为实际的本地路径
+                                  imageWeekRelation[weekKey][matchingImageIndex].path = tempPath;
                                   break;
                                 }
                               }
