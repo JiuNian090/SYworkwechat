@@ -309,6 +309,39 @@ page {
   color: var(--text-secondary);
 }
 
+/* 图表卡片 */
+.chart-card {
+  margin-bottom: 30rpx;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 12rpx;
+  margin-left: auto;
+}
+
+.chart-control-btn {
+  padding: 8rpx 20rpx;
+  font-size: 24rpx;
+  border-radius: 20rpx;
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.chart-control-btn.active {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(7, 193, 96, 0.3);
+}
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 400rpx;
+  margin-top: 20rpx;
+}
+
 /* 工时统计卡片 */
 .hours-stats {
   padding: 10rpx 0;
@@ -919,12 +952,16 @@ page {
     gap: 20rpx;
   }
   
-  .stats-card {
+  .hours-card {
     grid-column: 1;
   }
   
-  .hours-card {
+  .chart-card {
     grid-column: 2;
+  }
+  
+  .stats-card {
+    grid-column: 1 / 3;
   }
   
   .list-card {
@@ -991,6 +1028,18 @@ page {
   .stats-container {
     grid-template-columns: 1fr 1fr;
     gap: 30rpx;
+  }
+  
+  .hours-card {
+    grid-column: 1;
+  }
+  
+  .chart-card {
+    grid-column: 2;
+  }
+  
+  .stats-card {
+    grid-column: 1 / 3;
   }
   
   .shift-stats-grid {

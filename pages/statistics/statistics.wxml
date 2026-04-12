@@ -42,38 +42,6 @@
 
   <!-- 统计卡片容器 -->
   <view class="stats-container">
-    <!-- 班次统计卡片 -->
-    <view class="card stats-card">
-      <view class="card-header">
-        <view class="card-icon">📈</view>
-        <text class="card-title">班次统计</text>
-        <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
-      </view>
-      <view class="shift-stats-grid">
-        <view class="shift-stat-item day-shift">
-          <view class="stat-icon">☀️</view>
-          <view class="stat-info">
-            <text class="stat-value">{{statistics.dayShifts}}</text>
-            <text class="stat-label">白天班天数</text>
-          </view>
-        </view>
-        <view class="shift-stat-item night-shift">
-          <view class="stat-icon">🌙</view>
-          <view class="stat-info">
-            <text class="stat-value">{{statistics.nightShifts}}</text>
-            <text class="stat-label">跨夜班天数</text>
-          </view>
-        </view>
-        <view class="shift-stat-item off-day">
-          <view class="stat-icon">😴</view>
-          <view class="stat-info">
-            <text class="stat-value">{{statistics.offDays}}</text>
-            <text class="stat-label">休息天数</text>
-          </view>
-        </view>
-      </view>
-    </view>
-
     <!-- 工时统计卡片 -->
     <view class="card hours-card">
       <view class="card-header">
@@ -104,6 +72,54 @@
         <view class="hours-difference {{hourDifference >= 0 ? 'positive' : 'negative'}}">
           <text class="diff-label">{{hourDifference >= 0 ? '工时超额' : '工时差额'}}</text>
           <text class="diff-value">{{hourDifference >= 0 ? '+' : ''}}{{hourDifference}}h</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 工时趋势图表 -->
+    <view class="card chart-card">
+      <view class="card-header">
+        <view class="card-icon">📊</view>
+        <text class="card-title">工时趋势</text>
+        <view class="chart-controls">
+          <view class="chart-control-btn {{chartTimeUnit === 'day' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="day">日</view>
+          <view class="chart-control-btn {{chartTimeUnit === 'week' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="week">周</view>
+          <view class="chart-control-btn {{chartTimeUnit === 'month' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="month">月</view>
+        </view>
+      </view>
+      <view class="chart-container">
+        <canvas type="2d" id="lineCanvas" style="width: 100%; height: 200px;"></canvas>
+      </view>
+    </view>
+
+    <!-- 班次统计卡片 -->
+    <view class="card stats-card">
+      <view class="card-header">
+        <view class="card-icon">📈</view>
+        <text class="card-title">班次统计</text>
+        <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
+      </view>
+      <view class="shift-stats-grid">
+        <view class="shift-stat-item day-shift">
+          <view class="stat-icon">☀️</view>
+          <view class="stat-info">
+            <text class="stat-value">{{statistics.dayShifts}}</text>
+            <text class="stat-label">白天班天数</text>
+          </view>
+        </view>
+        <view class="shift-stat-item night-shift">
+          <view class="stat-icon">🌙</view>
+          <view class="stat-info">
+            <text class="stat-value">{{statistics.nightShifts}}</text>
+            <text class="stat-label">跨夜班天数</text>
+          </view>
+        </view>
+        <view class="shift-stat-item off-day">
+          <view class="stat-icon">😴</view>
+          <view class="stat-info">
+            <text class="stat-value">{{statistics.offDays}}</text>
+            <text class="stat-label">休息天数</text>
+          </view>
         </view>
       </view>
     </view>
