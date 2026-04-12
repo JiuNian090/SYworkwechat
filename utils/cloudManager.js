@@ -341,43 +341,75 @@ class CloudManager {
       });
       
       // 上传图片到云存储（只上传新的或变化的图片）
+      // 并行上传，控制并发数
+      const maxConcurrentUploads = 5; // 控制并发数，避免超过微信小程序限制
+      const uploadBatches = [];
+      
+      // 准备需要上传的图片
+      const imagesToUpload = [];
       for (const imgInfo of validImages) {
-        try {
-          // 计算图片哈希值
-          const imageHash = await this.calculateImageHash(imgInfo.image.path);
-          const existingImg = existingImageMap.get(imgInfo.remotePath);
-          let shouldUpload = true;
-          
-          // 如果云端已存在，检查是否需要重新上传
-          if (existingImg) {
-            // 对比哈希值，如果不同则需要重新上传
-            if (existingImg.hash === imageHash) {
-              shouldUpload = false;
-              // 复用云端的 fileID
-              uploadedImages.push({
-                ...imgInfo,
-                fileID: existingImg.fileID,
-                hash: imageHash
-              });
-            }
+        // 计算图片哈希值
+        const imageHash = await this.calculateImageHash(imgInfo.image.path);
+        const existingImg = existingImageMap.get(imgInfo.remotePath);
+        let shouldUpload = true;
+        
+        // 如果云端已存在，检查是否需要重新上传
+        if (existingImg) {
+          // 对比哈希值，如果不同则需要重新上传
+          if (existingImg.hash === imageHash) {
+            shouldUpload = false;
+            // 复用云端的 fileID
+            uploadedImages.push({
+              ...imgInfo,
+              fileID: existingImg.fileID,
+              hash: imageHash
+            });
           }
-          
-          if (shouldUpload) {
-            // 上传新图片到云存储
+        }
+        
+        if (shouldUpload) {
+          imagesToUpload.push({ ...imgInfo, hash: imageHash });
+        }
+      }
+      
+      // 分批次并行上传
+      for (let i = 0; i < imagesToUpload.length; i += maxConcurrentUploads) {
+        const batch = imagesToUpload.slice(i, i + maxConcurrentUploads);
+        const batchPromises = batch.map(async (imgInfo) => {
+          try {
+            // 压缩图片
+            let compressedPath = imgInfo.image.path;
+            try {
+              const compressResult = await new Promise((resolve, reject) => {
+                wx.compressImage({
+                  src: imgInfo.image.path,
+                  quality: 80, // 压缩质量，0-100
+                  success: resolve,
+                  fail: reject
+                });
+              });
+              compressedPath = compressResult.tempFilePath;
+            } catch (e) {
+              console.log('图片压缩失败，使用原图', e);
+            }
+            
+            // 上传压缩后的图片到云存储
             const uploadResult = await wx.cloud.uploadFile({
               cloudPath: `schedule_images/${this.userId}/${imgInfo.remotePath}`,
-              filePath: imgInfo.image.path
+              filePath: compressedPath
             });
             
             uploadedImages.push({
               ...imgInfo,
-              fileID: uploadResult.fileID,
-              hash: imageHash
+              fileID: uploadResult.fileID
             });
+          } catch (e) {
+            console.error('上传图片失败', imgInfo.remotePath, e);
           }
-        } catch (e) {
-          console.error('上传图片失败', imgInfo.remotePath, e);
-        }
+        });
+        
+        // 等待当前批次上传完成
+        await Promise.all(batchPromises);
       }
       
       // 获取头像信息
@@ -544,72 +576,95 @@ class CloudManager {
         });
       });
       
-      // 计算需要恢复的图片数量
-      const totalImages = images.length;
+      // 准备需要下载的图片
+      const imagesToDownload = [];
+      for (const imgInfo of images) {
+        // 检查图片是否已存在本地
+        const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
+        if (localImageMap.has(localKey)) {
+          // 图片已存在，检查哈希值是否相同
+          const localImage = localImageMap.get(localKey);
+          if (localImage.hash === imgInfo.hash) {
+            // 哈希值相同，图片未变化，跳过下载
+            console.log('图片未变化，跳过下载:', imgInfo.remotePath);
+            continue;
+          }
+        }
+        imagesToDownload.push(imgInfo);
+      }
+      
+      // 并行下载，控制并发数
+      const maxConcurrentDownloads = 5; // 控制并发数，避免超过微信小程序限制
+      const totalImages = imagesToDownload.length;
       let currentImage = 0;
       
-      for (const imgInfo of images) {
-        try {
-          // 更新进度
-          currentImage++;
-          const progress = Math.round((currentImage / totalImages) * 100);
-          wx.showLoading({ 
-            title: `恢复中 ${progress}%`,
-            mask: true
-          });
-          
-          // 检查图片是否已存在本地
-          const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
-          if (localImageMap.has(localKey)) {
-            // 图片已存在，检查哈希值是否相同
-            const localImage = localImageMap.get(localKey);
-            if (localImage.hash === imgInfo.hash) {
-              // 哈希值相同，图片未变化，跳过下载
-              console.log('图片未变化，跳过下载:', imgInfo.remotePath);
-              continue;
+      // 分批次并行下载
+      for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
+        const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
+        const batchPromises = batch.map(async (imgInfo) => {
+          try {
+            // 更新进度
+            currentImage++;
+            const progress = Math.round((currentImage / totalImages) * 100);
+            wx.showLoading({ 
+              title: `恢复中 ${progress}%`,
+              mask: true
+            });
+            
+            // 从云存储下载图片
+            const downloadResult = await wx.cloud.downloadFile({
+              fileID: imgInfo.fileID
+            });
+            
+            // 计算下载图片的哈希值
+            const imageHash = await this.calculateImageHash(downloadResult.tempFilePath);
+            
+            // 保存到本地存储
+            const weekKey = imgInfo.weekKey;
+            const weekImages = wx.getStorageSync(weekKey) || [];
+            
+            // 检查是否需要更新现有图片
+            const existingImageIndex = weekImages.findIndex(img => img.name === imgInfo.imageName);
+            const newImage = {
+              id: `${weekKey}_${Date.now()}`,
+              name: imgInfo.imageName,
+              path: downloadResult.tempFilePath,
+              addedTime: new Date().toISOString(),
+              hash: imageHash
+            };
+            
+            if (existingImageIndex !== -1) {
+              // 更新现有图片
+              weekImages[existingImageIndex] = newImage;
+            } else {
+              // 添加新图片
+              weekImages.push(newImage);
             }
+            
+            wx.setStorageSync(weekKey, weekImages);
+            
+            // 同步更新到图片关联表
+            addImageToRelation(weekKey, newImage);
+            restoredWeekKeys.add(weekKey);
+            
+            // 构建图片周关联表
+            if (!imageWeekRelation[weekKey]) {
+              imageWeekRelation[weekKey] = [];
+            }
+            imageWeekRelation[weekKey].push({
+              name: newImage.name,
+              path: newImage.path,
+              hash: imageHash
+            });
+            
+            restoredImages.push(imgInfo.remotePath);
+          } catch (e) {
+            console.error('恢复图片失败', imgInfo.remotePath, e);
           }
-          
-          // 从云存储下载图片
-          const downloadResult = await wx.cloud.downloadFile({
-            fileID: imgInfo.fileID
-          });
-          
-          // 计算下载图片的哈希值
-          const imageHash = await this.calculateImageHash(downloadResult.tempFilePath);
-          
-          // 保存到本地存储
-          const weekKey = imgInfo.weekKey;
-          const weekImages = wx.getStorageSync(weekKey) || [];
-          
-          const newImage = {
-            id: `${weekKey}_${Date.now()}`,
-            name: imgInfo.imageName,
-            path: downloadResult.tempFilePath,
-            addedTime: new Date().toISOString(),
-            hash: imageHash
-          };
-          
-          weekImages.push(newImage);
-          wx.setStorageSync(weekKey, weekImages);
-          
-          // 同步更新到图片关联表
-          addImageToRelation(weekKey, newImage);
-          restoredWeekKeys.add(weekKey);
-          
-          // 构建图片周关联表
-          if (!imageWeekRelation[weekKey]) {
-            imageWeekRelation[weekKey] = [];
-          }
-          imageWeekRelation[weekKey].push({
-            name: newImage.name,
-            path: newImage.path
-          });
-          
-          restoredImages.push(imgInfo.remotePath);
-        } catch (e) {
-          console.error('恢复图片失败', imgInfo.remotePath, e);
-        }
+        });
+        
+        // 等待当前批次下载完成
+        await Promise.all(batchPromises);
       }
       
       // 清空图片关联表并导入构建好的关联表
