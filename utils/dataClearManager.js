@@ -36,13 +36,7 @@ class DataClearManager {
               }
             });
             
-            // 4. 清空用户数据
-            wx.removeStorageSync('cloudUserInfo');
-            wx.removeStorageSync('avatarType');
-            wx.removeStorageSync('avatarText');
-            wx.removeStorageSync('avatarEmoji');
-            
-            // 5. 清空更新数据
+            // 4. 清空更新数据
             wx.removeStorageSync('lastUpdateCheck');
             
             wx.showToast({
