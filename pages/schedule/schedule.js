@@ -620,10 +620,25 @@ Page({
         return;
       }
 
-      // 默认不选中任何班次，让用户自己选择
+      // 查找当前日期已有的排班对应的班次模板
       let pickerValue = [0];
       let selectedTemplateIndex = -1;
       let selectedShiftIndex = -1;
+      
+      if (selectedShift) {
+        // 查找匹配的班次模板
+        const matchingIndex = templates.findIndex(template => 
+          template.name === selectedShift.name && 
+          template.startTime === selectedShift.startTime && 
+          template.endTime === selectedShift.endTime
+        );
+        
+        if (matchingIndex !== -1) {
+          pickerValue = [matchingIndex];
+          selectedTemplateIndex = matchingIndex;
+          selectedShiftIndex = matchingIndex;
+        }
+      }
       
       this.setData({
         pickerValue: pickerValue,
