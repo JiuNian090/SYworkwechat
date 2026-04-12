@@ -40,68 +40,71 @@
     </view>
   </view>
 
-  <!-- 班次统计卡片 -->
-  <view class="card stats-card">
-    <view class="card-header">
-      <view class="card-icon">📈</view>
-      <text class="card-title">班次统计</text>
-      <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
+  <!-- 统计卡片容器 -->
+  <view class="stats-container">
+    <!-- 班次统计卡片 -->
+    <view class="card stats-card">
+      <view class="card-header">
+        <view class="card-icon">📈</view>
+        <text class="card-title">班次统计</text>
+        <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
+      </view>
+      <view class="shift-stats-grid">
+        <view class="shift-stat-item day-shift">
+          <view class="stat-icon">☀️</view>
+          <view class="stat-info">
+            <text class="stat-value">{{statistics.dayShifts}}</text>
+            <text class="stat-label">白天班天数</text>
+          </view>
+        </view>
+        <view class="shift-stat-item night-shift">
+          <view class="stat-icon">🌙</view>
+          <view class="stat-info">
+            <text class="stat-value">{{statistics.nightShifts}}</text>
+            <text class="stat-label">跨夜班天数</text>
+          </view>
+        </view>
+        <view class="shift-stat-item off-day">
+          <view class="stat-icon">😴</view>
+          <view class="stat-info">
+            <text class="stat-value">{{statistics.offDays}}</text>
+            <text class="stat-label">休息天数</text>
+          </view>
+        </view>
+      </view>
     </view>
-    <view class="shift-stats-grid">
-      <view class="shift-stat-item day-shift">
-        <view class="stat-icon">☀️</view>
-        <view class="stat-info">
-          <text class="stat-value">{{statistics.dayShifts}}</text>
-          <text class="stat-label">白天班天数</text>
-        </view>
-      </view>
-      <view class="shift-stat-item night-shift">
-        <view class="stat-icon">🌙</view>
-        <view class="stat-info">
-          <text class="stat-value">{{statistics.nightShifts}}</text>
-          <text class="stat-label">跨夜班天数</text>
-        </view>
-      </view>
-      <view class="shift-stat-item off-day">
-        <view class="stat-icon">😴</view>
-        <view class="stat-info">
-          <text class="stat-value">{{statistics.offDays}}</text>
-          <text class="stat-label">休息天数</text>
-        </view>
-      </view>
-    </view>
-  </view>
 
-  <!-- 工时统计卡片 -->
-  <view class="card hours-card">
-    <view class="card-header">
-      <view class="card-icon">⏱️</view>
-      <text class="card-title">工时统计</text>
-      <view class="help-icon-btn" bindtap="showCustomHoursModal">
-        <text class="help-icon">⚙️</text>
-      </view>
-    </view>
-    <view class="hours-stats">
-      <view class="hours-main">
-        <view class="hours-item">
-          <text class="hours-value {{totalHours >= standardHours ? 'over' : ''}}">{{totalHours}}</text>
-          <text class="hours-label">实际工时</text>
-        </view>
-        <view class="hours-divider">/</view>
-        <view class="hours-item">
-          <text class="hours-value standard">{{standardHours}}</text>
-          <text class="hours-label">标准工时</text>
+    <!-- 工时统计卡片 -->
+    <view class="card hours-card">
+      <view class="card-header">
+        <view class="card-icon">⏱️</view>
+        <text class="card-title">工时统计</text>
+        <view class="help-icon-btn" bindtap="showCustomHoursModal">
+          <text class="help-icon">⚙️</text>
         </view>
       </view>
-      <view class="hours-progress">
-        <view class="progress-bar-bg">
-          <view class="progress-bar-fill {{totalHours >= standardHours ? 'over' : 'under'}}" style="width: {{(standardHours > 0 ? (totalHours / standardHours * 100) : 0) > 100 ? 100 : (standardHours > 0 ? (totalHours / standardHours * 100) : 0)}}% "></view>
+      <view class="hours-stats">
+        <view class="hours-main">
+          <view class="hours-item">
+            <text class="hours-value {{totalHours >= standardHours ? 'over' : ''}}">{{totalHours}}</text>
+            <text class="hours-label">实际工时</text>
+          </view>
+          <view class="hours-divider">/</view>
+          <view class="hours-item">
+            <text class="hours-value standard">{{standardHours}}</text>
+            <text class="hours-label">标准工时</text>
+          </view>
         </view>
-        <text class="progress-text">{{progressText}}</text>
-      </view>
-      <view class="hours-difference {{hourDifference >= 0 ? 'positive' : 'negative'}}">
-        <text class="diff-label">{{hourDifference >= 0 ? '工时超额' : '工时差额'}}</text>
-        <text class="diff-value">{{hourDifference >= 0 ? '+' : ''}}{{hourDifference}}h</text>
+        <view class="hours-progress">
+          <view class="progress-bar-bg">
+            <view class="progress-bar-fill {{totalHours >= standardHours ? 'over' : 'under'}}" style="width: {{(standardHours > 0 ? (totalHours / standardHours * 100) : 0) > 100 ? 100 : (standardHours > 0 ? (totalHours / standardHours * 100) : 0)}}% "></view>
+          </view>
+          <text class="progress-text">{{progressText}}</text>
+        </view>
+        <view class="hours-difference {{hourDifference >= 0 ? 'positive' : 'negative'}}">
+          <text class="diff-label">{{hourDifference >= 0 ? '工时超额' : '工时差额'}}</text>
+          <text class="diff-value">{{hourDifference >= 0 ? '+' : ''}}{{hourDifference}}h</text>
+        </view>
       </view>
     </view>
   </view>
