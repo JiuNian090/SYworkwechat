@@ -1,12 +1,13 @@
 {
   "name": "sywork-wechat-mini-program",
-  "version": "1.0.0",
+  "version": "3.5.4",
   "description": "SYwork 工时记录系统 - 微信小程序",
   "main": "app.js",
   "scripts": {
     "sync-changelog": "node sync_changelog.js",
-    "build": "node sync_changelog.js && gulp build",
-    "dev": "node sync_changelog.js && gulp dev",
+    "update-version": "node version-manager.js",
+    "build": "node version-manager.js && node sync_changelog.js && gulp build",
+    "dev": "node version-manager.js && node sync_changelog.js && gulp dev",
     "clean": "gulp clean"
   },
   "keywords": [

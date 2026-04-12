@@ -1,4 +1,5 @@
 {
+  "version": "3.5.4",
   "cloudfunctionRoot": "cloudfunctions/",
   "cloudEnv": "cloudbase-1gar7d7f967d8a60",
   "setting": {
