@@ -235,11 +235,39 @@ class DataImportManager {
               });
             };
             
+            // 检查是否存在图片周关联表.json文件
+            const imageRelationFile = zip.file('图片周关联表.json');
+            
+            // 用于存储图片周关联表
+            let imageWeekRelation = {};
+            
+            // 处理图片周关联表文件
+            const processImageRelation = () => {
+              return new Promise((resolve) => {
+                if (imageRelationFile) {
+                  imageRelationFile.async('string').then((jsonStr) => {
+                    try {
+                      imageWeekRelation = JSON.parse(jsonStr);
+                    } catch (e) {
+                      console.error('解析图片周关联表.json失败', e);
+                    }
+                    resolve();
+                  }).catch((err) => {
+                    console.error('读取图片周关联表.json失败', err);
+                    resolve();
+                  });
+                } else {
+                  resolve();
+                }
+              });
+            };
+            
             // 按顺序处理所有文件
             Promise.all([
               processShiftTemplates(),
               processShifts(),
-              processDataJson()
+              processDataJson(),
+              processImageRelation()
             ]).then(() => {
               // 保存数据到本地存储
               if (importData.shiftTemplates.length > 0) {
@@ -256,6 +284,8 @@ class DataImportManager {
               const imageDir = zip.folder('image') || zip.folder('images');
               if (imageDir) {
                 const imagePromises = [];
+                // 用于存储已处理的图片路径
+                const processedImagePaths = new Set();
                 
                 // 递归处理图片文件夹中的所有文件
                 const processImageFolder = (folder, basePath = '') => {
@@ -277,26 +307,56 @@ class DataImportManager {
                           filePath: tempPath,
                           data: content,
                           success: () => {
-                            // 解析图片信息，恢复到对应的周存储
-                            // 文件名格式：week_images_{weekKey}_index_name.jpg
-                            const fileNameParts = fileName.split('_');
-                            if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
-                              const weekKey = fileNameParts.slice(2, -2).join('_');
-                              const weekImageKey = `week_images_${weekKey}`;
-                              
-                              // 获取现有图片数据
-                              const existingImages = wx.getStorageSync(weekImageKey) || [];
-                              
-                              // 添加新图片
-                              existingImages.push({
-                                id: Date.now().toString(),
-                                name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
-                                path: tempPath,
-                                addedTime: new Date().toISOString()
-                              });
-                              
-                              // 保存图片数据
-                              wx.setStorageSync(weekImageKey, existingImages);
+                            processedImagePaths.add(relativePath);
+                            
+                            // 检查是否有图片周关联表，如果有则使用关联表恢复图片
+                            if (Object.keys(imageWeekRelation).length > 0) {
+                              // 遍历关联表，找到匹配的图片路径
+                              for (const weekKey in imageWeekRelation) {
+                                const weekImages = imageWeekRelation[weekKey];
+                                const matchingImage = weekImages.find(img => img.path === relativePath);
+                                if (matchingImage) {
+                                  // 获取现有图片数据
+                                  const existingImages = wx.getStorageSync(weekKey) || [];
+                                  
+                                  // 检查图片是否已存在
+                                  const imageExists = existingImages.some(img => img.name === matchingImage.name);
+                                  if (!imageExists) {
+                                    // 添加新图片
+                                    existingImages.push({
+                                      id: Date.now().toString(),
+                                      name: matchingImage.name,
+                                      path: tempPath,
+                                      addedTime: new Date().toISOString()
+                                    });
+                                    
+                                    // 保存图片数据
+                                    wx.setStorageSync(weekKey, existingImages);
+                                  }
+                                  break;
+                                }
+                              }
+                            } else {
+                              // 兼容旧格式：文件名格式为 week_images_{weekKey}_index_name.jpg
+                              const fileNameParts = fileName.split('_');
+                              if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
+                                const weekKey = fileNameParts.slice(2, -2).join('_');
+                                const weekImageKey = `week_images_${weekKey}`;
+                                
+                                // 获取现有图片数据
+                                const existingImages = wx.getStorageSync(weekImageKey) || [];
+                                
+                                // 添加新图片
+                                existingImages.push({
+                                  id: Date.now().toString(),
+                                  name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
+                                  path: tempPath,
+                                  addedTime: new Date().toISOString()
+                                });
+                                
+                                // 保存图片数据
+                                wx.setStorageSync(weekImageKey, existingImages);
+                              }
                             }
                           },
                           fail: (err) => {
@@ -313,9 +373,21 @@ class DataImportManager {
                 
                 // 等待所有图片处理完成
                 Promise.all(imagePromises).then(() => {
+                  // 导入图片周关联表到本地存储
+                  if (Object.keys(imageWeekRelation).length > 0) {
+                    // 导入图片周关联表
+                    const imageRelation = require('./imageRelation');
+                    imageRelation.importImageWeekRelation(imageWeekRelation);
+                  }
+                  
                   this.finishImport(callback);
                 });
               } else {
+                // 即使没有图片文件，也要导入图片周关联表
+                if (Object.keys(imageWeekRelation).length > 0) {
+                  const imageRelation = require('./imageRelation');
+                  imageRelation.importImageWeekRelation(imageWeekRelation);
+                }
                 this.finishImport(callback);
               }
             }).catch((err) => {
