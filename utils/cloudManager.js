@@ -294,7 +294,7 @@ class CloudManager {
         };
       }
       
-      wx.showLoading({ title: '备份中...' });
+      wx.showLoading({ title: '准备备份...' });
       
       // 1. 获取本地数据
       const localData = this.getLocalData();
@@ -372,11 +372,23 @@ class CloudManager {
         }
       }
       
+      // 计算需要上传的图片数量
+      const totalImages = imagesToUpload.length;
+      let currentImage = 0;
+      
       // 分批次并行上传
       for (let i = 0; i < imagesToUpload.length; i += maxConcurrentUploads) {
         const batch = imagesToUpload.slice(i, i + maxConcurrentUploads);
         const batchPromises = batch.map(async (imgInfo) => {
           try {
+            // 更新进度
+            currentImage++;
+            const progress = Math.round((currentImage / totalImages) * 100);
+            wx.showLoading({ 
+              title: `备份中 ${progress}%`,
+              mask: true
+            });
+            
             // 压缩图片
             let compressedPath = imgInfo.image.path;
             try {
@@ -420,6 +432,7 @@ class CloudManager {
       };
       
       // 4. 调用云函数备份数据（云函数会对比差异，只更新有变化的数据）
+      wx.showLoading({ title: '保存备份数据...' });
       const backupResult = await wx.cloud.callFunction({
         name: 'backupRestore',
         data: {
