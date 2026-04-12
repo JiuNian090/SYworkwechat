@@ -1,4 +1,5 @@
 // pages/statistics/statistics.js
+
 Page({
   data: {
     startDate: '',
@@ -28,7 +29,9 @@ Page({
       offDays: 0,
       totalHours: 0,
       hourDifference: 0
-    }
+    },
+    chartTimeUnit: 'day', // 图表时间单位：day, week, month, year
+    chartData: [] // 图表数据
   },
 
   /**
@@ -179,7 +182,8 @@ Page({
     this.setData({
       startDate: range.startDate,
       endDate: range.endDate,
-      activeQuickBtn: 'thisMonth'
+      activeQuickBtn: 'thisMonth',
+      chartTimeUnit: 'week' // 选择本月时切换到周视图
     });
     this.calculateStatistics();
   },
@@ -415,6 +419,9 @@ Page({
           hourDifference: hourDifference.toFixed(1)
         }
       });
+      
+      // 绘制图表
+      this.drawChart();
     } catch (e) {
       console.error('计算统计数据失败', e);
       wx.showToast({
@@ -612,5 +619,270 @@ Page({
       title: 'SYwork排班管理系统 - 统计页面',
       query: 'page=statistics'
     };
+  },
+
+  // 切换图表时间单位
+  changeChartTimeUnit(e) {
+    const unit = e.currentTarget.dataset.unit;
+    let startDate, endDate;
+    const now = new Date();
+
+    // 根据时间单位调整日期范围
+    if (unit === 'day') {
+      // 日：显示本周每日
+      const range = this.getThisWeekRange();
+      startDate = range.startDate;
+      endDate = range.endDate;
+    } else if (unit === 'week') {
+      // 周：显示本月的周
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1); // 本月1日
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0); // 本月最后一天
+      startDate = this.formatDate(monthStart);
+      endDate = this.formatDate(monthEnd);
+    } else if (unit === 'month') {
+      // 月：显示这一年的12个月
+      const yearStart = new Date(now.getFullYear(), 0, 1); // 1月1日
+      const yearEnd = new Date(now.getFullYear(), 11, 31); // 12月31日
+      startDate = this.formatDate(yearStart);
+      endDate = this.formatDate(yearEnd);
+    }
+
+    this.setData({
+      chartTimeUnit: unit,
+      startDate: startDate,
+      endDate: endDate,
+      activeQuickBtn: unit === 'day' ? 'thisWeek' : '' // 选择日视图时选中本周按钮
+    });
+
+    // 重新计算统计数据
+    this.calculateStatistics();
+  },
+
+  // 生成图表数据
+  generateChartData() {
+    const { startDate, endDate, chartTimeUnit, shifts } = this.data;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const labels = [];
+    const data = [];
+
+    // 根据时间单位生成数据
+    if (chartTimeUnit === 'day') {
+      // 按天统计
+      const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = this.formatDate(d);
+        const dayData = shifts.find(shift => shift.date === dateStr);
+        const weekday = weekdays[d.getDay()];
+        labels.push(weekday);
+        data.push(parseFloat(dayData?.workHours) || 0);
+      }
+    } else if (chartTimeUnit === 'week') {
+      // 按周统计
+      let currentWeek = [];
+      let weekStart = new Date(start);
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // 调整到周一
+      let weekCount = 0;
+
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = this.formatDate(d);
+        const dayData = shifts.find(shift => shift.date === dateStr);
+        currentWeek.push(parseFloat(dayData?.workHours) || 0);
+
+        if (d.getDay() === 0 || d >= end) { // 周日或结束日期
+          const weekTotal = currentWeek.reduce((sum, hours) => sum + hours, 0);
+          // 计算周数：第一周、第二周...
+          weekCount++;
+          const weekLabel = `第${weekCount}周`;
+          labels.push(weekLabel);
+          data.push(weekTotal);
+          currentWeek = [];
+          weekStart.setDate(d.getDate() + 1);
+        }
+      }
+    } else if (chartTimeUnit === 'month') {
+      // 按月统计
+      const months = {};
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = this.formatDate(d);
+        const monthKey = dateStr.substring(0, 7); // YYYY-MM
+        const dayData = shifts.find(shift => shift.date === dateStr);
+        if (!months[monthKey]) {
+          months[monthKey] = 0;
+        }
+        months[monthKey] += parseFloat(dayData?.workHours) || 0;
+      }
+      Object.keys(months).forEach(month => {
+        const monthNum = month.substring(5); // MM
+        labels.push(`${monthNum}月`);
+        data.push(months[month]);
+      });
+    }
+
+    // 计算纵轴范围
+    const maxValue = Math.max(...data, 0);
+    const minValue = Math.min(...data, 0);
+    const yAxisMax = maxValue > 0 ? Math.ceil(maxValue * 1.1) : 10;
+    const yAxisMin = minValue < 0 ? Math.floor(minValue * 1.1) : 0;
+
+    return {
+      labels,
+      data,
+      yAxisMax,
+      yAxisMin
+    };
+  },
+
+  // 绘制图表
+  drawChart() {
+    const chartData = this.generateChartData();
+    const windowInfo = wx.getWindowInfo();
+    const windowWidth = windowInfo.windowWidth;
+    const chartWidth = windowWidth - 60; // 减去左右边距
+    const chartHeight = 200;
+    const padding = 40;
+    const contentWidth = chartWidth - padding * 2;
+    const contentHeight = chartHeight - padding * 2;
+
+    // 使用新的Canvas 2D API
+    const query = wx.createSelectorQuery();
+    query.select('#lineCanvas').fields({
+      node: true,
+      size: true
+    }).exec((res) => {
+      const canvas = res[0].node;
+      const ctx = canvas.getContext('2d');
+      
+      // 设置画布尺寸
+      const dpr = wx.getWindowInfo().pixelRatio;
+      canvas.width = chartWidth * dpr;
+      canvas.height = chartHeight * dpr;
+      ctx.scale(dpr, dpr);
+      
+      // 清除画布
+      ctx.clearRect(0, 0, chartWidth, chartHeight);
+
+      // 绘制网格
+      ctx.strokeStyle = '#e5e5e5';
+      ctx.lineWidth = 1;
+      
+      // 纵轴网格
+      const yStep = contentHeight / 5;
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + yStep * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(chartWidth - padding, y);
+        ctx.stroke();
+      }
+
+      // 横轴网格
+      const xStep = contentWidth / (chartData.labels.length - 1 || 1);
+      for (let i = 0; i < chartData.labels.length; i++) {
+        const x = padding + xStep * i;
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, chartHeight - padding);
+        ctx.stroke();
+      }
+
+      // 绘制数据线条
+      if (chartData.data.length > 0) {
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        const yRange = chartData.yAxisMax - chartData.yAxisMin;
+        const yScale = contentHeight / yRange;
+        
+        for (let i = 0; i < chartData.data.length; i++) {
+          const x = padding + xStep * i;
+          const y = chartHeight - padding - (chartData.data[i] - chartData.yAxisMin) * yScale;
+          
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            // 绘制平滑曲线
+            const prevX = padding + xStep * (i - 1);
+            const prevY = chartHeight - padding - (chartData.data[i - 1] - chartData.yAxisMin) * yScale;
+            const controlX1 = prevX + xStep * 0.3;
+            const controlY1 = prevY;
+            const controlX2 = x - xStep * 0.3;
+            const controlY2 = y;
+            ctx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, x, y);
+          }
+        }
+        ctx.stroke();
+
+        // 绘制数据点
+        ctx.fillStyle = '#34d399';
+        for (let i = 0; i < chartData.data.length; i++) {
+          const x = padding + xStep * i;
+          const y = chartHeight - padding - (chartData.data[i] - chartData.yAxisMin) * yScale;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      }
+
+      // 绘制标签
+      ctx.fillStyle = '#666';
+      ctx.font = '12px Arial';
+      
+      // 纵轴标签
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + yStep * i;
+        const value = chartData.yAxisMax - (chartData.yAxisMax - chartData.yAxisMin) / 5 * i;
+        ctx.fillText(value.toFixed(0) + 'h', padding - 10, y + 4);
+      }
+
+      // 横轴标签
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      
+      // 根据时间单位调整标签显示方式
+      if (chartData.labels.length > 6) {
+        // 对于标签较多的情况，旋转显示
+        for (let i = 0; i < chartData.labels.length; i++) {
+          const x = padding + xStep * i;
+          const y = chartHeight - padding + 5;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(-Math.PI / 4); // 旋转45度
+          ctx.fillText(chartData.labels[i], 0, 0);
+          ctx.restore();
+        }
+      } else {
+        // 标签较少时正常显示
+        for (let i = 0; i < chartData.labels.length; i++) {
+          const x = padding + xStep * i;
+          ctx.fillText(chartData.labels[i], x, chartHeight - padding + 5);
+        }
+      }
+
+      // 绘制标题
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.font = '14px Arial';
+      ctx.fillStyle = '#333';
+      ctx.fillText('工时趋势', chartWidth / 2, 10);
+    });
+  },
+
+  // 页面显示时更新图表
+  onShow() {
+    // 页面显示时只在排班数据发生变化时重新计算统计数据
+    const allShifts = wx.getStorageSync('shifts') || {};
+    const currentShifts = this.data.shifts;
+    
+    // 检查排班数据是否发生变化
+    const shiftsChanged = JSON.stringify(allShifts) !== JSON.stringify(currentShifts);
+    
+    if (shiftsChanged) {
+      this.calculateStatistics();
+    }
+    // 绘制图表
+    this.drawChart();
   }
 });
