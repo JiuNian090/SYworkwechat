@@ -163,8 +163,10 @@
         </view>
       </block>
       <view class="empty-state" wx:else>
-        <text class="empty-icon">📭</text>
-        <text class="empty-text">该时间段暂无班次记录</text>
+        <text class="empty-icon" wx:if="{{chartTimeUnit === 'month'}}">📅</text>
+        <text class="empty-icon" wx:else>📭</text>
+        <text class="empty-text" wx:if="{{chartTimeUnit === 'month'}}">年视图不显示详细班次明细，请切换到周或月视图查看</text>
+        <text class="empty-text" wx:else>该时间段暂无班次记录</text>
       </view>
     </view>
   </view>
