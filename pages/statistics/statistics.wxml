@@ -82,9 +82,9 @@
         <view class="card-icon">📊</view>
         <text class="card-title">工时趋势</text>
         <view class="chart-controls">
-          <view class="chart-control-btn {{chartTimeUnit === 'day' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="day">日</view>
-          <view class="chart-control-btn {{chartTimeUnit === 'week' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="week">周</view>
-          <view class="chart-control-btn {{chartTimeUnit === 'month' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="month">月</view>
+          <view class="chart-control-btn {{chartTimeUnit === 'day' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="day">周</view>
+          <view class="chart-control-btn {{chartTimeUnit === 'week' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="week">月</view>
+          <view class="chart-control-btn {{chartTimeUnit === 'month' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="month">年</view>
         </view>
       </view>
       <view class="chart-container">

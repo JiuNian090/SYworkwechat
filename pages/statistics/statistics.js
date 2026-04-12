@@ -829,37 +829,38 @@ Page({
       ctx.fillStyle = '#666';
       ctx.font = '12px Arial';
       
-      // 纵轴标签
-      ctx.textAlign = 'center';
+      // 纵轴标签 - 只显示数字，确保不超出边界
+      ctx.textAlign = 'right';
       for (let i = 0; i <= 5; i++) {
         const y = padding + yStep * i;
         const value = chartData.yAxisMax - (chartData.yAxisMax - chartData.yAxisMin) / 5 * i;
-        ctx.fillText(value.toFixed(0) + 'h', padding - 10, y + 4);
+        ctx.fillText(value.toFixed(0), padding - 5, y + 4); // 调整位置，确保不超出左边界
       }
 
-      // 横轴标签
+      // 纵轴单位
+      ctx.textAlign = 'right';
+      ctx.fillText('h', padding - 5, padding - 15); // 调整位置，确保不超出左边界
+
+      // 横轴标签 - 只显示数字
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       
-      // 根据时间单位调整标签显示方式
-      if (chartData.labels.length > 6) {
-        // 对于标签较多的情况，旋转显示
-        for (let i = 0; i < chartData.labels.length; i++) {
-          const x = padding + xStep * i;
-          const y = chartHeight - padding + 5;
-          ctx.save();
-          ctx.translate(x, y);
-          ctx.rotate(-Math.PI / 4); // 旋转45度
-          ctx.fillText(chartData.labels[i], 0, 0);
-          ctx.restore();
-        }
-      } else {
-        // 标签较少时正常显示
-        for (let i = 0; i < chartData.labels.length; i++) {
-          const x = padding + xStep * i;
-          ctx.fillText(chartData.labels[i], x, chartHeight - padding + 5);
-        }
+      for (let i = 0; i < chartData.labels.length; i++) {
+        const x = padding + xStep * i;
+        ctx.fillText((i + 1).toString(), x, chartHeight - padding + 5);
       }
+
+      // 横轴单位
+      let xAxisUnit = '';
+      if (this.data.chartTimeUnit === 'day') {
+        xAxisUnit = '星期';
+      } else if (this.data.chartTimeUnit === 'week') {
+        xAxisUnit = '周数';
+      } else if (this.data.chartTimeUnit === 'month') {
+        xAxisUnit = '月';
+      }
+      ctx.textAlign = 'center';
+      ctx.fillText(xAxisUnit, chartWidth - padding + 15, chartHeight - padding + 5);
 
       // 绘制标题
       ctx.textAlign = 'center';
