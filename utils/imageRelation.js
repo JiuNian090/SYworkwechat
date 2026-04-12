@@ -375,6 +375,9 @@ function importImageWeekRelation(relation) {
       path: img.path,
       addedTime: new Date().toISOString()
     }));
+    
+    // 同时同步到本地存储的 week_images_* 键中
+    wx.setStorageSync(weekKey, table[weekKey]);
   }
 
   saveImageRelationTable(table);

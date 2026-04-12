@@ -231,7 +231,7 @@ class DataExportManager {
                     fs.readFile({
                       filePath: image.path,
                       success: (res) => {
-                        // 生成图片文件名（使用年月文件夹结构：image/YYYY-MM/）
+                        // 生成图片文件名（使用年月文件夹结构：images/YYYY-MM/）
                         // 从weekKey中提取年月（格式：YYYY-MM）
                         const weekKey = key.replace('week_images_', '');
                         let yearMonth;
@@ -258,7 +258,7 @@ class DataExportManager {
                         }
                         // 使用原始图片名称
                         const imageName = image.name || `image_${index}.jpg`;
-                        const imageFileName = `image/${yearMonth}/${imageName}`;
+                        const imageFileName = `images/${yearMonth}/${imageName}`;
                         // 添加图片到ZIP
                         zip.file(imageFileName, res.data);
                         // 保存图片信息
@@ -319,7 +319,7 @@ class DataExportManager {
                 yearMonth = `${year}-${month}`;
               }
               const imageName = image.name || `image_${index}.jpg`;
-              const imagePath = `image/${yearMonth}/${imageName}`;
+              const imagePath = `images/${yearMonth}/${imageName}`;
               imageWeekRelation[key].push({ name: imageName, path: imagePath });
             });
           });
