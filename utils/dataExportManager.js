@@ -7,6 +7,20 @@ class DataExportManager {
     this.exportedTemplateFilePath = '';
     this.exportedTemplateFileName = '';
   }
+  
+  // 计算哈希值
+  calculateHash(data) {
+    if (typeof data === 'string') {
+      let hash = 0;
+      for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return hash.toString(16);
+    }
+    return '0';
+  }
 
   // 生成默认文件名
   generateDefaultFileName(username, selectedDataTypes, dataTypes) {
@@ -228,52 +242,55 @@ class DataExportManager {
                 const promise = new Promise((resolve) => {
                   try {
                     // 读取图片文件
-                    fs.readFile({
-                      filePath: image.path,
-                      success: (res) => {
-                        // 生成图片文件名（使用年月文件夹结构：images/YYYY-MM/）
-                        // 从weekKey中提取年月（格式：YYYY-MM）
-                        const weekKey = key.replace('week_images_', '');
-                        let yearMonth;
-                        try {
-                          const weekDate = new Date(weekKey);
-                          // 检查日期是否有效
-                          if (!isNaN(weekDate.getTime())) {
-                            const year = weekDate.getFullYear();
-                            const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-                            yearMonth = `${year}-${month}`;
-                          } else {
-                            // 如果日期无效，使用当前日期
-                            const currentDate = new Date();
-                            const year = currentDate.getFullYear();
-                            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                            yearMonth = `${year}-${month}`;
-                          }
-                        } catch (e) {
-                          // 如果发生错误，使用当前日期
-                          const currentDate = new Date();
-                          const year = currentDate.getFullYear();
-                          const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                          yearMonth = `${year}-${month}`;
-                        }
-                        // 使用原始图片名称
-                        const imageName = image.name || `image_${index}.jpg`;
-                        const imageFileName = `images/${yearMonth}/${imageName}`;
-                        // 添加图片到ZIP
-                        zip.file(imageFileName, res.data);
-                        // 保存图片信息
-                        images.push({
-                          ...image,
-                          key: key,
-                          zipPath: imageFileName
-                        });
-                        resolve();
-                      },
-                      fail: (err) => {
-                        console.error('读取图片失败', err);
-                        resolve(); // 忽略失败的图片
-                      }
-                    });
+                            fs.readFile({
+                              filePath: image.path,
+                              success: (res) => {
+                                // 生成图片文件名（使用年月文件夹结构：images/YYYY-MM/）
+                                // 从weekKey中提取年月（格式：YYYY-MM）
+                                const weekKey = key.replace('week_images_', '');
+                                let yearMonth;
+                                try {
+                                  const weekDate = new Date(weekKey);
+                                  // 检查日期是否有效
+                                  if (!isNaN(weekDate.getTime())) {
+                                    const year = weekDate.getFullYear();
+                                    const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+                                    yearMonth = `${year}-${month}`;
+                                  } else {
+                                    // 如果日期无效，使用当前日期
+                                    const currentDate = new Date();
+                                    const year = currentDate.getFullYear();
+                                    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                                    yearMonth = `${year}-${month}`;
+                                  }
+                                } catch (e) {
+                                  // 如果发生错误，使用当前日期
+                                  const currentDate = new Date();
+                                  const year = currentDate.getFullYear();
+                                  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                                  yearMonth = `${year}-${month}`;
+                                }
+                                // 使用原始图片名称
+                                const imageName = image.name || `image_${index}.jpg`;
+                                const imageFileName = `images/${yearMonth}/${imageName}`;
+                                // 添加图片到ZIP
+                                zip.file(imageFileName, res.data);
+                                // 计算图片哈希值（使用文件大小）
+                                const imageHash = this.calculateHash(`${res.data.byteLength}`);
+                                // 保存图片信息
+                                images.push({
+                                  ...image,
+                                  key: key,
+                                  zipPath: imageFileName,
+                                  hash: imageHash
+                                });
+                                resolve();
+                              },
+                              fail: (err) => {
+                                console.error('读取图片失败', err);
+                                resolve(); // 忽略失败的图片
+                              }
+                            });
                   } catch (e) {
                     console.error('处理图片失败', e);
                     resolve();

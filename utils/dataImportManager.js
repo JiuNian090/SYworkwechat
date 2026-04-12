@@ -327,15 +327,45 @@ class DataImportManager {
                                   const existingImages = wx.getStorageSync(weekKey) || [];
                                   
                                   // 检查图片是否已存在
-                                  const imageExists = existingImages.some(img => img.name === weekImages[matchingImageIndex].name);
-                                  if (!imageExists) {
-                                    // 添加新图片
-                                    existingImages.push({
+                                  const existingImage = existingImages.find(img => img.name === weekImages[matchingImageIndex].name);
+                                  
+                                  // 计算新图片的哈希值
+                                  const fs = wx.getFileSystemManager();
+                                  let newImageHash = '0';
+                                  try {
+                                    const fileInfo = fs.getFileInfoSync({ filePath: tempPath });
+                                    newImageHash = (() => {
+                                      let hash = 0;
+                                      const data = `${fileInfo.size}`;
+                                      for (let i = 0; i < data.length; i++) {
+                                        const char = data.charCodeAt(i);
+                                        hash = ((hash << 5) - hash) + char;
+                                        hash = hash & hash;
+                                      }
+                                      return hash.toString(16);
+                                    })();
+                                  } catch (e) {
+                                    console.error('获取文件信息失败', e);
+                                  }
+                                  
+                                  if (!existingImage || existingImage.hash !== newImageHash) {
+                                    // 图片不存在或已变化，添加/更新图片
+                                    const newImage = {
                                       id: Date.now().toString(),
                                       name: weekImages[matchingImageIndex].name,
                                       path: tempPath,
-                                      addedTime: new Date().toISOString()
-                                    });
+                                      addedTime: new Date().toISOString(),
+                                      hash: newImageHash
+                                    };
+                                    
+                                    if (existingImage) {
+                                      // 更新现有图片
+                                      const index = existingImages.findIndex(img => img.name === existingImage.name);
+                                      existingImages[index] = newImage;
+                                    } else {
+                                      // 添加新图片
+                                      existingImages.push(newImage);
+                                    }
                                     
                                     // 保存图片数据
                                     wx.setStorageSync(weekKey, existingImages);
@@ -343,6 +373,7 @@ class DataImportManager {
                                   
                                   // 更新关联表中的路径为实际的本地路径
                                   imageWeekRelation[weekKey][matchingImageIndex].path = tempPath;
+                                  imageWeekRelation[weekKey][matchingImageIndex].hash = newImageHash;
                                   break;
                                 }
                               }
