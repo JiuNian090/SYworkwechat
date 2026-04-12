@@ -519,11 +519,7 @@ class CloudManager {
       const restoredImages = [];
       const images = backupData.images || [];
       const restoredWeekKeys = new Set();
-      
-      // 导入图片周关联表到新的图片关联表
-      if (backupData.imageWeekRelation) {
-        importImageWeekRelation(backupData.imageWeekRelation);
-      }
+      const imageWeekRelation = {};
       
       for (const imgInfo of images) {
         try {
@@ -550,10 +546,24 @@ class CloudManager {
           addImageToRelation(weekKey, newImage);
           restoredWeekKeys.add(weekKey);
           
+          // 构建图片周关联表
+          if (!imageWeekRelation[weekKey]) {
+            imageWeekRelation[weekKey] = [];
+          }
+          imageWeekRelation[weekKey].push({
+            name: newImage.name,
+            path: newImage.path
+          });
+          
           restoredImages.push(imgInfo.remotePath);
         } catch (e) {
           console.error('恢复图片失败', imgInfo.remotePath, e);
         }
+      }
+      
+      // 导入构建好的图片周关联表
+      if (Object.keys(imageWeekRelation).length > 0) {
+        importImageWeekRelation(imageWeekRelation);
       }
       
       // 同步所有恢复过的周的关联表
