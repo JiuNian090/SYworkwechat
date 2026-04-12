@@ -600,10 +600,10 @@ Page({
     const changelogContent = changelogData.changelogContent;
     
     // 按版本分割更新日志
-    const versions = changelogContent.split('###');
+    const versions = changelogContent.split('##');
     const changelog = [];
     
-    // 跳过第一个空元素
+    // 跳过第一个空元素（标题部分）
     for (let i = 1; i < versions.length; i++) {
       const versionContent = versions[i].trim();
       if (!versionContent) continue;
@@ -612,33 +612,18 @@ Page({
       const lines = versionContent.split('\n');
       const versionLine = lines[0].trim();
       
-      // 支持两种版本号格式：v.x.w.z 和 v.x.w
+      // 支持版本号格式：vX.X.X (YYYY-MM-DD)
       const versionMatch = versionLine.match(/([vV]\d+\.\d+\.\d+)(?:\.\d+)?\s+\((\d{4}-\d{2}-\d{2})\)/);
       
       if (versionMatch) {
-        const version = versionMatch[1]; // 只保留v.x.w格式，去掉.z部分
+        const version = versionMatch[1];
         const date = versionMatch[2];
         
         // 提取版本内容（去掉版本号和日期行）
         let contentLines = lines.slice(1);
         
-        // 在每个表情符号大标题前添加换行符，确保标题和内容之间有空行
-        const processedLines = [];
-        contentLines.forEach(line => {
-          // 检查是否是表情符号大标题（以✨、🔧、🐛、📝、🎨等开头）
-          if (/^[✨🔧🐛📝🎨]/.test(line.trim())) {
-            // 如果不是第一个行且前一行不是空行，则添加换行符
-            if (processedLines.length > 0 && processedLines[processedLines.length - 1].trim() !== '') {
-              processedLines.push('');
-            }
-            processedLines.push(line);
-          } else {
-            processedLines.push(line);
-          }
-        });
-        
         // 移除开头和结尾的空行，然后重新组合内容
-        const content = processedLines.join('\n').trim();
+        const content = contentLines.join('\n').trim();
         
         changelog.push({
           version: version,
