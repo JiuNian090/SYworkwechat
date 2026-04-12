@@ -10,9 +10,7 @@
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",
     "navigationBarTitleText": "SYwork",
-    "navigationBarTextStyle": "black",
-    "animationDuration": 300,
-    "animationTimingFunction": "ease-in-out"
+    "navigationBarTextStyle": "black"
   },
   "tabBar": {
     "color": "#000000",
@@ -46,10 +44,5 @@
         "selectedIconPath": "images/me-1.png"
       }
     ]
-  },
-  "permission": {
-    "scope.writePhotosAlbum": {
-      "desc": "用于保存导出的排班数据文件"
-    }
   }
 }

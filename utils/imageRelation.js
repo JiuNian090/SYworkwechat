@@ -172,7 +172,8 @@ function validateImageExists(imagePath) {
       resolve(false);
     }, 500); // 500ms 超时
 
-    wx.getFileInfo({
+    const fileSystemManager = wx.getFileSystemManager();
+    fileSystemManager.getFileInfo({
       filePath: imagePath,
       success: () => {
         clearTimeout(timeoutId);

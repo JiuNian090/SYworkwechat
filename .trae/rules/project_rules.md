@@ -1,6 +1,6 @@
 # SYwork 项目规则
 ## 1. 项目框架
-- 微信小程序原生开发
+- 微信小程序原生开发框架
 - 使用微信小程序原生组件和API：
 - 采用这个网址的微信小程序组件库：https://developers.weixin.qq.com/miniprogram/dev/component/
 - 采用这个网址的中的微信小程序开发API：https://developers.weixin.qq.com/miniprogram/dev/api/
@@ -10,6 +10,8 @@
 - 采用下面这个网址来查看小程序框架云开发模板：https://github.com/TencentCloudBase/awesome-cloudbase-examples/tree/master/miniprogram/cloudbase-miniprogram-template
 - 依赖：@babel/runtime ^7.23.10
 - 构建工具：Gulp ^4.0.3
+- 微信小程序原生组件库：@tencent/weui-wxss ^2.1.0
+- 
 ## 2. 开发规范
 - 严格遵循微信小程序开发规范与设计标准
 - 使用ES6+语法，保持代码简洁易读

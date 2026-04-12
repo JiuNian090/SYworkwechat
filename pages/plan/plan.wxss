@@ -1,6 +1,6 @@
 /* pages/plan/plan.wxss */
 /* CSS Variables - 统一设计系统 */
-page {
+.plan-page {
   --primary-color: #34d399;
   --primary-light: #6ee7b7;
   --primary-dark: #10b981;
@@ -14,6 +14,7 @@ page {
 
   background-color: var(--bg-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
 }
 
 /* 主色变量和统一按钮样式 */
