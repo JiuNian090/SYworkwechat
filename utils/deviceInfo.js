@@ -4,16 +4,31 @@
 class DeviceInfo {
   constructor() {
     this.deviceInfo = null;
+    this.appBaseInfo = null;
+    this.windowInfo = null;
     this.init();
   }
 
   // 初始化设备信息
   init() {
     try {
+      // 获取应用基础信息
+      if (wx.getAppBaseInfo) {
+        this.appBaseInfo = wx.getAppBaseInfo();
+      }
+      
+      // 获取设备信息
       if (wx.getDeviceInfo) {
         this.deviceInfo = wx.getDeviceInfo();
-      } else {
-        // 兼容旧版本基础库
+      }
+      
+      // 获取窗口信息
+      if (wx.getWindowInfo) {
+        this.windowInfo = wx.getWindowInfo();
+      }
+      
+      // 如果设备信息获取失败，使用兼容方案
+      if (!this.deviceInfo) {
         this.deviceInfo = this.getFallbackDeviceInfo();
       }
     } catch (e) {
@@ -24,19 +39,62 @@ class DeviceInfo {
 
   // 获取兼容旧版本的设备信息
   getFallbackDeviceInfo() {
-    const systemInfo = wx.getSystemInfoSync();
-    return {
-      platform: systemInfo.platform,
-      system: systemInfo.system,
-      model: systemInfo.model,
-      brand: systemInfo.brand,
-      SDKVersion: systemInfo.SDKVersion
-    };
+    try {
+      // 尝试使用各种可能的API
+      const appBaseInfo = wx.getAppBaseInfo ? wx.getAppBaseInfo() : {};
+      const deviceInfo = wx.getDeviceInfo ? wx.getDeviceInfo() : {};
+      const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : {};
+      
+      return {
+        platform: deviceInfo.platform || 'unknown',
+        system: deviceInfo.system || 'unknown',
+        model: deviceInfo.model || 'unknown',
+        brand: deviceInfo.brand || 'unknown',
+        SDKVersion: appBaseInfo.SDKVersion || ''
+      };
+    } catch (e) {
+      console.error('获取设备信息失败:', e);
+      return {
+        platform: 'unknown',
+        system: 'unknown',
+        model: 'unknown',
+        brand: 'unknown',
+        SDKVersion: ''
+      };
+    }
+  }
+
+  // 比较版本号
+  compareVersion(v1, v2) {
+    v1 = v1.split('.');
+    v2 = v2.split('.');
+    const len = Math.max(v1.length, v2.length);
+
+    for (let i = 0; i < len; i++) {
+      const num1 = parseInt(v1[i]) || 0;
+      const num2 = parseInt(v2[i]) || 0;
+      if (num1 > num2) {
+        return 1;
+      } else if (num1 < num2) {
+        return -1;
+      }
+    }
+    return 0;
   }
 
   // 获取完整设备信息
   getDeviceInfo() {
     return this.deviceInfo;
+  }
+
+  // 获取应用基础信息
+  getAppBaseInfo() {
+    return this.appBaseInfo;
+  }
+
+  // 获取窗口信息
+  getWindowInfo() {
+    return this.windowInfo;
   }
 
   // 判断是否为 HarmonyOS 平台
@@ -94,19 +152,37 @@ class DeviceInfo {
 
   // 获取基础库版本
   getSDKVersion() {
-    return this.deviceInfo?.SDKVersion || '';
+    return this.appBaseInfo?.SDKVersion || this.deviceInfo?.SDKVersion || '';
   }
 
   // 检查是否支持某个特性
   supportsFeature(featureName) {
+    const SDKVersion = this.getSDKVersion();
     const features = {
       // HarmonyOS 特有特性
       'harmonyos': this.isHarmonyOS(),
       // 通用特性
       'cloud': !!wx.cloud,
-      'getDeviceInfo': !!wx.getDeviceInfo
+      'getDeviceInfo': !!wx.getDeviceInfo,
+      'getAppBaseInfo': !!wx.getAppBaseInfo,
+      'getWindowInfo': !!wx.getWindowInfo,
+      'getSystemSetting': !!wx.getSystemSetting,
+      'getAppAuthorizeSetting': !!wx.getAppAuthorizeSetting,
+      // 版本相关特性
+      'minVersion': (version) => this.compareVersion(SDKVersion, version) >= 0
     };
+    
+    // 处理版本检查
+    if (typeof features[featureName] === 'function') {
+      return features[featureName];
+    }
+    
     return features[featureName] || false;
+  }
+
+  // 检查是否支持某个API
+  supportsAPI(apiName) {
+    return typeof wx[apiName] === 'function';
   }
 
   // 获取设备型号
@@ -117,6 +193,30 @@ class DeviceInfo {
   // 获取设备品牌
   getBrand() {
     return this.deviceInfo?.brand || '';
+  }
+
+  // 获取安全区域信息
+  getSafeArea() {
+    if (this.windowInfo?.safeArea) {
+      return this.windowInfo.safeArea;
+    }
+    return null;
+  }
+
+  // 获取屏幕宽度
+  getScreenWidth() {
+    if (this.windowInfo?.screenWidth) {
+      return this.windowInfo.screenWidth;
+    }
+    return 0;
+  }
+
+  // 获取屏幕高度
+  getScreenHeight() {
+    if (this.windowInfo?.screenHeight) {
+      return this.windowInfo.screenHeight;
+    }
+    return 0;
   }
 }
 
@@ -133,5 +233,14 @@ module.exports = {
   getPlatformName: () => deviceInfo.getPlatformName(),
   getSDKVersion: () => deviceInfo.getSDKVersion(),
   getDeviceInfo: () => deviceInfo.getDeviceInfo(),
-  supportsFeature: (feature) => deviceInfo.supportsFeature(feature)
+  getAppBaseInfo: () => deviceInfo.getAppBaseInfo(),
+  getWindowInfo: () => deviceInfo.getWindowInfo(),
+  supportsFeature: (feature) => deviceInfo.supportsFeature(feature),
+  supportsAPI: (apiName) => deviceInfo.supportsAPI(apiName),
+  compareVersion: (v1, v2) => deviceInfo.compareVersion(v1, v2),
+  getModel: () => deviceInfo.getModel(),
+  getBrand: () => deviceInfo.getBrand(),
+  getSafeArea: () => deviceInfo.getSafeArea(),
+  getScreenWidth: () => deviceInfo.getScreenWidth(),
+  getScreenHeight: () => deviceInfo.getScreenHeight()
 };

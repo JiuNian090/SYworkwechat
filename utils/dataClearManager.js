@@ -39,6 +39,9 @@ class DataClearManager {
             // 4. 清空更新数据
             wx.removeStorageSync('lastUpdateCheck');
             
+            // 隐藏loading
+            wx.hideLoading();
+            
             wx.showToast({
               title: '数据已清空',
               icon: 'success'
@@ -81,9 +84,6 @@ class DataClearManager {
                   }
                 }
               }
-              
-              // 隐藏loading
-              wx.hideLoading();
               
               if (callback) callback(true);
             }, 500);

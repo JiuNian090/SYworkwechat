@@ -15,6 +15,36 @@ class CloudManager {
     return app.globalData.cloudInitialized;
   }
   
+  // 调用云函数的通用方法，包含超时处理和重试机制
+  async callCloudFunction(name, data, options = {}) {
+    const { timeout = 10000, maxRetries = 3, retryDelay = 1000 } = options;
+    
+    let retries = 0;
+    while (retries < maxRetries) {
+      try {
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('云函数调用超时'));
+          }, timeout);
+        });
+        
+        const result = await Promise.race([
+          wx.cloud.callFunction({ name, data }),
+          timeoutPromise
+        ]);
+        
+        return result;
+      } catch (e) {
+        retries++;
+        if (retries >= maxRetries) {
+          throw e;
+        }
+        console.warn(`云函数调用失败，正在重试(${retries}/${maxRetries})...`, e);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
+  }
+
   // 用户注册
   async register(account, password, nickname) {
     try {
@@ -26,14 +56,11 @@ class CloudManager {
         };
       }
       
-      const result = await wx.cloud.callFunction({
-        name: 'userLogin',
-        data: {
-          action: 'register',
-          account: account,
-          password: password,
-          nickname: nickname
-        }
+      const result = await this.callCloudFunction('userLogin', {
+        action: 'register',
+        account: account,
+        password: password,
+        nickname: nickname
       });
       
       if (result.result.success) {
@@ -64,13 +91,10 @@ class CloudManager {
         };
       }
       
-      const result = await wx.cloud.callFunction({
-        name: 'userLogin',
-        data: {
-          action: 'login',
-          account: account,
-          password: password
-        }
+      const result = await this.callCloudFunction('userLogin', {
+        action: 'login',
+        account: account,
+        password: password
       });
       
       if (result.result.success) {
@@ -249,7 +273,8 @@ class CloudManager {
   // 验证图片文件是否存在
   validateImageExists(imagePath) {
     return new Promise((resolve) => {
-      wx.getFileInfo({
+      const fileSystemManager = wx.getFileSystemManager();
+      fileSystemManager.getFileInfo({
         filePath: imagePath,
         success: () => resolve(true),
         fail: () => resolve(false)
@@ -260,7 +285,8 @@ class CloudManager {
   // 计算图片文件的哈希值
   calculateImageHash(imagePath) {
     return new Promise((resolve, reject) => {
-      wx.getFileInfo({
+      const fileSystemManager = wx.getFileSystemManager();
+      fileSystemManager.getFileInfo({
         filePath: imagePath,
         success: (res) => {
           // 使用文件大小和修改时间作为简单的哈希值
@@ -305,21 +331,15 @@ class CloudManager {
       // 2. 获取云端备份信息，了解已有哪些图片
       let existingImages = [];
       try {
-        const infoResult = await wx.cloud.callFunction({
-          name: 'backupRestore',
-          data: {
-            action: 'getBackupInfo',
-            userId: this.userId
-          }
+        const infoResult = await this.callCloudFunction('backupRestore', {
+          action: 'getBackupInfo',
+          userId: this.userId
         });
         if (infoResult.result.success && infoResult.result.hasBackup) {
           // 获取完整的备份数据，对比图片
-          const restoreResult = await wx.cloud.callFunction({
-            name: 'backupRestore',
-            data: {
-              action: 'restore',
-              userId: this.userId
-            }
+          const restoreResult = await this.callCloudFunction('backupRestore', {
+            action: 'restore',
+            userId: this.userId
           });
           if (restoreResult.result.success) {
             existingImages = restoreResult.result.data.images || [];
@@ -433,19 +453,16 @@ class CloudManager {
       
       // 4. 调用云函数备份数据（云函数会对比差异，只更新有变化的数据）
       wx.showLoading({ title: '保存备份数据...' });
-      const backupResult = await wx.cloud.callFunction({
-        name: 'backupRestore',
+      const backupResult = await this.callCloudFunction('backupRestore', {
+        action: 'backup',
+        userId: this.userId,
         data: {
-          action: 'backup',
-          userId: this.userId,
-          data: {
-            shiftTemplates: localData.shiftTemplates.data,
-            shifts: localData.shifts.data,
-            images: uploadedImages,
-            imageWeekRelation: validImageWeekRelation,
-            avatarInfo: avatarInfo,
-            backupIndex: {}
-          }
+          shiftTemplates: localData.shiftTemplates.data,
+          shifts: localData.shifts.data,
+          images: uploadedImages,
+          imageWeekRelation: validImageWeekRelation,
+          avatarInfo: avatarInfo,
+          backupIndex: {}
         }
       });
       
@@ -523,12 +540,9 @@ class CloudManager {
       wx.showLoading({ title: '准备恢复...' });
       
       // 1. 调用云函数获取备份数据
-      const restoreResult = await wx.cloud.callFunction({
-        name: 'backupRestore',
-        data: {
-          action: 'restore',
-          userId: this.userId
-        }
+      const restoreResult = await this.callCloudFunction('backupRestore', {
+        action: 'restore',
+        userId: this.userId
       });
       
       if (!restoreResult.result.success) {
@@ -752,12 +766,9 @@ class CloudManager {
         };
       }
       
-      const result = await wx.cloud.callFunction({
-        name: 'backupRestore',
-        data: {
-          action: 'getBackupInfo',
-          userId: this.userId
-        }
+      const result = await this.callCloudFunction('backupRestore', {
+        action: 'getBackupInfo',
+        userId: this.userId
       });
       
       return result.result;

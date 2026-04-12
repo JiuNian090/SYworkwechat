@@ -1,5 +1,5 @@
 <!-- pages/plan/plan.wxml -->
-<view class="container">
+<view class="container plan-page">
   <!-- 页面标题区 -->
   <view class="page-header">
     <view class="header-bg"></view>
