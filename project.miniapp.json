@@ -5,7 +5,9 @@
   "versionCode": 100,
   "i18nFilePath": "i18n",
   "mini-ohos": {
-    "sdkVersion": "0.5.1"
+    "sdkVersion": "0.5.1",
+    "deviceOrientation": ["portrait", "landscape"],
+    "supportTablet": true
   },
   "mini-android": {
     "resourcePath": "miniapp/android/nativeResources",

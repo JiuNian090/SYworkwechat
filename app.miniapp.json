@@ -1,5 +1,10 @@
 {
 	"adapteByMiniprogram": {
 		"userName": "gh_7700dbdc6796"
-	}
+	},
+	"deviceOrientation": [
+		"portrait",
+		"landscape"
+	],
+	"supportTablet": true
 }
