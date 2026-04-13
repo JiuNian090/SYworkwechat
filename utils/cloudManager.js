@@ -413,7 +413,8 @@ class CloudManager {
             currentImage++;
             const progress = Math.round((currentImage / totalImages) * 100);
             const existingImg = existingImageMap.get(imgInfo.remotePath);
-            const operation = existingImg ? '更新' : '新增';
+            const imageHash = imgInfo.hash;
+            const operation = existingImg && existingImg.hash !== imageHash ? '更新' : '新增';
             wx.showLoading({ 
               title: `备份中 ${operation}图片 ${currentImage}/${totalImages} (${progress}%)`,
               mask: true
@@ -655,7 +656,8 @@ class CloudManager {
             currentImage++;
             const progress = Math.round((currentImage / totalImages) * 100);
             const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
-            const operation = localImageMap.has(localKey) ? '更新' : '新增';
+            const localImage = localImageMap.get(localKey);
+            const operation = localImage && localImage.hash !== imgInfo.hash ? '更新' : '新增';
             wx.showLoading({ 
               title: `恢复中 ${operation}图片 ${currentImage}/${totalImages} (${progress}%)`,
               mask: true
