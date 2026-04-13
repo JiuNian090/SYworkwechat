@@ -149,6 +149,7 @@ exports.main = async (event, context) => {
         if (hasChanges) {
           // 有变化，更新备份
           updateData.updateTime = new Date();
+          updateData.backupTime = new Date();
           await backupCollection.doc(currentBackup._id).update({
             data: updateData
           });
