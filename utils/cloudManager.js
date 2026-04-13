@@ -351,6 +351,8 @@ class CloudManager {
       
       // 3. 对比本地和云端图片，只上传新的或变化的图片
       const uploadedImages = [];
+      let newImageCount = 0;
+      let updatedImageCount = 0;
       const existingImageMap = new Map();
       
       // 创建云端图片映射，用于快速查找
@@ -384,7 +386,13 @@ class CloudManager {
               fileID: existingImg.fileID,
               hash: imageHash
             });
+          } else {
+            // 图片已存在但需要更新
+            updatedImageCount++;
           }
+        } else {
+          // 新图片
+          newImageCount++;
         }
         
         if (shouldUpload) {
@@ -469,15 +477,22 @@ class CloudManager {
       wx.hideLoading();
       
       if (backupResult.result.success) {
-        const newImageCount = uploadedImages.filter(img => !existingImageMap.has(img.remotePath)).length;
         const deletedImageCount = backupResult.result.deletedImageCount || 0;
         
         let message;
         if (backupResult.result.hasChanges) {
-          if (newImageCount > 0 && deletedImageCount > 0) {
+          if (newImageCount > 0 && updatedImageCount > 0 && deletedImageCount > 0) {
+            message = `备份成功（新增${newImageCount}张，更新${updatedImageCount}张，删除${deletedImageCount}张）`;
+          } else if (newImageCount > 0 && updatedImageCount > 0) {
+            message = `备份成功（新增${newImageCount}张，更新${updatedImageCount}张）`;
+          } else if (newImageCount > 0 && deletedImageCount > 0) {
             message = `备份成功（新增${newImageCount}张，删除${deletedImageCount}张）`;
+          } else if (updatedImageCount > 0 && deletedImageCount > 0) {
+            message = `备份成功（更新${updatedImageCount}张，删除${deletedImageCount}张）`;
           } else if (newImageCount > 0) {
             message = `备份成功（新增${newImageCount}张图片）`;
+          } else if (updatedImageCount > 0) {
+            message = `备份成功（更新${updatedImageCount}张图片）`;
           } else if (deletedImageCount > 0) {
             message = `备份成功（删除${deletedImageCount}张图片）`;
           } else {
@@ -493,7 +508,9 @@ class CloudManager {
         });
         return {
           success: true,
-          uploadedImages: newImageCount,
+          uploadedImages: newImageCount + updatedImageCount,
+          newImages: newImageCount,
+          updatedImages: updatedImageCount,
           deletedImages: deletedImageCount,
           hasChanges: backupResult.result.hasChanges
         };
@@ -586,6 +603,8 @@ class CloudManager {
       
       // 4. 恢复图片（增量恢复，只恢复本地没有的）
       const restoredImages = [];
+      let newImagesCount = 0;
+      let updatedImagesCount = 0;
       const images = backupData.images || [];
       const restoredWeekKeys = new Set();
       const imageWeekRelation = {};
@@ -663,9 +682,11 @@ class CloudManager {
             if (existingImageIndex !== -1) {
               // 更新现有图片
               weekImages[existingImageIndex] = newImage;
+              updatedImagesCount++;
             } else {
               // 添加新图片
               weekImages.push(newImage);
+              newImagesCount++;
             }
             
             wx.setStorageSync(weekKey, weekImages);
@@ -707,9 +728,17 @@ class CloudManager {
       
       wx.hideLoading();
       
-      if (restoredImages.length > 0) {
+      if (newImagesCount > 0 || updatedImagesCount > 0) {
+        let message = '恢复成功';
+        if (newImagesCount > 0 && updatedImagesCount > 0) {
+          message = `恢复成功（新增${newImagesCount}张，更新${updatedImagesCount}张）`;
+        } else if (newImagesCount > 0) {
+          message = `恢复成功（新增${newImagesCount}张图片）`;
+        } else if (updatedImagesCount > 0) {
+          message = `恢复成功（更新${updatedImagesCount}张图片）`;
+        }
         wx.showToast({
-          title: `恢复成功（新增${restoredImages.length}张图片）`,
+          title: message,
           icon: 'success'
         });
       } else {
