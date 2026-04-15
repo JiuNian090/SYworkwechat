@@ -606,8 +606,8 @@ class CloudManager {
     
     // 恢复图片（增量恢复，只恢复哈希值不同的图片）
     const restoredImages = [];
-    let newImagesCount = 0;
-    let updatedImagesCount = 0;
+    let actualNewImagesCount = 0;
+    let actualUpdatedImagesCount = 0;
     const images = backupData.images || [];
     const restoredWeekKeys = new Set();
     const imageWeekRelation = {};
@@ -642,23 +642,43 @@ class CloudManager {
     
     for (const imgInfo of images) {
       // 检查图片是否已存在本地
+      let foundExistingImage = false;
+      let localImage = null;
+      
+      // 首先尝试通过周Key和图片名称查找
       const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
       if (localImageMap.has(localKey)) {
-        // 图片已存在，检查哈希值是否相同
-        const localImage = localImageMap.get(localKey);
-        if (localImage.hash === imgInfo.hash) {
-          // 哈希值相同，图片未变化，跳过下载
-          console.log('图片未变化，跳过下载:', imgInfo.remotePath);
-          continue;
-        } else {
-          // 哈希值不同，需要更新
-          updatedImagesCount++;
+          localImage = localImageMap.get(localKey);
+          // 检查哈希值是否相同
+          if (localImage.hash === imgInfo.hash) {
+            // 哈希值相同，图片未变化，跳过下载
+            console.log('图片未变化，跳过下载:', imgInfo.remotePath);
+            foundExistingImage = true;
+          }
         }
-      } else {
-        // 新图片
-        newImagesCount++;
+      
+      // 如果没有找到，尝试通过哈希值查找（处理名称变化的情况）
+      if (!foundExistingImage) {
+        // 遍历该周的所有本地图片，查找哈希值相同的图片
+        const weekKey = imgInfo.weekKey;
+        const storageInfo = wx.getStorageInfoSync();
+        if (storageInfo.keys.includes(weekKey)) {
+          const weekImages = wx.getStorageSync(weekKey) || [];
+          for (const img of weekImages) {
+            if (img.hash === imgInfo.hash) {
+              // 找到哈希值相同的图片，无需下载
+              console.log('找到哈希值相同的图片，跳过下载:', imgInfo.remotePath);
+              foundExistingImage = true;
+              break;
+            }
+          }
+        }
       }
-      imagesToDownload.push(imgInfo);
+      
+      if (!foundExistingImage) {
+        // 新图片或需要更新的图片
+        imagesToDownload.push(imgInfo);
+      }
     }
     
     // 并行下载，控制并发数
@@ -697,6 +717,7 @@ class CloudManager {
           // 检查是否需要更新现有图片
           let existingImageIndex = weekImages.findIndex(img => img.name === imgInfo.imageName);
           let finalImageName = imgInfo.imageName;
+          let shouldUpdate = true;
           
           // 处理命名重复问题
           if (existingImageIndex === -1) {
@@ -713,41 +734,53 @@ class CloudManager {
               const count = nameCountMap.get(baseName) + 1;
               finalImageName = `${baseName}(${count})`;
             }
-          }
-          
-          const newImage = {
-            id: `${weekKey}_${Date.now()}`,
-            name: finalImageName,
-            path: downloadResult.tempFilePath,
-            addedTime: new Date().toISOString(),
-            hash: imageHash
-          };
-          
-          if (existingImageIndex !== -1) {
-            // 更新现有图片
-            weekImages[existingImageIndex] = newImage;
           } else {
-            // 添加新图片
-            weekImages.push(newImage);
+            // 检查现有图片的哈希值是否与下载的图片相同
+            const existingImage = weekImages[existingImageIndex];
+            if (existingImage.hash === imageHash) {
+              // 哈希值相同，无需更新
+              console.log('下载的图片与本地图片哈希值相同，跳过更新:', imgInfo.remotePath);
+              shouldUpdate = false;
+            }
           }
           
-          wx.setStorageSync(weekKey, weekImages);
-          
-          // 同步更新到图片关联表
-          addImageToRelation(weekKey, newImage);
-          restoredWeekKeys.add(weekKey);
-          
-          // 构建图片周关联表
-          if (!imageWeekRelation[weekKey]) {
-            imageWeekRelation[weekKey] = [];
+          if (shouldUpdate) {
+            const newImage = {
+              id: `${weekKey}_${Date.now()}`,
+              name: finalImageName,
+              path: downloadResult.tempFilePath,
+              addedTime: new Date().toISOString(),
+              hash: imageHash
+            };
+            
+            if (existingImageIndex !== -1) {
+              // 更新现有图片
+              weekImages[existingImageIndex] = newImage;
+              actualUpdatedImagesCount++;
+            } else {
+              // 添加新图片
+              weekImages.push(newImage);
+              actualNewImagesCount++;
+            }
+            
+            wx.setStorageSync(weekKey, weekImages);
+            
+            // 同步更新到图片关联表
+            addImageToRelation(weekKey, newImage);
+            restoredWeekKeys.add(weekKey);
+            
+            // 构建图片周关联表
+            if (!imageWeekRelation[weekKey]) {
+              imageWeekRelation[weekKey] = [];
+            }
+            imageWeekRelation[weekKey].push({
+              name: newImage.name,
+              path: newImage.path,
+              hash: imageHash
+            });
+            
+            restoredImages.push(imgInfo.remotePath);
           }
-          imageWeekRelation[weekKey].push({
-            name: newImage.name,
-            path: newImage.path,
-            hash: imageHash
-          });
-          
-          restoredImages.push(imgInfo.remotePath);
         } catch (e) {
           console.error('恢复图片失败', imgInfo.remotePath, e);
         }
@@ -771,14 +804,14 @@ class CloudManager {
     wx.hideLoading();
     
     // 优化恢复提示，根据实际情况显示不同的消息
-    if (newImagesCount > 0 || updatedImagesCount > 0) {
+    if (actualNewImagesCount > 0 || actualUpdatedImagesCount > 0) {
       let message = '恢复成功';
-      if (newImagesCount > 0 && updatedImagesCount > 0) {
-        message = `恢复成功（新增${newImagesCount}张，更新${updatedImagesCount}张）`;
-      } else if (newImagesCount > 0) {
-        message = `恢复成功（新增${newImagesCount}张图片）`;
-      } else if (updatedImagesCount > 0) {
-        message = `恢复成功（更新${updatedImagesCount}张图片）`;
+      if (actualNewImagesCount > 0 && actualUpdatedImagesCount > 0) {
+        message = `恢复成功（新增${actualNewImagesCount}张，更新${actualUpdatedImagesCount}张）`;
+      } else if (actualNewImagesCount > 0) {
+        message = `恢复成功（新增${actualNewImagesCount}张图片）`;
+      } else if (actualUpdatedImagesCount > 0) {
+        message = `恢复成功（更新${actualUpdatedImagesCount}张图片）`;
       }
       wx.showToast({
         title: message,
