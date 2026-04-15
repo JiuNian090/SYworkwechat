@@ -366,7 +366,7 @@ class CloudManager {
       };
       
       // 4. 调用云函数备份数据 - 新流程：先对比关联表，再上传图片
-      wx.showLoading({ title: '分析备份差异...' });
+      wx.showLoading({ title: '备份中...' });
       
       // 第一步：上传本地关联表，获取需要新增的图片清单
       const diffResult = await this.callCloudFunction('backupRestore', {
@@ -381,12 +381,12 @@ class CloudManager {
       if (!diffResult.result.success) {
         wx.hideLoading();
         wx.showToast({
-          title: diffResult.result.errMsg || '分析差异失败',
+          title: diffResult.result.errMsg || '备份失败',
           icon: 'none'
         });
         return {
           success: false,
-          errMsg: diffResult.result.errMsg || '分析差异失败'
+          errMsg: diffResult.result.errMsg || '备份失败'
         };
       }
       
@@ -401,14 +401,23 @@ class CloudManager {
       let newImageCount = 0;
       
       if (imagesToUpload.length > 0) {
-        wx.showLoading({ title: '上传图片...' });
-        
         // 并行上传，控制并发数
         const maxConcurrentUploads = 5;
-        for (let i = 0; i < imagesToUpload.length; i += maxConcurrentUploads) {
+        const totalImages = imagesToUpload.length;
+        let currentImage = 0;
+        
+        for (let i = 0; i < totalImages; i += maxConcurrentUploads) {
           const batch = imagesToUpload.slice(i, i + maxConcurrentUploads);
           const batchPromises = batch.map(async (imgInfo) => {
             try {
+              // 更新进度
+              currentImage++;
+              const progress = Math.round((currentImage / totalImages) * 100);
+              wx.showLoading({ 
+                title: `备份中 ${progress}%`,
+                mask: true
+              });
+              
               // 压缩图片
               let compressedPath = imgInfo.image.path;
               try {
@@ -1020,7 +1029,7 @@ class CloudManager {
   // 执行恢复操作 - 新流程（优化版）
   async performRestoreWithNewFlow(cloudRelation) {
     try {
-      wx.showLoading({ title: '分析恢复差异...' });
+      wx.showLoading({ title: '恢复中...' });
       
       // 1. 同步关联表与本地存储，确保使用最新的本地数据
       syncRelationWithLocal();
@@ -1104,8 +1113,6 @@ class CloudManager {
       // 5. 直接从云端获取所有图片数据
       let actualNewImagesCount = 0;
       if (imagesToAdd.length > 0) {
-        wx.showLoading({ title: '获取图片数据...' });
-        
         // 直接获取云端的所有图片数据
         const getImagesResult = await this.callCloudFunction('backupRestore', {
           action: 'getAllCloudImages',
@@ -1115,12 +1122,12 @@ class CloudManager {
         if (!getImagesResult.result.success) {
           wx.hideLoading();
           wx.showToast({
-            title: getImagesResult.result.errMsg || '获取图片数据失败',
+            title: getImagesResult.result.errMsg || '恢复失败',
             icon: 'none'
           });
           return {
             success: false,
-            errMsg: getImagesResult.result.errMsg || '获取图片数据失败'
+            errMsg: getImagesResult.result.errMsg || '恢复失败'
           };
         }
         
@@ -1137,8 +1144,6 @@ class CloudManager {
         
         // 6. 下载并保存图片
         if (imagesToDownload.length > 0) {
-          wx.showLoading({ title: '下载图片...' });
-          
           // 并行下载，控制并发数
           const maxConcurrentDownloads = 5;
           const totalImages = imagesToDownload.length;
@@ -1152,7 +1157,7 @@ class CloudManager {
                 currentImage++;
                 const progress = Math.round((currentImage / totalImages) * 100);
                 wx.showLoading({ 
-                  title: `恢复中 下载图片 ${currentImage}/${totalImages} (${progress}%)`,
+                  title: `恢复中 ${progress}%`,
                   mask: true
                 });
                 
