@@ -251,7 +251,7 @@ class CloudManager {
           const yearMonth = `${year}-${month}`;
           const imageName = image.name || `${year}-${month}-${week}`;
           // 使用图片名称和时间戳生成稳定的 remotePath，避免因索引变化导致的路径变化
-          const timestamp = image.updatedTime ? new Date(image.updatedTime).getTime() : new Date().getTime();
+          const timestamp = image.addedTime ? new Date(image.addedTime).getTime() : new Date().getTime();
           const remotePath = `images/${yearMonth}/${imageName}_${timestamp}.jpg`;
           
           images.push({
@@ -613,18 +613,30 @@ class CloudManager {
     const restoredWeekKeys = new Set();
     const imageWeekRelation = {};
     
-    // 获取本地已有的图片信息
+    // 获取本地已有的图片信息，并计算哈希值
     const localImageMap = new Map();
     const storageInfo = wx.getStorageInfoSync();
     const weekKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
-    weekKeys.forEach(weekKey => {
+    
+    // 先计算所有本地图片的哈希值
+    for (const weekKey of weekKeys) {
       const localImages = wx.getStorageSync(weekKey) || [];
-      localImages.forEach(img => {
+      for (const img of localImages) {
+        // 确保图片有哈希值
+        if (!img.hash) {
+          try {
+            // 计算哈希值
+            img.hash = await this.calculateImageHash(img.path, weekKey, img.name);
+          } catch (e) {
+            console.log('计算本地图片哈希值失败:', e);
+            img.hash = '';
+          }
+        }
         // 使用周Key和图片名称作为唯一标识
         const key = `${weekKey}_${img.name}`;
         localImageMap.set(key, img);
-      });
-    });
+      }
+    }
     
     // 准备需要下载的图片
     const imagesToDownload = [];
@@ -655,6 +667,8 @@ class CloudManager {
             // 哈希值相同，图片未变化，跳过下载
             console.log('图片未变化，跳过下载:', imgInfo.remotePath);
             foundExistingImage = true;
+          } else {
+            console.log('哈希值不同，需要更新:', imgInfo.remotePath);
           }
         }
       
@@ -662,8 +676,7 @@ class CloudManager {
       if (!foundExistingImage) {
         // 遍历该周的所有本地图片，查找哈希值相同的图片
         const weekKey = imgInfo.weekKey;
-        const storageInfo = wx.getStorageInfoSync();
-        if (storageInfo.keys.includes(weekKey)) {
+        if (weekKeys.includes(weekKey)) {
           const weekImages = wx.getStorageSync(weekKey) || [];
           for (const img of weekImages) {
             if (img.hash === imgInfo.hash) {

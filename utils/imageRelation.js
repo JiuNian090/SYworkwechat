@@ -338,15 +338,16 @@ async function getAllValidImages() {
           }
         }
 
-        const remotePath = `images/${yearMonth}/${imageName}_${index}.jpg`;
+        // 使用图片时间戳生成稳定的 remotePath，避免因索引变化导致的路径变化
+        const timestamp = img.addedTime ? new Date(img.addedTime).getTime() : new Date().getTime();
+        const remotePath = `images/${yearMonth}/${imageName}_${timestamp}.jpg`;
 
         allValidImages.push({
           weekKey: weekKey,
           image: img,
           yearMonth: yearMonth,
           imageName: imageName,
-          remotePath: remotePath,
-          index: index
+          remotePath: remotePath
         });
       });
     }

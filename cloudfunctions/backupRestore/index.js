@@ -28,6 +28,43 @@ function calculateHash(data) {
 
 // 对比两个数据是否相同
 function isDataEqual(data1, data2) {
+  // 处理图片关联表的特殊情况，不依赖于顺序
+  if (typeof data1 === 'object' && typeof data2 === 'object') {
+    // 检查是否为图片关联表结构
+    const isImageRelation = (obj) => {
+      return obj && typeof obj === 'object' && 
+             Object.values(obj).every(arr => Array.isArray(arr) && 
+             arr.every(item => item && typeof item === 'object' && 
+             'name' in item && 'path' in item));
+    };
+    
+    if (isImageRelation(data1) && isImageRelation(data2)) {
+      // 比较图片关联表，不依赖于顺序
+      const keys1 = Object.keys(data1).sort();
+      const keys2 = Object.keys(data2).sort();
+      
+      if (keys1.length !== keys2.length) return false;
+      
+      for (let i = 0; i < keys1.length; i++) {
+        const key = keys1[i];
+        if (key !== keys2[i]) return false;
+        
+        const arr1 = data1[key].sort((a, b) => a.name.localeCompare(b.name));
+        const arr2 = data2[key].sort((a, b) => a.name.localeCompare(b.name));
+        
+        if (arr1.length !== arr2.length) return false;
+        
+        for (let j = 0; j < arr1.length; j++) {
+          if (arr1[j].name !== arr2[j].name || arr1[j].path !== arr2[j].path) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+  }
+  
+  // 普通数据比较
   const json1 = JSON.stringify(data1);
   const json2 = JSON.stringify(data2);
   return calculateHash(json1) === calculateHash(json2);
