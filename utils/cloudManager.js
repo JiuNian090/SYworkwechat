@@ -249,16 +249,17 @@ class CloudManager {
           const week = this.getWeekOfMonth(weekDate);
           
           const yearMonth = `${year}-${month}`;
-          const imageName = `${year}-${month}-${week}`;
-          const remotePath = `images/${yearMonth}/${imageName}_${index}.jpg`;
+          const imageName = image.name || `${year}-${month}-${week}`;
+          // 使用图片名称和时间戳生成稳定的 remotePath，避免因索引变化导致的路径变化
+          const timestamp = image.updatedTime ? new Date(image.updatedTime).getTime() : new Date().getTime();
+          const remotePath = `images/${yearMonth}/${imageName}_${timestamp}.jpg`;
           
           images.push({
             weekKey: weekKey,
             image: image,
             yearMonth: yearMonth,
             imageName: imageName,
-            remotePath: remotePath,
-            index: index
+            remotePath: remotePath
           });
         });
       }
