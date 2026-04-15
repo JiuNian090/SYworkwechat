@@ -67,16 +67,60 @@ function addImageToRelation(weekKey, image) {
   // 检查图片是否已存在
   const exists = table[weekKey].some(img => img.id === image.id);
   if (!exists) {
+    // 计算图片哈希值
+    const hash = calculateImageHash(image);
+    
     table[weekKey].push({
       id: image.id,
       name: image.name,
       path: image.path,
-      addedTime: image.addedTime || new Date().toISOString()
+      addedTime: image.addedTime || new Date().toISOString(),
+      hash: hash // 存储哈希值
     });
     saveImageRelationTable(table);
+  } else {
+    // 如果图片已存在，更新信息
+    const index = table[weekKey].findIndex(img => img.id === image.id);
+    if (index !== -1) {
+      // 检查图片信息是否有变化
+      const existingImage = table[weekKey][index];
+      const hasChanged = existingImage.name !== image.name || 
+                        existingImage.path !== image.path;
+      
+      if (hasChanged) {
+        // 计算新的哈希值
+        const hash = calculateImageHash(image);
+        
+        table[weekKey][index] = {
+          ...existingImage,
+          name: image.name,
+          path: image.path,
+          hash: hash // 更新哈希值
+        };
+        saveImageRelationTable(table);
+      }
+    }
   }
 
   return table;
+}
+
+/**
+ * 计算图片哈希值（基于图片时间戳、名称、内容和大小）
+ * @param {object} image - 图片对象
+ */
+function calculateImageHash(image) {
+  // 基于四个变量计算哈希值：图片时间戳、图片名称、图片内容、图片大小
+  const hashInput = `${image.addedTime || new Date().toISOString()}_${image.name || ''}_${image.path || ''}_${image.size || 0}`;
+  
+  // 简单的哈希算法
+  let hash = 0;
+  for (let i = 0; i < hashInput.length; i++) {
+    const char = hashInput.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(16);
 }
 
 /**
@@ -294,8 +338,12 @@ async function getValidImagesForWeek(weekKey) {
 /**
  * 获取所有有效的图片（用于备份）
  * 返回格式与旧的 getAllLocalImages() 兼容
+ * 按照用户要求：备份时直接使用关联表
  */
 async function getAllValidImages() {
+  // 同步关联表与本地存储，确保关联表是最新的
+  syncRelationWithLocal();
+  
   const table = getImageRelationTable();
   const allValidImages = [];
   const imageWeekRelation = {};
@@ -305,7 +353,8 @@ async function getAllValidImages() {
     if (validImages.length > 0) {
       imageWeekRelation[weekKey] = validImages.map(img => ({
         name: img.name,
-        path: img.path
+        path: img.path,
+        hash: img.hash // 包含哈希值
       }));
 
       validImages.forEach((img, index) => {
@@ -331,7 +380,7 @@ async function getAllValidImages() {
           yearMonth: yearMonth,
           imageName: imageName,
           remotePath: remotePath,
-          index: index // 添加图片位置索引
+          hash: img.hash // 包含哈希值
         });
       });
     }

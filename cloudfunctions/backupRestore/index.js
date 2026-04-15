@@ -207,6 +207,8 @@ exports.main = async (event, context) => {
       // 第一步：分析备份差异，返回需要新增的图片清单
       const { imageWeekRelation, version = 'v1.0.0' } = data;
       
+      console.log('getBackupDiff - 本地关联表:', imageWeekRelation);
+      
       // 获取云端现有的图片备份
       const existingImageBackup = await imageBackupCollection.where({
         userId: userId
@@ -219,6 +221,9 @@ exports.main = async (event, context) => {
         existingImages = existingImageBackup.data[0].images || [];
         existingImageWeekRelation = existingImageBackup.data[0].imageWeekRelation || {};
       }
+      
+      console.log('getBackupDiff - 云端图片数量:', existingImages.length);
+      console.log('getBackupDiff - 云端关联表:', existingImageWeekRelation);
       
       // 构建本地图片映射
       const localImageMap = new Map();
@@ -236,6 +241,9 @@ exports.main = async (event, context) => {
         const key = `${img.weekKey}_${img.imageName}`;
         cloudImageMap.set(key, img);
       });
+      
+      console.log('getBackupDiff - 本地图片映射大小:', localImageMap.size);
+      console.log('getBackupDiff - 云端图片映射大小:', cloudImageMap.size);
       
       // 找出需要新增的图片（本地有但云端没有的）
       const imagesToUpload = [];
@@ -267,10 +275,11 @@ exports.main = async (event, context) => {
               image: {
                 path: img.path,
                 name: img.name,
-                addedTime: new Date().toISOString()
+                addedTime: new Date().toISOString(),
+                hash: img.hash
               },
               remotePath: remotePath,
-              index: index
+              hash: img.hash
             });
           }
         });
@@ -284,6 +293,9 @@ exports.main = async (event, context) => {
           imagesToDelete.push(img);
         }
       });
+      
+      console.log('getBackupDiff - 需要上传的图片数量:', imagesToUpload.length);
+      console.log('getBackupDiff - 需要删除的图片数量:', imagesToDelete.length);
       
       return {
         success: true,
@@ -358,6 +370,9 @@ exports.main = async (event, context) => {
         const currentImageBackup = existingImageBackup.data[0];
         let imageChanges = false;
         
+        console.log('completeBackup - 云端现有图片数量:', (currentImageBackup.images || []).length);
+        console.log('completeBackup - 本地上传图片数量:', (images || []).length);
+        
         // 版本号变化或数据变化时更新
         if (versionComparison !== 0) {
           // 版本号变化，需要更新数据结构
@@ -371,12 +386,48 @@ exports.main = async (event, context) => {
         }
         
         if (imageChanges) {
+          // 构建本地图片映射
+          const localImageMap = new Map();
+          (images || []).forEach(img => {
+            if (img.weekKey && img.imageName) {
+              const key = `${img.weekKey}_${img.imageName}`;
+              localImageMap.set(key, img);
+            }
+          });
+          
+          // 构建云端图片映射
+          const cloudImageMap = new Map();
+          (currentImageBackup.images || []).forEach(img => {
+            if (img.weekKey && img.imageName) {
+              const key = `${img.weekKey}_${img.imageName}`;
+              cloudImageMap.set(key, img);
+            }
+          });
+          
+          console.log('completeBackup - 本地图片映射大小:', localImageMap.size);
+          console.log('completeBackup - 云端图片映射大小:', cloudImageMap.size);
+          
+          // 找出需要删除的图片（云端有但本地没有的）
+          const imagesToDelete = [];
+          (currentImageBackup.images || []).forEach(img => {
+            if (img.weekKey && img.imageName) {
+              const key = `${img.weekKey}_${img.imageName}`;
+              if (!localImageMap.has(key)) {
+                imagesToDelete.push(img);
+              }
+            }
+          });
+          
+          console.log('completeBackup - 需要删除的图片数量:', imagesToDelete.length);
+          
           // 删除云端多余的图片文件
-          deletedImageCount = await deleteExtraCloudImages(
-            userId, 
-            currentImageBackup.images || [], 
-            images || []
-          );
+          if (imagesToDelete.length > 0) {
+            deletedImageCount = await deleteExtraCloudImages(
+              userId, 
+              imagesToDelete, 
+              images || []
+            );
+          }
           
           await imageBackupCollection.doc(currentImageBackup._id).update({
             data: imageBackupData
