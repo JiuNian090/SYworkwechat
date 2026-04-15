@@ -90,7 +90,9 @@ async function deleteExtraCloudImages(userId, existingImages, newImages) {
       }
     }
 
-    await Promise.all(deletePromises);
+    if (deletePromises.length > 0) {
+      await Promise.all(deletePromises);
+    }
     return imagesToDelete.length;
   } catch (e) {
     console.error('删除云端多余图片失败', e);
@@ -235,9 +237,33 @@ exports.main = async (event, context) => {
             images || []
           );
         } else {
-          // 对比图片数据
-          if (!isDataEqual(currentImageBackup.images, images || [])) {
+          // 对比图片数据 - 基于哈希值比较
+          const currentImagesMap = new Map();
+          (currentImageBackup.images || []).forEach(img => {
+            if (img.remotePath) {
+              currentImagesMap.set(img.remotePath, img);
+            }
+          });
+          
+          const newImagesMap = new Map();
+          (images || []).forEach(img => {
+            if (img.remotePath) {
+              newImagesMap.set(img.remotePath, img);
+            }
+          });
+          
+          // 检查是否有图片变化（新增、删除或哈希值变更）
+          if (currentImagesMap.size !== newImagesMap.size) {
             imageChanges = true;
+          } else {
+            // 大小相同，检查每个图片的哈希值
+            for (const [remotePath, newImg] of newImagesMap.entries()) {
+              const currentImg = currentImagesMap.get(remotePath);
+              if (!currentImg || currentImg.hash !== newImg.hash) {
+                imageChanges = true;
+                break;
+              }
+            }
           }
           
           // 对比图片关联表
@@ -246,7 +272,7 @@ exports.main = async (event, context) => {
           }
           
           // 删除云端多余的图片文件
-          if (imageChanges || currentImageBackup.images.length !== (images || []).length) {
+          if (imageChanges) {
             deletedImageCount = await deleteExtraCloudImages(
               userId, 
               currentImageBackup.images || [], 

@@ -287,16 +287,17 @@ class CloudManager {
     });
   }
   
-  // 计算图片文件的哈希值
-  calculateImageHash(imagePath) {
+  // 计算图片哈希值（基于图片内容、位置和名称）
+  calculateImageHash(imagePath, weekKey, imageName) {
     return new Promise((resolve, reject) => {
       const fileSystemManager = wx.getFileSystemManager();
       fileSystemManager.getFileInfo({
         filePath: imagePath,
         success: (res) => {
-          // 使用文件大小和修改时间作为简单的哈希值
-          // 实际项目中可以使用更复杂的哈希算法
-          const hash = this.calculateHash(`${res.size}_${res.mtime}`);
+          // 基于文件内容（大小+修改时间）、位置（weekKey）和名称（imageName）计算哈希值
+          // 这样只有当图片内容、位置或名称改变时，哈希值才会变化
+          const hashInput = `${res.size}_${res.mtime}_${weekKey}_${imageName}`;
+          const hash = this.calculateHash(hashInput);
           resolve(hash);
         },
         fail: (err) => {
@@ -375,8 +376,8 @@ class CloudManager {
       // 准备需要上传的图片
       const imagesToUpload = [];
       for (const imgInfo of validImages) {
-        // 计算图片哈希值
-        const imageHash = await this.calculateImageHash(imgInfo.image.path);
+        // 计算图片哈希值（基于内容、位置和名称）
+        const imageHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
         const existingImg = existingImageMap.get(imgInfo.remotePath);
         let shouldUpload = true;
         
@@ -591,7 +592,7 @@ class CloudManager {
       }
     }
     
-    // 恢复图片（增量恢复，只恢复本地没有的）
+    // 恢复图片（增量恢复，只恢复哈希值不同的图片）
     const restoredImages = [];
     let newImagesCount = 0;
     let updatedImagesCount = 0;
@@ -624,7 +625,13 @@ class CloudManager {
           // 哈希值相同，图片未变化，跳过下载
           console.log('图片未变化，跳过下载:', imgInfo.remotePath);
           continue;
+        } else {
+          // 哈希值不同，需要更新
+          updatedImagesCount++;
         }
+      } else {
+        // 新图片
+        newImagesCount++;
       }
       imagesToDownload.push(imgInfo);
     }
@@ -655,8 +662,8 @@ class CloudManager {
             fileID: imgInfo.fileID
           });
           
-          // 计算下载图片的哈希值
-          const imageHash = await this.calculateImageHash(downloadResult.tempFilePath);
+          // 计算下载图片的哈希值（基于内容、位置和名称）
+          const imageHash = await this.calculateImageHash(downloadResult.tempFilePath, imgInfo.weekKey, imgInfo.imageName);
           
           // 保存到本地存储
           const weekKey = imgInfo.weekKey;
@@ -721,6 +728,7 @@ class CloudManager {
     
     wx.hideLoading();
     
+    // 优化恢复提示，根据实际情况显示不同的消息
     if (newImagesCount > 0 || updatedImagesCount > 0) {
       let message = '恢复成功';
       if (newImagesCount > 0 && updatedImagesCount > 0) {
@@ -734,9 +742,16 @@ class CloudManager {
         title: message,
         icon: 'success'
       });
-    } else {
+    } else if (images.length > 0) {
+      // 有备份图片但没有变化
       wx.showToast({
-        title: '恢复成功（无新图片）',
+        title: '恢复成功（图片无变化）',
+        icon: 'success'
+      });
+    } else {
+      // 没有备份图片
+      wx.showToast({
+        title: '恢复成功（无图片数据）',
         icon: 'success'
       });
     }
