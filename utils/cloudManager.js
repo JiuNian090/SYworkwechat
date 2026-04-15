@@ -1,4 +1,4 @@
-const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation } = require('./imageRelation.js');
+const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation, getImageRelationTable, removeImageFromRelation } = require('./imageRelation.js');
 
 /**
  * 云开发工具类 - 增量备份和恢复
@@ -1017,7 +1017,7 @@ class CloudManager {
     }
   }
   
-  // 执行恢复操作 - 新流程
+  // 执行恢复操作 - 新流程（优化版）
   async performRestoreWithNewFlow(cloudRelation) {
     try {
       wx.showLoading({ title: '分析恢复差异...' });
@@ -1101,17 +1101,15 @@ class CloudManager {
         deletedImageCount++;
       }
       
-      // 5. 调用云函数获取需要新增的图片数据
+      // 5. 直接从云端获取所有图片数据
       let actualNewImagesCount = 0;
       if (imagesToAdd.length > 0) {
         wx.showLoading({ title: '获取图片数据...' });
         
+        // 直接获取云端的所有图片数据
         const getImagesResult = await this.callCloudFunction('backupRestore', {
-          action: 'getImagesForRestore',
-          userId: this.userId,
-          data: {
-            imagesToAdd: imagesToAdd
-          }
+          action: 'getAllCloudImages',
+          userId: this.userId
         });
         
         if (!getImagesResult.result.success) {
@@ -1126,7 +1124,16 @@ class CloudManager {
           };
         }
         
-        const imagesToDownload = getImagesResult.result.images || [];
+        const allCloudImages = getImagesResult.result.images || [];
+        
+        // 筛选出需要下载的图片
+        const imagesToDownload = allCloudImages.filter(img => {
+          const key = `${img.weekKey}_${img.imageName || img.name}`;
+          return imagesToAdd.some(addImg => {
+            const addKey = `${addImg.weekKey}_${addImg.name}`;
+            return key === addKey;
+          });
+        });
         
         // 6. 下载并保存图片
         if (imagesToDownload.length > 0) {
@@ -1165,7 +1172,7 @@ class CloudManager {
                   nameCountMap.set(baseName, (nameCountMap.get(baseName) || 0) + 1);
                 });
                 
-                let finalImageName = imgInfo.imageName;
+                let finalImageName = imgInfo.imageName || imgInfo.name;
                 const baseName = finalImageName.replace(/\(\d+\)$/, '').trim();
                 if (nameCountMap.has(baseName)) {
                   // 名称冲突，添加后缀

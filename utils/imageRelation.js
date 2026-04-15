@@ -430,12 +430,12 @@ function importImageWeekRelation(relation) {
     table[weekKey] = relation[weekKey].map((img, index) => ({
       id: `${weekKey}_${Date.now()}_${index}`,
       name: img.name,
-      path: img.path,
+      path: img.path, // 暂时使用云端的路径，后续会被实际下载的路径替换
       addedTime: new Date().toISOString()
     }));
     
-    // 同时同步到本地存储的 week_images_* 键中
-    wx.setStorageSync(weekKey, table[weekKey]);
+    // 不要直接同步到本地存储，避免覆盖已经下载的图片
+    // 本地存储会在下载图片时更新
   }
 
   saveImageRelationTable(table);

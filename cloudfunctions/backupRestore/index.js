@@ -512,9 +512,14 @@ exports.main = async (event, context) => {
       // 找出需要下载的图片
       const imagesToDownload = [];
       imagesToAdd.forEach(img => {
-        const key = `${img.weekKey}_${img.name}`;
-        if (cloudImageMap.has(key)) {
-          imagesToDownload.push(cloudImageMap.get(key));
+        // 尝试使用两种键格式，确保匹配
+        const key1 = `${img.weekKey}_${img.name}`;
+        const key2 = `${img.weekKey}_${img.imageName}`;
+        
+        if (cloudImageMap.has(key1)) {
+          imagesToDownload.push(cloudImageMap.get(key1));
+        } else if (cloudImageMap.has(key2)) {
+          imagesToDownload.push(cloudImageMap.get(key2));
         }
       });
       
@@ -539,6 +544,23 @@ exports.main = async (event, context) => {
       return {
         success: true,
         data: backupData
+      };
+    }
+
+    if (action === 'getAllCloudImages') {
+      // 获取所有云端图片数据
+      const existingImageBackup = await imageBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      let existingImages = [];
+      if (existingImageBackup.data.length > 0) {
+        existingImages = existingImageBackup.data[0].images || [];
+      }
+      
+      return {
+        success: true,
+        images: existingImages
       };
     }
 
