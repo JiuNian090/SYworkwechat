@@ -9,6 +9,11 @@ class CloudManager {
     this.userId = null;
   }
   
+  // 备份系统版本号
+  get BACKUP_SYSTEM_VERSION() {
+    return 'v1.0.0';
+  }
+  
   // 检查云开发是否初始化成功
   isCloudInitialized() {
     const app = getApp();
@@ -473,7 +478,8 @@ class CloudManager {
           images: uploadedImages,
           imageWeekRelation: validImageWeekRelation,
           avatarInfo: avatarInfo,
-          backupIndex: {}
+          backupIndex: {},
+          version: this.BACKUP_SYSTEM_VERSION
         }
       });
       
@@ -539,6 +545,218 @@ class CloudManager {
     }
   }
   
+  // 比较版本号大小
+  compareVersions(version1, version2) {
+    const v1 = version1.replace('v', '').split('.').map(Number);
+    const v2 = version2.replace('v', '').split('.').map(Number);
+    
+    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+      const num1 = v1[i] || 0;
+      const num2 = v2[i] || 0;
+      
+      if (num1 > num2) return 1;
+      if (num1 < num2) return -1;
+    }
+    
+    return 0;
+  }
+  
+  // 执行恢复操作
+  async performRestore(backupData) {
+    // 清空基础数据（确保与云端完全一致）
+    wx.removeStorageSync('shifts');
+    wx.removeStorageSync('shiftTemplates');
+    wx.removeStorageSync('statData');
+    wx.removeStorageSync('statLastModified');
+    wx.removeStorageSync('standardHours');
+    wx.removeStorageSync('imagesLastModified');
+    
+    // 恢复数据文件（完全替换）
+    if (backupData.shiftTemplates) {
+      wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
+    }
+    if (backupData.shifts) {
+      wx.setStorageSync('shifts', backupData.shifts);
+    }
+    // 恢复头像信息
+    if (backupData.avatarInfo) {
+      if (backupData.avatarInfo.avatarType) {
+        wx.setStorageSync('avatarType', backupData.avatarInfo.avatarType);
+      }
+      if (backupData.avatarInfo.avatarEmoji) {
+        wx.setStorageSync('avatarEmoji', backupData.avatarInfo.avatarEmoji);
+      }
+      if (backupData.avatarInfo.username) {
+        wx.setStorageSync('username', backupData.avatarInfo.username);
+      }
+    }
+    
+    // 恢复图片（增量恢复，只恢复本地没有的）
+    const restoredImages = [];
+    let newImagesCount = 0;
+    let updatedImagesCount = 0;
+    const images = backupData.images || [];
+    const restoredWeekKeys = new Set();
+    const imageWeekRelation = {};
+    
+    // 获取本地已有的图片信息
+    const localImageMap = new Map();
+    const storageInfo = wx.getStorageInfoSync();
+    const weekKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
+    weekKeys.forEach(weekKey => {
+      const localImages = wx.getStorageSync(weekKey) || [];
+      localImages.forEach(img => {
+        // 使用周Key和图片名称作为唯一标识
+        const key = `${weekKey}_${img.name}`;
+        localImageMap.set(key, img);
+      });
+    });
+    
+    // 准备需要下载的图片
+    const imagesToDownload = [];
+    for (const imgInfo of images) {
+      // 检查图片是否已存在本地
+      const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
+      if (localImageMap.has(localKey)) {
+        // 图片已存在，检查哈希值是否相同
+        const localImage = localImageMap.get(localKey);
+        if (localImage.hash === imgInfo.hash) {
+          // 哈希值相同，图片未变化，跳过下载
+          console.log('图片未变化，跳过下载:', imgInfo.remotePath);
+          continue;
+        }
+      }
+      imagesToDownload.push(imgInfo);
+    }
+    
+    // 并行下载，控制并发数
+    const maxConcurrentDownloads = 5; // 控制并发数，避免超过微信小程序限制
+    const totalImages = imagesToDownload.length;
+    let currentImage = 0;
+    
+    // 分批次并行下载
+    for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
+      const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
+      const batchPromises = batch.map(async (imgInfo) => {
+        try {
+          // 更新进度
+          currentImage++;
+          const progress = Math.round((currentImage / totalImages) * 100);
+          const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
+          const localImage = localImageMap.get(localKey);
+          const operation = localImage && localImage.hash !== imgInfo.hash ? '更新' : '新增';
+          wx.showLoading({ 
+            title: `恢复中 ${operation}图片 ${currentImage}/${totalImages} (${progress}%)`,
+            mask: true
+          });
+          
+          // 从云存储下载图片
+          const downloadResult = await wx.cloud.downloadFile({
+            fileID: imgInfo.fileID
+          });
+          
+          // 计算下载图片的哈希值
+          const imageHash = await this.calculateImageHash(downloadResult.tempFilePath);
+          
+          // 保存到本地存储
+          const weekKey = imgInfo.weekKey;
+          const weekImages = wx.getStorageSync(weekKey) || [];
+          
+          // 检查是否需要更新现有图片
+          const existingImageIndex = weekImages.findIndex(img => img.name === imgInfo.imageName);
+          const newImage = {
+            id: `${weekKey}_${Date.now()}`,
+            name: imgInfo.imageName,
+            path: downloadResult.tempFilePath,
+            addedTime: new Date().toISOString(),
+            hash: imageHash
+          };
+          
+          if (existingImageIndex !== -1) {
+            // 更新现有图片
+            weekImages[existingImageIndex] = newImage;
+            updatedImagesCount++;
+          } else {
+            // 添加新图片
+            weekImages.push(newImage);
+            newImagesCount++;
+          }
+          
+          wx.setStorageSync(weekKey, weekImages);
+          
+          // 同步更新到图片关联表
+          addImageToRelation(weekKey, newImage);
+          restoredWeekKeys.add(weekKey);
+          
+          // 构建图片周关联表
+          if (!imageWeekRelation[weekKey]) {
+            imageWeekRelation[weekKey] = [];
+          }
+          imageWeekRelation[weekKey].push({
+            name: newImage.name,
+            path: newImage.path,
+            hash: imageHash
+          });
+          
+          restoredImages.push(imgInfo.remotePath);
+        } catch (e) {
+          console.error('恢复图片失败', imgInfo.remotePath, e);
+        }
+      });
+      
+      // 等待当前批次下载完成
+      await Promise.all(batchPromises);
+    }
+    
+    // 清空图片关联表并导入构建好的关联表
+    wx.removeStorageSync('image_relation_table');
+    if (Object.keys(imageWeekRelation).length > 0) {
+      importImageWeekRelation(imageWeekRelation);
+    }
+    
+    // 同步所有恢复过的周的关联表
+    restoredWeekKeys.forEach(weekKey => {
+      syncRelationWithLocal(weekKey);
+    });
+    
+    wx.hideLoading();
+    
+    if (newImagesCount > 0 || updatedImagesCount > 0) {
+      let message = '恢复成功';
+      if (newImagesCount > 0 && updatedImagesCount > 0) {
+        message = `恢复成功（新增${newImagesCount}张，更新${updatedImagesCount}张）`;
+      } else if (newImagesCount > 0) {
+        message = `恢复成功（新增${newImagesCount}张图片）`;
+      } else if (updatedImagesCount > 0) {
+        message = `恢复成功（更新${updatedImagesCount}张图片）`;
+      }
+      wx.showToast({
+        title: message,
+        icon: 'success'
+      });
+    } else {
+      wx.showToast({
+        title: '恢复成功（无新图片）',
+        icon: 'success'
+      });
+    }
+    
+    // 刷新页面数据
+    setTimeout(() => {
+      const pages = getCurrentPages();
+      pages.forEach(page => {
+        if (page.refreshPageData) {
+          page.refreshPageData();
+        }
+      });
+    }, 500);
+    
+    return {
+      success: true,
+      restoredImages: restoredImages.length
+    };
+  }
+  
   // 恢复数据 - 增量恢复，只恢复本地没有的图片，并显示进度
   async restore() {
     try {
@@ -576,198 +794,52 @@ class CloudManager {
       
       const backupData = restoreResult.result.data;
       
-      // 2. 清空基础数据（确保与云端完全一致）
-      wx.removeStorageSync('shifts');
-      wx.removeStorageSync('shiftTemplates');
-      wx.removeStorageSync('statData');
-      wx.removeStorageSync('statLastModified');
-      wx.removeStorageSync('standardHours');
-      wx.removeStorageSync('imagesLastModified');
+      // 2. 检查版本兼容性
+      const backupVersion = backupData.backupSystemVersion || 'v1.0.0';
+      const localVersion = this.BACKUP_SYSTEM_VERSION;
       
-      // 3. 恢复数据文件（完全替换）
-      if (backupData.shiftTemplates) {
-        wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
-      }
-      if (backupData.shifts) {
-        wx.setStorageSync('shifts', backupData.shifts);
-      }
-      // 恢复头像信息
-      if (backupData.avatarInfo) {
-        if (backupData.avatarInfo.avatarType) {
-          wx.setStorageSync('avatarType', backupData.avatarInfo.avatarType);
-        }
-        if (backupData.avatarInfo.avatarEmoji) {
-          wx.setStorageSync('avatarEmoji', backupData.avatarInfo.avatarEmoji);
-        }
-        if (backupData.avatarInfo.username) {
-          wx.setStorageSync('username', backupData.avatarInfo.username);
-        }
-      }
+      const versionComparison = this.compareVersions(localVersion, backupVersion);
       
-      // 4. 恢复图片（增量恢复，只恢复本地没有的）
-      const restoredImages = [];
-      let newImagesCount = 0;
-      let updatedImagesCount = 0;
-      const images = backupData.images || [];
-      const restoredWeekKeys = new Set();
-      const imageWeekRelation = {};
-      
-      // 获取本地已有的图片信息
-      const localImageMap = new Map();
-      const storageInfo = wx.getStorageInfoSync();
-      const weekKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
-      weekKeys.forEach(weekKey => {
-        const localImages = wx.getStorageSync(weekKey) || [];
-        localImages.forEach(img => {
-          // 使用周Key和图片名称作为唯一标识
-          const key = `${weekKey}_${img.name}`;
-          localImageMap.set(key, img);
-        });
-      });
-      
-      // 准备需要下载的图片
-      const imagesToDownload = [];
-      for (const imgInfo of images) {
-        // 检查图片是否已存在本地
-        const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
-        if (localImageMap.has(localKey)) {
-          // 图片已存在，检查哈希值是否相同
-          const localImage = localImageMap.get(localKey);
-          if (localImage.hash === imgInfo.hash) {
-            // 哈希值相同，图片未变化，跳过下载
-            console.log('图片未变化，跳过下载:', imgInfo.remotePath);
-            continue;
-          }
-        }
-        imagesToDownload.push(imgInfo);
-      }
-      
-      // 并行下载，控制并发数
-      const maxConcurrentDownloads = 5; // 控制并发数，避免超过微信小程序限制
-      const totalImages = imagesToDownload.length;
-      let currentImage = 0;
-      
-      // 分批次并行下载
-      for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
-        const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
-        const batchPromises = batch.map(async (imgInfo) => {
-          try {
-            // 更新进度
-            currentImage++;
-            const progress = Math.round((currentImage / totalImages) * 100);
-            const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
-            const localImage = localImageMap.get(localKey);
-            const operation = localImage && localImage.hash !== imgInfo.hash ? '更新' : '新增';
-            wx.showLoading({ 
-              title: `恢复中 ${operation}图片 ${currentImage}/${totalImages} (${progress}%)`,
-              mask: true
-            });
-            
-            // 从云存储下载图片
-            const downloadResult = await wx.cloud.downloadFile({
-              fileID: imgInfo.fileID
-            });
-            
-            // 计算下载图片的哈希值
-            const imageHash = await this.calculateImageHash(downloadResult.tempFilePath);
-            
-            // 保存到本地存储
-            const weekKey = imgInfo.weekKey;
-            const weekImages = wx.getStorageSync(weekKey) || [];
-            
-            // 检查是否需要更新现有图片
-            const existingImageIndex = weekImages.findIndex(img => img.name === imgInfo.imageName);
-            const newImage = {
-              id: `${weekKey}_${Date.now()}`,
-              name: imgInfo.imageName,
-              path: downloadResult.tempFilePath,
-              addedTime: new Date().toISOString(),
-              hash: imageHash
-            };
-            
-            if (existingImageIndex !== -1) {
-              // 更新现有图片
-              weekImages[existingImageIndex] = newImage;
-              updatedImagesCount++;
-            } else {
-              // 添加新图片
-              weekImages.push(newImage);
-              newImagesCount++;
-            }
-            
-            wx.setStorageSync(weekKey, weekImages);
-            
-            // 同步更新到图片关联表
-            addImageToRelation(weekKey, newImage);
-            restoredWeekKeys.add(weekKey);
-            
-            // 构建图片周关联表
-            if (!imageWeekRelation[weekKey]) {
-              imageWeekRelation[weekKey] = [];
-            }
-            imageWeekRelation[weekKey].push({
-              name: newImage.name,
-              path: newImage.path,
-              hash: imageHash
-            });
-            
-            restoredImages.push(imgInfo.remotePath);
-          } catch (e) {
-            console.error('恢复图片失败', imgInfo.remotePath, e);
-          }
-        });
-        
-        // 等待当前批次下载完成
-        await Promise.all(batchPromises);
-      }
-      
-      // 清空图片关联表并导入构建好的关联表
-      wx.removeStorageSync('image_relation_table');
-      if (Object.keys(imageWeekRelation).length > 0) {
-        importImageWeekRelation(imageWeekRelation);
-      }
-      
-      // 同步所有恢复过的周的关联表
-      restoredWeekKeys.forEach(weekKey => {
-        syncRelationWithLocal(weekKey);
-      });
-      
-      wx.hideLoading();
-      
-      if (newImagesCount > 0 || updatedImagesCount > 0) {
-        let message = '恢复成功';
-        if (newImagesCount > 0 && updatedImagesCount > 0) {
-          message = `恢复成功（新增${newImagesCount}张，更新${updatedImagesCount}张）`;
-        } else if (newImagesCount > 0) {
-          message = `恢复成功（新增${newImagesCount}张图片）`;
-        } else if (updatedImagesCount > 0) {
-          message = `恢复成功（更新${updatedImagesCount}张图片）`;
-        }
+      if (versionComparison < 0) {
+        // 本地版本低于备份版本，不兼容
+        wx.hideLoading();
         wx.showToast({
-          title: message,
-          icon: 'success'
+          title: '备份版本高于当前小程序版本，请更新小程序后再恢复',
+          icon: 'none'
+        });
+        return {
+          success: false,
+          errMsg: '备份版本不兼容'
+        };
+      } else if (versionComparison > 0) {
+        // 本地版本高于备份版本，可能存在兼容性问题
+        wx.hideLoading();
+        return new Promise((resolve) => {
+          wx.showModal({
+            title: '版本差异提示',
+            content: `当前小程序版本(${localVersion})高于备份数据版本(${backupVersion})，恢复可能会导致数据结构不兼容。是否继续恢复？`,
+            cancelText: '取消',
+            confirmText: '继续恢复',
+            success: async (res) => {
+              if (res.confirm) {
+                // 用户选择继续恢复
+                const result = await this.performRestore(backupData);
+                resolve(result);
+              } else {
+                // 用户选择取消
+                resolve({
+                  success: false,
+                  errMsg: '用户取消恢复'
+                });
+              }
+            }
+          });
         });
       } else {
-        wx.showToast({
-          title: '恢复成功（无新图片）',
-          icon: 'success'
-        });
+        // 版本相同，正常恢复
+        const result = await this.performRestore(backupData);
+        return result;
       }
-      
-      // 刷新页面数据
-      setTimeout(() => {
-        const pages = getCurrentPages();
-        pages.forEach(page => {
-          if (page.refreshPageData) {
-            page.refreshPageData();
-          }
-        });
-      }, 500);
-      
-      return {
-        success: true,
-        restoredImages: restoredImages.length
-      };
       
     } catch (e) {
       console.error('恢复失败', e);

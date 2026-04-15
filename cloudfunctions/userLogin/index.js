@@ -7,7 +7,8 @@ cloud.init({
 
 const db = cloud.database();
 const usersCollection = db.collection('schedule_users');
-const backupCollection = db.collection('schedule_backups');
+const imageBackupCollection = db.collection('schedule_image_backups');
+const dataBackupCollection = db.collection('schedule_data_backups');
 
 // 密码加密
 function encryptPassword(password, salt) {
@@ -229,16 +230,17 @@ exports.main = async (event, context) => {
 
       // 删除用户的备份数据
       try {
-        const backupResult = await backupCollection.where({
+        // 删除图片备份集合
+        const imageBackupResult = await imageBackupCollection.where({
           userId: userId
         }).get();
         
-        if (backupResult.data.length > 0) {
-          const backup = backupResult.data[0];
+        if (imageBackupResult.data.length > 0) {
+          const imageBackup = imageBackupResult.data[0];
           
           // 删除云存储中的图片
-          if (backup.images && backup.images.length > 0) {
-            const fileIDs = backup.images
+          if (imageBackup.images && imageBackup.images.length > 0) {
+            const fileIDs = imageBackup.images
               .filter(img => img.fileID)
               .map(img => img.fileID);
             
@@ -249,8 +251,18 @@ exports.main = async (event, context) => {
             }
           }
           
-          // 删除备份记录
-          await backupCollection.doc(backup._id).remove();
+          // 删除图片备份记录
+          await imageBackupCollection.doc(imageBackup._id).remove();
+        }
+        
+        // 删除数据备份集合
+        const dataBackupResult = await dataBackupCollection.where({
+          userId: userId
+        }).get();
+        
+        if (dataBackupResult.data.length > 0) {
+          // 删除数据备份记录
+          await dataBackupCollection.doc(dataBackupResult.data[0]._id).remove();
         }
       } catch (e) {
         console.error('删除备份数据失败', e);

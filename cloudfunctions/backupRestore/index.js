@@ -5,8 +5,12 @@ cloud.init({
 });
 
 const db = cloud.database();
-const backupCollection = db.collection('schedule_backups');
 const usersCollection = db.collection('schedule_users');
+const imageBackupCollection = db.collection('schedule_image_backups');
+const dataBackupCollection = db.collection('schedule_data_backups');
+
+// 备份系统版本号
+const BACKUP_SYSTEM_VERSION = 'v1.0.0';
 
 // 计算数据哈希值
 function calculateHash(data) {
@@ -27,6 +31,22 @@ function isDataEqual(data1, data2) {
   const json1 = JSON.stringify(data1);
   const json2 = JSON.stringify(data2);
   return calculateHash(json1) === calculateHash(json2);
+}
+
+// 比较版本号大小
+function compareVersions(version1, version2) {
+  const v1 = version1.replace('v', '').split('.').map(Number);
+  const v2 = version2.replace('v', '').split('.').map(Number);
+  
+  for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
+    const num1 = v1[i] || 0;
+    const num2 = v2[i] || 0;
+    
+    if (num1 > num2) return 1;
+    if (num1 < num2) return -1;
+  }
+  
+  return 0;
 }
 
 // 删除云端多余的图片文件
@@ -78,11 +98,55 @@ async function deleteExtraCloudImages(userId, existingImages, newImages) {
   }
 }
 
+// 初始化集合
+async function initCollections() {
+  try {
+    // 尝试向集合添加一条临时数据，触发集合自动创建
+    // 对于 imageBackupCollection
+    const imageInitResult = await imageBackupCollection.add({
+      data: {
+        userId: 'temp_init',
+        images: [],
+        imageWeekRelation: {},
+        backupSystemVersion: BACKUP_SYSTEM_VERSION,
+        backupTime: new Date(),
+        createTime: new Date(),
+        updateTime: new Date()
+      }
+    });
+    
+    // 删除临时数据
+    await imageBackupCollection.doc(imageInitResult._id).remove();
+    
+    // 对于 dataBackupCollection
+    const dataInitResult = await dataBackupCollection.add({
+      data: {
+        userId: 'temp_init',
+        shiftTemplates: [],
+        shifts: {},
+        backupIndex: {},
+        backupSystemVersion: BACKUP_SYSTEM_VERSION,
+        backupTime: new Date(),
+        createTime: new Date(),
+        updateTime: new Date()
+      }
+    });
+    
+    // 删除临时数据
+    await dataBackupCollection.doc(dataInitResult._id).remove();
+  } catch (e) {
+    console.log('集合初始化失败，可能是集合已经存在', e);
+  }
+}
+
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
   const { action, userId, data } = event;
 
   try {
+    // 初始化集合
+    await initCollections();
+    
     // 验证用户是否存在
     const userResult = await usersCollection.doc(userId).get();
     if (!userResult.data) {
@@ -93,149 +157,193 @@ exports.main = async (event, context) => {
     }
 
     if (action === 'backup') {
-      // 备份数据 - 增量备份，只更新有变化的数据，同时删除云端多余的图片
-      const { shiftTemplates, shifts, images, imageWeekRelation, backupIndex } = data;
+      // 备份数据 - 分别备份到三个集合
+      const { shiftTemplates, shifts, images, imageWeekRelation, backupIndex, version = 'v1.0.0' } = data;
       
-      // 查找是否有现有的备份记录
-      const existingBackup = await backupCollection.where({
+      let totalChanges = false;
+      let deletedImageCount = 0;
+      let versionChanged = false;
+      
+      // 1. 检查版本号
+      const existingDataBackup = await dataBackupCollection.where({
         userId: userId
       }).get();
-
-      if (existingBackup.data.length > 0) {
-        const currentBackup = existingBackup.data[0];
-        const updateData = {};
-        let hasChanges = false;
-
-        // 对比班次模板
-        if (!isDataEqual(currentBackup.shiftTemplates, shiftTemplates)) {
-          updateData.shiftTemplates = shiftTemplates;
-          hasChanges = true;
-        }
-
-        // 对比排班数据
-        if (!isDataEqual(currentBackup.shifts, shifts)) {
-          updateData.shifts = shifts;
-          hasChanges = true;
-        }
-
-        // 对比图片数据
-        if (!isDataEqual(currentBackup.images, images || [])) {
-          updateData.images = images || [];
-          hasChanges = true;
-        }
-
-        // 对比图片关联表
-        if (!isDataEqual(currentBackup.imageWeekRelation, imageWeekRelation || {})) {
-          updateData.imageWeekRelation = imageWeekRelation || {};
-          hasChanges = true;
-        }
-
-        // 对比备份索引
-        if (!isDataEqual(currentBackup.backupIndex, backupIndex || {})) {
-          updateData.backupIndex = backupIndex || {};
-          hasChanges = true;
-        }
-
-        // 删除云端多余的图片文件
-        let deletedImageCount = 0;
-        if (hasChanges || currentBackup.images.length !== (images || []).length) {
+      
+      let existingVersion = 'v0.0.0';
+      if (existingDataBackup.data.length > 0) {
+        existingVersion = existingDataBackup.data[0].backupSystemVersion || 'v0.0.0';
+      }
+      
+      // 比较版本号
+      const versionComparison = compareVersions(version, existingVersion);
+      
+      // 2. 备份其他数据集合（全量替换）
+      const dataBackupData = {
+        userId: userId,
+        shiftTemplates: shiftTemplates,
+        shifts: shifts,
+        backupIndex: backupIndex || {},
+        backupSystemVersion: version,
+        backupTime: new Date(),
+        updateTime: new Date()
+      };
+      
+      if (existingDataBackup.data.length > 0) {
+        await dataBackupCollection.doc(existingDataBackup.data[0]._id).update({
+          data: dataBackupData
+        });
+      } else {
+        dataBackupData.createTime = new Date();
+        await dataBackupCollection.add({
+          data: dataBackupData
+        });
+      }
+      totalChanges = true;
+      
+      // 3. 备份图片数据集合
+      const existingImageBackup = await imageBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      const imageBackupData = {
+        userId: userId,
+        images: images || [],
+        imageWeekRelation: imageWeekRelation || {},
+        backupSystemVersion: version,
+        backupTime: new Date(),
+        updateTime: new Date()
+      };
+      
+      if (existingImageBackup.data.length > 0) {
+        const currentImageBackup = existingImageBackup.data[0];
+        let imageChanges = false;
+        
+        // 版本号变化或数据变化时更新
+        if (versionComparison !== 0) {
+          // 版本号变化，需要更新数据结构，但仍然保持图片的增量备份
+          imageChanges = true;
+          versionChanged = true;
+          
+          // 仍然对比图片数据，只删除真正需要删除的图片
           deletedImageCount = await deleteExtraCloudImages(
             userId, 
-            currentBackup.images || [], 
+            currentImageBackup.images || [], 
             images || []
           );
-        }
-
-        if (hasChanges) {
-          // 有变化，更新备份
-          updateData.updateTime = new Date();
-          updateData.backupTime = new Date();
-          await backupCollection.doc(currentBackup._id).update({
-            data: updateData
-          });
-        }
-
-        return {
-          success: true,
-          message: hasChanges 
-            ? `备份成功（有更新，删除${deletedImageCount}张图片）` 
-            : `备份成功（无变化）`,
-          hasChanges: hasChanges,
-          deletedImageCount: deletedImageCount
-        };
-      } else {
-        // 没有现有备份，创建新备份
-        await backupCollection.add({
-          data: {
-            userId: userId,
-            shiftTemplates: shiftTemplates,
-            shifts: shifts,
-            images: images || [],
-            imageWeekRelation: imageWeekRelation || {},
-            backupIndex: backupIndex || {},
-            backupTime: new Date(),
-            createTime: new Date(),
-            updateTime: new Date()
+        } else {
+          // 对比图片数据
+          if (!isDataEqual(currentImageBackup.images, images || [])) {
+            imageChanges = true;
           }
+          
+          // 对比图片关联表
+          if (!isDataEqual(currentImageBackup.imageWeekRelation, imageWeekRelation || {})) {
+            imageChanges = true;
+          }
+          
+          // 删除云端多余的图片文件
+          if (imageChanges || currentImageBackup.images.length !== (images || []).length) {
+            deletedImageCount = await deleteExtraCloudImages(
+              userId, 
+              currentImageBackup.images || [], 
+              images || []
+            );
+          }
+        }
+        
+        if (imageChanges) {
+          await imageBackupCollection.doc(currentImageBackup._id).update({
+            data: imageBackupData
+          });
+          totalChanges = true;
+        }
+      } else {
+        imageBackupData.createTime = new Date();
+        await imageBackupCollection.add({
+          data: imageBackupData
         });
-
-        return {
-          success: true,
-          message: '备份成功（新备份）',
-          hasChanges: true,
-          deletedImageCount: 0
-        };
+        totalChanges = true;
       }
 
+      return {
+        success: true,
+        message: totalChanges 
+          ? versionChanged 
+            ? `备份成功（版本更新，删除${deletedImageCount}张图片）` 
+            : `备份成功（有更新，删除${deletedImageCount}张图片）`
+          : `备份成功（无变化）`,
+        hasChanges: totalChanges,
+        deletedImageCount: deletedImageCount,
+        versionChanged: versionChanged
+      };
+
     } else if (action === 'restore') {
-      // 恢复数据 - 返回云端完整数据，由前端完全替换本地
-      const backupResult = await backupCollection.where({
+      // 恢复数据 - 从三个集合中分别获取数据
+      const dataBackupResult = await dataBackupCollection.where({
+        userId: userId
+      }).orderBy('backupTime', 'desc').limit(1).get();
+      
+      const imageBackupResult = await imageBackupCollection.where({
         userId: userId
       }).orderBy('backupTime', 'desc').limit(1).get();
 
-      if (backupResult.data.length === 0) {
+      if (dataBackupResult.data.length === 0 && imageBackupResult.data.length === 0) {
         return {
           success: false,
           errMsg: '没有找到备份数据'
         };
       }
 
-      const backup = backupResult.data[0];
+      const dataBackup = dataBackupResult.data[0] || {};
+      const imageBackup = imageBackupResult.data[0] || {};
+
+      // 获取备份系统版本号
+      const backupSystemVersion = dataBackup.backupSystemVersion || imageBackup.backupSystemVersion || 'v1.0.0';
 
       return {
         success: true,
         data: {
-          shiftTemplates: backup.shiftTemplates,
-          shifts: backup.shifts,
-          images: backup.images || [],
-          imageWeekRelation: backup.imageWeekRelation || {},
-          backupIndex: backup.backupIndex || {},
-          backupTime: backup.backupTime
+          shiftTemplates: dataBackup.shiftTemplates,
+          shifts: dataBackup.shifts,
+          images: imageBackup.images || [],
+          imageWeekRelation: imageBackup.imageWeekRelation || {},
+          backupIndex: dataBackup.backupIndex || {},
+          backupTime: dataBackup.backupTime || imageBackup.backupTime || new Date(),
+          backupSystemVersion: backupSystemVersion
         }
       };
 
     } else if (action === 'getBackupInfo') {
       // 获取备份信息
-      const backupResult = await backupCollection.where({
+      const dataBackupResult = await dataBackupCollection.where({
+        userId: userId
+      }).orderBy('backupTime', 'desc').limit(1).get();
+      
+      const imageBackupResult = await imageBackupCollection.where({
         userId: userId
       }).orderBy('backupTime', 'desc').limit(1).get();
 
-      if (backupResult.data.length === 0) {
+      if (dataBackupResult.data.length === 0 && imageBackupResult.data.length === 0) {
         return {
           success: true,
           hasBackup: false
         };
       }
 
-      const backup = backupResult.data[0];
+      const dataBackup = dataBackupResult.data[0] || {};
+      const imageBackup = imageBackupResult.data[0] || {};
+
+      // 获取备份系统版本号
+      const backupSystemVersion = dataBackup.backupSystemVersion || imageBackup.backupSystemVersion || 'v1.0.0';
 
       return {
         success: true,
         hasBackup: true,
         data: {
-          backupTime: backup.backupTime,
-          imageCount: (backup.images || []).length,
-          shiftCount: Object.keys(backup.shifts || {}).length
+          backupTime: dataBackup.backupTime || imageBackup.backupTime || new Date(),
+          imageCount: (imageBackup.images || []).length,
+          shiftCount: Object.keys(dataBackup.shifts || {}).length,
+          backupSystemVersion: backupSystemVersion
         }
       };
     }
