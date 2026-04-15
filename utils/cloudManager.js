@@ -376,32 +376,44 @@ class CloudManager {
       // 准备需要上传的图片
       const imagesToUpload = [];
       for (const imgInfo of validImages) {
-        // 计算图片哈希值（基于内容、位置和名称）
-        const imageHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
         const existingImg = existingImageMap.get(imgInfo.remotePath);
         let shouldUpload = true;
+        let imageHash = null;
         
         // 如果云端已存在，检查是否需要重新上传
         if (existingImg) {
-          // 对比哈希值，如果不同则需要重新上传
-          if (existingImg.hash === imageHash) {
-            shouldUpload = false;
-            // 复用云端的 fileID
-            uploadedImages.push({
-              ...imgInfo,
-              fileID: existingImg.fileID,
-              hash: imageHash
-            });
-          } else {
-            // 图片已存在但需要更新
+          // 检查图片名称是否变化
+          if (existingImg.imageName !== imgInfo.imageName) {
+            // 名称变化，需要重新计算哈希值并上传
+            imageHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
             updatedImageCount++;
+          } else {
+            // 名称未变化，检查哈希值是否相同
+            // 复用云端的哈希值进行比较
+            imageHash = existingImg.hash;
+            // 只对可能变化的图片重新计算哈希值
+            const currentHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
+            if (existingImg.hash === currentHash) {
+              shouldUpload = false;
+              // 复用云端的 fileID
+              uploadedImages.push({
+                ...imgInfo,
+                fileID: existingImg.fileID,
+                hash: currentHash
+              });
+            } else {
+              // 哈希值不同，需要更新
+              imageHash = currentHash;
+              updatedImageCount++;
+            }
           }
         } else {
-          // 新图片
+          // 新图片，计算哈希值
+          imageHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
           newImageCount++;
         }
         
-        if (shouldUpload) {
+        if (shouldUpload && imageHash) {
           imagesToUpload.push({ ...imgInfo, hash: imageHash });
         }
       }
@@ -615,6 +627,19 @@ class CloudManager {
     
     // 准备需要下载的图片
     const imagesToDownload = [];
+    // 统计每个周内的图片名称，用于处理恢复时的命名重复
+    const weekNameCountMap = new Map();
+    
+    // 先统计每个周内的图片名称数量
+    images.forEach(imgInfo => {
+      if (!weekNameCountMap.has(imgInfo.weekKey)) {
+        weekNameCountMap.set(imgInfo.weekKey, new Map());
+      }
+      const nameMap = weekNameCountMap.get(imgInfo.weekKey);
+      const baseName = imgInfo.imageName.replace(/\(\d+\)$/, '').trim();
+      nameMap.set(baseName, (nameMap.get(baseName) || 0) + 1);
+    });
+    
     for (const imgInfo of images) {
       // 检查图片是否已存在本地
       const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
@@ -670,10 +695,29 @@ class CloudManager {
           const weekImages = wx.getStorageSync(weekKey) || [];
           
           // 检查是否需要更新现有图片
-          const existingImageIndex = weekImages.findIndex(img => img.name === imgInfo.imageName);
+          let existingImageIndex = weekImages.findIndex(img => img.name === imgInfo.imageName);
+          let finalImageName = imgInfo.imageName;
+          
+          // 处理命名重复问题
+          if (existingImageIndex === -1) {
+            // 新图片，检查是否与现有图片名称冲突
+            const nameCountMap = new Map();
+            weekImages.forEach(img => {
+              const baseName = img.name.replace(/\(\d+\)$/, '').trim();
+              nameCountMap.set(baseName, (nameCountMap.get(baseName) || 0) + 1);
+            });
+            
+            const baseName = imgInfo.imageName.replace(/\(\d+\)$/, '').trim();
+            if (nameCountMap.has(baseName)) {
+              // 名称冲突，添加后缀
+              const count = nameCountMap.get(baseName) + 1;
+              finalImageName = `${baseName}(${count})`;
+            }
+          }
+          
           const newImage = {
             id: `${weekKey}_${Date.now()}`,
-            name: imgInfo.imageName,
+            name: finalImageName,
             path: downloadResult.tempFilePath,
             addedTime: new Date().toISOString(),
             hash: imageHash
@@ -682,11 +726,9 @@ class CloudManager {
           if (existingImageIndex !== -1) {
             // 更新现有图片
             weekImages[existingImageIndex] = newImage;
-            updatedImagesCount++;
           } else {
             // 添加新图片
             weekImages.push(newImage);
-            newImagesCount++;
           }
           
           wx.setStorageSync(weekKey, weekImages);

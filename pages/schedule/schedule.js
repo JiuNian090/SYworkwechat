@@ -887,7 +887,17 @@ Page({
     const year = currentViewDate.getFullYear();
     const month = String(currentViewDate.getMonth() + 1).padStart(2, '0');
     const week = this.getWeekOfMonth(currentViewDate);
-    const defaultImageName = `${year}-${month}-${week}`;
+    const baseImageName = `${year}-${month}-${week}`;
+    
+    // 检查默认名称是否重复，如果重复则在后面加(1),(2)等
+    let defaultImageName = baseImageName;
+    let counter = 1;
+    const { weekImages } = this.data;
+    
+    while (weekImages.some(image => image.name === defaultImageName)) {
+      defaultImageName = `${baseImageName}(${counter})`;
+      counter++;
+    }
     
     this.setData({
       showAddImageModal: true,
@@ -949,11 +959,14 @@ Page({
       finalImageName = newNameFormat;
     }
 
-    // 检查名称是否重复，如果重复则在后面加_1,_2,3...
+    // 检查名称是否重复，如果重复则在后面加(1),(2)等
     let uniqueImageName = finalImageName;
     let counter = 1;
+    // 提取基础名称（去掉可能存在的数字后缀）
+    const baseName = finalImageName.replace(/\(\d+\)$/, '').trim();
+    
     while (weekImages.some(image => image.name === uniqueImageName)) {
-      uniqueImageName = `${newNameFormat}_${counter}`;
+      uniqueImageName = `${baseName}(${counter})`;
       counter++;
     }
 
@@ -962,7 +975,8 @@ Page({
       id: imageId,
       name: uniqueImageName,
       path: selectedImagePath,
-      addedTime: new Date().toISOString()
+      addedTime: new Date().toISOString(),
+      hash: '' // 哈希值将在备份时计算
     };
     
     // 更新图片列表
