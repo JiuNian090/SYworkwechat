@@ -344,6 +344,9 @@ async function getAllValidImages() {
   // 同步关联表与本地存储，确保关联表是最新的
   syncRelationWithLocal();
   
+  // 清理无效图片，确保关联表只包含存在的图片
+  await cleanupInvalidImages();
+  
   const table = getImageRelationTable();
   const allValidImages = [];
   const imageWeekRelation = {};

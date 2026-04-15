@@ -455,6 +455,55 @@ class CloudManager {
         }
       }
       
+      // 第三步：构建完整的图片列表，只包含本地存在的图片
+      // 注意：不再从云端获取现有图片，而是基于本地关联表构建完整列表
+      // 这样可以确保删除的图片不会被重新添加回来
+      
+      // 构建本地图片映射（基于关联表）
+      const localImageMap = new Map();
+      validImages.forEach(img => {
+        if (img.weekKey && img.imageName) {
+          const key = `${img.weekKey}_${img.imageName}`;
+          localImageMap.set(key, img);
+        }
+      });
+      
+      // 从云端获取现有图片，但只保留本地存在的图片
+      try {
+        const existingImagesResult = await this.callCloudFunction('backupRestore', {
+          action: 'getExistingImages',
+          userId: this.userId
+        });
+        
+        if (existingImagesResult.result.success) {
+          const existingImages = existingImagesResult.result.images || [];
+          
+          // 构建已上传图片映射
+          const uploadedImageMap = new Map();
+          uploadedImages.forEach(img => {
+            if (img.weekKey && img.imageName) {
+              const key = `${img.weekKey}_${img.imageName}`;
+              uploadedImageMap.set(key, img);
+            }
+          });
+          
+          // 添加本地存在且未上传的图片
+          existingImages.forEach(img => {
+            if (img.weekKey && img.imageName) {
+              const key = `${img.weekKey}_${img.imageName}`;
+              // 只有本地存在且未上传的图片才添加
+              if (localImageMap.has(key) && !uploadedImageMap.has(key)) {
+                uploadedImages.push(img);
+              }
+            }
+          });
+          
+          console.log('备份 - 最终上传图片数量:', uploadedImages.length);
+        }
+      } catch (e) {
+        console.log('获取云端现有图片失败', e);
+      }
+      
       // 第三步：调用云函数完成备份，覆盖云端关联表
       wx.showLoading({ title: '完成备份...' });
       const backupResult = await this.callCloudFunction('backupRestore', {
@@ -871,7 +920,7 @@ class CloudManager {
     };
   }
   
-  // 恢复数据 - 增量恢复，只恢复本地没有的图片，并显示进度
+  // 恢复数据 - 新流程：先下载关联表，对比差异，再下载图片
   async restore() {
     try {
       // 检查云开发是否初始化成功
@@ -891,27 +940,26 @@ class CloudManager {
       
       wx.showLoading({ title: '准备恢复...' });
       
-      // 1. 调用云函数获取备份数据
-      const restoreResult = await this.callCloudFunction('backupRestore', {
-        action: 'restore',
+      // 1. 调用云函数获取备份关联表
+      const getRelationResult = await this.callCloudFunction('backupRestore', {
+        action: 'getBackupRelation',
         userId: this.userId
       });
       
-      if (!restoreResult.result.success) {
+      if (!getRelationResult.result.success) {
         wx.hideLoading();
         wx.showToast({
-          title: restoreResult.result.errMsg || '恢复失败',
+          title: getRelationResult.result.errMsg || '获取备份关联表失败',
           icon: 'none'
         });
-        return restoreResult.result;
+        return getRelationResult.result;
       }
       
-      const backupData = restoreResult.result.data;
+      const cloudRelation = getRelationResult.result.imageWeekRelation || {};
+      const backupVersion = getRelationResult.result.backupSystemVersion || 'v1.0.0';
       
       // 2. 检查版本兼容性
-      const backupVersion = backupData.backupSystemVersion || 'v1.0.0';
       const localVersion = this.BACKUP_SYSTEM_VERSION;
-      
       const versionComparison = this.compareVersions(localVersion, backupVersion);
       
       if (versionComparison < 0) {
@@ -937,7 +985,7 @@ class CloudManager {
             success: async (res) => {
               if (res.confirm) {
                 // 用户选择继续恢复
-                const result = await this.performRestore(backupData);
+                const result = await this.performRestoreWithNewFlow(cloudRelation);
                 resolve(result);
               } else {
                 // 用户选择取消
@@ -951,9 +999,288 @@ class CloudManager {
         });
       } else {
         // 版本相同，正常恢复
-        const result = await this.performRestore(backupData);
+        const result = await this.performRestoreWithNewFlow(cloudRelation);
         return result;
       }
+      
+    } catch (e) {
+      console.error('恢复失败', e);
+      wx.hideLoading();
+      wx.showToast({
+        title: '恢复失败',
+        icon: 'none'
+      });
+      return {
+        success: false,
+        errMsg: e.message
+      };
+    }
+  }
+  
+  // 执行恢复操作 - 新流程
+  async performRestoreWithNewFlow(cloudRelation) {
+    try {
+      wx.showLoading({ title: '分析恢复差异...' });
+      
+      // 1. 同步关联表与本地存储，确保使用最新的本地数据
+      syncRelationWithLocal();
+      
+      // 2. 获取本地关联表
+      const localRelation = getImageRelationTable();
+      
+      // 3. 对比本地和云端关联表，找出差异
+      const imagesToAdd = [];
+      const imagesToDelete = [];
+      
+      // 构建本地图片映射
+      const localImageMap = new Map();
+      Object.keys(localRelation || {}).forEach(weekKey => {
+        const weekImages = localRelation[weekKey] || [];
+        weekImages.forEach(img => {
+          const key = `${weekKey}_${img.name}`;
+          localImageMap.set(key, img);
+        });
+      });
+      
+      // 构建云端图片映射
+      const cloudImageMap = new Map();
+      Object.keys(cloudRelation || {}).forEach(weekKey => {
+        const weekImages = cloudRelation[weekKey] || [];
+        weekImages.forEach(img => {
+          const key = `${weekKey}_${img.name}`;
+          cloudImageMap.set(key, img);
+        });
+      });
+      
+      // 找出需要新增的图片（云端有但本地没有的）
+      Object.keys(cloudRelation || {}).forEach(weekKey => {
+        const weekImages = cloudRelation[weekKey] || [];
+        weekImages.forEach(img => {
+          const key = `${weekKey}_${img.name}`;
+          if (!localImageMap.has(key)) {
+            imagesToAdd.push({
+              weekKey: weekKey,
+              name: img.name,
+              path: img.path,
+              hash: img.hash
+            });
+          }
+        });
+      });
+      
+      // 找出需要删除的图片（本地有但云端没有的）
+      Object.keys(localRelation || {}).forEach(weekKey => {
+        const weekImages = localRelation[weekKey] || [];
+        weekImages.forEach(img => {
+          const key = `${weekKey}_${img.name}`;
+          if (!cloudImageMap.has(key)) {
+            imagesToDelete.push({
+              weekKey: weekKey,
+              name: img.name,
+              path: img.path,
+              id: img.id
+            });
+          }
+        });
+      });
+      
+      console.log('恢复 - 需要新增的图片数量:', imagesToAdd.length);
+      console.log('恢复 - 需要删除的图片数量:', imagesToDelete.length);
+      
+      // 4. 删除本地多余的图片
+      let deletedImageCount = 0;
+      for (const imgToDelete of imagesToDelete) {
+        // 从本地存储中删除
+        const weekImages = wx.getStorageSync(imgToDelete.weekKey) || [];
+        const updatedImages = weekImages.filter(img => img.id !== imgToDelete.id);
+        wx.setStorageSync(imgToDelete.weekKey, updatedImages);
+        
+        // 从关联表中删除
+        removeImageFromRelation(imgToDelete.weekKey, imgToDelete.id);
+        
+        deletedImageCount++;
+      }
+      
+      // 5. 调用云函数获取需要新增的图片数据
+      let actualNewImagesCount = 0;
+      if (imagesToAdd.length > 0) {
+        wx.showLoading({ title: '获取图片数据...' });
+        
+        const getImagesResult = await this.callCloudFunction('backupRestore', {
+          action: 'getImagesForRestore',
+          userId: this.userId,
+          data: {
+            imagesToAdd: imagesToAdd
+          }
+        });
+        
+        if (!getImagesResult.result.success) {
+          wx.hideLoading();
+          wx.showToast({
+            title: getImagesResult.result.errMsg || '获取图片数据失败',
+            icon: 'none'
+          });
+          return {
+            success: false,
+            errMsg: getImagesResult.result.errMsg || '获取图片数据失败'
+          };
+        }
+        
+        const imagesToDownload = getImagesResult.result.images || [];
+        
+        // 6. 下载并保存图片
+        if (imagesToDownload.length > 0) {
+          wx.showLoading({ title: '下载图片...' });
+          
+          // 并行下载，控制并发数
+          const maxConcurrentDownloads = 5;
+          const totalImages = imagesToDownload.length;
+          let currentImage = 0;
+          
+          for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
+            const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
+            const batchPromises = batch.map(async (imgInfo) => {
+              try {
+                // 更新进度
+                currentImage++;
+                const progress = Math.round((currentImage / totalImages) * 100);
+                wx.showLoading({ 
+                  title: `恢复中 下载图片 ${currentImage}/${totalImages} (${progress}%)`,
+                  mask: true
+                });
+                
+                // 从云存储下载图片
+                const downloadResult = await wx.cloud.downloadFile({
+                  fileID: imgInfo.fileID
+                });
+                
+                // 保存到本地存储
+                const weekKey = imgInfo.weekKey;
+                const weekImages = wx.getStorageSync(weekKey) || [];
+                
+                // 检查是否需要处理命名重复
+                const nameCountMap = new Map();
+                weekImages.forEach(img => {
+                  const baseName = img.name.replace(/\(\d+\)$/, '').trim();
+                  nameCountMap.set(baseName, (nameCountMap.get(baseName) || 0) + 1);
+                });
+                
+                let finalImageName = imgInfo.imageName;
+                const baseName = finalImageName.replace(/\(\d+\)$/, '').trim();
+                if (nameCountMap.has(baseName)) {
+                  // 名称冲突，添加后缀
+                  const count = nameCountMap.get(baseName) + 1;
+                  finalImageName = `${baseName}(${count})`;
+                }
+                
+                // 创建新图片对象
+                const newImage = {
+                  id: `${weekKey}_${Date.now()}`,
+                  name: finalImageName,
+                  path: downloadResult.tempFilePath,
+                  addedTime: new Date().toISOString(),
+                  hash: imgInfo.hash
+                };
+                
+                // 添加到本地存储
+                weekImages.push(newImage);
+                wx.setStorageSync(weekKey, weekImages);
+                
+                // 添加到关联表
+                addImageToRelation(weekKey, newImage);
+                
+                actualNewImagesCount++;
+              } catch (e) {
+                console.error('下载图片失败', imgInfo.remotePath, e);
+              }
+            });
+            
+            await Promise.all(batchPromises);
+          }
+        }
+      }
+      
+      // 7. 覆盖本地关联表为云端关联表
+      wx.removeStorageSync('image_relation_table');
+      importImageWeekRelation(cloudRelation);
+      
+      // 8. 恢复其他数据
+      const restoreResult = await this.callCloudFunction('backupRestore', {
+        action: 'restoreOtherData',
+        userId: this.userId
+      });
+      
+      if (restoreResult.result.success) {
+        const backupData = restoreResult.result.data;
+        
+        // 清空基础数据（确保与云端完全一致）
+        wx.removeStorageSync('shifts');
+        wx.removeStorageSync('shiftTemplates');
+        wx.removeStorageSync('statData');
+        wx.removeStorageSync('statLastModified');
+        wx.removeStorageSync('standardHours');
+        wx.removeStorageSync('imagesLastModified');
+        
+        // 恢复数据文件（完全替换）
+        if (backupData.shiftTemplates) {
+          wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
+        }
+        if (backupData.shifts) {
+          wx.setStorageSync('shifts', backupData.shifts);
+        }
+        // 恢复头像信息
+        if (backupData.avatarInfo) {
+          if (backupData.avatarInfo.avatarType) {
+            wx.setStorageSync('avatarType', backupData.avatarInfo.avatarType);
+          }
+          if (backupData.avatarInfo.avatarEmoji) {
+            wx.setStorageSync('avatarEmoji', backupData.avatarInfo.avatarEmoji);
+          }
+          if (backupData.avatarInfo.username) {
+            wx.setStorageSync('username', backupData.avatarInfo.username);
+          }
+        }
+      }
+      
+      wx.hideLoading();
+      
+      // 优化恢复提示，根据实际情况显示不同的消息
+      if (actualNewImagesCount > 0 || deletedImageCount > 0) {
+        let message = '恢复成功';
+        if (actualNewImagesCount > 0 && deletedImageCount > 0) {
+          message = `恢复成功（新增${actualNewImagesCount}张，删除${deletedImageCount}张）`;
+        } else if (actualNewImagesCount > 0) {
+          message = `恢复成功（新增${actualNewImagesCount}张图片）`;
+        } else if (deletedImageCount > 0) {
+          message = `恢复成功（删除${deletedImageCount}张图片）`;
+        }
+        wx.showToast({
+          title: message,
+          icon: 'success'
+        });
+      } else {
+        // 没有变化
+        wx.showToast({
+          title: '恢复成功（无变化）',
+          icon: 'success'
+        });
+      }
+      
+      // 刷新页面数据
+      setTimeout(() => {
+        const pages = getCurrentPages();
+        pages.forEach(page => {
+          if (page.refreshPageData) {
+            page.refreshPageData();
+          }
+        });
+      }, 500);
+      
+      return {
+        success: true,
+        newImages: actualNewImagesCount,
+        deletedImages: deletedImageCount
+      };
       
     } catch (e) {
       console.error('恢复失败', e);

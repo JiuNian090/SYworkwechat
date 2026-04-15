@@ -372,6 +372,7 @@ exports.main = async (event, context) => {
         
         console.log('completeBackup - 云端现有图片数量:', (currentImageBackup.images || []).length);
         console.log('completeBackup - 本地上传图片数量:', (images || []).length);
+        console.log('completeBackup - 本地关联表周数:', Object.keys(imageWeekRelation || {}).length);
         
         // 版本号变化或数据变化时更新
         if (versionComparison !== 0) {
@@ -386,8 +387,19 @@ exports.main = async (event, context) => {
         }
         
         if (imageChanges) {
-          // 构建本地图片映射
+          // 构建本地图片映射（基于关联表）
           const localImageMap = new Map();
+          
+          // 首先从关联表构建本地图片映射
+          Object.keys(imageWeekRelation || {}).forEach(weekKey => {
+            const weekImages = imageWeekRelation[weekKey] || [];
+            weekImages.forEach(img => {
+              const key = `${weekKey}_${img.name}`;
+              localImageMap.set(key, img);
+            });
+          });
+          
+          // 然后从上传的图片中补充信息
           (images || []).forEach(img => {
             if (img.weekKey && img.imageName) {
               const key = `${img.weekKey}_${img.imageName}`;
@@ -452,6 +464,98 @@ exports.main = async (event, context) => {
         hasChanges: totalChanges,
         deletedImageCount: deletedImageCount,
         versionChanged: versionChanged
+      };
+    }
+
+    if (action === 'getBackupRelation') {
+      // 获取备份关联表
+      const existingImageBackup = await imageBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      let imageWeekRelation = {};
+      let backupSystemVersion = 'v1.0.0';
+      
+      if (existingImageBackup.data.length > 0) {
+        imageWeekRelation = existingImageBackup.data[0].imageWeekRelation || {};
+        backupSystemVersion = existingImageBackup.data[0].backupSystemVersion || 'v1.0.0';
+      }
+      
+      return {
+        success: true,
+        imageWeekRelation: imageWeekRelation,
+        backupSystemVersion: backupSystemVersion
+      };
+    }
+
+    if (action === 'getImagesForRestore') {
+      // 获取需要恢复的图片数据
+      const { imagesToAdd } = data;
+      
+      // 获取云端图片备份
+      const existingImageBackup = await imageBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      let existingImages = [];
+      if (existingImageBackup.data.length > 0) {
+        existingImages = existingImageBackup.data[0].images || [];
+      }
+      
+      // 构建云端图片映射
+      const cloudImageMap = new Map();
+      existingImages.forEach(img => {
+        const key = `${img.weekKey}_${img.imageName}`;
+        cloudImageMap.set(key, img);
+      });
+      
+      // 找出需要下载的图片
+      const imagesToDownload = [];
+      imagesToAdd.forEach(img => {
+        const key = `${img.weekKey}_${img.name}`;
+        if (cloudImageMap.has(key)) {
+          imagesToDownload.push(cloudImageMap.get(key));
+        }
+      });
+      
+      return {
+        success: true,
+        images: imagesToDownload
+      };
+    }
+
+    if (action === 'restoreOtherData') {
+      // 恢复其他数据
+      const existingDataBackup = await dataBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      let backupData = {};
+      
+      if (existingDataBackup.data.length > 0) {
+        backupData = existingDataBackup.data[0];
+      }
+      
+      return {
+        success: true,
+        data: backupData
+      };
+    }
+
+    if (action === 'getExistingImages') {
+      // 获取云端现有图片
+      const existingImageBackup = await imageBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      let existingImages = [];
+      if (existingImageBackup.data.length > 0) {
+        existingImages = existingImageBackup.data[0].images || [];
+      }
+      
+      return {
+        success: true,
+        images: existingImages
       };
     }
 
