@@ -802,17 +802,51 @@ class CloudManager {
       syncRelationWithLocal(weekKey);
     });
     
+    // 删除本地存在但云端不存在的图片，确保与云端完全一致
+    const cloudImageMap = new Map();
+    images.forEach(imgInfo => {
+      const key = `${imgInfo.weekKey}_${imgInfo.imageName}`;
+      cloudImageMap.set(key, imgInfo);
+    });
+    
+    let deletedImageCount = 0;
+    weekKeys.forEach(weekKey => {
+      let weekImages = wx.getStorageSync(weekKey) || [];
+      const originalLength = weekImages.length;
+      
+      // 过滤出云端存在的图片
+      weekImages = weekImages.filter(img => {
+        const key = `${weekKey}_${img.name}`;
+        return cloudImageMap.has(key);
+      });
+      
+      // 如果有图片被删除
+      if (weekImages.length < originalLength) {
+        deletedImageCount += (originalLength - weekImages.length);
+        wx.setStorageSync(weekKey, weekImages);
+        syncRelationWithLocal(weekKey);
+      }
+    });
+    
     wx.hideLoading();
     
     // 优化恢复提示，根据实际情况显示不同的消息
-    if (actualNewImagesCount > 0 || actualUpdatedImagesCount > 0) {
+    if (actualNewImagesCount > 0 || actualUpdatedImagesCount > 0 || deletedImageCount > 0) {
       let message = '恢复成功';
-      if (actualNewImagesCount > 0 && actualUpdatedImagesCount > 0) {
+      if (actualNewImagesCount > 0 && actualUpdatedImagesCount > 0 && deletedImageCount > 0) {
+        message = `恢复成功（新增${actualNewImagesCount}张，更新${actualUpdatedImagesCount}张，删除${deletedImageCount}张）`;
+      } else if (actualNewImagesCount > 0 && actualUpdatedImagesCount > 0) {
         message = `恢复成功（新增${actualNewImagesCount}张，更新${actualUpdatedImagesCount}张）`;
+      } else if (actualNewImagesCount > 0 && deletedImageCount > 0) {
+        message = `恢复成功（新增${actualNewImagesCount}张，删除${deletedImageCount}张）`;
+      } else if (actualUpdatedImagesCount > 0 && deletedImageCount > 0) {
+        message = `恢复成功（更新${actualUpdatedImagesCount}张，删除${deletedImageCount}张）`;
       } else if (actualNewImagesCount > 0) {
         message = `恢复成功（新增${actualNewImagesCount}张图片）`;
       } else if (actualUpdatedImagesCount > 0) {
         message = `恢复成功（更新${actualUpdatedImagesCount}张图片）`;
+      } else if (deletedImageCount > 0) {
+        message = `恢复成功（删除${deletedImageCount}张图片）`;
       }
       wx.showToast({
         title: message,
