@@ -86,6 +86,14 @@ function compareVersions(version1, version2) {
   return 0;
 }
 
+// 获取某个日期是当月的第几周
+function getWeekOfMonth(date) {
+  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+  const dayOfWeek = firstDay.getDay();
+  const adjustedDate = date.getDate() + dayOfWeek;
+  return Math.ceil(adjustedDate / 7);
+}
+
 // 删除云端多余的图片文件
 async function deleteExtraCloudImages(userId, existingImages, newImages) {
   try {
@@ -192,6 +200,207 @@ exports.main = async (event, context) => {
       return {
         success: false,
         errMsg: '用户不存在'
+      };
+    }
+
+    if (action === 'getBackupDiff') {
+      // 第一步：分析备份差异，返回需要新增的图片清单
+      const { imageWeekRelation, version = 'v1.0.0' } = data;
+      
+      // 获取云端现有的图片备份
+      const existingImageBackup = await imageBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      let existingImages = [];
+      let existingImageWeekRelation = {};
+      
+      if (existingImageBackup.data.length > 0) {
+        existingImages = existingImageBackup.data[0].images || [];
+        existingImageWeekRelation = existingImageBackup.data[0].imageWeekRelation || {};
+      }
+      
+      // 构建本地图片映射
+      const localImageMap = new Map();
+      Object.keys(imageWeekRelation || {}).forEach(weekKey => {
+        const weekImages = imageWeekRelation[weekKey] || [];
+        weekImages.forEach(img => {
+          const key = `${weekKey}_${img.name}`;
+          localImageMap.set(key, img);
+        });
+      });
+      
+      // 构建云端图片映射
+      const cloudImageMap = new Map();
+      existingImages.forEach(img => {
+        const key = `${img.weekKey}_${img.imageName}`;
+        cloudImageMap.set(key, img);
+      });
+      
+      // 找出需要新增的图片（本地有但云端没有的）
+      const imagesToUpload = [];
+      // 找出需要删除的图片（云端有但本地没有的）
+      const imagesToDelete = [];
+      
+      // 检查本地图片
+      Object.keys(imageWeekRelation || {}).forEach(weekKey => {
+        const weekImages = imageWeekRelation[weekKey] || [];
+        weekImages.forEach((img, index) => {
+          const key = `${weekKey}_${img.name}`;
+          if (!cloudImageMap.has(key)) {
+            // 解析周信息，生成 remotePath
+            const weekDateStr = weekKey.replace('week_images_', '');
+            const weekDate = new Date(weekDateStr);
+            const year = weekDate.getFullYear();
+            const month = String(weekDate.getMonth() + 1).padStart(2, '0');
+            const week = getWeekOfMonth(weekDate);
+            const yearMonth = `${year}-${month}`;
+            
+            // 使用时间戳生成稳定的 remotePath
+            const timestamp = Date.now();
+            const remotePath = `images/${yearMonth}/${img.name}_${timestamp}.jpg`;
+            
+            // 需要新增的图片
+            imagesToUpload.push({
+              weekKey: weekKey,
+              imageName: img.name,
+              image: {
+                path: img.path,
+                name: img.name,
+                addedTime: new Date().toISOString()
+              },
+              remotePath: remotePath,
+              index: index
+            });
+          }
+        });
+      });
+      
+      // 检查云端图片
+      existingImages.forEach(img => {
+        const key = `${img.weekKey}_${img.imageName}`;
+        if (!localImageMap.has(key)) {
+          // 需要删除的图片
+          imagesToDelete.push(img);
+        }
+      });
+      
+      return {
+        success: true,
+        imagesToUpload: imagesToUpload,
+        imagesToDelete: imagesToDelete
+      };
+    }
+    
+    if (action === 'completeBackup') {
+      // 第三步：完成备份，覆盖云端关联表
+      const { shiftTemplates, shifts, images, imageWeekRelation, avatarInfo, backupIndex, version = 'v1.0.0' } = data;
+      
+      let totalChanges = false;
+      let deletedImageCount = 0;
+      let versionChanged = false;
+      
+      // 1. 检查版本号
+      const existingDataBackup = await dataBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      let existingVersion = 'v0.0.0';
+      if (existingDataBackup.data.length > 0) {
+        existingVersion = existingDataBackup.data[0].backupSystemVersion || 'v0.0.0';
+      }
+      
+      // 比较版本号
+      const versionComparison = compareVersions(version, existingVersion);
+      
+      // 2. 备份其他数据集合（全量替换）
+      const dataBackupData = {
+        userId: userId,
+        shiftTemplates: shiftTemplates,
+        shifts: shifts,
+        backupIndex: backupIndex || {},
+        backupSystemVersion: version,
+        backupTime: new Date(),
+        updateTime: new Date()
+      };
+      
+      if (existingDataBackup.data.length > 0) {
+        // 使用 set 方法全量替换，确保删除的排班也能同步到云端
+        await dataBackupCollection.doc(existingDataBackup.data[0]._id).set({
+          data: {
+            ...dataBackupData,
+            createTime: existingDataBackup.data[0].createTime || new Date()
+          }
+        });
+      } else {
+        dataBackupData.createTime = new Date();
+        await dataBackupCollection.add({
+          data: dataBackupData
+        });
+      }
+      totalChanges = true;
+      
+      // 3. 备份图片数据集合
+      const existingImageBackup = await imageBackupCollection.where({
+        userId: userId
+      }).get();
+      
+      const imageBackupData = {
+        userId: userId,
+        images: images || [],
+        imageWeekRelation: imageWeekRelation || {},
+        backupSystemVersion: version,
+        backupTime: new Date(),
+        updateTime: new Date()
+      };
+      
+      if (existingImageBackup.data.length > 0) {
+        const currentImageBackup = existingImageBackup.data[0];
+        let imageChanges = false;
+        
+        // 版本号变化或数据变化时更新
+        if (versionComparison !== 0) {
+          // 版本号变化，需要更新数据结构
+          imageChanges = true;
+          versionChanged = true;
+        } else {
+          // 对比图片关联表
+          if (!isDataEqual(currentImageBackup.imageWeekRelation, imageWeekRelation || {})) {
+            imageChanges = true;
+          }
+        }
+        
+        if (imageChanges) {
+          // 删除云端多余的图片文件
+          deletedImageCount = await deleteExtraCloudImages(
+            userId, 
+            currentImageBackup.images || [], 
+            images || []
+          );
+          
+          await imageBackupCollection.doc(currentImageBackup._id).update({
+            data: imageBackupData
+          });
+          totalChanges = true;
+        }
+      } else {
+        imageBackupData.createTime = new Date();
+        await imageBackupCollection.add({
+          data: imageBackupData
+        });
+        totalChanges = true;
+      }
+
+      return {
+        success: true,
+        message: totalChanges 
+          ? versionChanged 
+            ? `备份成功（版本更新）` 
+            : `备份成功（有更新）`
+          : `备份成功（无变化）`,
+        hasChanges: totalChanges,
+        deletedImageCount: deletedImageCount,
+        versionChanged: versionChanged
       };
     }
 

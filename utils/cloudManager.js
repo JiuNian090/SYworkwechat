@@ -356,138 +356,7 @@ class CloudManager {
         console.log('获取云端备份信息失败，假设是新备份', e);
       }
       
-      // 3. 对比本地和云端图片，只上传新的或变化的图片
-      const uploadedImages = [];
-      let newImageCount = 0;
-      let updatedImageCount = 0;
-      const existingImageMap = new Map();
-      
-      // 创建云端图片映射，用于快速查找
-      existingImages.forEach(img => {
-        if (img.remotePath) {
-          existingImageMap.set(img.remotePath, img);
-        }
-      });
-      
-      // 上传图片到云存储（只上传新的或变化的图片）
-      // 并行上传，控制并发数
-      const maxConcurrentUploads = 5; // 控制并发数，避免超过微信小程序限制
-      const uploadBatches = [];
-      
-      // 准备需要上传的图片
-      const imagesToUpload = [];
-      for (const imgInfo of validImages) {
-        const existingImg = existingImageMap.get(imgInfo.remotePath);
-        let shouldUpload = true;
-        let imageHash = null;
-        
-        // 如果云端已存在，检查是否需要重新上传
-        if (existingImg) {
-          // 检查图片名称是否变化
-          if (existingImg.imageName !== imgInfo.imageName) {
-            // 名称变化，需要重新计算哈希值并上传
-            imageHash = await this.calculateImageHash(
-              imgInfo.image.path, 
-              imgInfo.weekKey, 
-              imgInfo.imageName,
-              imgInfo.image.addedTime
-            );
-            updatedImageCount++;
-          } else {
-            // 名称未变化，检查哈希值是否相同
-            // 复用云端的哈希值进行比较
-            imageHash = existingImg.hash;
-            // 只对可能变化的图片重新计算哈希值
-            const currentHash = await this.calculateImageHash(
-              imgInfo.image.path, 
-              imgInfo.weekKey, 
-              imgInfo.imageName,
-              imgInfo.image.addedTime
-            );
-            if (existingImg.hash === currentHash) {
-              shouldUpload = false;
-              // 复用云端的 fileID
-              uploadedImages.push({
-                ...imgInfo,
-                fileID: existingImg.fileID,
-                hash: currentHash
-              });
-            } else {
-              // 哈希值不同，需要更新
-              imageHash = currentHash;
-              updatedImageCount++;
-            }
-          }
-        } else {
-          // 新图片，计算哈希值
-          imageHash = await this.calculateImageHash(
-            imgInfo.image.path, 
-            imgInfo.weekKey, 
-            imgInfo.imageName,
-            imgInfo.image.addedTime
-          );
-          newImageCount++;
-        }
-        
-        if (shouldUpload && imageHash) {
-          imagesToUpload.push({ ...imgInfo, hash: imageHash });
-        }
-      }
-      
-      // 计算需要上传的图片数量
-      const totalImages = imagesToUpload.length;
-      let currentImage = 0;
-      
-      // 分批次并行上传
-      for (let i = 0; i < imagesToUpload.length; i += maxConcurrentUploads) {
-        const batch = imagesToUpload.slice(i, i + maxConcurrentUploads);
-        const batchPromises = batch.map(async (imgInfo) => {
-          try {
-            // 更新进度
-            currentImage++;
-            const progress = Math.round((currentImage / totalImages) * 100);
-            const existingImg = existingImageMap.get(imgInfo.remotePath);
-            const imageHash = imgInfo.hash;
-            const operation = existingImg && existingImg.hash !== imageHash ? '更新' : '新增';
-            wx.showLoading({ 
-              title: `备份中 ${operation}图片 ${currentImage}/${totalImages} (${progress}%)`,
-              mask: true
-            });
-            
-            // 压缩图片
-            let compressedPath = imgInfo.image.path;
-            try {
-              const compressResult = await new Promise((resolve, reject) => {
-                wx.compressImage({
-                  src: imgInfo.image.path,
-                  quality: 80, // 压缩质量，0-100
-                  success: resolve,
-                  fail: reject
-                });
-              });
-              compressedPath = compressResult.tempFilePath;
-            } catch (e) {
-              console.log('图片压缩失败，使用原图', e);
-            }
-            
-            // 上传压缩后的图片到云存储
-            const uploadResult = await wx.cloud.uploadFile({
-              cloudPath: `schedule_images/${this.userId}/${imgInfo.remotePath}`,
-              filePath: compressedPath
-            });
-            
-            uploadedImages.push({
-              ...imgInfo,
-              fileID: uploadResult.fileID
-            });
-          } catch (e) {
-            console.error('上传图片失败', imgInfo.remotePath, e);
-          }
-        });
-        
-        // 等待当前批次上传完成
-        await Promise.all(batchPromises);
-      }
+      // 清理旧的备份逻辑，使用新的三步骤流程
       
       // 获取头像信息
       const avatarInfo = {
@@ -496,10 +365,100 @@ class CloudManager {
         username: wx.getStorageSync('username') || ''
       };
       
-      // 4. 调用云函数备份数据（云函数会对比差异，只更新有变化的数据）
-      wx.showLoading({ title: '保存备份数据...' });
+      // 4. 调用云函数备份数据 - 新流程：先对比关联表，再上传图片
+      wx.showLoading({ title: '分析备份差异...' });
+      
+      // 第一步：上传本地关联表，获取需要新增的图片清单
+      const diffResult = await this.callCloudFunction('backupRestore', {
+        action: 'getBackupDiff',
+        userId: this.userId,
+        data: {
+          imageWeekRelation: validImageWeekRelation,
+          version: this.BACKUP_SYSTEM_VERSION
+        }
+      });
+      
+      if (!diffResult.result.success) {
+        wx.hideLoading();
+        wx.showToast({
+          title: diffResult.result.errMsg || '分析差异失败',
+          icon: 'none'
+        });
+        return {
+          success: false,
+          errMsg: diffResult.result.errMsg || '分析差异失败'
+        };
+      }
+      
+      const imagesToUpload = diffResult.result.imagesToUpload || [];
+      const imagesToDelete = diffResult.result.imagesToDelete || [];
+      
+      console.log('备份 - 需要上传的图片数量:', imagesToUpload.length);
+      console.log('备份 - 需要删除的图片数量:', imagesToDelete.length);
+      
+      // 第二步：上传需要新增的图片
+      const uploadedImages = [];
+      let newImageCount = 0;
+      
+      if (imagesToUpload.length > 0) {
+        wx.showLoading({ title: '上传图片...' });
+        
+        // 并行上传，控制并发数
+        const maxConcurrentUploads = 5;
+        for (let i = 0; i < imagesToUpload.length; i += maxConcurrentUploads) {
+          const batch = imagesToUpload.slice(i, i + maxConcurrentUploads);
+          const batchPromises = batch.map(async (imgInfo) => {
+            try {
+              // 压缩图片
+              let compressedPath = imgInfo.image.path;
+              try {
+                const compressResult = await new Promise((resolve, reject) => {
+                  wx.compressImage({
+                    src: imgInfo.image.path,
+                    quality: 80,
+                    success: resolve,
+                    fail: reject
+                  });
+                });
+                compressedPath = compressResult.tempFilePath;
+              } catch (e) {
+                console.log('图片压缩失败，使用原图', e);
+              }
+              
+              // 上传压缩后的图片到云存储
+              const uploadResult = await wx.cloud.uploadFile({
+                cloudPath: `schedule_images/${this.userId}/${imgInfo.remotePath}`,
+                filePath: compressedPath
+              });
+              
+              // 计算哈希值
+              const imageHash = await this.calculateImageHash(
+                imgInfo.image.path,
+                imgInfo.weekKey,
+                imgInfo.imageName,
+                imgInfo.image.addedTime
+              );
+              
+              uploadedImages.push({
+                ...imgInfo,
+                fileID: uploadResult.fileID,
+                hash: imageHash
+              });
+              
+              newImageCount++;
+            } catch (e) {
+              console.error('上传图片失败', imgInfo.remotePath, e);
+            }
+          });
+          
+          await Promise.all(batchPromises);
+        }
+      }
+      
+      // 第三步：调用云函数完成备份，覆盖云端关联表
+      wx.showLoading({ title: '完成备份...' });
       const backupResult = await this.callCloudFunction('backupRestore', {
-        action: 'backup',
+        action: 'completeBackup',
         userId: this.userId,
         data: {
           shiftTemplates: localData.shiftTemplates.data,
@@ -519,18 +478,10 @@ class CloudManager {
         
         let message;
         if (backupResult.result.hasChanges) {
-          if (newImageCount > 0 && updatedImageCount > 0 && deletedImageCount > 0) {
-            message = `备份成功（新增${newImageCount}张，更新${updatedImageCount}张，删除${deletedImageCount}张）`;
-          } else if (newImageCount > 0 && updatedImageCount > 0) {
-            message = `备份成功（新增${newImageCount}张，更新${updatedImageCount}张）`;
-          } else if (newImageCount > 0 && deletedImageCount > 0) {
+          if (newImageCount > 0 && deletedImageCount > 0) {
             message = `备份成功（新增${newImageCount}张，删除${deletedImageCount}张）`;
-          } else if (updatedImageCount > 0 && deletedImageCount > 0) {
-            message = `备份成功（更新${updatedImageCount}张，删除${deletedImageCount}张）`;
           } else if (newImageCount > 0) {
             message = `备份成功（新增${newImageCount}张图片）`;
-          } else if (updatedImageCount > 0) {
-            message = `备份成功（更新${updatedImageCount}张图片）`;
           } else if (deletedImageCount > 0) {
             message = `备份成功（删除${deletedImageCount}张图片）`;
           } else {
@@ -546,9 +497,8 @@ class CloudManager {
         });
         return {
           success: true,
-          uploadedImages: newImageCount + updatedImageCount,
+          uploadedImages: newImageCount,
           newImages: newImageCount,
-          updatedImages: updatedImageCount,
           deletedImages: deletedImageCount,
           hasChanges: backupResult.result.hasChanges
         };
