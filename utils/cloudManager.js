@@ -288,16 +288,16 @@ class CloudManager {
     });
   }
   
-  // 计算图片哈希值（基于图片内容、位置和名称）
-  calculateImageHash(imagePath, weekKey, imageName) {
+  // 计算图片哈希值（基于图片时间戳、名称、内容和大小）
+  calculateImageHash(imagePath, weekKey, imageName, addedTime) {
     return new Promise((resolve, reject) => {
       const fileSystemManager = wx.getFileSystemManager();
       fileSystemManager.getFileInfo({
         filePath: imagePath,
         success: (res) => {
-          // 基于文件内容（大小+修改时间）、位置（weekKey）和名称（imageName）计算哈希值
-          // 这样只有当图片内容、位置或名称改变时，哈希值才会变化
-          const hashInput = `${res.size}_${res.mtime}_${weekKey}_${imageName}`;
+          // 基于四个变量计算哈希值：图片时间戳、图片名称、图片内容、图片大小
+          // 不包含位置信息，避免因位置变化导致哈希值变化
+          const hashInput = `${addedTime}_${weekKey}_${imageName}_${res.mtime}_${res.size}`;
           const hash = this.calculateHash(hashInput);
           resolve(hash);
         },
@@ -386,14 +386,24 @@ class CloudManager {
           // 检查图片名称是否变化
           if (existingImg.imageName !== imgInfo.imageName) {
             // 名称变化，需要重新计算哈希值并上传
-            imageHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
+            imageHash = await this.calculateImageHash(
+              imgInfo.image.path, 
+              imgInfo.weekKey, 
+              imgInfo.imageName,
+              imgInfo.image.addedTime
+            );
             updatedImageCount++;
           } else {
             // 名称未变化，检查哈希值是否相同
             // 复用云端的哈希值进行比较
             imageHash = existingImg.hash;
             // 只对可能变化的图片重新计算哈希值
-            const currentHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
+            const currentHash = await this.calculateImageHash(
+              imgInfo.image.path, 
+              imgInfo.weekKey, 
+              imgInfo.imageName,
+              imgInfo.image.addedTime
+            );
             if (existingImg.hash === currentHash) {
               shouldUpload = false;
               // 复用云端的 fileID
@@ -410,7 +420,12 @@ class CloudManager {
           }
         } else {
           // 新图片，计算哈希值
-          imageHash = await this.calculateImageHash(imgInfo.image.path, imgInfo.weekKey, imgInfo.imageName);
+          imageHash = await this.calculateImageHash(
+            imgInfo.image.path, 
+            imgInfo.weekKey, 
+            imgInfo.imageName,
+            imgInfo.image.addedTime
+          );
           newImageCount++;
         }
         
@@ -625,8 +640,14 @@ class CloudManager {
         // 确保图片有哈希值
         if (!img.hash) {
           try {
-            // 计算哈希值
-            img.hash = await this.calculateImageHash(img.path, weekKey, img.name);
+            // 计算哈希值，传递所有必要的参数
+            img.hash = await this.calculateImageHash(
+              img.path, 
+              weekKey, 
+              img.name,
+              img.addedTime || new Date().toISOString(),
+              0 // 临时使用0作为索引，实际恢复时会使用正确的索引
+            );
           } catch (e) {
             console.log('计算本地图片哈希值失败:', e);
             img.hash = '';
@@ -721,8 +742,13 @@ class CloudManager {
             fileID: imgInfo.fileID
           });
           
-          // 计算下载图片的哈希值（基于内容、位置和名称）
-          const imageHash = await this.calculateImageHash(downloadResult.tempFilePath, imgInfo.weekKey, imgInfo.imageName);
+          // 计算下载图片的哈希值（基于图片时间戳、名称、内容和大小）
+          const imageHash = await this.calculateImageHash(
+            downloadResult.tempFilePath, 
+            imgInfo.weekKey, 
+            imgInfo.imageName,
+            imgInfo.addedTime || new Date().toISOString()
+          );
           
           // 保存到本地存储
           const weekKey = imgInfo.weekKey;

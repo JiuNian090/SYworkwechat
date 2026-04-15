@@ -308,15 +308,6 @@ async function getAllValidImages() {
         path: img.path
       }));
 
-      // 统计该周内的图片名称，处理重复命名
-      const nameCountMap = new Map();
-      validImages.forEach(img => {
-        const baseName = img.name.replace(/\(\d+\)$/, '').trim();
-        nameCountMap.set(baseName, (nameCountMap.get(baseName) || 0) + 1);
-      });
-
-      // 为重复名称添加后缀
-      const nameUsageMap = new Map();
       validImages.forEach((img, index) => {
         // 解析周信息，生成基础图片名：年 - 月 - 周数字
         const weekDateStr = weekKey.replace('week_images_', '');
@@ -326,17 +317,9 @@ async function getAllValidImages() {
         const week = getWeekOfMonth(weekDate);
 
         const yearMonth = `${year}-${month}`;
-        let imageName = img.name || `${year}-${month}-${week}`;
-
-        // 处理重复命名
-        const baseName = imageName.replace(/\(\d+\)$/, '').trim();
-        if (nameCountMap.get(baseName) > 1) {
-          const count = (nameUsageMap.get(baseName) || 0) + 1;
-          nameUsageMap.set(baseName, count);
-          if (count > 1) {
-            imageName = `${baseName}(${count})`;
-          }
-        }
+        // 直接使用图片原有的名称，不重新处理重复命名
+        // 避免因处理重复命名导致的 remotePath 变化
+        const imageName = img.name || `${year}-${month}-${week}`;
 
         // 使用图片时间戳生成稳定的 remotePath，避免因索引变化导致的路径变化
         const timestamp = img.addedTime ? new Date(img.addedTime).getTime() : new Date().getTime();
@@ -347,7 +330,8 @@ async function getAllValidImages() {
           image: img,
           yearMonth: yearMonth,
           imageName: imageName,
-          remotePath: remotePath
+          remotePath: remotePath,
+          index: index // 添加图片位置索引
         });
       });
     }
