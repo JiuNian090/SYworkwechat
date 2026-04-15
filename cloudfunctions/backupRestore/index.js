@@ -189,8 +189,12 @@ exports.main = async (event, context) => {
       };
       
       if (existingDataBackup.data.length > 0) {
-        await dataBackupCollection.doc(existingDataBackup.data[0]._id).update({
-          data: dataBackupData
+        // 使用 set 方法全量替换，确保删除的排班也能同步到云端
+        await dataBackupCollection.doc(existingDataBackup.data[0]._id).set({
+          data: {
+            ...dataBackupData,
+            createTime: existingDataBackup.data[0].createTime || new Date()
+          }
         });
       } else {
         dataBackupData.createTime = new Date();
