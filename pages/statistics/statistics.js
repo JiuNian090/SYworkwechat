@@ -31,6 +31,7 @@ Page({
       hourDifference: 0
     },
     chartTimeUnit: 'day', // 图表时间单位：day, week, month, year
+    chartType: 'line', // 图表类型：line（折线图）, bar（柱状图）
     chartData: [], // 图表数据
     // 选择器相关
     showWeekSelector: false,
@@ -39,6 +40,13 @@ Page({
     weekOptions: [],
     monthOptions: [],
     yearOptions: []
+  },
+  
+  // 缓存统计数据缓存
+  _cache: {
+    lastShiftsHash: '',
+    lastStatistics: null,
+    lastDateRange: null
   },
 
   /**
@@ -310,6 +318,18 @@ Page({
     // 什么都不做，只是阻止冒泡
   },
 
+  // 计算数据哈希值用于缓存判断
+  calculateDataHash(data) {
+    const str = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return hash.toString(16);
+  },
+  
   // 计算统计数据
   calculateStatistics() {
     const { startDate, endDate, customHours, dailyStandardHours, chartTimeUnit } = this.data;
@@ -318,6 +338,19 @@ Page({
 
     try {
       const allShifts = wx.getStorageSync('shifts') || {};
+      const currentShiftsHash = this.calculateDataHash(allShifts);
+      const currentDateRange = `${startDate}_${endDate}_${chartTimeUnit}_${customHours}`;
+      
+      // 检查缓存
+      if (this._cache.lastShiftsHash === currentShiftsHash && 
+          this._cache.lastDateRange === currentDateRange && 
+          this._cache.lastStatistics) {
+        // 使用缓存数据
+        this.setData(this._cache.lastStatistics);
+        this.drawChart();
+        return;
+      }
+      
       const shiftsInRange = [];
       let totalHours = 0;
       let workDays = 0;
@@ -442,7 +475,7 @@ Page({
       const progressStatus = totalHours >= standardHours ? '已完成' : '进行中';
       const progressText = `${progressStatus} ${progressPercent}%`;
       
-      this.setData({
+      const newData = {
         shifts: shiftsInRange,
         filteredSchedules: filteredSchedules,
         totalHours: totalHours.toFixed(1),
@@ -459,7 +492,14 @@ Page({
           totalHours: totalHours.toFixed(1),
           hourDifference: hourDifference.toFixed(1)
         }
-      });
+      };
+      
+      // 更新缓存
+      this._cache.lastShiftsHash = currentShiftsHash;
+      this._cache.lastDateRange = currentDateRange;
+      this._cache.lastStatistics = newData;
+      
+      this.setData(newData);
       
       // 绘制图表
       this.drawChart();
@@ -633,17 +673,13 @@ Page({
     this.selectThisWeek();
   },
   
-  onShow() {
-    // 页面显示时只在排班数据发生变化时重新计算统计数据
-    const allShifts = wx.getStorageSync('shifts') || {};
-    const currentShifts = this.data.shifts;
-    
-    // 检查排班数据是否发生变化
-    const shiftsChanged = JSON.stringify(allShifts) !== JSON.stringify(currentShifts);
-    
-    if (shiftsChanged) {
-      this.calculateStatistics();
-    }
+  // 切换图表类型
+  changeChartType(e) {
+    const type = e.currentTarget.dataset.type;
+    this.setData({
+      chartType: type
+    });
+    this.drawChart();
   },
 
   // 好友分享功能
@@ -948,16 +984,16 @@ Page({
     };
   },
 
-  // 绘制图表
+  // 绘制图表（支持折线图和柱状图）
   drawChart() {
     const chartData = this.generateChartData();
     const windowInfo = wx.getWindowInfo();
     const windowWidth = windowInfo.windowWidth;
     const chartWidth = windowWidth - 60; // 减去左右边距
-    const chartHeight = 200;
+    const chartHeight = 220; // 增加高度以容纳图例
     const padding = 40;
     const contentWidth = chartWidth - padding * 2;
-    const contentHeight = chartHeight - padding * 2;
+    const contentHeight = chartHeight - padding * 2 - 20; // 减少以容纳图例
 
     // 使用新的Canvas 2D API
     const query = wx.createSelectorQuery();
@@ -965,6 +1001,8 @@ Page({
       node: true,
       size: true
     }).exec((res) => {
+      if (!res || !res[0]) return;
+      
       const canvas = res[0].node;
       const ctx = canvas.getContext('2d');
       
@@ -977,8 +1015,8 @@ Page({
       // 清除画布
       ctx.clearRect(0, 0, chartWidth, chartHeight);
 
-      // 绘制网格 - 优化UI
-      ctx.strokeStyle = '#f0f0f0'; // 更浅的网格颜色
+      // 绘制网格
+      ctx.strokeStyle = '#f0f0f0';
       ctx.lineWidth = 1;
       
       // 纵轴网格
@@ -997,84 +1035,52 @@ Page({
         const x = padding + xStep * i;
         ctx.beginPath();
         ctx.moveTo(x, padding);
-        ctx.lineTo(x, chartHeight - padding);
+        ctx.lineTo(x, chartHeight - padding - 20);
         ctx.stroke();
       }
 
-      // 绘制数据线条 - 优化UI
+      const yRange = chartData.yAxisMax - chartData.yAxisMin;
+      const yScale = contentHeight / yRange;
+      
+      // 绘制数据
       if (chartData.data.length > 0) {
-        ctx.strokeStyle = '#34d399'; // 绿色
-        ctx.lineWidth = 3; // 稍微加粗线条
-        ctx.lineCap = 'round'; // 线条端点圆润
-        ctx.lineJoin = 'round'; // 线条连接处圆润
-        ctx.beginPath();
-        
-        const yRange = chartData.yAxisMax - chartData.yAxisMin;
-        const yScale = contentHeight / yRange;
-        
-        for (let i = 0; i < chartData.data.length; i++) {
-          const x = padding + xStep * i;
-          const y = chartHeight - padding - (chartData.data[i] - chartData.yAxisMin) * yScale;
-          
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            // 绘制平滑曲线
-            const prevX = padding + xStep * (i - 1);
-            const prevY = chartHeight - padding - (chartData.data[i - 1] - chartData.yAxisMin) * yScale;
-            const controlX1 = prevX + xStep * 0.3;
-            const controlY1 = prevY;
-            const controlX2 = x - xStep * 0.3;
-            const controlY2 = y;
-            ctx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, x, y);
-          }
-        }
-        ctx.stroke();
-
-        // 绘制数据点 - 优化UI
-        ctx.fillStyle = '#34d399'; // 与线条相同的颜色
-        ctx.strokeStyle = '#FFFFFF'; // 白色边框
-        ctx.lineWidth = 2; // 边框宽度
-        for (let i = 0; i < chartData.data.length; i++) {
-          const x = padding + xStep * i;
-          const y = chartHeight - padding - (chartData.data[i] - chartData.yAxisMin) * yScale;
-          ctx.beginPath();
-          ctx.arc(x, y, 5, 0, 2 * Math.PI); // 稍微增大点的大小
-          ctx.fill();
-          ctx.stroke();
+        if (this.data.chartType === 'line') {
+          this.drawLineChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight);
+        } else if (this.data.chartType === 'bar') {
+          this.drawBarChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight);
         }
       }
 
-      // 绘制标签 - 优化UI
+      // 绘制标签
       ctx.font = '12px Arial';
       
-      // 纵轴标签 - 只显示数字，确保不超出边界
+      // 纵轴标签
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#999'; // 更柔和的颜色
+      ctx.fillStyle = '#999';
       for (let i = 0; i <= 5; i++) {
         const y = padding + yStep * i;
         const value = chartData.yAxisMax - (chartData.yAxisMax - chartData.yAxisMin) / 5 * i;
-        ctx.fillText(value.toFixed(0), padding - 8, y + 4); // 调整位置，确保不超出左边界
+        ctx.fillText(value.toFixed(0), padding - 8, y + 4);
       }
 
-      // 纵轴单位 - 优化UI
+      // 纵轴单位
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#34d399'; // 使用与数据线条相同的颜色
-      ctx.font = '14px Arial'; // 稍微增大字体
-      ctx.fillText('小时', padding - 8, padding - 20); // 调整位置，确保不超出左边界
+      ctx.fillStyle = '#34d399';
+      ctx.font = '14px Arial';
+      ctx.fillText('小时', padding - 8, padding - 20);
 
-      // 横轴标签 - 只显示数字
+      // 横轴标签
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#999'; // 更柔和的颜色
-      ctx.font = '12px Arial'; // 恢复默认字体
+      ctx.fillStyle = '#999';
+      ctx.font = '12px Arial';
       
       for (let i = 0; i < chartData.labels.length; i++) {
         const x = padding + xStep * i;
-        ctx.fillText((i + 1).toString(), x, chartHeight - padding + 8); // 调整位置
+        ctx.fillText((i + 1).toString(), x, chartHeight - padding - 12);
       }
 
-      // 横轴单位 - 优化UI
+      // 横轴单位
       let xAxisUnit = '';
       if (this.data.chartTimeUnit === 'day') {
         xAxisUnit = '星期';
@@ -1084,20 +1090,152 @@ Page({
         xAxisUnit = '月';
       }
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#34d399'; // 使用与数据线条相同的颜色
-      ctx.font = '14px Arial'; // 稍微增大字体
-      ctx.fillText(xAxisUnit, chartWidth - padding + 20, chartHeight - padding + 3); // 调整位置，往左边移动
+      ctx.fillStyle = '#34d399';
+      ctx.font = '14px Arial';
+      ctx.fillText(xAxisUnit, chartWidth - padding + 20, chartHeight - padding - 17);
 
-      // 绘制标题 - 优化UI
+      // 绘制标题
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.font = '16px Arial'; // 增大标题字体
+      ctx.font = '16px Arial';
       ctx.fillStyle = '#333';
-      ctx.fillText('工时趋势', chartWidth / 2, 15); // 调整位置
+      ctx.fillText('工时趋势', chartWidth / 2, 15);
+      
+      // 绘制图例
+      this.drawLegend(ctx, chartWidth, chartHeight);
     });
   },
+  
+  // 绘制折线图
+  drawLineChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight) {
+    // 绘制数据线条
+    ctx.strokeStyle = '#34d399';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    
+    for (let i = 0; i < chartData.data.length; i++) {
+      const x = padding + xStep * i;
+      const y = chartHeight - padding - 20 - (chartData.data[i] - chartData.yAxisMin) * yScale;
+      
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        const prevX = padding + xStep * (i - 1);
+        const prevY = chartHeight - padding - 20 - (chartData.data[i - 1] - chartData.yAxisMin) * yScale;
+        const controlX1 = prevX + xStep * 0.3;
+        const controlY1 = prevY;
+        const controlX2 = x - xStep * 0.3;
+        const controlY2 = y;
+        ctx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, x, y);
+      }
+    }
+    ctx.stroke();
 
-  // 页面显示时更新图表
+    // 绘制数据点和数据标签
+    ctx.fillStyle = '#34d399';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.font = '11px Arial';
+    
+    for (let i = 0; i < chartData.data.length; i++) {
+      const x = padding + xStep * i;
+      const y = chartHeight - padding - 20 - (chartData.data[i] - chartData.yAxisMin) * yScale;
+      
+      // 绘制数据点
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+      
+      // 绘制数据标签（只在有数据时显示）
+      if (chartData.data[i] > 0) {
+        ctx.fillStyle = '#666';
+        ctx.fillText(chartData.data[i].toFixed(1), x, y - 10);
+        ctx.fillStyle = '#34d399';
+      }
+    }
+  },
+  
+  // 绘制柱状图
+  drawBarChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight) {
+    const barWidth = Math.min(40, xStep * 0.6); // 柱子宽度
+    
+    for (let i = 0; i < chartData.data.length; i++) {
+      const x = padding + xStep * i - barWidth / 2;
+      const value = chartData.data[i];
+      const barHeight = (value - chartData.yAxisMin) * yScale;
+      const y = chartHeight - padding - 20 - barHeight;
+      
+      // 绘制渐变背景
+      const gradient = ctx.createLinearGradient(x, y, x, chartHeight - padding - 20);
+      gradient.addColorStop(0, '#34d399');
+      gradient.addColorStop(1, '#6ee7b7');
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(x, y, barWidth, barHeight);
+      
+      // 绘制柱子边框
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, barWidth, barHeight);
+      
+      // 绘制数据标签
+      if (value > 0) {
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.font = '11px Arial';
+        ctx.fillText(value.toFixed(1), x + barWidth / 2, y - 5);
+      }
+    }
+  },
+  
+  // 绘制图例
+  drawLegend(ctx, chartWidth, chartHeight) {
+    const legendY = chartHeight - 18;
+    const legendX = 20;
+    
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.font = '12px Arial';
+    
+    // 折线图图例
+    if (this.data.chartType === 'line') {
+      ctx.fillStyle = '#34d399';
+      ctx.beginPath();
+      ctx.arc(legendX + 8, legendY, 4, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      ctx.strokeStyle = '#34d399';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(legendX, legendY);
+      ctx.lineTo(legendX + 16, legendY);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#666';
+      ctx.fillText('工时', legendX + 24, legendY);
+    } else {
+      // 柱状图图例
+      ctx.fillStyle = '#34d399';
+      ctx.fillRect(legendX, legendY - 5, 12, 10);
+      
+      ctx.fillStyle = '#666';
+      ctx.fillText('工时', legendX + 20, legendY);
+    }
+    
+    // 时间范围标签
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#999';
+    ctx.font = '11px Arial';
+    const timeRange = `${this.data.startDate} ~ ${this.data.endDate}`;
+    ctx.fillText(timeRange, chartWidth / 2, legendY);
+  },
+
   onShow() {
     // 页面显示时只在排班数据发生变化时重新计算统计数据
     const allShifts = wx.getStorageSync('shifts') || {};

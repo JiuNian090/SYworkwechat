@@ -82,7 +82,7 @@
         <view class="card-icon">📊</view>
         <text class="card-title">工时趋势</text>
         <view class="chart-controls">
-          <!-- 周选择器 -->
+          <!-- 时间选择器 -->
           <view class="selector-wrapper">
             <view class="chart-control-btn {{chartTimeUnit === 'day' ? 'active' : ''}}" bindtap="toggleWeekSelector">
               <view class="picker-content">
@@ -134,8 +134,20 @@
           </view>
         </view>
       </view>
+      <!-- 图表类型选择 -->
+      <view class="chart-type-selector">
+        <view class="chart-type-container">
+          <view class="chart-type-option {{chartType === 'line' ? 'active' : ''}}" bindtap="changeChartType" data-type="line">
+            <text>折线图</text>
+          </view>
+          <view class="chart-type-divider"></view>
+          <view class="chart-type-option {{chartType === 'bar' ? 'active' : ''}}" bindtap="changeChartType" data-type="bar">
+            <text>柱状图</text>
+          </view>
+        </view>
+      </view>
       <view class="chart-container">
-        <canvas type="2d" id="lineCanvas" style="width: 100%; height: 200px;"></canvas>
+        <canvas type="2d" id="lineCanvas" style="width: 100%; height: 220px;"></canvas>
       </view>
     </view>
 
@@ -191,25 +203,32 @@
       <text class="card-title">班次明细</text>
       <text class="card-subtitle">{{filteredSchedules.length}} 条记录</text>
     </view>
-    <view class="schedule-list">
-      <block wx:if="{{filteredSchedules.length > 0}}">
-        <view class="schedule-item" wx:for="{{filteredSchedules}}" wx:key="date">
-          <view class="schedule-date">
-            <text class="date-day">{{item.day}}</text>
-            <text class="date-weekday">{{item.weekday}}</text>
-          </view>
-          <view class="schedule-type">
-            <view class="type-tag {{item.shiftType === '白天班' ? 'day' : item.shiftType === '跨夜班' ? 'night' : 'off'}}">
-              {{item.shiftType}}
-            </view>
-          </view>
-          <view class="schedule-time">
-            <text wx:if="{{item.shiftType !== '休息'}}">{{item.startTime}}</text>
-            <text wx:else>--:--</text>
+    <scroll-view 
+      class="schedule-list" 
+      scroll-y="true" 
+      enhanced="true" 
+      show-scrollbar="false"
+      enable-back-to-top="true"
+      wx:if="{{filteredSchedules.length > 0}}"
+    >
+      <view class="schedule-item" wx:for="{{filteredSchedules}}" wx:key="date">
+        <view class="schedule-date">
+          <text class="date-day">{{item.day}}</text>
+          <text class="date-weekday">{{item.weekday}}</text>
+        </view>
+        <view class="schedule-type">
+          <view class="type-tag {{item.shiftType === '白天班' ? 'day' : item.shiftType === '跨夜班' ? 'night' : 'off'}}">
+            {{item.shiftType}}
           </view>
         </view>
-      </block>
-      <view class="empty-state" wx:else>
+        <view class="schedule-time">
+          <text wx:if="{{item.shiftType !== '休息'}}">{{item.startTime}}</text>
+          <text wx:else>--:--</text>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="schedule-list" wx:else>
+      <view class="empty-state">
         <text class="empty-icon" wx:if="{{chartTimeUnit === 'month'}}">📅</text>
         <text class="empty-icon" wx:else>📭</text>
         <text class="empty-text" wx:if="{{chartTimeUnit === 'month'}}">年视图不显示详细班次明细，请切换到周或月视图查看</text>
