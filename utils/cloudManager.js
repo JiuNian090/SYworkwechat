@@ -366,7 +366,7 @@ class CloudManager {
       };
       
       // 4. 调用云函数备份数据 - 新流程：先对比关联表，再上传图片
-      wx.showLoading({ title: '备份中...' });
+      wx.showLoading({ title: '开始备份...' });
       
       // 第一步：上传本地关联表，获取需要新增的图片清单
       const diffResult = await this.callCloudFunction('backupRestore', {
@@ -381,7 +381,7 @@ class CloudManager {
       if (!diffResult.result.success) {
         wx.hideLoading();
         wx.showToast({
-          title: diffResult.result.errMsg || '备份失败',
+          title: '备份失败',
           icon: 'none'
         });
         return {
@@ -537,7 +537,7 @@ class CloudManager {
         let message;
         if (backupResult.result.hasChanges) {
           if (newImageCount > 0 && deletedImageCount > 0) {
-            message = `备份成功（新增${newImageCount}张，删除${deletedImageCount}张）`;
+            message = `备份成功（新增${newImageCount}张，删除${deletedImageCount}张图片）`;
           } else if (newImageCount > 0) {
             message = `备份成功（新增${newImageCount}张图片）`;
           } else if (deletedImageCount > 0) {
@@ -1029,7 +1029,7 @@ class CloudManager {
   // 执行恢复操作 - 新流程（优化版）
   async performRestoreWithNewFlow(cloudRelation) {
     try {
-      wx.showLoading({ title: '恢复中...' });
+      wx.showLoading({ title: '开始恢复...' });
       
       // 1. 同步关联表与本地存储，确保使用最新的本地数据
       syncRelationWithLocal();
@@ -1122,7 +1122,7 @@ class CloudManager {
         if (!getImagesResult.result.success) {
           wx.hideLoading();
           wx.showToast({
-            title: getImagesResult.result.errMsg || '恢复失败',
+            title: '恢复失败',
             icon: 'none'
           });
           return {
@@ -1260,7 +1260,7 @@ class CloudManager {
       if (actualNewImagesCount > 0 || deletedImageCount > 0) {
         let message = '恢复成功';
         if (actualNewImagesCount > 0 && deletedImageCount > 0) {
-          message = `恢复成功（新增${actualNewImagesCount}张，删除${deletedImageCount}张）`;
+          message = `恢复成功（新增${actualNewImagesCount}张，删除${deletedImageCount}张图片）`;
         } else if (actualNewImagesCount > 0) {
           message = `恢复成功（新增${actualNewImagesCount}张图片）`;
         } else if (deletedImageCount > 0) {
