@@ -297,6 +297,9 @@ class DataImportManager {
                         processImageFolder(subFolder, `${basePath}${relativePath}/`);
                       }
                     } else {
+                      // 构建完整的相对路径
+                      const fullRelativePath = basePath ? `${basePath}${relativePath}` : relativePath;
+                      
                       // 处理图片文件
                       const promise = file.async('arraybuffer').then((content) => {
                         // 生成临时图片路径
@@ -307,14 +310,18 @@ class DataImportManager {
                           filePath: tempPath,
                           data: content,
                           success: () => {
-                            processedImagePaths.add(relativePath);
+                            processedImagePaths.add(fullRelativePath);
                             
                             // 检查是否有图片周关联表，如果有则使用关联表恢复图片
                             if (Object.keys(imageWeekRelation).length > 0) {
                               // 处理路径格式，确保与关联表中的路径格式一致
-                              let normalizedPath = relativePath;
+                              let normalizedPath = fullRelativePath;
                               // 确保路径以'images/'开头
                               if (!normalizedPath.startsWith('images/')) {
+                                // 如果路径不包含'images/'前缀，添加它
+                                normalizedPath = `images/${normalizedPath}`;
+                              } else if (normalizedPath.startsWith('image/')) {
+                                // 如果路径以'image/'开头，替换为'images/'
                                 normalizedPath = normalizedPath.replace('image/', 'images/');
                               }
                               
@@ -329,23 +336,38 @@ class DataImportManager {
                                   // 检查图片是否已存在
                                   const existingImage = existingImages.find(img => img.name === weekImages[matchingImageIndex].name);
                                   
-                                  // 计算新图片的哈希值
-                                  const fs = wx.getFileSystemManager();
-                                  let newImageHash = '0';
-                                  try {
-                                    const fileInfo = fs.getFileInfoSync({ filePath: tempPath });
-                                    newImageHash = (() => {
-                                      let hash = 0;
-                                      const data = `${fileInfo.size}`;
-                                      for (let i = 0; i < data.length; i++) {
-                                        const char = data.charCodeAt(i);
-                                        hash = ((hash << 5) - hash) + char;
-                                        hash = hash & hash;
-                                      }
-                                      return hash.toString(16);
-                                    })();
-                                  } catch (e) {
-                                    console.error('获取文件信息失败', e);
+                                  // 计算新图片的哈希值（与云备份计算方式一致）
+                                  let newImageHash = weekImages[matchingImageIndex].hash;
+                                  if (!newImageHash) {
+                                    try {
+                                      const fileInfo = fs.getFileInfoSync({ filePath: tempPath });
+                                      const addedTime = weekImages[matchingImageIndex].addedTime || Date.now();
+                                      const imageName = weekImages[matchingImageIndex].name;
+                                      
+                                      // 计算哈希值（与云备份计算方式一致）
+                                      newImageHash = (() => {
+                                        let hash = 0;
+                                        const data = `${addedTime}_${weekKey}_${imageName}_${fileInfo.size}`;
+                                        for (let i = 0; i < data.length; i++) {
+                                          const char = data.charCodeAt(i);
+                                          hash = ((hash << 5) - hash) + char;
+                                          hash = hash & hash;
+                                        }
+                                        return hash.toString(16);
+                                      })();
+                                    } catch (e) {
+                                      console.error('获取文件信息失败', e);
+                                      newImageHash = (() => {
+                                        let hash = 0;
+                                        const data = `${Date.now()}_${weekKey}_${weekImages[matchingImageIndex].name}`;
+                                        for (let i = 0; i < data.length; i++) {
+                                          const char = data.charCodeAt(i);
+                                          hash = ((hash << 5) - hash) + char;
+                                          hash = hash & hash;
+                                        }
+                                        return hash.toString(16);
+                                      })();
+                                    }
                                   }
                                   
                                   if (!existingImage || existingImage.hash !== newImageHash) {
@@ -354,7 +376,7 @@ class DataImportManager {
                                       id: Date.now().toString(),
                                       name: weekImages[matchingImageIndex].name,
                                       path: tempPath,
-                                      addedTime: new Date().toISOString(),
+                                      addedTime: weekImages[matchingImageIndex].addedTime || new Date().toISOString(),
                                       hash: newImageHash
                                     };
                                     
@@ -387,12 +409,31 @@ class DataImportManager {
                                 // 获取现有图片数据
                                 const existingImages = wx.getStorageSync(weekImageKey) || [];
                                 
+                                // 计算哈希值
+                                let imageHash = '0';
+                                try {
+                                  const fileInfo = fs.getFileInfoSync({ filePath: tempPath });
+                                  imageHash = (() => {
+                                    let hash = 0;
+                                    const data = `${Date.now()}_${weekImageKey}_${fileNameParts.slice(-1)[0].replace('.jpg', '')}_${fileInfo.size}`;
+                                    for (let i = 0; i < data.length; i++) {
+                                      const char = data.charCodeAt(i);
+                                      hash = ((hash << 5) - hash) + char;
+                                      hash = hash & hash;
+                                    }
+                                    return hash.toString(16);
+                                  })();
+                                } catch (e) {
+                                  console.error('获取文件信息失败', e);
+                                }
+                                
                                 // 添加新图片
                                 existingImages.push({
                                   id: Date.now().toString(),
                                   name: fileNameParts.slice(-1)[0].replace('.jpg', ''),
                                   path: tempPath,
-                                  addedTime: new Date().toISOString()
+                                  addedTime: new Date().toISOString(),
+                                  hash: imageHash
                                 });
                                 
                                 // 保存图片数据
@@ -414,23 +455,24 @@ class DataImportManager {
                 
                 // 等待所有图片处理完成
                 Promise.all(imagePromises).then(() => {
-                  // 导入图片周关联表到本地存储
+                  // 同步关联表与本地存储
                   if (Object.keys(imageWeekRelation).length > 0) {
-                    // 导入图片周关联表
                     const imageRelation = require('./imageRelation');
-                    imageRelation.importImageWeekRelation(imageWeekRelation);
+                    // 重新从本地存储构建关联表，确保与本地存储同步
+                    imageRelation.rebuildRelationFromLocal();
                   }
                   
                   this.finishImport(callback);
                 });
               } else {
-                // 即使没有图片文件，也要导入图片周关联表
-                if (Object.keys(imageWeekRelation).length > 0) {
-                  const imageRelation = require('./imageRelation');
-                  imageRelation.importImageWeekRelation(imageWeekRelation);
+                  // 即使没有图片文件，也要同步关联表
+                  if (Object.keys(imageWeekRelation).length > 0) {
+                    const imageRelation = require('./imageRelation');
+                    // 重新从本地存储构建关联表，确保与本地存储同步
+                    imageRelation.rebuildRelationFromLocal();
+                  }
+                  this.finishImport(callback);
                 }
-                this.finishImport(callback);
-              }
             }).catch((err) => {
               wx.hideLoading();
               console.error('解析JSON失败', err);
