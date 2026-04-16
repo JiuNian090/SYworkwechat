@@ -31,7 +31,14 @@ Page({
       hourDifference: 0
     },
     chartTimeUnit: 'day', // 图表时间单位：day, week, month, year
-    chartData: [] // 图表数据
+    chartData: [], // 图表数据
+    // 选择器相关
+    showWeekSelector: false,
+    showMonthSelector: false,
+    showYearSelector: false,
+    weekOptions: [],
+    monthOptions: [],
+    yearOptions: []
   },
 
   /**
@@ -653,6 +660,172 @@ Page({
       title: 'SYwork排班管理系统 - 统计页面',
       query: 'page=statistics'
     };
+  },
+
+  // 切换周选择器显示/隐藏
+  toggleWeekSelector() {
+    this.generateWeekOptions();
+    this.setData({
+      showWeekSelector: !this.data.showWeekSelector,
+      showMonthSelector: false,
+      showYearSelector: false
+    });
+  },
+
+  // 切换月选择器显示/隐藏
+  toggleMonthSelector() {
+    this.generateMonthOptions();
+    this.setData({
+      showWeekSelector: false,
+      showMonthSelector: !this.data.showMonthSelector,
+      showYearSelector: false
+    });
+  },
+
+  // 切换年选择器显示/隐藏
+  toggleYearSelector() {
+    this.generateYearOptions();
+    this.setData({
+      showWeekSelector: false,
+      showMonthSelector: false,
+      showYearSelector: !this.data.showYearSelector
+    });
+  },
+
+  // 关闭所有选择器
+  closeSelectors() {
+    this.setData({
+      showWeekSelector: false,
+      showMonthSelector: false,
+      showYearSelector: false
+    });
+  },
+
+  // 生成周选择器选项（过去7周）
+  generateWeekOptions() {
+    const options = [];
+    const now = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const referenceDate = new Date(now);
+      referenceDate.setDate(now.getDate() - i * 7);
+      const range = this.getThisWeekRange(referenceDate);
+      options.push({
+        label: `${range.startDate} ~ ${range.endDate}`,
+        startDate: range.startDate,
+        endDate: range.endDate
+      });
+    }
+    
+    this.setData({ weekOptions: options });
+  },
+
+  // 生成月选择器选项（本年12个月）
+  generateMonthOptions() {
+    const options = [];
+    const now = new Date();
+    const year = now.getFullYear();
+    
+    for (let month = 0; month < 12; month++) {
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 0);
+      options.push({
+        label: `${year}年${month + 1}月`,
+        startDate: this.formatDate(start),
+        endDate: this.formatDate(end)
+      });
+    }
+    
+    this.setData({ monthOptions: options });
+  },
+
+  // 生成年选择器选项（只显示有数据的年份）
+  generateYearOptions() {
+    const options = [];
+    const allShifts = wx.getStorageSync('shifts') || {};
+    const yearsWithData = new Set();
+    
+    // 收集所有有数据的年份
+    Object.keys(allShifts).forEach(dateStr => {
+      const year = dateStr.substring(0, 4);
+      yearsWithData.add(year);
+    });
+    
+    // 转换为数组并排序
+    const yearsArray = Array.from(yearsWithData).sort((a, b) => b - a);
+    
+    // 生成选项
+    yearsArray.forEach(year => {
+      const start = new Date(year, 0, 1);
+      const end = new Date(year, 11, 31);
+      options.push({
+        label: `${year}年`,
+        startDate: this.formatDate(start),
+        endDate: this.formatDate(end)
+      });
+    });
+    
+    // 如果没有数据，添加当前年份
+    if (options.length === 0) {
+      const year = new Date().getFullYear();
+      const start = new Date(year, 0, 1);
+      const end = new Date(year, 11, 31);
+      options.push({
+        label: `${year}年`,
+        startDate: this.formatDate(start),
+        endDate: this.formatDate(end)
+      });
+    }
+    
+    this.setData({ yearOptions: options });
+  },
+
+  // 选择周
+  selectWeek(e) {
+    const index = e.currentTarget.dataset.index;
+    const selectedWeek = this.data.weekOptions[index];
+    
+    this.setData({
+      startDate: selectedWeek.startDate,
+      endDate: selectedWeek.endDate,
+      chartTimeUnit: 'day',
+      activeQuickBtn: '',
+      showWeekSelector: false
+    });
+    
+    this.calculateStatistics();
+  },
+
+  // 选择月
+  selectMonth(e) {
+    const index = e.currentTarget.dataset.index;
+    const selectedMonth = this.data.monthOptions[index];
+    
+    this.setData({
+      startDate: selectedMonth.startDate,
+      endDate: selectedMonth.endDate,
+      chartTimeUnit: 'week',
+      activeQuickBtn: '',
+      showMonthSelector: false
+    });
+    
+    this.calculateStatistics();
+  },
+
+  // 选择年
+  selectYear(e) {
+    const index = e.currentTarget.dataset.index;
+    const selectedYear = this.data.yearOptions[index];
+    
+    this.setData({
+      startDate: selectedYear.startDate,
+      endDate: selectedYear.endDate,
+      chartTimeUnit: 'month',
+      activeQuickBtn: '',
+      showYearSelector: false
+    });
+    
+    this.calculateStatistics();
   },
 
   // 切换图表时间单位

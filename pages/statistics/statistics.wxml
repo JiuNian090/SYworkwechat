@@ -82,9 +82,56 @@
         <view class="card-icon">📊</view>
         <text class="card-title">工时趋势</text>
         <view class="chart-controls">
-          <view class="chart-control-btn {{chartTimeUnit === 'day' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="day">周</view>
-          <view class="chart-control-btn {{chartTimeUnit === 'week' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="week">月</view>
-          <view class="chart-control-btn {{chartTimeUnit === 'month' ? 'active' : ''}}" bindtap="changeChartTimeUnit" data-unit="month">年</view>
+          <!-- 周选择器 -->
+          <view class="selector-wrapper">
+            <view class="chart-control-btn {{chartTimeUnit === 'day' ? 'active' : ''}}" bindtap="toggleWeekSelector">
+              <view class="picker-content">
+                <text>周</text>
+                <text class="selector-arrow {{showWeekSelector ? 'active' : ''}}">▼</text>
+              </view>
+            </view>
+            <block wx:if="{{showWeekSelector}}">
+              <view class="dropdown-selector">
+                <view wx:for="{{weekOptions}}" wx:key="index" class="dropdown-item" bindtap="selectWeek" data-index="{{index}}">
+                  <text>{{item.label}}</text>
+                </view>
+              </view>
+            </block>
+          </view>
+
+          <!-- 月选择器 -->
+          <view class="selector-wrapper">
+            <view class="chart-control-btn {{chartTimeUnit === 'week' ? 'active' : ''}}" bindtap="toggleMonthSelector">
+              <view class="picker-content">
+                <text>月</text>
+                <text class="selector-arrow {{showMonthSelector ? 'active' : ''}}">▼</text>
+              </view>
+            </view>
+            <block wx:if="{{showMonthSelector}}">
+              <view class="dropdown-selector">
+                <view wx:for="{{monthOptions}}" wx:key="index" class="dropdown-item" bindtap="selectMonth" data-index="{{index}}">
+                  <text>{{item.label}}</text>
+                </view>
+              </view>
+            </block>
+          </view>
+
+          <!-- 年选择器 -->
+          <view class="selector-wrapper">
+            <view class="chart-control-btn {{chartTimeUnit === 'month' ? 'active' : ''}}" bindtap="toggleYearSelector">
+              <view class="picker-content">
+                <text>年</text>
+                <text class="selector-arrow {{showYearSelector ? 'active' : ''}}">▼</text>
+              </view>
+            </view>
+            <block wx:if="{{showYearSelector}}">
+              <view class="dropdown-selector">
+                <view wx:for="{{yearOptions}}" wx:key="index" class="dropdown-item" bindtap="selectYear" data-index="{{index}}">
+                  <text>{{item.label}}</text>
+                </view>
+              </view>
+            </block>
+          </view>
         </view>
       </view>
       <view class="chart-container">
