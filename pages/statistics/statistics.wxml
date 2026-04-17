@@ -47,8 +47,8 @@
         bindchange="onWeekPickerChange"
         bindcolumnchange="onWeekPickerColumnChange"
       >
-        <view class="period-btn">
-          <text class="period-btn-text">周</text>
+        <view class="period-btn {{activePeriodBtn === 'week' ? 'active' : ''}}">
+          <text class="period-btn-text">指定周</text>
           <text class="period-btn-arrow">▼</text>
         </view>
       </picker>
@@ -61,8 +61,8 @@
         bindchange="onMonthPickerChange"
         bindcolumnchange="onMonthPickerColumnChange"
       >
-        <view class="period-btn">
-          <text class="period-btn-text">月</text>
+        <view class="period-btn {{activePeriodBtn === 'month' ? 'active' : ''}}">
+          <text class="period-btn-text">指定月</text>
           <text class="period-btn-arrow">▼</text>
         </view>
       </picker>
@@ -74,8 +74,8 @@
         value="{{yearPickerValue}}" 
         bindchange="onYearPickerChange"
       >
-        <view class="period-btn">
-          <text class="period-btn-text">年</text>
+        <view class="period-btn {{activePeriodBtn === 'year' ? 'active' : ''}}">
+          <text class="period-btn-text">指定年</text>
           <text class="period-btn-arrow">▼</text>
         </view>
       </picker>
