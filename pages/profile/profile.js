@@ -52,6 +52,10 @@ Page({
     cloudConfirmPassword: '',
     cloudNicknameInput: '',
     showCloudPassword: false,
+    rememberPassword: false,
+    // 已登录账号列表
+    savedAccounts: [],
+
     // 用户管理弹窗
     showUserManagementModal: false,
     currentUserPage: 'main', // main, updateNickname, updatePassword, deleteAccount, avatar
@@ -125,6 +129,14 @@ Page({
     // 解析更新日志
     const changelog = this.parseChangelog();
     
+    // 加载保存的账号列表
+    let savedAccounts = [];
+    try {
+      savedAccounts = wx.getStorageSync('savedAccounts') || [];
+    } catch (e) {
+      console.error('加载保存的账号列表失败:', e);
+    }
+    
     this.setData({
       username: avatarInfo.username,
       avatarText: avatarInfo.avatarText,
@@ -136,7 +148,8 @@ Page({
       cloudLoggedIn: cloudLoggedIn,
       cloudAccount: cloudAccount,
       cloudUserInfo: cloudUserInfo,
-      changelog: changelog
+      changelog: changelog,
+      savedAccounts: savedAccounts
     });
     
     // 如果已登录，尝试从云端获取最新的头像信息
@@ -691,8 +704,8 @@ Page({
       success: (res) => {
         console.log('用户选择:', res.tapIndex);
         if (res.tapIndex === 0) {
-          console.log('显示登录弹窗');
-          this.showCloudLoginModal();
+          console.log('显示切换账号弹窗');
+          this.showSwitchAccountModal();
         } else if (res.tapIndex === 1) {
           console.log('显示注册弹窗');
           this.showCloudRegisterModal();
@@ -710,11 +723,13 @@ Page({
   showCloudLoginModal() {
     console.log('showCloudLoginModal 被调用');
     this.setData({
-      showCloudLoginModal: true,
+      showUserManagementModal: true,
+      currentUserPage: 'login',
       cloudAccountInput: '',
-      cloudPasswordInput: ''
+      cloudPasswordInput: '',
+      rememberPassword: false
     });
-    console.log('设置 showCloudLoginModal 为 true');
+    console.log('设置 currentUserPage 为 login');
   },
 
   hideCloudLoginModal() {
@@ -1046,6 +1061,100 @@ Page({
     });
   },
 
+  // 保存账号到列表
+  saveAccount(account, password) {
+    try {
+      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      
+      // 获取当前用户的头像信息
+      const cloudUserInfo = this.data.cloudUserInfo;
+      const avatarEmoji = this.data.avatarEmoji;
+      const avatarType = this.data.avatarType;
+      const avatarText = this.data.avatarText;
+      
+      // 检查账号是否已存在
+      const existingIndex = savedAccounts.findIndex(item => item.account === account);
+      
+      if (existingIndex >= 0) {
+        // 更新现有账号
+        savedAccounts[existingIndex] = {
+          account: account,
+          password: this.data.rememberPassword ? password : '',
+          lastLogin: new Date().toISOString(),
+          avatarType: avatarType || 'emoji',
+          avatarEmoji: avatarEmoji || '😊',
+          avatarText: avatarText || ''
+        };
+      } else {
+        // 添加新账号
+        savedAccounts.push({
+          account: account,
+          password: this.data.rememberPassword ? password : '',
+          lastLogin: new Date().toISOString(),
+          avatarType: avatarType || 'emoji',
+          avatarEmoji: avatarEmoji || '😊',
+          avatarText: avatarText || ''
+        });
+      }
+      
+      // 限制保存的账号数量（最多5个）
+      if (savedAccounts.length > 5) {
+        savedAccounts = savedAccounts.sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin)).slice(0, 5);
+      }
+      
+      wx.setStorageSync('savedAccounts', savedAccounts);
+      this.setData({
+        savedAccounts: savedAccounts
+      });
+    } catch (e) {
+      console.error('保存账号失败:', e);
+    }
+  },
+  
+  // 切换记住密码状态
+  toggleRememberPassword() {
+    this.setData({
+      rememberPassword: !this.data.rememberPassword
+    });
+  },
+  
+  // 显示切换账号页面
+  showSwitchAccountModal() {
+    this.setData({
+      showUserManagementModal: true,
+      currentUserPage: 'switchAccount'
+    });
+  },
+  
+  // 选择账号进行登录
+  selectAccount(e) {
+    const account = e.currentTarget.dataset.account;
+    const password = e.currentTarget.dataset.password;
+    
+    this.setData({
+      cloudAccountInput: account,
+      cloudPasswordInput: password,
+      currentUserPage: 'login'
+    });
+  },
+  
+  // 删除保存的账号
+  deleteSavedAccount(e) {
+    const account = e.currentTarget.dataset.account;
+    
+    try {
+      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      savedAccounts = savedAccounts.filter(item => item.account !== account);
+      
+      wx.setStorageSync('savedAccounts', savedAccounts);
+      this.setData({
+        savedAccounts: savedAccounts
+      });
+    } catch (e) {
+      console.error('删除保存的账号失败:', e);
+    }
+  },
+  
   // 确认删除账户
   async confirmDeleteAccount() {
     const { deleteAccountPassword } = this.data;
@@ -1189,6 +1298,9 @@ Page({
         wx.setStorageSync('cloudUserId', result.data.userId);
         wx.setStorageSync('cloudUserInfo', cloudUserInfo);
         this.userId = result.data.userId;
+        
+        // 保存账号到列表
+        this.saveAccount(cloudAccountInput, cloudPasswordInput);
         
         this.hideCloudLoginModal();
         // 显示成功提示并立即打开用户管理弹窗
