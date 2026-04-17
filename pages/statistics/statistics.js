@@ -873,10 +873,16 @@ Page({
         ctx.stroke();
       }
 
+      // 给图表添加额外的左右边距
+      const extraPadding = 20;
+      const adjustedContentWidth = contentWidth - 2 * extraPadding;
+      const adjustedXStep = chartData.labels.length > 1 ? 
+        adjustedContentWidth / (chartData.labels.length - 1) : adjustedContentWidth;
+      
       // 横轴网格
-      const xStep = contentWidth / (chartData.labels.length - 1 || 1);
       for (let i = 0; i < chartData.labels.length; i++) {
-        const x = padding + xStep * i;
+        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
+          adjustedXStep * i : adjustedContentWidth / 2);
         ctx.beginPath();
         ctx.moveTo(x, padding);
         ctx.lineTo(x, chartHeight - padding - 20);
@@ -889,9 +895,9 @@ Page({
       // 绘制数据
       if (chartData.data.length > 0) {
         if (this.data.chartType === 'line') {
-          this.drawLineChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight);
+          this.drawLineChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
         } else if (this.data.chartType === 'bar') {
-          this.drawBarChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight);
+          this.drawBarChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
         }
       }
 
@@ -920,7 +926,8 @@ Page({
       ctx.font = '12px Arial';
       
       for (let i = 0; i < chartData.labels.length; i++) {
-        const x = padding + xStep * i;
+        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
+          adjustedXStep * i : adjustedContentWidth / 2);
         ctx.fillText((i + 1).toString(), x, chartHeight - padding - 12);
       }
 
@@ -951,7 +958,7 @@ Page({
   },
   
   // 绘制折线图
-  drawLineChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight) {
+  drawLineChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
     // 绘制数据线条
     ctx.strokeStyle = '#34d399';
     ctx.lineWidth = 3;
@@ -960,17 +967,19 @@ Page({
     ctx.beginPath();
     
     for (let i = 0; i < chartData.data.length; i++) {
-      const x = padding + xStep * i;
+      const x = padding + extraPadding + (chartData.labels.length > 1 ? 
+        adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
       const y = chartHeight - padding - 20 - (chartData.data[i] - chartData.yAxisMin) * yScale;
       
       if (i === 0) {
         ctx.moveTo(x, y);
       } else {
-        const prevX = padding + xStep * (i - 1);
+        const prevX = padding + extraPadding + (chartData.labels.length > 1 ? 
+          adjustedXStep * (i - 1) : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
         const prevY = chartHeight - padding - 20 - (chartData.data[i - 1] - chartData.yAxisMin) * yScale;
-        const controlX1 = prevX + xStep * 0.3;
+        const controlX1 = prevX + adjustedXStep * 0.3;
         const controlY1 = prevY;
-        const controlX2 = x - xStep * 0.3;
+        const controlX2 = x - adjustedXStep * 0.3;
         const controlY2 = y;
         ctx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, x, y);
       }
@@ -986,7 +995,8 @@ Page({
     ctx.font = '11px Arial';
     
     for (let i = 0; i < chartData.data.length; i++) {
-      const x = padding + xStep * i;
+      const x = padding + extraPadding + (chartData.labels.length > 1 ? 
+        adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
       const y = chartHeight - padding - 20 - (chartData.data[i] - chartData.yAxisMin) * yScale;
       
       // 绘制数据点
@@ -1005,11 +1015,13 @@ Page({
   },
   
   // 绘制柱状图
-  drawBarChart(ctx, chartData, padding, xStep, yStep, yRange, yScale, chartWidth, chartHeight) {
-    const barWidth = Math.min(40, xStep * 0.6); // 柱子宽度
+  drawBarChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
+    const adjustedContentWidth = chartWidth - 2 * padding - 2 * extraPadding;
+    const barWidth = Math.min(40, adjustedXStep * 0.6); // 柱子宽度
     
     for (let i = 0; i < chartData.data.length; i++) {
-      const x = padding + xStep * i - barWidth / 2;
+      const x = padding + extraPadding + (chartData.labels.length > 1 ? 
+        adjustedXStep * i : adjustedContentWidth / 2) - barWidth / 2;
       const value = chartData.data[i];
       const barHeight = (value - chartData.yAxisMin) * yScale;
       const y = chartHeight - padding - 20 - barHeight;
