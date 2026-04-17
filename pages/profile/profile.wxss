@@ -2313,6 +2313,33 @@ page {
 
 .account-actions {
   margin-left: 10rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.auto-restore-checkbox {
+  width: 40rpx;
+  height: 40rpx;
+  border: 3rpx solid var(--border-color);
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.auto-restore-checkbox.checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkmark {
+  color: white;
+  font-size: 24rpx;
+  font-weight: bold;
+  line-height: 1;
 }
 
 .delete-btn {

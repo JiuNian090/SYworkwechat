@@ -461,6 +461,9 @@
               <text class="account-time">{{item.lastLogin.substring(0, 10)}}</text>
             </view>
             <view class="account-actions">
+              <view class="auto-restore-checkbox {{autoRestoreMap[item.account] ? 'checked' : ''}}" catchtap="toggleAutoRestore" data-account="{{item.account}}">
+                <text wx:if="{{autoRestoreMap[item.account]}}" class="checkmark">✓</text>
+              </view>
               <view class="delete-btn" catchtap="deleteSavedAccount" data-account="{{item.account}}">
                 <text class="delete-icon">×</text>
               </view>

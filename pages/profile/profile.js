@@ -55,6 +55,8 @@ Page({
     rememberPassword: false,
     // 已登录账号列表
     savedAccounts: [],
+    // 账号自动恢复勾选状态
+    autoRestoreMap: {},
 
     // 用户管理弹窗
     showUserManagementModal: false,
@@ -137,6 +139,14 @@ Page({
       console.error('加载保存的账号列表失败:', e);
     }
     
+    // 加载自动恢复勾选状态
+    let autoRestoreMap = {};
+    try {
+      autoRestoreMap = wx.getStorageSync('autoRestoreMap') || {};
+    } catch (e) {
+      console.error('加载自动恢复勾选状态失败:', e);
+    }
+    
     this.setData({
       username: avatarInfo.username,
       avatarText: avatarInfo.avatarText,
@@ -149,7 +159,8 @@ Page({
       cloudAccount: cloudAccount,
       cloudUserInfo: cloudUserInfo,
       changelog: changelog,
-      savedAccounts: savedAccounts
+      savedAccounts: savedAccounts,
+      autoRestoreMap: autoRestoreMap
     });
     
     // 如果已登录，尝试从云端获取最新的头像信息
@@ -1211,6 +1222,12 @@ Page({
           icon: 'success',
           duration: 1000
         });
+        
+        // 检查是否需要自动恢复数据
+        if (this.data.autoRestoreMap[account]) {
+          // 自动恢复数据
+          this.autoRestoreData();
+        }
       } else {
         wx.showToast({
           title: result.errMsg || '登录失败',
@@ -1227,6 +1244,82 @@ Page({
     }
   },
   
+  // 切换自动恢复选项
+  toggleAutoRestore(e) {
+    const account = e.currentTarget.dataset.account;
+    const currentValue = this.data.autoRestoreMap[account] || false;
+    const newValue = !currentValue;
+    
+    if (newValue) {
+      // 如果用户要勾选，弹出提示确认
+      wx.showModal({
+        title: '自动恢复数据',
+        content: '勾选此项后，下次点击此账号登录时会自动静默恢复云备份数据。确定要开启吗？',
+        confirmText: '确定',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户确认，更新勾选状态
+            const autoRestoreMap = { ...this.data.autoRestoreMap };
+            autoRestoreMap[account] = true;
+            this.setData({
+              autoRestoreMap: autoRestoreMap
+            });
+            // 保存到本地存储
+            wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+          }
+        }
+      });
+    } else {
+      // 如果用户要取消勾选，直接取消
+      const autoRestoreMap = { ...this.data.autoRestoreMap };
+      autoRestoreMap[account] = false;
+      this.setData({
+        autoRestoreMap: autoRestoreMap
+      });
+      // 保存到本地存储
+      wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+    }
+  },
+  
+  // 自动恢复数据
+  async autoRestoreData() {
+    try {
+      const cloudManager = this.data.cloudManager;
+      
+      // 检查是否有备份
+      const backupInfo = await cloudManager.getBackupInfo();
+      if (!backupInfo.success || !backupInfo.hasBackup) {
+        console.log('没有备份数据，跳过自动恢复');
+        return;
+      }
+      
+      // 静默恢复数据
+      wx.showLoading({ title: '恢复数据中...' });
+      
+      const result = await cloudManager.restore();
+      
+      wx.hideLoading();
+      
+      if (result.success) {
+        wx.setStorageSync('lastRestoreTime', Date.now());
+        wx.showToast({
+          title: '数据恢复成功',
+          icon: 'success',
+          duration: 1500
+        });
+        
+        // 重新加载页面数据
+        this.initPageData();
+      } else {
+        console.error('自动恢复失败:', result.errMsg);
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('自动恢复数据异常:', e);
+    }
+  },
+  
   // 删除保存的账号
   deleteSavedAccount(e) {
     const account = e.currentTarget.dataset.account;
@@ -1235,9 +1328,16 @@ Page({
       let savedAccounts = wx.getStorageSync('savedAccounts') || [];
       savedAccounts = savedAccounts.filter(item => item.account !== account);
       
+      // 同时删除对应的自动恢复勾选状态
+      const autoRestoreMap = { ...this.data.autoRestoreMap };
+      delete autoRestoreMap[account];
+      
       wx.setStorageSync('savedAccounts', savedAccounts);
+      wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+      
       this.setData({
-        savedAccounts: savedAccounts
+        savedAccounts: savedAccounts,
+        autoRestoreMap: autoRestoreMap
       });
     } catch (e) {
       console.error('删除保存的账号失败:', e);
@@ -1398,6 +1498,12 @@ Page({
           icon: 'success',
           duration: 1000
         });
+        
+        // 检查是否需要自动恢复数据
+        if (this.data.autoRestoreMap[cloudAccountInput]) {
+          // 自动恢复数据
+          this.autoRestoreData();
+        }
       } else {
         wx.showToast({
           title: result.errMsg || '登录失败',
