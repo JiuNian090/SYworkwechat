@@ -10,7 +10,7 @@ const imageBackupCollection = db.collection('schedule_image_backups');
 const dataBackupCollection = db.collection('schedule_data_backups');
 
 // 备份系统版本号
-const BACKUP_SYSTEM_VERSION = 'v1.0.0';
+const BACKUP_SYSTEM_VERSION = 'v2.0.0';
 
 // 计算数据哈希值
 function calculateHash(data) {

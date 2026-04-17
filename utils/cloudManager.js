@@ -11,7 +11,7 @@ class CloudManager {
   
   // 备份系统版本号
   get BACKUP_SYSTEM_VERSION() {
-    return 'v1.0.0';
+    return 'v2.0.0';
   }
   
   // 检查云开发是否初始化成功
