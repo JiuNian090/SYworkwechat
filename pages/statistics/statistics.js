@@ -1136,23 +1136,25 @@ Page({
   
   // 绘制柱状图
   drawBarChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
-    // 绘制标准工时线（蓝色虚线）
+    // 绘制标准工时线（蓝色虚线，和折线图一样连续）
     if (chartData.standardData && chartData.standardData.length > 0) {
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 5]); // 虚线
+      ctx.beginPath();
       
       for (let i = 0; i < chartData.standardData.length; i++) {
         const x = padding + extraPadding + (chartData.labels.length > 1 ? 
           adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
         const y = chartHeight - padding - 20 - (chartData.standardData[i] - chartData.yAxisMin) * yScale;
         
-        ctx.beginPath();
-        ctx.moveTo(x - 20, y);
-        ctx.lineTo(x + 20, y);
-        ctx.stroke();
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
       }
-      
+      ctx.stroke();
       ctx.setLineDash([]); // 恢复实线
     }
 
