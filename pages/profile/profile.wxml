@@ -461,7 +461,7 @@
               <text class="account-time">{{item.lastLogin.substring(0, 10)}}</text>
             </view>
             <view class="account-actions">
-              <view class="delete-btn" bindtap="deleteSavedAccount" data-account="{{item.account}}">
+              <view class="delete-btn" catchtap="deleteSavedAccount" data-account="{{item.account}}">
                 <text class="delete-icon">×</text>
               </view>
             </view>

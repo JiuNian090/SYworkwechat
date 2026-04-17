@@ -1131,11 +1131,100 @@ Page({
     const account = e.currentTarget.dataset.account;
     const password = e.currentTarget.dataset.password;
     
-    this.setData({
-      cloudAccountInput: account,
-      cloudPasswordInput: password,
-      currentUserPage: 'login'
-    });
+    // 如果密码已保存，直接登录
+    if (password) {
+      this.loginWithSavedAccount(account, password);
+    } else {
+      // 否则跳转到登录页面
+      this.setData({
+        cloudAccountInput: account,
+        cloudPasswordInput: password,
+        currentUserPage: 'login'
+      });
+    }
+  },
+  
+  // 使用保存的账号直接登录
+  async loginWithSavedAccount(account, password) {
+    if (!account || !password) {
+      wx.showToast({
+        title: '账号或密码为空',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showLoading({ title: '登录中...' });
+
+    try {
+      const cloudManager = this.data.cloudManager;
+      const result = await cloudManager.login(account, password);
+
+      wx.hideLoading();
+
+      if (result.success) {
+        const cloudUserInfo = {
+          userId: result.data.userId,
+          account: account,
+          nickname: result.data.nickname || account,
+          avatarType: result.data.avatarType || 'emoji',
+          avatarEmoji: result.data.avatarEmoji || '😊',
+          avatarText: result.data.avatarText || ''
+        };
+        const displayUsername = result.data.nickname || account;
+        const avatarType = result.data.avatarType || 'emoji';
+        const avatarEmoji = result.data.avatarEmoji || '😊';
+        const avatarText = '';
+        
+        // 获取表情对应的文字和情绪类型
+        const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
+        const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
+        
+        this.setData({
+          cloudLoggedIn: true,
+          cloudAccount: account,
+          username: displayUsername,
+          avatarType: avatarType,
+          avatarEmoji: avatarEmoji,
+          avatarText: avatarText,
+          emojiText: emojiText,
+          emojiEmotion: emojiEmotion,
+          cloudUserInfo: cloudUserInfo,
+          currentUserPage: 'main'
+        });
+        // 保存到本地存储（不保存密码，只保存用户信息）
+        wx.setStorageSync('username', displayUsername);
+        wx.setStorageSync('avatarType', avatarType);
+        wx.setStorageSync('avatarEmoji', avatarEmoji);
+        wx.setStorageSync('cloudAccount', account);
+        wx.setStorageSync('cloudLoggedIn', true);
+        wx.setStorageSync('cloudUserId', result.data.userId);
+        wx.setStorageSync('cloudUserInfo', cloudUserInfo);
+        this.userId = result.data.userId;
+        
+        // 保存账号到列表
+        this.saveAccount(account, password);
+        
+        // 显示成功提示
+        wx.showToast({
+          title: '登录成功',
+          icon: 'success',
+          duration: 1000
+        });
+      } else {
+        wx.showToast({
+          title: result.errMsg || '登录失败',
+          icon: 'none'
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('登录失败', e);
+      wx.showToast({
+        title: '登录失败',
+        icon: 'none'
+      });
+    }
   },
   
   // 删除保存的账号
@@ -1287,7 +1376,8 @@ Page({
           avatarText: avatarText,
           emojiText: emojiText,
           emojiEmotion: emojiEmotion,
-          cloudUserInfo: cloudUserInfo
+          cloudUserInfo: cloudUserInfo,
+          currentUserPage: 'main'
         });
         // 保存到本地存储（不保存密码，只保存用户信息）
         wx.setStorageSync('username', displayUsername);
@@ -1302,17 +1392,11 @@ Page({
         // 保存账号到列表
         this.saveAccount(cloudAccountInput, cloudPasswordInput);
         
-        this.hideCloudLoginModal();
-        // 显示成功提示并立即打开用户管理弹窗
+        // 显示成功提示
         wx.showToast({
           title: '登录成功',
           icon: 'success',
           duration: 1000
-        });
-        
-        // 立即打开用户管理弹窗，不需要延迟
-        this.setData({
-          showUserManagementModal: true
         });
       } else {
         wx.showToast({
