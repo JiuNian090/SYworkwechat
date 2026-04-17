@@ -358,6 +358,40 @@ Page({
     return color || '#07c160'; // 如果颜色值为空，返回默认绿色
   },
 
+  // 生成标签背景色函数 - 基于班次颜色创建和谐的标签色
+  getTagBackgroundColor(color) {
+    // 如果是十六进制颜色值
+    if (color && color.startsWith('#') && color.length === 7) {
+      // 将十六进制转换为RGB
+      let r = parseInt(color.slice(1, 3), 16);
+      let g = parseInt(color.slice(3, 5), 16);
+      let b = parseInt(color.slice(5, 7), 16);
+      
+      // 检查解析是否成功
+      if (isNaN(r) || isNaN(g) || isNaN(b)) {
+        return 'rgba(0, 0, 0, 0.12)'; // 如果解析失败，返回默认色
+      }
+      
+      // 计算颜色的亮度
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      
+      // 根据亮度调整标签背景色
+      if (brightness > 200) {
+        // 浅色班次 - 使用稍深的标签背景
+        return `rgba(${r - 40}, ${g - 40}, ${b - 40}, 0.25)`;
+      } else if (brightness > 150) {
+        // 中等亮度班次 - 使用适中的标签背景
+        return `rgba(${r}, ${g}, ${b}, 0.20)`;
+      } else {
+        // 深色班次 - 使用较浅的标签背景
+        return `rgba(${Math.min(255, r + 60)}, ${Math.min(255, g + 60)}, ${Math.min(255, b + 60)}, 0.30)`;
+      }
+    }
+    
+    // 如果不是十六进制颜色值，返回默认标签色
+    return 'rgba(0, 0, 0, 0.12)';
+  },
+
   generateWeekDates() {
     const currentDate = new Date(this.data.currentDate);
     const dayOfWeek = currentDate.getDay(); // 0 is Sunday
@@ -372,12 +406,13 @@ Page({
       const dateStr = this.formatDate(date);
       // 获取班次数据
       const shift = this.data.shifts[dateStr] || null;
-      // 如果有班次，添加lightColor属性
+      // 如果有班次，添加lightColor属性和tagBackgroundColor属性
       let modifiedShift = shift;
       if (shift) {
         modifiedShift = {
           ...shift,
-          lightColor: this.lightenColor(shift.color)
+          lightColor: this.lightenColor(shift.color),
+          tagBackgroundColor: this.getTagBackgroundColor(shift.color)
         };
       }
       // 修改星期几的显示顺序，从周一开始
@@ -447,12 +482,13 @@ Page({
           const dateStr = this.formatDate(date);
           // 获取班次数据
           const shift = this.data.shifts[dateStr] || null;
-          // 如果有班次，添加lightColor属性
+          // 如果有班次，添加lightColor属性和tagBackgroundColor属性
           let modifiedShift = shift;
           if (shift) {
             modifiedShift = {
               ...shift,
-              lightColor: this.lightenColor(shift.color)
+              lightColor: this.lightenColor(shift.color),
+              tagBackgroundColor: this.getTagBackgroundColor(shift.color)
             };
           }
           week.push({

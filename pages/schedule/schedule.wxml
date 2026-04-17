@@ -63,7 +63,7 @@
               <view class="shift-info-card" style="background:{{item.shift.color}}4D; border-color:{{item.shift.color}}4D;">
                 <view class="shift-name-container">
                   <text class="shift-name"> {{item.shift.name}}</text>
-                  <view wx:if="{{item.shift.tag}}" class="shift-tag">
+                  <view wx:if="{{item.shift.tag}}" class="shift-tag" style="background:{{item.shift.tagBackgroundColor}};">
                     <text class="shift-tag-text">{{item.shift.tag}}</text>
                   </view>
                 </view>
