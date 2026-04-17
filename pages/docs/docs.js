@@ -19,7 +19,8 @@ Page({
       const typeMap = {
         'data': 'section-data',
         'cloud': 'section-cloud',
-        'statistics': 'section-statistics'
+        'statistics': 'section-statistics',
+        'profile': 'section-profile'
       };
       const sectionId = typeMap[options.type];
       if (sectionId) {
@@ -163,7 +164,7 @@ Page({
    */
   updateSectionRects() {
     const query = wx.createSelectorQuery();
-    const sections = ['section-about', 'section-statistics', 'section-cloud', 'section-data'];
+    const sections = ['section-about', 'section-statistics', 'section-cloud', 'section-data', 'section-profile'];
     
     this.sectionRects = {};
     
@@ -189,7 +190,7 @@ Page({
    */
   calcSectionTopPositions() {
     this.sectionTopPositions = [];
-    const sections = ['section-about', 'section-statistics', 'section-cloud', 'section-data'];
+    const sections = ['section-about', 'section-statistics', 'section-cloud', 'section-data', 'section-profile'];
     
     sections.forEach(id => {
       if (this.sectionRects[id]) {
@@ -217,7 +218,7 @@ Page({
 
     const offset = 100; // 调整偏移量，更适合顶部区块检测
     let activeSection = '';
-    const sections = ['about', 'statistics', 'cloud', 'data'];
+    const sections = ['about', 'statistics', 'cloud', 'data', 'profile'];
 
     // 遍历区块位置，找到当前滚动到的区块
     for (let i = 0; i < this.sectionTopPositions.length; i++) {

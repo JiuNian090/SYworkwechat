@@ -27,15 +27,16 @@
             <view class="guide-body">
               <text class="guide-title">添加班次模板</text>
               <text class="guide-text">
-                - 进入班次模板页面，点击添加按钮
-                - 输入班次名称、开始时间和结束时间
-                - 设置是否跨天
-                - 设置自定义工时
+                - 进入计划页面，点击添加班次模板
+                - 输入班次名称、选择班次类型
+                - 通过颜色条选择器自定义班次颜色
+                - 设置开始时间和结束时间
+                - 精确设置工时（小时+分钟）
                 - 点击保存，排班就可以使用这个模板
               </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
-                <text class="tip-text">工时无法自动计算，工时是自己计算后填上去的，默认是8小时</text>
+                <text class="tip-text">不同班次可以设置不同颜色，便于快速区分；工时支持精确到分钟设置</text>
               </view>
             </view>
           </view>
@@ -45,14 +46,16 @@
             <view class="guide-body">
               <text class="guide-title">创建排班表</text>
               <text class="guide-text">
-                - 选择日期
-                - 点击日期右边单元格
+                - 可在周视图和月视图之间切换查看
+                - 点击"回到今天"快速切换到当前日期
+                - 点击日期单元格
                 - 从弹出的班次列表中选择对应班次
+                - 可添加自定义标签标记特殊排班
                 - 点击确定完成排班
               </text>
               <view class="guide-tip">
                 <text class="tip-icon">💡</text>
-                <text class="tip-text">当天有排班需要修改时，可以点击排班，选择其他的就可以快速替换，若不想有排班，选中当天的排班会出现删除按钮，可以删除排班。</text>
+                <text class="tip-text">修改排班：点击已有排班可快速替换；删除排班：长按日期可删除；周/月视图顶部会显示工时统计进度条</text>
               </view>
             </view>
           </view>
@@ -324,6 +327,72 @@
         </view>
       </view>
     </view>
+
+    <!-- 个人中心使用说明 -->
+    <view class="section {{activeSection === 'profile' ? 'highlight' : ''}}" id="section-profile">
+      <view class="section-header">
+        <view class="section-icon-wrapper profile-icon">
+          <text class="section-icon">👤</text>
+        </view>
+        <view class="section-title-wrapper">
+          <text class="section-title">个人中心使用说明</text>
+          <text class="section-desc">管理个人信息与功能</text>
+        </view>
+      </view>
+      <view class="section-content">
+        <view class="guide-list">
+          <view class="guide-item">
+            <view class="guide-badge">1</view>
+            <view class="guide-body">
+              <text class="guide-title">表情头像设置</text>
+              <text class="guide-text">
+                - 点击头像或昵称进入用户管理
+                - 选择"头像"进入表情选择页面
+                - 按情绪分类浏览各种表情
+                - 选择喜欢的表情作为头像
+              </text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">表情头像会同步到云端，在多设备间保持一致</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="guide-item">
+            <view class="guide-badge">2</view>
+            <view class="guide-body">
+              <text class="guide-title">用户管理功能</text>
+              <text class="guide-text">
+                - 修改昵称：更新显示名称
+                - 修改密码：定期更新密码确保安全
+                - 切换账号：快速登录已保存的其他账号
+                - 删除账户：谨慎操作，删除后数据无法恢复
+              </text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">登录时可选择"记住密码"，方便下次快速切换账号；切换账号时可选择是否自动恢复云端数据</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="guide-item">
+            <view class="guide-badge">3</view>
+            <view class="guide-body">
+              <text class="guide-title">联系与支持</text>
+              <text class="guide-text">
+                - 点击"联系乐乐"通过微信客服咨询问题
+                - 点击"捐赠支持"支持公益项目发展
+                - 查看"更新日志"了解版本更新内容
+              </text>
+              <view class="guide-tip">
+                <text class="tip-icon">💡</text>
+                <text class="tip-text">如有任何问题或建议，欢迎随时联系反馈</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 
   <!-- 底部导航栏 - 微信小程序官方样式 -->
@@ -344,6 +413,10 @@
       <view class="nav-tab {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
         <text class="nav-tab-icon">📊</text>
         <text class="nav-tab-label">数据管理</text>
+      </view>
+      <view class="nav-tab {{activeSection === 'profile' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-profile">
+        <text class="nav-tab-icon">👤</text>
+        <text class="nav-tab-label">个人中心</text>
       </view>
     </view>
   </view>
