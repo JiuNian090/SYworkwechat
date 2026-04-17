@@ -686,6 +686,11 @@ page {
   color: var(--text-tertiary);
 }
 
+.empty-text.small {
+  font-size: 24rpx;
+  margin-top: 8rpx;
+}
+
 /* 底部安全区域 */
 .safe-area-bottom {
   height: env(safe-area-inset-bottom);
@@ -1165,7 +1170,7 @@ page {
   background: var(--bg-color);
 }
 
-.dropdown-item text {
+.dropdown-item {
   font-size: 24rpx;
   color: var(--text-primary);
 }
@@ -1285,9 +1290,84 @@ page {
   
   .dropdown-item {
     padding: 20rpx 24rpx;
+    font-size: 28rpx;
+  }
+}
+
+/* 周期选择器按钮 */
+.period-selector-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-top: 24rpx;
+}
+
+.period-selector-buttons picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.period-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: 18rpx 12rpx;
+  background: var(--bg-color);
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.period-btn:active {
+  transform: scale(0.95);
+  background: #e8e8e8;
+}
+
+.period-btn.active {
+  background: var(--primary-color);
+  color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+}
+
+.period-btn-text {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.period-btn-arrow {
+  font-size: 18rpx;
+  transition: transform 0.3s ease;
+}
+
+.period-btn-arrow.active {
+  transform: rotate(180deg);
+}
+
+/* 隐藏的 picker 触发器 */
+.picker-trigger {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+/* 平板设备周期选择器适配 */
+@media (min-width: 768px) {
+  .period-btn {
+    padding: 20rpx 0;
   }
   
-  .dropdown-item text {
-    font-size: 28rpx;
+  .period-btn-text {
+    font-size: 30rpx;
+  }
+  
+  .period-btn-arrow {
+    font-size: 20rpx;
   }
 }

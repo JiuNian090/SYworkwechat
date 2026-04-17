@@ -38,6 +38,48 @@
       <view class="quick-btn {{activeQuickBtn === 'nextWeek' ? 'active' : ''}}" bindtap="selectNextWeek">下周</view>
       <view class="quick-btn {{activeQuickBtn === 'thisMonth' ? 'active' : ''}}" bindtap="selectThisMonth">本月</view>
     </view>
+    <view class="period-selector-buttons">
+      <!-- 周选择器 -->
+      <picker 
+        mode="multiSelector" 
+        range="{{weekPickerRange}}" 
+        value="{{weekPickerValue}}" 
+        bindchange="onWeekPickerChange"
+        bindcolumnchange="onWeekPickerColumnChange"
+      >
+        <view class="period-btn">
+          <text class="period-btn-text">周</text>
+          <text class="period-btn-arrow">▼</text>
+        </view>
+      </picker>
+      
+      <!-- 月选择器 -->
+      <picker 
+        mode="multiSelector" 
+        range="{{monthPickerRange}}" 
+        value="{{monthPickerValue}}" 
+        bindchange="onMonthPickerChange"
+        bindcolumnchange="onMonthPickerColumnChange"
+      >
+        <view class="period-btn">
+          <text class="period-btn-text">月</text>
+          <text class="period-btn-arrow">▼</text>
+        </view>
+      </picker>
+      
+      <!-- 年选择器 -->
+      <picker 
+        mode="selector" 
+        range="{{yearOptions}}" 
+        value="{{yearPickerValue}}" 
+        bindchange="onYearPickerChange"
+      >
+        <view class="period-btn">
+          <text class="period-btn-text">年</text>
+          <text class="period-btn-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
   </view>
 
   <!-- 统计卡片容器 -->
@@ -157,7 +199,7 @@
       enhanced="true" 
       show-scrollbar="false"
       enable-back-to-top="true"
-      wx:if="{{filteredSchedules.length > 0}}"
+      wx:if="{{filteredSchedules.length > 0 && !hasTooManyRecords}}"
     >
       <view class="schedule-item" wx:for="{{filteredSchedules}}" wx:key="date">
         <view class="schedule-date">
@@ -175,7 +217,14 @@
         </view>
       </view>
     </scroll-view>
-    <view class="schedule-list" wx:else>
+    <view class="schedule-list" wx:if="{{hasTooManyRecords}}">
+      <view class="empty-state">
+        <text class="empty-icon">📊</text>
+        <text class="empty-text">数据太多，不予展示</text>
+        <text class="empty-text small">若想查看，请导出CSV</text>
+      </view>
+    </view>
+    <view class="schedule-list" wx:elif="{{filteredSchedules.length === 0}}">
       <view class="empty-state">
         <text class="empty-icon" wx:if="{{chartTimeUnit === 'month'}}">📅</text>
         <text class="empty-icon" wx:else>📭</text>

@@ -32,7 +32,20 @@ Page({
     },
     chartTimeUnit: 'day', // 图表时间单位：day, week, month, year
     chartType: 'line', // 图表类型：line（折线图）, bar（柱状图）
-    chartData: [] // 图表数据
+    chartData: [], // 图表数据
+    // 周期选择器相关数据
+    weekPickerRange: [], // 周选择器的数据范围
+    weekPickerValue: [0, 0, 0], // 周选择器当前选中的值
+    monthPickerRange: [], // 月选择器的数据范围
+    monthPickerValue: [0, 0], // 月选择器当前选中的值
+    yearOptions: [], // 年份选项
+    yearPickerValue: 0, // 年选择器当前选中的值
+    periodData: { // 存储解析后的周期数据
+      years: [], // 所有有数据的年份
+      months: {}, // 按年份分组的月份
+      weeks: {} // 按年月分组的周数
+    },
+    hasTooManyRecords: false // 班次明细是否超过30条
   },
 
   /**
@@ -370,6 +383,7 @@ Page({
       
       // 只在非年视图时生成详细的filteredSchedules，减少年视图的计算量
       let filteredSchedules = [];
+      let hasTooManyRecords = false;
       if (chartTimeUnit !== 'month') {
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           const dateStr = this.formatDate(d);
@@ -395,23 +409,31 @@ Page({
               offDays++;
             }
             
-            // 添加到显示列表
-            filteredSchedules.push({
-              date: dateStr,
-              day: this.formatDayDisplay(dateStr),
-              weekday: this.getWeekday(dateStr),
-              shiftType: shiftType,
-              startTime: shiftData.startTime || '--:--'
-            });
+            // 添加到显示列表（限制30条）
+            if (filteredSchedules.length < 30) {
+              filteredSchedules.push({
+                date: dateStr,
+                day: this.formatDayDisplay(dateStr),
+                weekday: this.getWeekday(dateStr),
+                shiftType: shiftType,
+                startTime: shiftData.startTime || '--:--'
+              });
+            } else {
+              hasTooManyRecords = true;
+            }
           } else {
             // 没有排班数据的日期也显示为休息
-            filteredSchedules.push({
-              date: dateStr,
-              day: this.formatDayDisplay(dateStr),
-              weekday: this.getWeekday(dateStr),
-              shiftType: '休息日',
-              startTime: '--:--'
-            });
+            if (filteredSchedules.length < 30) {
+              filteredSchedules.push({
+                date: dateStr,
+                day: this.formatDayDisplay(dateStr),
+                weekday: this.getWeekday(dateStr),
+                shiftType: '休息日',
+                startTime: '--:--'
+              });
+            } else {
+              hasTooManyRecords = true;
+            }
             offDays++;
           }
         }
@@ -481,6 +503,7 @@ Page({
       const newData = {
         shifts: shiftsInRange,
         filteredSchedules: filteredSchedules,
+        hasTooManyRecords: hasTooManyRecords,
         totalHours: totalHours.toFixed(1),
         standardHours: standardHours.toFixed(1),
         hourDifference: hourDifference.toFixed(1),
@@ -1066,9 +1089,408 @@ Page({
     const shiftsChanged = JSON.stringify(allShifts) !== JSON.stringify(currentShifts);
     
     if (shiftsChanged) {
+      this.parsePeriodData();
       this.calculateStatistics();
     }
     // 绘制图表
     this.drawChart();
+  },
+
+  // 解析周期数据：从排班数据中提取年、月、周信息（带缓存）
+  parsePeriodData() {
+    const allShifts = wx.getStorageSync('shifts') || {};
+    const currentHash = this.calculateDataHash(allShifts);
+    
+    // 检查缓存
+    if (this._periodDataCache && this._periodDataCache.hash === currentHash) {
+      return;
+    }
+    
+    const dateKeys = Object.keys(allShifts);
+    
+    if (dateKeys.length === 0) {
+      // 如果没有数据，使用当前日期作为默认
+      const now = new Date();
+      const defaultYear = now.getFullYear();
+      const periodData = {
+        years: [defaultYear],
+        months: { [defaultYear]: [now.getMonth() + 1] },
+        weeks: { [`${defaultYear}-${String(now.getMonth() + 1).padStart(2, '0')}`]: [1] }
+      };
+      
+      this.setData({
+        periodData: periodData,
+        yearOptions: [defaultYear]
+      });
+      
+      // 保存缓存
+      this._periodDataCache = {
+        hash: currentHash,
+        data: periodData
+      };
+      return;
+    }
+
+    const years = new Set();
+    const months = {};
+    const weeks = {};
+
+    dateKeys.forEach(dateStr => {
+      const date = new Date(dateStr);
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const weekNum = this.getWeekOfMonth(date);
+      const yearMonthKey = `${year}-${String(month).padStart(2, '0')}`;
+
+      years.add(year);
+
+      if (!months[year]) {
+        months[year] = new Set();
+      }
+      months[year].add(month);
+
+      if (!weeks[yearMonthKey]) {
+        weeks[yearMonthKey] = new Set();
+      }
+      weeks[yearMonthKey].add(weekNum);
+    });
+
+    // 转换为数组并排序
+    const sortedYears = Array.from(years).sort((a, b) => a - b);
+    const sortedMonths = {};
+    const sortedWeeks = {};
+
+    Object.keys(months).forEach(year => {
+      sortedMonths[year] = Array.from(months[year]).sort((a, b) => a - b);
+    });
+
+    Object.keys(weeks).forEach(key => {
+      sortedWeeks[key] = Array.from(weeks[key]).sort((a, b) => a - b);
+    });
+
+    const periodData = {
+      years: sortedYears,
+      months: sortedMonths,
+      weeks: sortedWeeks
+    };
+
+    // 获取当前日期
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    const currentWeek = this.getWeekOfMonth(now);
+    
+    // 初始化周选择器数据 - 默认选中当周
+    let weekRange = [];
+    let weekValue = [0, 0, 0];
+    if (sortedYears.length > 0) {
+      const yearIndex = sortedYears.indexOf(currentYear);
+      const targetYear = yearIndex >= 0 ? currentYear : sortedYears[0];
+      const monthsForYear = sortedMonths[targetYear] || [];
+      
+      let targetMonth = currentMonth;
+      let monthIndex = monthsForYear.indexOf(targetMonth);
+      if (monthIndex < 0) {
+        targetMonth = monthsForYear[0] || 1;
+        monthIndex = 0;
+      }
+      
+      const yearMonthKey = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+      const weeksForMonth = sortedWeeks[yearMonthKey] || [1];
+      
+      let targetWeek = currentWeek;
+      let weekIndex = weeksForMonth.indexOf(targetWeek);
+      if (weekIndex < 0) {
+        targetWeek = weeksForMonth[0] || 1;
+        weekIndex = 0;
+      }
+      
+      weekRange = [
+        sortedYears.map(y => `${y}年`),
+        monthsForYear.map(m => `${m}月`),
+        weeksForMonth.map(w => `第${w}周`)
+      ];
+      
+      weekValue = [
+        yearIndex >= 0 ? yearIndex : 0,
+        monthIndex,
+        weekIndex
+      ];
+    }
+    
+    // 初始化月选择器数据 - 默认选中当月
+    let monthRange = [];
+    let monthValue = [0, 0];
+    if (sortedYears.length > 0) {
+      const yearIndex = sortedYears.indexOf(currentYear);
+      const targetYear = yearIndex >= 0 ? currentYear : sortedYears[0];
+      const monthsForYear = sortedMonths[targetYear] || [];
+      
+      let targetMonth = currentMonth;
+      let monthIndex = monthsForYear.indexOf(targetMonth);
+      if (monthIndex < 0) {
+        targetMonth = monthsForYear[0] || 1;
+        monthIndex = 0;
+      }
+      
+      monthRange = [
+        sortedYears.map(y => `${y}年`),
+        monthsForYear.map(m => `${m}月`)
+      ];
+      
+      monthValue = [
+        yearIndex >= 0 ? yearIndex : 0,
+        monthIndex
+      ];
+    }
+    
+    // 初始化年选择器数据 - 默认选中当年
+    let yearValue = 0;
+    if (sortedYears.length > 0) {
+      const yearIndex = sortedYears.indexOf(currentYear);
+      yearValue = yearIndex >= 0 ? yearIndex : 0;
+    }
+
+    this.setData({
+      periodData: periodData,
+      yearOptions: sortedYears,
+      yearPickerValue: yearValue,
+      weekPickerRange: weekRange,
+      weekPickerValue: weekValue,
+      monthPickerRange: monthRange,
+      monthPickerValue: monthValue
+    });
+    
+    // 保存缓存
+    this._periodDataCache = {
+      hash: currentHash,
+      data: periodData
+    };
+  },
+
+  // 获取日期所在月份的第几周（周一为一周开始）
+  getWeekOfMonth(date) {
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    // 计算第一天是星期几（0=周日，1=周一，...6=周六）
+    let firstDayWeekday = firstDay.getDay();
+    // 调整为周一为0
+    firstDayWeekday = firstDayWeekday === 0 ? 6 : firstDayWeekday - 1;
+    
+    const dayOfMonth = date.getDate();
+    const weekNum = Math.ceil((dayOfMonth + firstDayWeekday) / 7);
+    return weekNum;
+  },
+
+  // 周选择器列变化事件
+  onWeekPickerColumnChange(e) {
+    const column = e.detail.column;
+    const value = e.detail.value;
+    const { periodData, weekPickerRange, weekPickerValue } = this.data;
+    
+    let newRange = [...weekPickerRange];
+    let newValue = [...weekPickerValue];
+    
+    if (column === 0) {
+      // 年份改变
+      const selectedYear = periodData.years[value];
+      const monthsForYear = periodData.months[selectedYear] || [];
+      const firstMonth = monthsForYear[0] || 1;
+      const yearMonthKey = `${selectedYear}-${String(firstMonth).padStart(2, '0')}`;
+      const weeksForMonth = periodData.weeks[yearMonthKey] || [1];
+      
+      newRange[1] = monthsForYear.map(m => `${m}月`);
+      newRange[2] = weeksForMonth.map(w => `第${w}周`);
+      newValue = [value, 0, 0];
+      
+      this.setData({
+        weekPickerRange: newRange,
+        weekPickerValue: newValue
+      });
+    } else if (column === 1) {
+      // 月份改变
+      const yearIndex = newValue[0];
+      const selectedYear = periodData.years[yearIndex];
+      const monthsForYear = periodData.months[selectedYear] || [];
+      const selectedMonth = monthsForYear[value];
+      const yearMonthKey = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
+      const weeksForMonth = periodData.weeks[yearMonthKey] || [1];
+      
+      newRange[2] = weeksForMonth.map(w => `第${w}周`);
+      newValue = [yearIndex, value, 0];
+      
+      this.setData({
+        weekPickerRange: newRange,
+        weekPickerValue: newValue
+      });
+    }
+  },
+
+  // 周选择器确认事件
+  onWeekPickerChange(e) {
+    const value = e.detail.value;
+    const { periodData } = this.data;
+    
+    const yearIndex = value[0];
+    const monthIndex = value[1];
+    const weekIndex = value[2];
+    
+    const selectedYear = periodData.years[yearIndex];
+    const monthsForYear = periodData.months[selectedYear] || [];
+    const selectedMonth = monthsForYear[monthIndex];
+    const yearMonthKey = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
+    const weeksForMonth = periodData.weeks[yearMonthKey] || [1];
+    
+    const dateRange = this.getWeekDateRange(selectedYear, selectedMonth, weeksForMonth[weekIndex]);
+    
+    if (dateRange) {
+      this.setData({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        activeQuickBtn: '',
+        weekPickerValue: value
+      });
+      this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
+      this.calculateStatistics();
+      this.drawChart();
+    }
+  },
+
+  // 月选择器列变化事件
+  onMonthPickerColumnChange(e) {
+    const column = e.detail.column;
+    const value = e.detail.value;
+    const { periodData, monthPickerRange, monthPickerValue } = this.data;
+    
+    let newRange = [...monthPickerRange];
+    let newValue = [...monthPickerValue];
+    
+    if (column === 0) {
+      // 年份改变
+      const selectedYear = periodData.years[value];
+      const monthsForYear = periodData.months[selectedYear] || [];
+      
+      newRange[1] = monthsForYear.map(m => `${m}月`);
+      newValue = [value, 0];
+      
+      this.setData({
+        monthPickerRange: newRange,
+        monthPickerValue: newValue
+      });
+    }
+  },
+
+  // 月选择器确认事件
+  onMonthPickerChange(e) {
+    const value = e.detail.value;
+    const { periodData } = this.data;
+    
+    const yearIndex = value[0];
+    const monthIndex = value[1];
+    
+    const selectedYear = periodData.years[yearIndex];
+    const monthsForYear = periodData.months[selectedYear] || [];
+    
+    const dateRange = this.getMonthDateRange(selectedYear, monthsForYear[monthIndex]);
+    
+    if (dateRange) {
+      this.setData({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        activeQuickBtn: '',
+        monthPickerValue: value
+      });
+      this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
+      this.calculateStatistics();
+      this.drawChart();
+    }
+  },
+
+  // 年选择器确认事件
+  onYearPickerChange(e) {
+    const value = e.detail.value;
+    const { periodData } = this.data;
+    
+    const selectedYear = periodData.years[value];
+    const dateRange = this.getYearDateRange(selectedYear);
+    
+    if (dateRange) {
+      this.setData({
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+        activeQuickBtn: '',
+        yearPickerValue: value
+      });
+      this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
+      this.calculateStatistics();
+      this.drawChart();
+    }
+  },
+
+  // 获取指定年月周的日期范围（周一至周日）
+  getWeekDateRange(year, month, weekNum) {
+    const firstDay = new Date(year, month - 1, 1);
+    // 计算第一天是星期几（0=周日，1=周一，...6=周六）
+    let firstDayWeekday = firstDay.getDay();
+    // 调整为周一为0
+    firstDayWeekday = firstDayWeekday === 0 ? 6 : firstDayWeekday - 1;
+    
+    // 计算该周第一天的偏移
+    const startOffset = (weekNum - 1) * 7 - firstDayWeekday;
+    const startDate = new Date(year, month - 1, 1 + startOffset);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    
+    return {
+      startDate: this.formatDate(startDate),
+      endDate: this.formatDate(endDate)
+    };
+  },
+
+  // 获取指定年月的日期范围
+  getMonthDateRange(year, month) {
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 0);
+    
+    return {
+      startDate: this.formatDate(startDate),
+      endDate: this.formatDate(endDate)
+    };
+  },
+
+  // 获取指定年的日期范围
+  getYearDateRange(year) {
+    const startDate = new Date(year, 0, 1);
+    const endDate = new Date(year, 11, 31);
+    
+    return {
+      startDate: this.formatDate(startDate),
+      endDate: this.formatDate(endDate)
+    };
+  },
+
+  // 在页面加载时也解析周期数据
+  onLoad() {
+    // 初始化缓存对象
+    this._cache = {
+      lastShiftsHash: '',
+      lastStatistics: null,
+      lastDateRange: null
+    };
+    this._periodDataCache = null;
+    
+    // 页面加载时读取本地存储的自定义每周标准工时
+    const savedCustomHours = wx.getStorageSync('customHours') || 35;
+    const dailyStandardHours = savedCustomHours / 7;
+    
+    this.setData({
+      customHours: savedCustomHours,
+      dailyStandardHours: dailyStandardHours
+    });
+    
+    // 解析周期数据
+    this.parsePeriodData();
+    
+    // 页面加载时默认选定本周
+    this.selectThisWeek();
   }
 });
