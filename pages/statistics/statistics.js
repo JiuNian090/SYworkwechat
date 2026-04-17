@@ -836,8 +836,9 @@ Page({
     const chartWidth = windowWidth - 60; // 减去左右边距
     const chartHeight = 220; // 增加高度以容纳图例
     const padding = 40;
+    const topPadding = 55; // 增加顶部间距
     const contentWidth = chartWidth - padding * 2;
-    const contentHeight = chartHeight - padding * 2 - 20; // 减少以容纳图例
+    const contentHeight = chartHeight - topPadding - padding - 20; // 减少以容纳图例
 
     // 使用新的Canvas 2D API
     const query = wx.createSelectorQuery();
@@ -866,7 +867,7 @@ Page({
       // 纵轴网格
       const yStep = contentHeight / 5;
       for (let i = 0; i <= 5; i++) {
-        const y = padding + yStep * i;
+        const y = topPadding + yStep * i;
         ctx.beginPath();
         ctx.moveTo(padding, y);
         ctx.lineTo(chartWidth - padding, y);
@@ -884,7 +885,7 @@ Page({
         const x = padding + extraPadding + (chartData.labels.length > 1 ? 
           adjustedXStep * i : adjustedContentWidth / 2);
         ctx.beginPath();
-        ctx.moveTo(x, padding);
+        ctx.moveTo(x, topPadding);
         ctx.lineTo(x, chartHeight - padding - 20);
         ctx.stroke();
       }
@@ -895,9 +896,9 @@ Page({
       // 绘制数据
       if (chartData.data.length > 0) {
         if (this.data.chartType === 'line') {
-          this.drawLineChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
+          this.drawLineChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
         } else if (this.data.chartType === 'bar') {
-          this.drawBarChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
+          this.drawBarChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
         }
       }
 
@@ -908,16 +909,23 @@ Page({
       ctx.textAlign = 'right';
       ctx.fillStyle = '#999';
       for (let i = 0; i <= 5; i++) {
-        const y = padding + yStep * i;
+        const y = topPadding + yStep * i;
         const value = chartData.yAxisMax - (chartData.yAxisMax - chartData.yAxisMin) / 5 * i;
         ctx.fillText(value.toFixed(0), padding - 8, y + 4);
       }
 
-      // 纵轴单位
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#34d399';
-      ctx.font = '14px Arial';
-      ctx.fillText('小时', padding - 8, padding - 20);
+      // 纵轴标题（竖写）
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#10b981';
+      ctx.font = 'bold 15px Arial';
+      const yAxisTitle = '小时';
+      const lineHeight = 28;
+      const titleY = (topPadding + (chartHeight - padding - 20)) / 2 - (yAxisTitle.length * lineHeight) / 2;
+      
+      for (let i = 0; i < yAxisTitle.length; i++) {
+        ctx.fillText(yAxisTitle[i], 10, titleY + i * lineHeight);
+      }
 
       // 横轴标签
       ctx.textAlign = 'center';
@@ -931,34 +939,33 @@ Page({
         ctx.fillText((i + 1).toString(), x, chartHeight - padding - 12);
       }
 
-      // 横轴单位
+      // 横轴标题
       let xAxisUnit = '';
       if (this.data.chartTimeUnit === 'day') {
-        xAxisUnit = '星期';
+        xAxisUnit = '星   期';
       } else if (this.data.chartTimeUnit === 'week') {
-        xAxisUnit = '周数';
+        xAxisUnit = '周   数';
       } else if (this.data.chartTimeUnit === 'month') {
         xAxisUnit = '月';
       }
       ctx.textAlign = 'center';
-      ctx.fillStyle = '#34d399';
-      ctx.font = '14px Arial';
-      ctx.fillText(xAxisUnit, chartWidth - padding + 20, chartHeight - padding - 17);
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#10b981';
+      ctx.font = 'bold 15px Arial';
+      ctx.fillText(xAxisUnit, chartWidth / 2, chartHeight - padding + 8);
 
-      // 绘制标题
+      // 绘制标题（显示日期范围）
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.font = '16px Arial';
-      ctx.fillStyle = '#333';
-      ctx.fillText('工时趋势', chartWidth / 2, 15);
-      
-      // 绘制图例
-      this.drawLegend(ctx, chartWidth, chartHeight);
+      ctx.font = 'bold 18px Arial';
+      ctx.fillStyle = '#1f2937';
+      const chartTitle = `${this.data.startDate} ~ ${this.data.endDate}`;
+      ctx.fillText(chartTitle, chartWidth / 2, 8);
     });
   },
   
   // 绘制折线图
-  drawLineChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
+  drawLineChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
     // 绘制数据线条
     ctx.strokeStyle = '#34d399';
     ctx.lineWidth = 3;
@@ -1015,7 +1022,7 @@ Page({
   },
   
   // 绘制柱状图
-  drawBarChart(ctx, chartData, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
+  drawBarChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
     const adjustedContentWidth = chartWidth - 2 * padding - 2 * extraPadding;
     const barWidth = Math.min(40, adjustedXStep * 0.6); // 柱子宽度
     
@@ -1048,48 +1055,6 @@ Page({
         ctx.fillText(value.toFixed(1), x + barWidth / 2, y - 5);
       }
     }
-  },
-  
-  // 绘制图例
-  drawLegend(ctx, chartWidth, chartHeight) {
-    const legendY = chartHeight - 18;
-    const legendX = 20;
-    
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.font = '12px Arial';
-    
-    // 折线图图例
-    if (this.data.chartType === 'line') {
-      ctx.fillStyle = '#34d399';
-      ctx.beginPath();
-      ctx.arc(legendX + 8, legendY, 4, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      ctx.strokeStyle = '#34d399';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(legendX, legendY);
-      ctx.lineTo(legendX + 16, legendY);
-      ctx.stroke();
-      
-      ctx.fillStyle = '#666';
-      ctx.fillText('工时', legendX + 24, legendY);
-    } else {
-      // 柱状图图例
-      ctx.fillStyle = '#34d399';
-      ctx.fillRect(legendX, legendY - 5, 12, 10);
-      
-      ctx.fillStyle = '#666';
-      ctx.fillText('工时', legendX + 20, legendY);
-    }
-    
-    // 时间范围标签
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#999';
-    ctx.font = '11px Arial';
-    const timeRange = `${this.data.startDate} ~ ${this.data.endDate}`;
-    ctx.fillText(timeRange, chartWidth / 2, legendY);
   },
 
   onShow() {
