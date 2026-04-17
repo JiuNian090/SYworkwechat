@@ -326,11 +326,62 @@ page {
   gap: 20rpx;
 }
 
+.shift-name-container {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
 .shift-name {
   font-size: 32rpx;
   font-weight: 600;
   color: #000000;
   flex-shrink: 0;
+}
+
+.shift-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rpx 16rpx;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 20rpx;
+  flex-shrink: 0;
+}
+
+.shift-tag-text {
+  font-size: 22rpx;
+  font-weight: 500;
+  color: #000000;
+  white-space: nowrap;
+}
+
+/* 标签输入区样式 */
+.tag-input-section {
+  padding: 20rpx 30rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #e5e5e5;
+}
+
+.tag-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 20rpx;
+  background: var(--bg-color);
+  border-radius: 12rpx;
+}
+
+.tag-input-label {
+  font-size: 28rpx;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.tag-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: var(--text-primary);
+  padding: 0 16rpx;
 }
 
 .shift-time {

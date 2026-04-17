@@ -39,7 +39,10 @@ Page({
     selectedImagePath: '',
     imageName: null,
     avatarText: '用', // 头像文字
-    avatarEmoji: '' // 头像表情
+    avatarEmoji: '', // 头像表情
+    // 自定义标签相关数据
+    showTagInputModal: false,
+    currentTag: ''
   },
 
   onLoad() {
@@ -604,7 +607,8 @@ Page({
       // 立即设置选中日期，不等待异步操作
       this.setData({
         selectedDate: date,
-        selectedShift: selectedShift
+        selectedShift: selectedShift,
+        currentTag: selectedShift && selectedShift.tag ? selectedShift.tag : ''
       });
 
       // 同步加载班次模板数据，确保数据最新
@@ -653,6 +657,34 @@ Page({
         icon: 'none'
       });
     }
+  },
+
+  // 显示标签输入弹窗
+  showTagInputModal() {
+    this.setData({
+      showTagInputModal: true
+    });
+  },
+
+  // 隐藏标签输入弹窗
+  hideTagInputModal() {
+    this.setData({
+      showTagInputModal: false
+    });
+  },
+
+  // 处理标签输入
+  onTagInput(e) {
+    this.setData({
+      currentTag: e.detail.value
+    });
+  },
+
+  // 确认添加标签
+  confirmTag() {
+    this.setData({
+      showTagInputModal: false
+    });
   },
 
   // 隐藏班次选择器
@@ -745,7 +777,7 @@ Page({
 
   // 保存排班（从ActionSheet选择后调用）
   saveShift(template) {
-    const { selectedDate, shifts } = this.data;
+    const { selectedDate, shifts, currentTag } = this.data;
 
     // 检查template是否存在
     if (!template) {
@@ -756,7 +788,7 @@ Page({
       return;
     }
 
-    // 确保班次数据包含所有必要字段，包括工时数
+    // 确保班次数据包含所有必要字段，包括工时数和标签
     const shiftData = {
       ...template,
       name: template.name || '未命名班次',
@@ -764,7 +796,8 @@ Page({
       endTime: template.endTime || '00:00',
       workHours: template.workHours || 0,
       type: template.type || '其他',
-      color: template.color || '#07c160'
+      color: template.color || '#07c160',
+      tag: currentTag || ''
     };
 
     const newShifts = {

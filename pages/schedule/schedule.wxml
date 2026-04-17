@@ -61,7 +61,12 @@
           <view class="day-right">
             <block wx:if="{{item.shift}}">
               <view class="shift-info-card" style="background:{{item.shift.color}}4D; border-color:{{item.shift.color}}4D;">
-                <text class="shift-name"> {{item.shift.name}}</text>
+                <view class="shift-name-container">
+                  <text class="shift-name"> {{item.shift.name}}</text>
+                  <view wx:if="{{item.shift.tag}}" class="shift-tag">
+                    <text class="shift-tag-text">{{item.shift.tag}}</text>
+                  </view>
+                </view>
                 <text class="shift-time">{{item.shift.startTime}} - {{item.shift.endTime}}</text>
                 <view class="shift-hours-badge" style="background:{{item.shift.color}};">
                   <text class="hours-num">{{item.shift.workHours}}</text>
@@ -274,6 +279,20 @@
     
 
     
+    <!-- 标签输入区 -->
+    <view class="tag-input-section">
+      <view class="tag-input-wrapper">
+        <text class="tag-input-label">标签：</text>
+        <input 
+          class="tag-input" 
+          placeholder="点击添加标签" 
+          value="{{currentTag || ''}}" 
+          bindtap="showTagInputModal"
+          disabled="true"
+        />
+      </view>
+    </view>
+
     <!-- 班次列表 - WeUI 风格 -->
     <view class="weui-sheet__bd">
       <view class="weui-cells weui-cells_radio">
@@ -333,6 +352,35 @@
       <view class="modal-footer">
         <view class="modal-btn cancel-btn" bindtap="hideAddImageModal">取消</view>
         <view class="modal-btn confirm-btn {{!selectedImagePath || !imageName ? 'disabled' : ''}}" bindtap="addImage">确定添加</view>
+      </view>
+    </view>
+  </view>
+</block>
+
+<!-- 标签输入弹窗 -->
+<block wx:if="{{showTagInputModal}}">
+  <view class="modal-mask show" bindtap="hideTagInputModal"></view>
+  <view class="modal-content show">
+    <view class="modal-header">
+      <text class="modal-title">添加标签</text>
+      <view class="modal-close" bindtap="hideTagInputModal">
+        <text class="close-icon">✕</text>
+      </view>
+    </view>
+    <view class="modal-body" catchtap="stopPropagation">
+      <view class="input-group">
+        <text class="input-label">标签名称</text>
+        <input 
+          class="modal-input" 
+          placeholder="请输入标签名称" 
+          value="{{currentTag || ''}}" 
+          bindinput="onTagInput"
+          focus="{{true}}"
+        />
+      </view>
+      <view class="modal-footer">
+        <view class="modal-btn cancel-btn" bindtap="hideTagInputModal">取消</view>
+        <view class="modal-btn confirm-btn" bindtap="confirmTag">确定</view>
       </view>
     </view>
   </view>
