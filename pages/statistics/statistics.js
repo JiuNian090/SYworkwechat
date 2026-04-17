@@ -708,9 +708,13 @@ Page({
     const savedCustomHours = wx.getStorageSync('customHours') || 35;
     const dailyStandardHours = savedCustomHours / 7;
     
+    // 页面加载时读取本地存储的图表类型
+    const savedChartType = wx.getStorageSync('statisticsChartType') || 'line';
+    
     this.setData({
       customHours: savedCustomHours,
-      dailyStandardHours: dailyStandardHours
+      dailyStandardHours: dailyStandardHours,
+      chartType: savedChartType
     });
     
     // 页面加载时默认选定本周
@@ -723,6 +727,8 @@ Page({
     this.setData({
       chartType: type
     });
+    // 保存用户选择的图表类型
+    wx.setStorageSync('statisticsChartType', type);
     this.drawChart();
   },
 
@@ -782,12 +788,13 @@ Page({
 
   // 生成图表数据
   generateChartData() {
-    const { startDate, endDate, shifts } = this.data;
+    const { startDate, endDate, shifts, customHours, dailyStandardHours } = this.data;
     const start = new Date(startDate);
     const end = new Date(endDate);
     const chartTimeUnit = this.calculateOptimalChartUnit(startDate, endDate);
     const labels = [];
     const data = [];
+    const standardData = [];
 
     // 根据时间单位生成数据
     if (chartTimeUnit === 'day') {
@@ -798,6 +805,7 @@ Page({
         const dayNum = d.getDate();
         labels.push(`${dayNum}号`);
         data.push(parseFloat(dayData?.workHours) || 0);
+        standardData.push(dailyStandardHours);
       }
     } else if (chartTimeUnit === 'week') {
       // 周视图：>15天且≤2个月，显示第几周，纵轴显示一周的总小时数
@@ -836,6 +844,7 @@ Page({
       Object.keys(weeklyData).forEach(key => {
         labels.push(weeklyData[key].label);
         data.push(weeklyData[key].total);
+        standardData.push(customHours);
       });
     } else if (chartTimeUnit === 'month') {
       // 月视图：>2个月，显示12个月，纵轴显示每月总小时数
@@ -862,18 +871,22 @@ Page({
       Object.keys(monthlyData).forEach(key => {
         labels.push(monthlyData[key].label);
         data.push(monthlyData[key].total);
+        // 月视图标准工时：每周标准工时 × 4周
+        standardData.push(customHours * 4);
       });
     }
 
-    // 计算纵轴范围
-    const maxValue = Math.max(...data, 0);
-    const minValue = Math.min(...data, 0);
+    // 计算纵轴范围（考虑标准工时）
+    const allValues = [...data, ...standardData];
+    const maxValue = Math.max(...allValues, 0);
+    const minValue = Math.min(...allValues, 0);
     const yAxisMax = maxValue > 0 ? Math.ceil(maxValue * 1.1) : 10;
     const yAxisMin = minValue < 0 ? Math.floor(minValue * 1.1) : 0;
 
     return {
       labels,
       data,
+      standardData,
       yAxisMax,
       yAxisMin
     };
@@ -992,6 +1005,31 @@ Page({
         ctx.fillText(chartData.labels[i], x, chartHeight - padding - 12);
       }
 
+      // 绘制图例（在横轴标题左侧，左对齐，往下放一点，再往左去一点）
+      const legendY = chartHeight - padding + 22;
+      const legendStartX = padding - 10;
+      
+      // 实际工时图例
+      ctx.fillStyle = '#34d399';
+      ctx.beginPath();
+      ctx.arc(legendStartX, legendY + 6, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#333';
+      ctx.font = '12px Arial';
+      ctx.fillText('实际', legendStartX + 12, legendY + 6);
+      
+      // 标准工时图例
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      ctx.arc(legendStartX + 60, legendY + 6, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      ctx.fillStyle = '#333';
+      ctx.fillText('标准', legendStartX + 72, legendY + 6);
+
       // 横轴标题
       let xAxisUnit = '';
       if (chartTimeUnit === 'day') {
@@ -1005,7 +1043,7 @@ Page({
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#10b981';
       ctx.font = 'bold 15px Arial';
-      ctx.fillText(xAxisUnit, chartWidth / 2, chartHeight - padding + 8);
+      ctx.fillText(xAxisUnit, chartWidth / 2, chartHeight - padding + 15);
 
       // 绘制标题（显示日期范围）
       ctx.textAlign = 'center';
@@ -1019,7 +1057,29 @@ Page({
   
   // 绘制折线图
   drawLineChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
-    // 绘制数据线条
+    // 绘制标准工时线（蓝色）
+    if (chartData.standardData && chartData.standardData.length > 0) {
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]); // 虚线
+      ctx.beginPath();
+      
+      for (let i = 0; i < chartData.standardData.length; i++) {
+        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
+          adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
+        const y = chartHeight - padding - 20 - (chartData.standardData[i] - chartData.yAxisMin) * yScale;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+      ctx.setLineDash([]); // 恢复实线
+    }
+
+    // 绘制数据线条（绿色）
     ctx.strokeStyle = '#34d399';
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
@@ -1076,6 +1136,27 @@ Page({
   
   // 绘制柱状图
   drawBarChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
+    // 绘制标准工时线（蓝色虚线）
+    if (chartData.standardData && chartData.standardData.length > 0) {
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]); // 虚线
+      
+      for (let i = 0; i < chartData.standardData.length; i++) {
+        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
+          adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
+        const y = chartHeight - padding - 20 - (chartData.standardData[i] - chartData.yAxisMin) * yScale;
+        
+        ctx.beginPath();
+        ctx.moveTo(x - 20, y);
+        ctx.lineTo(x + 20, y);
+        ctx.stroke();
+      }
+      
+      ctx.setLineDash([]); // 恢复实线
+    }
+
+    // 绘制柱状图
     const adjustedContentWidth = chartWidth - 2 * padding - 2 * extraPadding;
     const barWidth = Math.min(40, adjustedXStep * 0.6); // 柱子宽度
     
