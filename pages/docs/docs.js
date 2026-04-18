@@ -84,8 +84,18 @@ Page({
    */
   onShareAppMessage() {
     return {
-      title: '排班助手 - 使用说明',
+      title: 'SY工时记录 - 使用说明',
       path: '/pages/docs/docs'
+    };
+  },
+
+  /**
+   * 用户点击右上角分享到朋友圈
+   */
+  onShareTimeline() {
+    return {
+      title: 'SY工时记录 - 使用说明',
+      imageUrl: '' // 可以设置分享图片，为空则使用小程序默认图片
     };
   },
 
