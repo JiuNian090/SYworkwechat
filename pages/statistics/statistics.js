@@ -556,26 +556,38 @@ Page({
 
   // 导出为CSV文件
   exportToCSV(customFilename) {
-    const { startDate, endDate, shifts, totalHours, standardHours, hourDifference, statistics, customHours } = this.data;
+    const { startDate, endDate, shifts, totalHours, standardHours, hourDifference, hourDifferenceWithSign, statistics, customHours } = this.data;
 
     wx.showLoading({
       title: '正在导出...'
     });
 
     try {
+      // 获取用户名
+      const username = wx.getStorageSync('username') || '未命名用户';
+      
       // 创建CSV内容
       let csvContent = '';
       
-      // 添加增强的标题效果
-      csvContent += '"排班统计报表"\n';
-      csvContent += '"=================="\n';
-      csvContent += '"统计时间范围: ' + startDate + ' 至 ' + endDate + '"\n';
-      csvContent += '"每周标准工时: ' + customHours + ' 小时"\n\n';
+      // 第一行：nickname排班统计报表，时间范围
+      csvContent += '"' + username + '排班统计报表"\n';
       
-      // 添加表头
+      // 第二行：====
+      csvContent += '"====","===="\n';
+      
+      // 第三行：统计范围，标准工时，实际工时，工时差/超额，白天班，跨夜班，休息日
+      csvContent += '"统计范围","标准工时","实际工时","工时差/超额","白天班","跨夜班","休息日"\n';
+      
+      // 第四行：填写第三行的信息
+      csvContent += '"' + startDate + '至' + endDate + '","' + standardHours + '","' + totalHours + '","' + hourDifferenceWithSign + '","' + statistics.dayShifts + '","' + statistics.nightShifts + '","' + statistics.offDays + '"\n';
+      
+      // 第五行：====
+      csvContent += '"====","====","====","====","====","====","===="\n';
+      
+      // 第六行：日期，班次名称，工时，班次类型，开始时间，结束时间
       csvContent += '"日期","班次名称","工时","班次类型","开始时间","结束时间"\n';
       
-      // 添加排班数据
+      // 第七行...：填写第六行的信息
       shifts.forEach(shift => {
         // 转义包含逗号或引号的字段
         const escapeField = (field) => {
@@ -596,26 +608,6 @@ Page({
           escapeField(shift.endTime)
         ].join(',') + '\n';
       });
-      
-      // 添加空行分隔和分割线
-      csvContent += '\n';
-      csvContent += '"----","--------","----","--------","--------","--------"\n';
-      csvContent += '\n';
-      
-      // 添加总工时行（调整列位置）
-      csvContent += '"总工时",,"' + totalHours + '",,,\n';
-      
-      // 添加空行分隔和分割线
-      csvContent += '\n';
-      csvContent += '"--------","----","--------","--------","--------"\n';
-      csvContent += '\n';
-      
-      // 添加统计摘要
-      csvContent += '"统计区间","总工时","标准工时","工时差额","白天班","跨夜班","休息日"\n';
-      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + standardHours + '","' + hourDifferenceWithSign + '","' + statistics.dayShifts + '","' + statistics.nightShifts + '","' + statistics.offDays + '"\n';
-      
-      // 获取用户名
-      const username = wx.getStorageSync('username') || '未命名用户';
       
       // 生成默认文件名：用户名+时间段
       const fileName = customFilename ? customFilename : `${username}_排班统计_${startDate}_至_${endDate}`;
