@@ -306,6 +306,25 @@ exports.main = async (event, context) => {
         }
       };
 
+    } else if (action === 'checkAccountExists') {
+      // 检查账户是否存在
+      if (!account) {
+        return {
+          success: false,
+          errMsg: '参数错误'
+        };
+      }
+
+      // 检查账户是否存在
+      const userResult = await usersCollection.where({
+        account: account
+      }).get();
+
+      return {
+        success: true,
+        exists: userResult.data.length > 0
+      };
+
     }
 
     return {

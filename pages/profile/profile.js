@@ -1131,10 +1131,67 @@ Page({
   
   // 显示切换账号页面
   showSwitchAccountModal() {
+    // 检查并清理无效账户
+    this.checkAndCleanInvalidAccounts();
+    
     this.setData({
       showUserManagementModal: true,
       currentUserPage: 'switchAccount'
     });
+  },
+  
+  // 检查并清理无效账户
+  async checkAndCleanInvalidAccounts() {
+    try {
+      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      if (savedAccounts.length === 0) return;
+      
+      // 检查云开发是否初始化
+      const app = getApp();
+      if (!app.globalData.cloudInitialized) return;
+      
+      // 检查每个保存的账户是否仍然有效
+      const validAccounts = [];
+      const autoRestoreMap = { ...this.data.autoRestoreMap };
+      
+      for (const account of savedAccounts) {
+        try {
+          // 尝试调用云函数检查账户是否存在
+          const result = await wx.cloud.callFunction({
+            name: 'userLogin',
+            data: {
+              action: 'checkAccountExists',
+              account: account.account
+            },
+            timeout: 5000 // 5秒超时
+          });
+          
+          if (result.result.success && result.result.exists) {
+            // 账户仍然有效，保留
+            validAccounts.push(account);
+          } else {
+            // 账户已被删除，从自动恢复映射中移除
+            delete autoRestoreMap[account.account];
+          }
+        } catch (e) {
+          // 网络错误或其他异常，暂时保留账户
+          validAccounts.push(account);
+        }
+      }
+      
+      // 如果有账户被清理，更新存储和页面数据
+      if (validAccounts.length !== savedAccounts.length) {
+        wx.setStorageSync('savedAccounts', validAccounts);
+        wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+        
+        this.setData({
+          savedAccounts: validAccounts,
+          autoRestoreMap: autoRestoreMap
+        });
+      }
+    } catch (e) {
+      console.error('检查和清理无效账户失败:', e);
+    }
   },
   
   // 选择账号进行登录
