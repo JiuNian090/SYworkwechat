@@ -499,7 +499,7 @@ Page({
       // 生成差额文本描述
       let differenceText = '';
       if (hourDifference > 0) {
-        differenceText = `超额 ${hourDifference.toFixed(1)} 小时`;
+        differenceText = `超额 +${hourDifference.toFixed(1)} 小时`;
       } else if (hourDifference < 0) {
         differenceText = `差额 ${hourDifference.toFixed(1)} 小时`;
       } else {
@@ -511,6 +511,9 @@ Page({
       const progressStatus = totalHours >= standardHours ? '已完成' : '进行中';
       const progressText = `${progressStatus} ${progressPercent}%`;
       
+      // 生成用于显示和导出的带符号差额值
+      const hourDifferenceWithSign = hourDifference > 0 ? `+${hourDifference.toFixed(1)}` : hourDifference.toFixed(1);
+      
       const newData = {
         shifts: shiftsInRange,
         filteredSchedules: filteredSchedules,
@@ -518,6 +521,7 @@ Page({
         totalHours: totalHours.toFixed(1),
         standardHours: standardHours.toFixed(1),
         hourDifference: hourDifference.toFixed(1),
+        hourDifferenceWithSign: hourDifferenceWithSign,
         differenceText: differenceText,
         progressText: progressText,
         statistics: {
@@ -527,7 +531,8 @@ Page({
           nightShifts: nightShifts,
           offDays: offDays,
           totalHours: totalHours.toFixed(1),
-          hourDifference: hourDifference.toFixed(1)
+          hourDifference: hourDifference.toFixed(1),
+          hourDifferenceWithSign: hourDifferenceWithSign
         }
       };
       
@@ -607,7 +612,7 @@ Page({
       
       // 添加统计摘要
       csvContent += '"统计区间","总工时","标准工时","工时差额","白天班","跨夜班","休息日"\n';
-      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + standardHours + '","' + hourDifference + '","' + statistics.dayShifts + '","' + statistics.nightShifts + '","' + statistics.offDays + '"\n';
+      csvContent += '"' + startDate + '至' + endDate + '","' + totalHours + '","' + standardHours + '","' + hourDifferenceWithSign + '","' + statistics.dayShifts + '","' + statistics.nightShifts + '","' + statistics.offDays + '"\n';
       
       // 获取用户名
       const username = wx.getStorageSync('username') || '未命名用户';

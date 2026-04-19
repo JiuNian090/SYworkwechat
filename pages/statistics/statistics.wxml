@@ -112,8 +112,8 @@
           <text class="progress-text">{{progressText}}</text>
         </view>
         <view class="hours-difference {{hourDifference >= 0 ? 'positive' : 'negative'}}">
-          <text class="diff-label">{{hourDifference >= 0 ? '工时超额' : '工时差额'}}</text>
-          <text class="diff-value">{{hourDifference >= 0 ? '+' : ''}}{{hourDifference}}h</text>
+          <text class="diff-label">{{hourDifference > 0 ? '工时超额' : '工时差额'}}</text>
+          <text class="diff-value">{{hourDifferenceWithSign}}h</text>
         </view>
       </view>
     </view>
