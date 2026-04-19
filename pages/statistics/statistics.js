@@ -566,38 +566,95 @@ Page({
       // 获取用户名
       const username = wx.getStorageSync('username') || '未命名用户';
       
+      // 转义包含逗号或引号的字段
+      const escapeField = (field) => {
+        if (typeof field === 'string' && (field.includes(',') || field.includes('"'))) {
+          return `"${field.replace(/"/g, '""')}"`;
+        }
+        // 强制所有字段作为文本处理
+        return `"${field}"`;
+      };
+      
+      // 生成由等号组成的字符串
+      const generateEquals = (length) => {
+        return '='.repeat(Math.max(4, length));
+      };
+      
+      // 计算第一部分的列宽度（统计信息）
+      const section1Cols = [
+        { header: '统计范围', values: [`${startDate}至${endDate}`] },
+        { header: '标准工时', values: [standardHours] },
+        { header: '实际工时', values: [totalHours] },
+        { header: '工时差/超额', values: [hourDifferenceWithSign] },
+        { header: '白天班', values: [String(statistics.dayShifts)] },
+        { header: '跨夜班', values: [String(statistics.nightShifts)] },
+        { header: '休息日', values: [String(statistics.offDays)] }
+      ];
+      
+      const section1Widths = section1Cols.map(col => {
+        const maxLength = Math.max(
+          col.header.length,
+          ...col.values.map(val => String(val).length)
+        );
+        return maxLength;
+      });
+      
+      // 计算第二部分的列宽度（班次明细）
+      const section2Cols = [
+        { header: '日期', values: shifts.map(s => s.date) },
+        { header: '班次名称', values: shifts.map(s => s.name) },
+        { header: '工时', values: shifts.map(s => s.workHours) },
+        { header: '班次类型', values: shifts.map(s => s.type) },
+        { header: '开始时间', values: shifts.map(s => s.startTime) },
+        { header: '结束时间', values: shifts.map(s => s.endTime) }
+      ];
+      
+      const section2Widths = section2Cols.map(col => {
+        const maxLength = Math.max(
+          col.header.length,
+          ...col.values.map(val => String(val).length)
+        );
+        return maxLength;
+      });
+      
+      // 生成分隔行
+      const generateSeparator = (widths) => {
+        return widths.map(w => escapeField(generateEquals(w))).join(',');
+      };
+      
       // 创建CSV内容
       let csvContent = '';
       
       // 第一行：nickname排班统计报表，时间范围
-      csvContent += '"' + username + '排班统计报表"\n';
+      const titleText = username + '排班统计报表';
+      csvContent += escapeField(titleText) + '\n';
       
       // 第二行：====
-      csvContent += '"====","===="\n';
+      // 确保分隔符至少和标题一样宽
+      csvContent += escapeField(generateEquals(titleText.length)) + '\n';
       
       // 第三行：统计范围，标准工时，实际工时，工时差/超额，白天班，跨夜班，休息日
-      csvContent += '"统计范围","标准工时","实际工时","工时差/超额","白天班","跨夜班","休息日"\n';
+      csvContent += section1Cols.map(col => escapeField(col.header)).join(',') + '\n';
       
       // 第四行：填写第三行的信息
-      csvContent += '"' + startDate + '至' + endDate + '","' + standardHours + '","' + totalHours + '","' + hourDifferenceWithSign + '","' + statistics.dayShifts + '","' + statistics.nightShifts + '","' + statistics.offDays + '"\n';
+      csvContent += [
+        escapeField(startDate + '至' + endDate),
+        escapeField(standardHours),
+        escapeField(totalHours),
+        escapeField(hourDifferenceWithSign),
+        escapeField(statistics.dayShifts),
+        escapeField(statistics.nightShifts),
+        escapeField(statistics.offDays)
+      ].join(',') + '\n';
       
       // 第五行：====
-      csvContent += '"====","====","====","====","====","====","===="\n';
+      csvContent += generateSeparator(section1Widths) + '\n';
       
       // 第六行：日期，班次名称，工时，班次类型，开始时间，结束时间
-      csvContent += '"日期","班次名称","工时","班次类型","开始时间","结束时间"\n';
+      csvContent += section2Cols.map(col => escapeField(col.header)).join(',') + '\n';
       
       // 第七行...：填写第六行的信息
       shifts.forEach(shift => {
-        // 转义包含逗号或引号的字段
-        const escapeField = (field) => {
-          if (typeof field === 'string' && (field.includes(',') || field.includes('"'))) {
-            return `"${field.replace(/"/g, '""')}"`;
-          }
-          // 强制所有字段作为文本处理
-          return `"${field}"`;
-        };
-        
         csvContent += [
           escapeField(shift.date),
           // 在前添加单引号确保Excel将其识别为纯文本而不是日期
