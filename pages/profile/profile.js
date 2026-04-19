@@ -1388,10 +1388,42 @@ Page({
             wx.hideLoading();
 
             if (result.result.success) {
+              // 从保存的账号列表中删除该账户
+              let savedAccounts = [];
+              try {
+                savedAccounts = wx.getStorageSync('savedAccounts') || [];
+                const accountToDelete = cloudUserInfo.account;
+                savedAccounts = savedAccounts.filter(item => item.account !== accountToDelete);
+                
+                // 同时删除对应的自动恢复勾选状态
+                const autoRestoreMap = { ...this.data.autoRestoreMap };
+                delete autoRestoreMap[accountToDelete];
+                
+                wx.setStorageSync('savedAccounts', savedAccounts);
+                wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+                
+                this.setData({
+                  savedAccounts: savedAccounts,
+                  autoRestoreMap: autoRestoreMap
+                });
+              } catch (e) {
+                console.error('从保存的账号列表中删除账户失败:', e);
+              }
+              
               // 清除本地登录信息
-              this.setData({ currentUserPage: 'main' });
-              this.hideUserManagementModal();
               this.logoutFromCloud();
+              
+              // 检查是否有其他保存的账户
+              if (savedAccounts.length > 0) {
+                // 有其他账户，跳转到切换账户界面
+                this.setData({ 
+                  currentUserPage: 'switchAccount',
+                  showUserManagementModal: true 
+                });
+              } else {
+                // 没有其他账户，直接关闭弹窗
+                this.hideUserManagementModal();
+              }
 
               wx.showToast({
                 title: '账户已删除',
