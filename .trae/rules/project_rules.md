@@ -3,6 +3,7 @@
 - 微信小程序原生开发框架
 - 使用微信小程序原生组件和API：
 - 微信小程序组件库（用于开发界面组件）：https://developers.weixin.qq.com/miniprogram/dev/component/
+TDesign：https://tdesign.tencent.com/miniprogram/overview
 - 微信小程序开发API（用于调用小程序功能接口）：https://developers.weixin.qq.com/miniprogram/dev/api/
 - 微信小程序服务端API规范（用于服务端开发）：https://developers.weixin.qq.com/miniprogram/dev/framework/api/
 - 微信小程序UI设计规范（用于界面设计参考）：https://github.com/Tencent/weui-wxss/
