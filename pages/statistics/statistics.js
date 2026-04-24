@@ -148,7 +148,6 @@ Page({
       activePeriodBtn: ''
     });
     this.calculateStatistics();
-    this.drawChart();
   },
 
   selectThisWeek() {
@@ -162,7 +161,6 @@ Page({
       activePeriodBtn: ''
     });
     this.calculateStatistics();
-    this.drawChart();
   },
 
   selectNextWeek() {
@@ -178,7 +176,6 @@ Page({
       activePeriodBtn: ''
     });
     this.calculateStatistics();
-    this.drawChart();
   },
 
   selectThisMonth() {
@@ -212,7 +209,6 @@ Page({
     });
     this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
     this.calculateStatistics();
-    this.drawChart();
   },
 
   // 结束日期变更事件
@@ -224,7 +220,6 @@ Page({
     });
     this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
     this.calculateStatistics();
-    this.drawChart();
   },
   
   // 显示文件名设置弹窗
@@ -1235,9 +1230,8 @@ Page({
     if (shiftsChanged) {
       this.parsePeriodData();
       this.calculateStatistics();
+      this.drawChart();
     }
-    // 绘制图表
-    this.drawChart();
   },
 
   // 解析周期数据：从排班数据中提取年、月、周信息（带缓存）
@@ -1496,7 +1490,6 @@ Page({
       });
       this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       this.calculateStatistics();
-      this.drawChart();
     }
   },
 
@@ -1547,7 +1540,6 @@ Page({
       });
       this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       this.calculateStatistics();
-      this.drawChart();
     }
   },
 
@@ -1569,7 +1561,6 @@ Page({
       });
       this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       this.calculateStatistics();
-      this.drawChart();
     }
   },
 

@@ -7,6 +7,7 @@ const AvatarManager = require('../../utils/avatarManager.js');
 const DataExportManager = require('../../utils/dataExportManager.js');
 const DataImportManager = require('../../utils/dataImportManager.js');
 const DataClearManager = require('../../utils/dataClearManager.js');
+const { encryptPassword, decryptPassword } = require('../../utils/cryptoUtils.js');
 
 Page({
   data: {
@@ -133,8 +134,21 @@ Page({
     
     // 加载保存的账号列表
     let savedAccounts = [];
+    let migrated = false;
     try {
       savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      savedAccounts.forEach(item => {
+        if (item.password && item.password.length > 0) {
+          const decrypted = decryptPassword(item.password);
+          if (!decrypted) {
+            item.password = encryptPassword(item.password);
+            migrated = true;
+          }
+        }
+      });
+      if (migrated) {
+        wx.setStorageSync('savedAccounts', savedAccounts);
+      }
     } catch (e) {
       console.error('加载保存的账号列表失败:', e);
     }
@@ -1090,7 +1104,7 @@ Page({
         // 更新现有账号
         savedAccounts[existingIndex] = {
           account: account,
-          password: this.data.rememberPassword ? password : '',
+          password: this.data.rememberPassword ? encryptPassword(password) : '',
           lastLogin: new Date().toISOString(),
           avatarType: avatarType || 'emoji',
           avatarEmoji: avatarEmoji || '😊',
@@ -1100,7 +1114,7 @@ Page({
         // 添加新账号
         savedAccounts.push({
           account: account,
-          password: this.data.rememberPassword ? password : '',
+          password: this.data.rememberPassword ? encryptPassword(password) : '',
           lastLogin: new Date().toISOString(),
           avatarType: avatarType || 'emoji',
           avatarEmoji: avatarEmoji || '😊',
@@ -1196,17 +1210,20 @@ Page({
   
   // 选择账号进行登录
   selectAccount(e) {
-    const account = e.currentTarget.dataset.account;
-    const password = e.currentTarget.dataset.password;
+    const index = e.currentTarget.dataset.index;
+    const savedAccounts = this.data.savedAccounts;
+    if (index === undefined || !savedAccounts[index]) return;
     
-    // 如果密码已保存，直接登录
+    const account = savedAccounts[index].account;
+    const encryptedPassword = savedAccounts[index].password;
+    const password = decryptPassword(encryptedPassword);
+    
     if (password) {
       this.loginWithSavedAccount(account, password);
     } else {
-      // 否则跳转到登录页面
       this.setData({
         cloudAccountInput: account,
-        cloudPasswordInput: password,
+        cloudPasswordInput: '',
         currentUserPage: 'login'
       });
     }

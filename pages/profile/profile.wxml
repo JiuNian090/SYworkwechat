@@ -451,7 +451,7 @@
       <!-- 切换账号页面 -->
       <view class="user-page user-page-switch-account" wx:if="{{currentUserPage === 'switchAccount'}}">
         <view wx:if="{{savedAccounts.length > 0}}">
-          <view class="account-item" wx:for="{{savedAccounts}}" wx:key="account" bindtap="selectAccount" data-account="{{item.account}}" data-password="{{item.password}}">
+          <view class="account-item" wx:for="{{savedAccounts}}" wx:key="account" bindtap="selectAccount" data-index="{{index}}">
             <view class="account-avatar">
               <text wx:if="{{item.avatarType === 'text'}}" class="avatar-text">{{item.avatarText || ((item.account && item.account.length > 0) ? item.account.charAt(0).toUpperCase() : 'U')}}</text>
               <text wx:else class="avatar-emoji">{{item.avatarEmoji || '😊'}}</text>
