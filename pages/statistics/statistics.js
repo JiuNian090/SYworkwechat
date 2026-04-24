@@ -22,7 +22,11 @@ Page({
     exportFilename: '', // 导出的文件名
     lastExportedFilePath: '', // 用于存储上次导出的文件路径
     shifts: [], // 用于存储排班数据
-    filteredSchedules: [], // 用于显示的班次明细列表
+    filteredSchedules: [], // 用于显示的班次明细列表（虚拟滚动可见切片）
+    visibleSchedules: [], // 虚拟滚动当前可见项
+    listTopPadding: 0, // 虚拟列表顶部填充(px)
+    listBottomPadding: 0, // 虚拟列表底部填充(px)
+    listTotalCount: 0, // 班次明细总条数
     activeQuickBtn: 'thisWeek', // 用于跟踪当前选中的快速选择按钮
     showFilenameModal: false, // 控制文件名设置弹窗显示/隐藏
     tempFilename: '', // 临时存储用户输入的文件名
@@ -339,8 +343,17 @@ Page({
       if (this._cache.lastShiftsHash === currentShiftsHash && 
           this._cache.lastDateRange === currentDateRange && 
           this._cache.lastStatistics) {
-        // 使用缓存数据
-        this.setData(this._cache.lastStatistics);
+        this._allSchedules = this._cache._allSchedules || this._cache.lastStatistics.filteredSchedules || [];
+        this._initVirtualScrollParams();
+        const initialSlice = this._computeVisibleSlice(0);
+        const cachedData = Object.assign({}, this._cache.lastStatistics, {
+          filteredSchedules: initialSlice.items,
+          visibleSchedules: initialSlice.items,
+          listTopPadding: initialSlice.topPadding,
+          listBottomPadding: initialSlice.bottomPadding,
+          listTotalCount: this._allSchedules.length
+        });
+        this.setData(cachedData);
         this.drawChart();
         return;
       }
@@ -361,7 +374,6 @@ Page({
       
       // 只在非年视图时生成详细的filteredSchedules，减少年视图的计算量
       let filteredSchedules = [];
-      let hasTooManyRecords = false;
       if (chartTimeUnit !== 'month') {
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
           const dateStr = this.formatDate(d);
@@ -375,7 +387,6 @@ Page({
             shiftsInRange.push(shift);
             totalHours += parseFloat(shiftData.workHours) || 0;
             
-            // 按班次类型统计工作班次和休息日
             const shiftType = shiftData.type;
             if (shiftType === '白天班') {
               workDays++;
@@ -387,31 +398,21 @@ Page({
               offDays++;
             }
             
-            // 添加到显示列表（限制30条）
-            if (filteredSchedules.length < 30) {
-              filteredSchedules.push({
-                date: dateStr,
-                day: this.formatDayDisplay(dateStr),
-                weekday: this.getWeekday(dateStr),
-                shiftType: shiftType,
-                startTime: shiftData.startTime || '--:--'
-              });
-            } else {
-              hasTooManyRecords = true;
-            }
+            filteredSchedules.push({
+              date: dateStr,
+              day: this.formatDayDisplay(dateStr),
+              weekday: this.getWeekday(dateStr),
+              shiftType: shiftType,
+              startTime: shiftData.startTime || '--:--'
+            });
           } else {
-            // 没有排班数据的日期也显示为休息
-            if (filteredSchedules.length < 30) {
-              filteredSchedules.push({
-                date: dateStr,
-                day: this.formatDayDisplay(dateStr),
-                weekday: this.getWeekday(dateStr),
-                shiftType: '休息日',
-                startTime: '--:--'
-              });
-            } else {
-              hasTooManyRecords = true;
-            }
+            filteredSchedules.push({
+              date: dateStr,
+              day: this.formatDayDisplay(dateStr),
+              weekday: this.getWeekday(dateStr),
+              shiftType: '休息日',
+              startTime: '--:--'
+            });
             offDays++;
           }
         }
@@ -481,10 +482,17 @@ Page({
       // 生成用于显示和导出的带符号差额值
       const hourDifferenceWithSign = hourDifference > 0 ? `+${hourDifference.toFixed(1)}` : hourDifference.toFixed(1);
       
+      this._allSchedules = filteredSchedules;
+      this._initVirtualScrollParams();
+      const initialSlice = this._computeVisibleSlice(0);
+      
       const newData = {
         shifts: shiftsInRange,
-        filteredSchedules: filteredSchedules,
-        hasTooManyRecords: hasTooManyRecords,
+        filteredSchedules: initialSlice.items,
+        visibleSchedules: initialSlice.items,
+        listTopPadding: initialSlice.topPadding,
+        listBottomPadding: initialSlice.bottomPadding,
+        listTotalCount: filteredSchedules.length,
         totalHours: totalHours.toFixed(1),
         standardHours: standardHours.toFixed(1),
         hourDifference: hourDifference.toFixed(1),
@@ -507,6 +515,7 @@ Page({
       this._cache.lastShiftsHash = currentShiftsHash;
       this._cache.lastDateRange = currentDateRange;
       this._cache.lastStatistics = newData;
+      this._cache._allSchedules = filteredSchedules;
       
       this.setData(newData);
       
@@ -519,6 +528,57 @@ Page({
         icon: 'none'
       });
     }
+  },
+
+  _initVirtualScrollParams() {
+    if (this._itemHeightPx) return;
+    const sysInfo = wx.getSystemInfoSync();
+    this._rpxRatio = sysInfo.windowWidth / 750;
+    this._itemHeightRpx = 110;
+    this._itemHeightPx = Math.ceil(this._itemHeightRpx * this._rpxRatio);
+    this._visibleBuffer = 7;
+    this._visibleCount = Math.ceil(600 / this._itemHeightRpx) + this._visibleBuffer * 2;
+    this._lastRenderStart = -1;
+  },
+
+  _computeVisibleSlice(scrollTop) {
+    if (!this._allSchedules || !this._allSchedules.length) {
+      return { items: [], topPadding: 0, bottomPadding: 0 };
+    }
+    const totalCount = this._allSchedules.length;
+    const itemH = this._itemHeightPx || 55;
+    const visibleCount = this._visibleCount || 20;
+    
+    let startIndex = Math.max(0, Math.floor(scrollTop / itemH) - this._visibleBuffer);
+    startIndex = Math.min(startIndex, Math.max(0, totalCount - visibleCount));
+    const endIndex = Math.min(startIndex + visibleCount, totalCount);
+    
+    return {
+      items: this._allSchedules.slice(startIndex, endIndex),
+      topPadding: startIndex * itemH,
+      bottomPadding: Math.max(0, (totalCount - endIndex) * itemH)
+    };
+  },
+
+  onScheduleScroll(e) {
+    this._pendingScrollTop = e.detail.scrollTop;
+    if (this._scrollScheduled) return;
+    this._scrollScheduled = true;
+    setTimeout(() => {
+      this._scrollScheduled = false;
+      const scrollTop = this._pendingScrollTop;
+      const itemH = this._itemHeightPx || 55;
+      const startIndex = Math.max(0, Math.floor(scrollTop / itemH) - this._visibleBuffer);
+      if (Math.abs(startIndex - this._lastRenderStart) < 3) return;
+      this._lastRenderStart = startIndex;
+      const slice = this._computeVisibleSlice(scrollTop);
+      this.setData({
+        visibleSchedules: slice.items,
+        filteredSchedules: slice.items,
+        listTopPadding: slice.topPadding,
+        listBottomPadding: slice.bottomPadding
+      });
+    }, 50);
   },
 
   // 导出为CSV文件

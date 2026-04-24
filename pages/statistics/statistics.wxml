@@ -191,7 +191,7 @@
     <view class="card-header">
       <view class="card-icon">📋</view>
       <text class="card-title">班次明细</text>
-      <text class="card-subtitle">{{filteredSchedules.length}} 条记录</text>
+      <text class="card-subtitle">{{listTotalCount}} 条记录</text>
     </view>
     <scroll-view 
       class="schedule-list" 
@@ -199,32 +199,28 @@
       enhanced="true" 
       show-scrollbar="false"
       enable-back-to-top="true"
-      wx:if="{{filteredSchedules.length > 0 && !hasTooManyRecords}}"
+      bindscroll="onScheduleScroll"
+      wx:if="{{visibleSchedules.length > 0}}"
     >
-      <view class="schedule-item" wx:for="{{filteredSchedules}}" wx:key="date">
-        <view class="schedule-date">
-          <text class="date-day">{{item.day}}</text>
-          <text class="date-weekday">{{item.weekday}}</text>
-        </view>
-        <view class="schedule-type">
-          <view class="type-tag {{item.shiftType === '白天班' ? 'day' : item.shiftType === '跨夜班' ? 'night' : 'off'}}">
-            {{item.shiftType}}
+      <view style="padding-top: {{listTopPadding}}px; padding-bottom: {{listBottomPadding}}px;">
+        <view class="schedule-item" wx:for="{{visibleSchedules}}" wx:key="date">
+          <view class="schedule-date">
+            <text class="date-day">{{item.day}}</text>
+            <text class="date-weekday">{{item.weekday}}</text>
           </view>
-        </view>
-        <view class="schedule-time">
-          <text wx:if="{{item.shiftType !== '休息'}}">{{item.startTime}}</text>
-          <text wx:else>--:--</text>
+          <view class="schedule-type">
+            <view class="type-tag {{item.shiftType === '白天班' ? 'day' : item.shiftType === '跨夜班' ? 'night' : 'off'}}">
+              {{item.shiftType}}
+            </view>
+          </view>
+          <view class="schedule-time">
+            <text wx:if="{{item.shiftType !== '休息'}}">{{item.startTime}}</text>
+            <text wx:else>--:--</text>
+          </view>
         </view>
       </view>
     </scroll-view>
-    <view class="schedule-list" wx:if="{{hasTooManyRecords}}">
-      <view class="empty-state">
-        <text class="empty-icon">📊</text>
-        <text class="empty-text">数据太多，不予展示</text>
-        <text class="empty-text small">若想查看，请导出CSV</text>
-      </view>
-    </view>
-    <view class="schedule-list" wx:elif="{{filteredSchedules.length === 0}}">
+    <view class="schedule-list" wx:elif="{{listTotalCount === 0}}">
       <view class="empty-state">
         <text class="empty-icon" wx:if="{{chartTimeUnit === 'month'}}">📅</text>
         <text class="empty-icon" wx:else>📭</text>
