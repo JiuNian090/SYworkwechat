@@ -380,8 +380,8 @@ page {
 .chart-container {
   position: relative;
   width: 100%;
-  height: 400rpx;
-  margin-top: 20rpx;
+  min-height: 580rpx;
+  margin-top: 16rpx;
 }
 
 /* 工时统计卡片 */

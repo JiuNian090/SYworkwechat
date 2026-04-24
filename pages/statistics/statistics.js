@@ -951,8 +951,8 @@ Page({
     const windowInfo = wx.getWindowInfo();
     const windowWidth = windowInfo.windowWidth;
     const chartWidth = windowWidth - 60;
-    const chartHeight = 260;
-    const padding = { left: 52, right: 24, top: 42, bottom: 48 };
+    const chartHeight = 290;
+    const padding = { left: 52, right: 24, top: 54, bottom: 52 };
     const plotLeft = padding.left;
     const plotTop = padding.top;
     const plotWidth = chartWidth - padding.left - padding.right;
@@ -1139,7 +1139,7 @@ Page({
       ctx.textBaseline = 'top';
       ctx.font = 'bold 15px -apple-system, sans-serif';
       ctx.fillStyle = '#1f2937';
-      ctx.fillText(`${startDate} ~ ${endDate}`, chartWidth / 2, 10);
+      ctx.fillText(`${startDate} ~ ${endDate}`, chartWidth / 2, 16);
     });
   },
   
