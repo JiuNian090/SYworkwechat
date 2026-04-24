@@ -757,6 +757,7 @@ Page({
       lastStatistics: null,
       lastDateRange: null
     };
+    this._periodDataCache = null;
     
     // 页面加载时读取本地存储的自定义每周标准工时
     const savedCustomHours = wx.getStorageSync('customHours') || 35;
@@ -770,6 +771,9 @@ Page({
       dailyStandardHours: dailyStandardHours,
       chartType: savedChartType
     });
+    
+    // 解析周期数据
+    this.parsePeriodData();
     
     // 页面加载时默认选定本周
     this.selectThisWeek();
@@ -1661,29 +1665,6 @@ Page({
     };
   },
 
-  // 在页面加载时也解析周期数据
-  onLoad() {
-    // 初始化缓存对象
-    this._cache = {
-      lastShiftsHash: '',
-      lastStatistics: null,
-      lastDateRange: null
-    };
-    this._periodDataCache = null;
-    
-    // 页面加载时读取本地存储的自定义每周标准工时
-    const savedCustomHours = wx.getStorageSync('customHours') || 35;
-    const dailyStandardHours = savedCustomHours / 7;
-    
-    this.setData({
-      customHours: savedCustomHours,
-      dailyStandardHours: dailyStandardHours
-    });
-    
-    // 解析周期数据
-    this.parsePeriodData();
-    
-    // 页面加载时默认选定本周
-    this.selectThisWeek();
-  }
 });
+
+
