@@ -945,19 +945,22 @@ Page({
 
   // 绘制图表（支持折线图和柱状图）
   drawChart() {
-    const { startDate, endDate } = this.data;
+    const { startDate, endDate, chartType } = this.data;
     const chartTimeUnit = this.calculateOptimalChartUnit(startDate, endDate);
     const chartData = this.generateChartData();
     const windowInfo = wx.getWindowInfo();
     const windowWidth = windowInfo.windowWidth;
-    const chartWidth = windowWidth - 60; // 减去左右边距
-    const chartHeight = 220; // 增加高度以容纳图例
-    const padding = 40;
-    const topPadding = 55; // 增加顶部间距
-    const contentWidth = chartWidth - padding * 2;
-    const contentHeight = chartHeight - topPadding - padding - 20; // 减少以容纳图例
+    const chartWidth = windowWidth - 60;
+    const chartHeight = 260;
+    const padding = { left: 52, right: 24, top: 42, bottom: 48 };
+    const plotLeft = padding.left;
+    const plotTop = padding.top;
+    const plotWidth = chartWidth - padding.left - padding.right;
+    const plotHeight = chartHeight - padding.top - padding.bottom;
 
-    // 使用新的Canvas 2D API
+    const unitLabelMap = { day: '小时/天', week: '小时/周', month: '小时/月' };
+    const yAxisUnit = unitLabelMap[chartTimeUnit] || '小时';
+
     const query = wx.createSelectorQuery();
     query.select('#lineCanvas').fields({
       node: true,
@@ -968,278 +971,343 @@ Page({
       const canvas = res[0].node;
       const ctx = canvas.getContext('2d');
       
-      // 设置画布尺寸
       const dpr = wx.getWindowInfo().pixelRatio;
       canvas.width = chartWidth * dpr;
       canvas.height = chartHeight * dpr;
       ctx.scale(dpr, dpr);
-      
-      // 清除画布
       ctx.clearRect(0, 0, chartWidth, chartHeight);
 
-      // 绘制网格
-      ctx.strokeStyle = '#f0f0f0';
-      ctx.lineWidth = 1;
-      
-      // 纵轴网格
-      const yStep = contentHeight / 5;
-      for (let i = 0; i <= 5; i++) {
-        const y = topPadding + yStep * i;
-        ctx.beginPath();
-        ctx.moveTo(padding, y);
-        ctx.lineTo(chartWidth - padding, y);
-        ctx.stroke();
-      }
+      // 绘图区背景
+      ctx.fillStyle = '#fafbfc';
+      ctx.fillRect(plotLeft, plotTop, plotWidth, plotHeight);
 
-      // 给图表添加额外的左右边距
-      const extraPadding = 20;
-      const adjustedContentWidth = contentWidth - 2 * extraPadding;
-      const adjustedXStep = chartData.labels.length > 1 ? 
-        adjustedContentWidth / (chartData.labels.length - 1) : adjustedContentWidth;
-      
-      // 横轴网格
-      for (let i = 0; i < chartData.labels.length; i++) {
-        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
-          adjustedXStep * i : adjustedContentWidth / 2);
-        ctx.beginPath();
-        ctx.moveTo(x, topPadding);
-        ctx.lineTo(x, chartHeight - padding - 20);
-        ctx.stroke();
-      }
-
+      // Y轴刻度线
       const yRange = chartData.yAxisMax - chartData.yAxisMin;
-      const yScale = contentHeight / yRange;
+      const yScale = plotHeight / (yRange || 1);
+      const ySteps = 5;
+      const yStepPx = plotHeight / ySteps;
       
+      ctx.setLineDash([4, 6]);
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 0.8;
+      for (let i = 0; i <= ySteps; i++) {
+        const y = plotTop + yStepPx * i;
+        ctx.beginPath();
+        ctx.moveTo(plotLeft, y);
+        ctx.lineTo(plotLeft + plotWidth, y);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // X轴网格线（仅日视图显示，减少视觉噪声）
+      const extraPadding = 16;
+      const dataPlotWidth = plotWidth - extraPadding * 2;
+      const adjustedXStep = chartData.labels.length > 1
+        ? dataPlotWidth / (chartData.labels.length - 1)
+        : dataPlotWidth;
+
+      if (chartTimeUnit === 'day' && chartData.labels.length <= 14) {
+        ctx.setLineDash([2, 4]);
+        ctx.strokeStyle = '#e5e7eb';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < chartData.labels.length; i++) {
+          const x = plotLeft + extraPadding + (chartData.labels.length > 1
+            ? adjustedXStep * i : dataPlotWidth / 2);
+          ctx.beginPath();
+          ctx.moveTo(x, plotTop);
+          ctx.lineTo(x, plotTop + plotHeight);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+      }
+
+      // 绘制坐标轴
+      ctx.strokeStyle = '#d1d5db';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(plotLeft, plotTop);
+      ctx.lineTo(plotLeft, plotTop + plotHeight);
+      ctx.lineTo(plotLeft + plotWidth, plotTop + plotHeight);
+      ctx.stroke();
+
+      // 纵轴标签
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '11px -apple-system, sans-serif';
+      for (let i = 0; i <= ySteps; i++) {
+        const y = plotTop + yStepPx * i;
+        const value = chartData.yAxisMax - (yRange / ySteps) * i;
+        ctx.fillText(value.toFixed(1), plotLeft - 8, y);
+      }
+
+      // 纵轴单位（横向，位于顶部轴标签上方）
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '10px -apple-system, sans-serif';
+      ctx.fillText(yAxisUnit, plotLeft + 6, plotTop - 6);
+
       // 绘制数据
       if (chartData.data.length > 0) {
-        if (this.data.chartType === 'line') {
-          this.drawLineChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
-        } else if (this.data.chartType === 'bar') {
-          this.drawBarChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight);
+        if (chartType === 'line') {
+          this.drawLineChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, chartData.yAxisMin);
+        } else if (chartType === 'bar') {
+          this.drawBarChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, chartData.yAxisMin);
         }
       }
 
-      // 绘制标签
-      ctx.font = '12px Arial';
-      
-      // 纵轴标签
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#999';
-      for (let i = 0; i <= 5; i++) {
-        const y = topPadding + yStep * i;
-        const value = chartData.yAxisMax - (chartData.yAxisMax - chartData.yAxisMin) / 5 * i;
-        ctx.fillText(value.toFixed(0), padding - 8, y + 4);
-      }
-
-      // 纵轴标题（竖写）
+      // 横轴标签
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#10b981';
-      ctx.font = 'bold 15px Arial';
-      const yAxisTitle = '小时';
-      const lineHeight = 28;
-      const titleY = (topPadding + (chartHeight - padding - 20)) / 2 - (yAxisTitle.length * lineHeight) / 2;
-      
-      for (let i = 0; i < yAxisTitle.length; i++) {
-        ctx.fillText(yAxisTitle[i], 10, titleY + i * lineHeight);
-      }
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '11px -apple-system, sans-serif';
+      const labelY = plotTop + plotHeight + 8;
 
-      // 横轴标签 - 使用实际标签
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = '#999';
-      ctx.font = '12px Arial';
-      
       for (let i = 0; i < chartData.labels.length; i++) {
-        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
-          adjustedXStep * i : adjustedContentWidth / 2);
-        ctx.fillText(chartData.labels[i], x, chartHeight - padding - 12);
+        const x = plotLeft + extraPadding + (chartData.labels.length > 1
+          ? adjustedXStep * i : dataPlotWidth / 2);
+        ctx.fillText(chartData.labels[i], x, labelY);
       }
 
-      // 绘制图例（在横轴标题左侧，左对齐，往下放一点，再往左去一点）
-      const legendY = chartHeight - padding + 22;
-      const legendStartX = padding - 10;
-      
-      // 实际工时图例
-      ctx.fillStyle = '#34d399';
-      ctx.beginPath();
-      ctx.arc(legendStartX, legendY + 6, 5, 0, 2 * Math.PI);
-      ctx.fill();
-      
+      // 图例 — 居中显示
+      const legendY = plotTop + plotHeight + 32;
+      const isBar = chartType === 'bar';
+      const actualLabel = '实际工时';
+      const standardLabel = '标准工时';
+      ctx.font = '11px -apple-system, sans-serif';
+      const actualLabelW = ctx.measureText(actualLabel).width;
+      const standardLabelW = ctx.measureText(standardLabel).width;
+      const legendIconW = 24;
+      const legendGap = 16;
+      const legendTotalW = legendIconW + actualLabelW + legendGap + legendIconW + standardLabelW;
+      let legendStartX = plotLeft + (plotWidth - legendTotalW) / 2;
+
+      // 实际工时 — 折线图画短线，柱状图画小方块
+      if (isBar) {
+        const gradient = ctx.createLinearGradient(legendStartX, legendY - 6, legendStartX, legendY + 6);
+        gradient.addColorStop(0, '#34d399');
+        gradient.addColorStop(1, '#6ee7b7');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(legendStartX, legendY - 6, 14, 12);
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(legendStartX, legendY - 6, 14, 12);
+      } else {
+        ctx.strokeStyle = '#34d399';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(legendStartX, legendY);
+        ctx.lineTo(legendStartX + legendIconW, legendY);
+        ctx.stroke();
+        ctx.fillStyle = '#34d399';
+        ctx.beginPath();
+        ctx.arc(legendStartX + legendIconW / 2, legendY, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(legendStartX + legendIconW / 2, legendY, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#333';
-      ctx.font = '12px Arial';
-      ctx.fillText('实际', legendStartX + 12, legendY + 6);
-      
-      // 标准工时图例
+      ctx.fillStyle = '#374151';
+      ctx.fillText(actualLabel, legendStartX + (isBar ? 20 : legendIconW + 6), legendY);
+      legendStartX += (isBar ? 14 : legendIconW) + actualLabelW + 6 + legendGap;
+
+      // 标准工时 — 蓝色虚线 + 细点
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath();
+      ctx.moveTo(legendStartX, legendY);
+      ctx.lineTo(legendStartX + legendIconW, legendY);
+      ctx.stroke();
+      ctx.setLineDash([]);
       ctx.fillStyle = '#3b82f6';
       ctx.beginPath();
-      ctx.arc(legendStartX + 60, legendY + 6, 5, 0, 2 * Math.PI);
+      ctx.arc(legendStartX + legendIconW / 2, legendY, 3, 0, Math.PI * 2);
       ctx.fill();
-      
-      ctx.fillStyle = '#333';
-      ctx.fillText('标准', legendStartX + 72, legendY + 6);
 
-      // 横轴标题
-      let xAxisUnit = '';
-      if (chartTimeUnit === 'day') {
-        xAxisUnit = '天   数';
-      } else if (chartTimeUnit === 'week') {
-        xAxisUnit = '周   数';
-      } else if (chartTimeUnit === 'month') {
-        xAxisUnit = '月   份';
-      }
+      ctx.fillStyle = '#374151';
+      ctx.fillText(standardLabel, legendStartX + legendIconW + 6, legendY);
+
+      // 标题 — 日期范围
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillStyle = '#10b981';
-      ctx.font = 'bold 15px Arial';
-      ctx.fillText(xAxisUnit, chartWidth / 2, chartHeight - padding + 15);
-
-      // 绘制标题（显示日期范围）
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.font = 'bold 18px Arial';
+      ctx.font = 'bold 15px -apple-system, sans-serif';
       ctx.fillStyle = '#1f2937';
-      const chartTitle = `${this.data.startDate} ~ ${this.data.endDate}`;
-      ctx.fillText(chartTitle, chartWidth / 2, 8);
+      ctx.fillText(`${startDate} ~ ${endDate}`, chartWidth / 2, 10);
     });
   },
   
   // 绘制折线图
-  drawLineChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
-    // 绘制标准工时线（蓝色）
+  drawLineChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin) {
+    const plotBottom = plotTop + plotHeight;
+
+    // 面积填充（增强可视深度）
+    if (chartData.data.length > 1) {
+      ctx.beginPath();
+      const firstX = plotLeft + extraPadding;
+      const firstY = plotBottom - (chartData.data[0] - yAxisMin) * yScale;
+      ctx.moveTo(firstX, plotBottom);
+      ctx.lineTo(firstX, firstY);
+      for (let i = 1; i < chartData.data.length; i++) {
+        const x = plotLeft + extraPadding + adjustedXStep * i;
+        const y = plotBottom - (chartData.data[i] - yAxisMin) * yScale;
+        ctx.lineTo(x, y);
+      }
+      const lastX = plotLeft + extraPadding + adjustedXStep * (chartData.data.length - 1);
+      ctx.lineTo(lastX, plotBottom);
+      ctx.closePath();
+      const areaGradient = ctx.createLinearGradient(0, plotTop, 0, plotBottom);
+      areaGradient.addColorStop(0, 'rgba(52,211,153,0.15)');
+      areaGradient.addColorStop(1, 'rgba(52,211,153,0.01)');
+      ctx.fillStyle = areaGradient;
+      ctx.fill();
+    }
+
+    // 标准工时线（蓝色虚线）
     if (chartData.standardData && chartData.standardData.length > 0) {
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]); // 虚线
+      ctx.setLineDash([5, 5]);
       ctx.beginPath();
-      
       for (let i = 0; i < chartData.standardData.length; i++) {
-        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
-          adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
-        const y = chartHeight - padding - 20 - (chartData.standardData[i] - chartData.yAxisMin) * yScale;
-        
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
+        const x = plotLeft + extraPadding + (chartData.labels.length > 1
+          ? adjustedXStep * i : 0);
+        const y = plotBottom - (chartData.standardData[i] - yAxisMin) * yScale;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.setLineDash([]); // 恢复实线
+      ctx.setLineDash([]);
     }
 
-    // 绘制数据线条（绿色）
+    // 数据线（绿色实线 + 贝塞尔平滑）
     ctx.strokeStyle = '#34d399';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.8;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
-    
     for (let i = 0; i < chartData.data.length; i++) {
-      const x = padding + extraPadding + (chartData.labels.length > 1 ? 
-        adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
-      const y = chartHeight - padding - 20 - (chartData.data[i] - chartData.yAxisMin) * yScale;
-      
+      const x = plotLeft + extraPadding + (chartData.labels.length > 1
+        ? adjustedXStep * i : 0);
+      const y = plotBottom - (chartData.data[i] - yAxisMin) * yScale;
       if (i === 0) {
         ctx.moveTo(x, y);
       } else {
-        const prevX = padding + extraPadding + (chartData.labels.length > 1 ? 
-          adjustedXStep * (i - 1) : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
-        const prevY = chartHeight - padding - 20 - (chartData.data[i - 1] - chartData.yAxisMin) * yScale;
-        const controlX1 = prevX + adjustedXStep * 0.3;
-        const controlY1 = prevY;
-        const controlX2 = x - adjustedXStep * 0.3;
-        const controlY2 = y;
-        ctx.bezierCurveTo(controlX1, controlY1, controlX2, controlY2, x, y);
+        const prevX = plotLeft + extraPadding + adjustedXStep * (i - 1);
+        const prevY = plotBottom - (chartData.data[i - 1] - yAxisMin) * yScale;
+        const cp1x = prevX + adjustedXStep * 0.35;
+        const cp1y = prevY;
+        const cp2x = x - adjustedXStep * 0.35;
+        const cp2y = y;
+        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
       }
     }
     ctx.stroke();
 
-    // 绘制数据点和数据标签
-    ctx.fillStyle = '#34d399';
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
-    ctx.font = '11px Arial';
-    
+    // 数据点和标签
     for (let i = 0; i < chartData.data.length; i++) {
-      const x = padding + extraPadding + (chartData.labels.length > 1 ? 
-        adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
-      const y = chartHeight - padding - 20 - (chartData.data[i] - chartData.yAxisMin) * yScale;
-      
-      // 绘制数据点
+      const x = plotLeft + extraPadding + (chartData.labels.length > 1
+        ? adjustedXStep * i : 0);
+      const y = plotBottom - (chartData.data[i] - yAxisMin) * yScale;
+
+      // 外圈光环
       ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(52,211,153,0.2)';
       ctx.fill();
+
+      // 数据点
+      ctx.beginPath();
+      ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.strokeStyle = '#34d399';
+      ctx.lineWidth = 2;
       ctx.stroke();
-      
-      // 绘制数据标签（只在有数据时显示）
+
+      // 数据标签
       if (chartData.data[i] > 0) {
-        ctx.fillStyle = '#666';
+        ctx.fillStyle = '#374151';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.font = '10px -apple-system, sans-serif';
         ctx.fillText(chartData.data[i].toFixed(1), x, y - 10);
-        ctx.fillStyle = '#34d399';
       }
     }
   },
   
   // 绘制柱状图
-  drawBarChart(ctx, chartData, topPadding, padding, extraPadding, adjustedXStep, yStep, yRange, yScale, chartWidth, chartHeight) {
-    // 绘制标准工时线（蓝色虚线，和折线图一样连续）
+  drawBarChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin) {
+    const plotBottom = plotTop + plotHeight;
+
+    // 标准工时线（蓝色虚线）
     if (chartData.standardData && chartData.standardData.length > 0) {
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]); // 虚线
+      ctx.setLineDash([5, 5]);
       ctx.beginPath();
-      
       for (let i = 0; i < chartData.standardData.length; i++) {
-        const x = padding + extraPadding + (chartData.labels.length > 1 ? 
-          adjustedXStep * i : (chartWidth - 2 * padding - 2 * extraPadding) / 2);
-        const y = chartHeight - padding - 20 - (chartData.standardData[i] - chartData.yAxisMin) * yScale;
-        
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
+        const x = plotLeft + extraPadding + (chartData.labels.length > 1
+          ? adjustedXStep * i : 0);
+        const y = plotBottom - (chartData.standardData[i] - yAxisMin) * yScale;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.setLineDash([]); // 恢复实线
+      ctx.setLineDash([]);
     }
 
-    // 绘制柱状图
-    const adjustedContentWidth = chartWidth - 2 * padding - 2 * extraPadding;
-    const barWidth = Math.min(40, adjustedXStep * 0.6); // 柱子宽度
-    
+    // 柱状图
+    const barWidth = Math.min(36, adjustedXStep * 0.55);
+    const halfBar = barWidth / 2;
+
     for (let i = 0; i < chartData.data.length; i++) {
-      const x = padding + extraPadding + (chartData.labels.length > 1 ? 
-        adjustedXStep * i : adjustedContentWidth / 2) - barWidth / 2;
+      const centerX = plotLeft + extraPadding + (chartData.labels.length > 1
+        ? adjustedXStep * i : 0);
       const value = chartData.data[i];
-      const barHeight = (value - chartData.yAxisMin) * yScale;
-      const y = chartHeight - padding - 20 - barHeight;
-      
-      // 绘制渐变背景
-      const gradient = ctx.createLinearGradient(x, y, x, chartHeight - padding - 20);
+      const barHeight = (value - yAxisMin) * yScale;
+      const x = centerX - halfBar;
+      const y = plotBottom - barHeight;
+
+      // 圆角矩形
+      const radius = 5;
+      const drawBar = () => {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + barWidth - radius, y);
+        ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
+        ctx.lineTo(x + barWidth, plotBottom);
+        ctx.lineTo(x, plotBottom);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+      };
+      drawBar();
+
+      // 渐变填充
+      const gradient = ctx.createLinearGradient(x, y, x, plotBottom);
       gradient.addColorStop(0, '#34d399');
-      gradient.addColorStop(1, '#6ee7b7');
-      
+      gradient.addColorStop(0.7, '#6ee7b7');
+      gradient.addColorStop(1, '#a7f3d0');
       ctx.fillStyle = gradient;
-      ctx.fillRect(x, y, barWidth, barHeight);
-      
-      // 绘制柱子边框
-      ctx.strokeStyle = '#10b981';
+      ctx.fill();
+
+      // 顶部高光线
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(x, y, barWidth, barHeight);
-      
-      // 绘制数据标签
+      ctx.stroke();
+
+      // 数据标签
       if (value > 0) {
-        ctx.fillStyle = '#666';
+        ctx.fillStyle = '#374151';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.font = '11px Arial';
-        ctx.fillText(value.toFixed(1), x + barWidth / 2, y - 5);
+        ctx.font = '10px -apple-system, sans-serif';
+        ctx.fillText(value.toFixed(1), centerX, y - 6);
       }
     }
   },
