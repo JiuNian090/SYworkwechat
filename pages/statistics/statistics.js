@@ -1,6 +1,12 @@
 // pages/statistics/statistics.js
+const { formatDate, getWeekday, formatDayDisplay, getWeekOfMonth: getWOM, getMondayOfWeek } = require('../../utils/dateUtils.js');
+const { calculateHash } = require('../../utils/hashUtils.js');
 
 Page({
+  formatDate,
+  getWeekday,
+  formatDayDisplay,
+
   data: {
     startDate: '',
     endDate: '',
@@ -57,27 +63,6 @@ Page({
     wx.navigateTo({
       url: `/pages/docs/docs?type=${type}`
     });
-  },
-
-  // 日期格式化函数
-  formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  },
-
-  // 获取星期几
-  getWeekday(dateStr) {
-    const date = new Date(dateStr);
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    return weekdays[date.getDay()];
-  },
-
-  // 格式化日期显示（MM-DD）
-  formatDayDisplay(dateStr) {
-    const parts = dateStr.split('-');
-    return `${parts[1]}-${parts[2]}`;
   },
 
   // 获取上周日期范围
@@ -332,18 +317,6 @@ Page({
     // 什么都不做，只是阻止冒泡
   },
 
-  // 计算数据哈希值用于缓存判断
-  calculateDataHash(data) {
-    const str = JSON.stringify(data);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return hash.toString(16);
-  },
-  
   // 计算统计数据
   calculateStatistics() {
     const { startDate, endDate, customHours, dailyStandardHours, chartTimeUnit: currentChartTimeUnit } = this.data;
@@ -356,7 +329,7 @@ Page({
 
     try {
       const allShifts = wx.getStorageSync('shifts') || {};
-      const currentShiftsHash = this.calculateDataHash(allShifts);
+      const currentShiftsHash = calculateHash(JSON.stringify(allShifts));
       const currentDateRange = `${startDate}_${endDate}_${chartTimeUnit}_${customHours}`;
       
       // 确保缓存对象初始化
@@ -1270,7 +1243,7 @@ Page({
   // 解析周期数据：从排班数据中提取年、月、周信息（带缓存）
   parsePeriodData() {
     const allShifts = wx.getStorageSync('shifts') || {};
-    const currentHash = this.calculateDataHash(allShifts);
+    const currentHash = calculateHash(JSON.stringify(allShifts));
     
     // 检查缓存
     if (this._periodDataCache && this._periodDataCache.hash === currentHash) {

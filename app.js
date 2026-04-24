@@ -1,5 +1,6 @@
 // app.js
 const { deviceInfo, getPlatformName, isHarmonyOS, supportsFeature, compareVersion, getSDKVersion } = require('./utils/deviceInfo.js');
+const config = require('./config.js');
 
 App({
   globalData: {
@@ -21,6 +22,9 @@ App({
     
     // 初始化云开发和同步用户信息（并行执行，不阻塞启动）
     this.initCloudAndSync();
+
+    // 注册全局错误处理
+    this.setupErrorHandlers();
   },
   
   // 检查基础库版本兼容性
@@ -88,7 +92,7 @@ App({
             
             await Promise.race([
               wx.cloud.init({
-                env: 'YOUR_CLOUD_ENV_ID',
+                env: config.cloudEnv,
                 traceUser: true,
               }),
               timeoutPromise
@@ -241,6 +245,20 @@ App({
   },
 
   // 全局好友分享配置
+
+  setupErrorHandlers() {
+    if (typeof wx.onError === 'function') {
+      wx.onError((error) => {
+        console.error('全局捕获到错误:', error);
+      });
+    }
+
+    if (typeof wx.onUnhandledRejection === 'function') {
+      wx.onUnhandledRejection((res) => {
+        console.error('全局捕获到未处理的Promise拒绝:', res.reason);
+      });
+    }
+  },
   onShareAppMessage() {
     return {
       title: 'SYwork排班管理系统',

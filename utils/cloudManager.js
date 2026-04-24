@@ -1,4 +1,5 @@
 const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation, getImageRelationTable, removeImageFromRelation } = require('./imageRelation.js');
+const { calculateHash } = require('./hashUtils.js');
 
 /**
  * 云开发工具类 - 增量备份和恢复
@@ -139,20 +140,6 @@ class CloudManager {
     return wx.getStorageSync('cloudAccount') || '';
   }
   
-  // 计算哈希值（用于差异检测）
-  calculateHash(data) {
-    if (typeof data === 'string') {
-      let hash = 0;
-      for (let i = 0; i < data.length; i++) {
-        const char = data.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-      }
-      return hash.toString(16);
-    }
-    return '0';
-  }
-  
   // 获取本地数据
   getLocalData() {
     const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
@@ -164,12 +151,12 @@ class CloudManager {
     return {
       shiftTemplates: {
         data: shiftTemplates,
-        hash: this.calculateHash(shiftTemplatesJson),
+        hash: calculateHash(shiftTemplatesJson),
         size: shiftTemplatesJson.length
       },
       shifts: {
         data: shifts,
-        hash: this.calculateHash(shiftsJson),
+        hash: calculateHash(shiftsJson),
         size: shiftsJson.length
       }
     };
@@ -298,7 +285,7 @@ class CloudManager {
           // 基于四个变量计算哈希值：图片时间戳、图片名称、图片内容、图片大小
           // 不包含位置信息，避免因位置变化导致哈希值变化
           const hashInput = `${addedTime}_${weekKey}_${imageName}_${res.mtime}_${res.size}`;
-          const hash = this.calculateHash(hashInput);
+          const hash = calculateHash(hashInput);
           resolve(hash);
         },
         fail: (err) => {

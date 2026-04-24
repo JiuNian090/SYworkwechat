@@ -1,8 +1,14 @@
 // pages/schedule/schedule.js
 const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/colorUtils.js');
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation.js');
+const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth, getWeekday } = require('../../utils/dateUtils.js');
 
 Page({
+  formatDate,
+  formatMonthTitle,
+  getWeekOfMonth,
+  getMondayOfWeek,
+
   data: {
     currentView: 'week', // week 或 month
     currentDate: '',
@@ -47,8 +53,8 @@ Page({
 
   onLoad() {
     const today = new Date();
-    const isCurrentWeek = this.isCurrentWeek(today);
-    const isCurrentMonth = this.isCurrentMonth(today);
+    const isCurrentWeek = isCurWeek(today);
+    const isCurrentMonth = isCurMonth(today);
     // 读取自定义每周标准工时
     const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
     // 读取用户头像信息
@@ -119,7 +125,7 @@ Page({
     
     // 确保在onShow中也正确初始化当前月份的判断
     const currentDate = new Date(this.data.currentDate);
-    const isCurrentMonth = this.isCurrentMonth(currentDate);
+    const isCurrentMonth = isCurMonth(currentDate);
     if (isCurrentMonth !== this.data.isCurrentMonth) {
       this.setData({
         isCurrentMonth: isCurrentMonth
@@ -204,45 +210,6 @@ Page({
     }
   },
 
-  formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  },
-
-  // 格式化月份标题为"年 月"格式
-  formatMonthTitle(date) {
-    const year = date.getFullYear();
-    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
-                       '七月', '八月', '九月', '十月', '十一月', '十二月'];
-    const month = date.getMonth();
-    return `${year}年 ${monthNames[month]}`;
-  },
-
-  // 计算某日期是当月的第几周
-  getWeekOfMonth(date) {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    // 获取当月第一天
-    const firstDayOfMonth = new Date(year, month, 1);
-    // 获取当月第一天是星期几（0-6，0表示周日）
-    const firstDayWeek = firstDayOfMonth.getDay();
-    // 计算第一天所在周的周一日期
-    const firstMonday = new Date(firstDayOfMonth);
-    firstMonday.setDate(firstDayOfMonth.getDate() - ((firstDayWeek + 6) % 7));
-    
-    // 计算当前日期所在周的周一日期
-    const currentDay = date.getDate();
-    const currentWeekMonday = new Date(firstDayOfMonth);
-    currentWeekMonday.setDate(firstDayOfMonth.getDate() + currentDay - 1 - ((date.getDay() + 6) % 7));
-    
-    // 计算当前周是当月的第几周
-    const weekNumber = Math.ceil((currentWeekMonday - firstMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
-    
-    return weekNumber;
-  },
-
   // 格式化周视图标题为"几月 第几周"
   formatWeekTitle(date) {
     const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
@@ -250,31 +217,6 @@ Page({
     const month = date.getMonth();
     const weekNumber = this.getWeekOfMonth(date);
     return `${monthNames[month]} 第${weekNumber}周`;
-  },
-
-  // 判断当前显示的周是否为本周
-  isCurrentWeek(displayDate) {
-    const today = new Date();
-    const displayWeekMonday = this.getMondayOfWeek(displayDate);
-    const currentWeekMonday = this.getMondayOfWeek(today);
-    return displayWeekMonday.getTime() === currentWeekMonday.getTime();
-  },
-
-  // 判断是否为当前月份
-  isCurrentMonth(date) {
-    const today = new Date();
-    return date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth();
-  },
-
-  // 获取某日期所在周的周一日期
-  getMondayOfWeek(date) {
-    const day = date.getDay();
-    const monday = new Date(date);
-    // 计算周一日期（周一为每周第一天）
-    monday.setDate(date.getDate() - (day === 0 ? 6 : day - 1));
-    // 设置时间为00:00:00，避免时间差异影响比较
-    monday.setHours(0, 0, 0, 0);
-    return monday;
   },
 
   // 获取当前周的班次颜色（根据本周内班次颜色决定）
@@ -286,19 +228,19 @@ Page({
     // 查找今天是否有排班
     for (let i = 0; i < weekDates.length; i++) {
       if (weekDates[i].date === todayStr && weekDates[i].shift) {
-        return this.lightenColor(weekDates[i].shift.color);
+        return lightenColor(weekDates[i].shift.color);
       }
     }
     
     // 如果今天没有排班，查找本周其他天的班次颜色
     for (let i = 0; i < weekDates.length; i++) {
       if (weekDates[i].shift) {
-        return this.lightenColor(weekDates[i].shift.color);
+        return lightenColor(weekDates[i].shift.color);
       }
     }
     
     // 如果本周都没有排班，返回默认绿色（更浅一些）
-    return this.lightenColor('#07c160');
+    return lightenColor('#07c160');
   },
 
   // 获取当前月的班次颜色（根据本月内班次颜色决定）
@@ -312,7 +254,7 @@ Page({
       const week = monthDates[i];
       for (let j = 0; j < week.length; j++) {
         if (week[j].date === todayStr && week[j].shift) {
-          return this.lightenColor(week[j].shift.color);
+          return lightenColor(week[j].shift.color);
         }
       }
     }
@@ -322,40 +264,13 @@ Page({
       const week = monthDates[i];
       for (let j = 0; j < week.length; j++) {
         if (week[j].shift) {
-          return this.lightenColor(week[j].shift.color);
+          return lightenColor(week[j].shift.color);
         }
       }
     }
     
     // 如果本月都没有排班，返回默认绿色（更浅一些）
-    return this.lightenColor('#07c160');
-  },
-
-  // 颜色变浅函数
-  lightenColor(color) {
-    // 如果是十六进制颜色值
-    if (color && color.startsWith('#') && color.length === 7) {
-      // 将十六进制转换为RGB
-      let r = parseInt(color.slice(1, 3), 16);
-      let g = parseInt(color.slice(3, 5), 16);
-      let b = parseInt(color.slice(5, 7), 16);
-      
-      // 检查解析是否成功
-      if (isNaN(r) || isNaN(g) || isNaN(b)) {
-        return color; // 如果解析失败，返回原值
-      }
-      
-      // 将颜色值变得更浅（增加亮度，但不要超过240）
-      r = Math.min(240, Math.floor((240 + r) / 2));
-      g = Math.min(240, Math.floor((240 + g) / 2));
-      b = Math.min(240, Math.floor((240 + b) / 2));
-      
-      // 转换回十六进制
-      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    }
-    
-    // 如果不是十六进制颜色值，直接返回原值
-    return color || '#07c160'; // 如果颜色值为空，返回默认绿色
+    return lightenColor('#07c160');
   },
 
   // 生成标签背景色函数 - 基于班次颜色创建和谐的标签色
@@ -411,7 +326,7 @@ Page({
       if (shift) {
         modifiedShift = {
           ...shift,
-          lightColor: this.lightenColor(shift.color),
+          lightColor: lightenColor(shift.color),
           tagBackgroundColor: this.getTagBackgroundColor(shift.color)
         };
       }
@@ -487,7 +402,7 @@ Page({
           if (shift) {
             modifiedShift = {
               ...shift,
-              lightColor: this.lightenColor(shift.color),
+              lightColor: lightenColor(shift.color),
               tagBackgroundColor: this.getTagBackgroundColor(shift.color)
             };
           }
@@ -556,7 +471,7 @@ Page({
     // 当切换到月视图时，确保当前月份判断正确
     if (view === 'month') {
       const currentDate = new Date(this.data.currentDate);
-      const isCurrentMonth = this.isCurrentMonth(currentDate);
+      const isCurrentMonth = isCurMonth(currentDate);
       const monthDates = this.data.monthDates;
       if (monthDates && monthDates.length > 0) {
         const monthShiftColor = this.getMonthShiftColor(monthDates);
@@ -571,7 +486,7 @@ Page({
   prevWeek() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setDate(currentDate.getDate() - 7);
-    const isCurrentWeek = this.isCurrentWeek(currentDate);
+    const isCurrentWeek = isCurWeek(currentDate);
     this.setData({
       currentDate: this.formatDate(currentDate),
       currentWeekTitle: this.formatWeekTitle(currentDate),
@@ -584,7 +499,7 @@ Page({
   nextWeek() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setDate(currentDate.getDate() + 7);
-    const isCurrentWeek = this.isCurrentWeek(currentDate);
+    const isCurrentWeek = isCurWeek(currentDate);
     this.setData({
       currentDate: this.formatDate(currentDate),
       currentWeekTitle: this.formatWeekTitle(currentDate),
@@ -597,7 +512,7 @@ Page({
   prevMonth() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setMonth(currentDate.getMonth() - 1);
-    const isCurrentMonth = this.isCurrentMonth(currentDate);
+    const isCurrentMonth = isCurMonth(currentDate);
     this.setData({
       currentDate: this.formatDate(currentDate),
       currentMonthTitle: this.formatMonthTitle(currentDate),
@@ -609,7 +524,7 @@ Page({
   nextMonth() {
     const currentDate = new Date(this.data.currentDate);
     currentDate.setMonth(currentDate.getMonth() + 1);
-    const isCurrentMonth = this.isCurrentMonth(currentDate);
+    const isCurrentMonth = isCurMonth(currentDate);
     this.setData({
       currentDate: this.formatDate(currentDate),
       currentMonthTitle: this.formatMonthTitle(currentDate),
@@ -621,8 +536,8 @@ Page({
   // 添加回到今天的功能
   goToToday() {
     const today = new Date();
-    const isCurrentWeek = this.isCurrentWeek(today);
-    const isCurrentMonth = this.isCurrentMonth(today);
+    const isCurrentWeek = isCurWeek(today);
+    const isCurrentMonth = isCurMonth(today);
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),

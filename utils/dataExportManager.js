@@ -1,4 +1,5 @@
 const JSZip = require('./jszip.min.js');
+const { calculateHash } = require('./hashUtils.js');
 
 class DataExportManager {
   constructor() {
@@ -8,20 +9,6 @@ class DataExportManager {
     this.exportedTemplateFileName = '';
   }
   
-  // 计算哈希值
-  calculateHash(data) {
-    if (typeof data === 'string') {
-      let hash = 0;
-      for (let i = 0; i < data.length; i++) {
-        const char = data.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-      }
-      return hash.toString(16);
-    }
-    return '0';
-  }
-
   // 生成默认文件名
   generateDefaultFileName(username, selectedDataTypes, dataTypes) {
     const currentDate = new Date().toLocaleString('zh-CN', {
@@ -337,10 +324,10 @@ class DataExportManager {
               if (!imageHash) {
                 try {
                   const fileInfo = fs.getFileInfoSync({ filePath: image.path });
-                  imageHash = this.calculateHash(`${image.addedTime || Date.now()}_${key}_${imageName}_${fileInfo.size}`);
+                  imageHash = calculateHash(`${image.addedTime || Date.now()}_${key}_${imageName}_${fileInfo.size}`);
                 } catch (e) {
                   console.error('计算哈希值失败', e);
-                  imageHash = this.calculateHash(`${Date.now()}_${key}_${imageName}`);
+                  imageHash = calculateHash(`${Date.now()}_${key}_${imageName}`);
                 }
               }
               
