@@ -8,6 +8,7 @@ const DataExportManager = require('../../utils/dataExportManager.js');
 const DataImportManager = require('../../utils/dataImportManager.js');
 const DataClearManager = require('../../utils/dataClearManager.js');
 const { encryptPassword, decryptPassword } = require('../../utils/cryptoUtils.js');
+const { calculateHash } = require('../../utils/hashUtils.js');
 
 Page({
   data: {
@@ -677,7 +678,7 @@ Page({
   onShow() {
     // 页面显示时只在更新日志发生变化时重新解析
     const changelog = this.parseChangelog();
-    if (JSON.stringify(changelog) !== JSON.stringify(this.data.changelog)) {
+    if (calculateHash(JSON.stringify(changelog)) !== calculateHash(JSON.stringify(this.data.changelog))) {
       this.setData({
         changelog: changelog
       });

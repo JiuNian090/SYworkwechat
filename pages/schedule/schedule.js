@@ -2,6 +2,7 @@
 const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/colorUtils.js');
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation.js');
 const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth, getWeekday } = require('../../utils/dateUtils.js');
+const { calculateHash } = require('../../utils/hashUtils.js');
 
 Page({
   formatDate,
@@ -112,8 +113,8 @@ Page({
     const shifts = wx.getStorageSync('shifts') || {};
     const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
     
-    if (JSON.stringify(shifts) !== JSON.stringify(this.data.shifts) || 
-        JSON.stringify(shiftTemplates) !== JSON.stringify(this.data.shiftTemplates)) {
+    if (calculateHash(JSON.stringify(shifts)) !== calculateHash(JSON.stringify(this.data.shifts)) || 
+        calculateHash(JSON.stringify(shiftTemplates)) !== calculateHash(JSON.stringify(this.data.shiftTemplates))) {
       this.setData({
         shifts: shifts,
         shiftTemplates: shiftTemplates

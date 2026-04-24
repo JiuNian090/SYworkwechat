@@ -1225,7 +1225,7 @@ Page({
     const currentShifts = this.data.shifts;
     
     // 检查排班数据是否发生变化
-    const shiftsChanged = JSON.stringify(allShifts) !== JSON.stringify(currentShifts);
+    const shiftsChanged = calculateHash(JSON.stringify(allShifts)) !== calculateHash(JSON.stringify(currentShifts));
     
     if (shiftsChanged) {
       this.parsePeriodData();
