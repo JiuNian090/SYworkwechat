@@ -190,7 +190,6 @@ Page({
       chartTimeUnit: 'week' // 选择本月时切换到周视图
     });
     this.calculateStatistics();
-    this.drawChart();
   },
 
   // 触发按钮动画
