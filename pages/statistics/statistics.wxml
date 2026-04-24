@@ -137,7 +137,7 @@
         </view>
       </view>
       <view class="chart-container">
-        <canvas type="2d" id="lineCanvas" style="width: 100%; height: 290px;"></canvas>
+        <canvas type="2d" id="lineCanvas" style="width: 100%; height: 310px;"></canvas>
       </view>
     </view>
 

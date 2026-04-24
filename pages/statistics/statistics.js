@@ -951,8 +951,8 @@ Page({
     const windowInfo = wx.getWindowInfo();
     const windowWidth = windowInfo.windowWidth;
     const chartWidth = windowWidth - 60;
-    const chartHeight = 290;
-    const padding = { left: 52, right: 24, top: 54, bottom: 52 };
+    const chartHeight = 310;
+    const padding = { left: 52, right: 24, top: 64, bottom: 62 };
     const plotLeft = padding.left;
     const plotTop = padding.top;
     const plotWidth = chartWidth - padding.left - padding.right;
@@ -1071,7 +1071,7 @@ Page({
       }
 
       // 图例 — 居中显示
-      const legendY = plotTop + plotHeight + 32;
+      const legendY = plotTop + plotHeight + 40;
       const isBar = chartType === 'bar';
       const actualLabel = '实际工时';
       const standardLabel = '标准工时';
@@ -1134,12 +1134,33 @@ Page({
       ctx.fillStyle = '#374151';
       ctx.fillText(standardLabel, legendStartX + legendIconW + 6, legendY);
 
-      // 标题 — 日期范围
+      // 标题 — 日期范围（居中带装饰线）
+      const titleText = `${startDate} ~ ${endDate}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.font = 'bold 15px -apple-system, sans-serif';
-      ctx.fillStyle = '#1f2937';
-      ctx.fillText(`${startDate} ~ ${endDate}`, chartWidth / 2, 16);
+      
+      // 标题背景条
+      ctx.fillStyle = 'rgba(31,41,55,0.04)';
+      const titleBarW = 220;
+      const titleBarH = 30;
+      const titleBarX = chartWidth / 2 - titleBarW / 2;
+      const titleBarY = 4;
+      ctx.beginPath();
+      ctx.moveTo(titleBarX + 14, titleBarY);
+      ctx.lineTo(titleBarX + titleBarW - 14, titleBarY);
+      ctx.quadraticCurveTo(titleBarX + titleBarW, titleBarY, titleBarX + titleBarW, titleBarY + 14);
+      ctx.lineTo(titleBarX + titleBarW, titleBarY + titleBarH);
+      ctx.lineTo(titleBarX, titleBarY + titleBarH);
+      ctx.lineTo(titleBarX, titleBarY + 14);
+      ctx.quadraticCurveTo(titleBarX, titleBarY, titleBarX + 14, titleBarY);
+      ctx.closePath();
+      ctx.fill();
+
+      // 标题文字
+      ctx.font = 'bold 14px -apple-system, sans-serif';
+      ctx.fillStyle = '#374151';
+      ctx.fillText(titleText, chartWidth / 2, titleBarY + 8);
+      
     });
   },
   
