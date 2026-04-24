@@ -464,11 +464,7 @@ Page({
 
   switchView(e) {
     const view = e.currentTarget.dataset.view;
-    this.setData({
-      currentView: view
-    });
     
-    // 当切换到月视图时，确保当前月份判断正确
     if (view === 'month') {
       const currentDate = new Date(this.data.currentDate);
       const isCurrentMonth = isCurMonth(currentDate);
@@ -476,11 +472,16 @@ Page({
       if (monthDates && monthDates.length > 0) {
         const monthShiftColor = this.getMonthShiftColor(monthDates);
         this.setData({
+          currentView: view,
           isCurrentMonth: isCurrentMonth,
           currentMonthShiftColor: monthShiftColor
         });
+        return;
       }
     }
+    this.setData({
+      currentView: view
+    });
   },
 
   prevWeek() {
@@ -555,17 +556,8 @@ Page({
       const date = e.currentTarget.dataset.date;
       const selectedShift = this.data.shifts[date] || null;
 
-      // 立即设置选中日期，不等待异步操作
-      this.setData({
-        selectedDate: date,
-        selectedShift: selectedShift,
-        currentTag: selectedShift && selectedShift.tag ? selectedShift.tag : ''
-      });
-
-      // 同步加载班次模板数据，确保数据最新
       this.loadShiftTemplates();
       
-      // 准备班次模板数据
       const templates = this.data.shiftTemplates;
       if (templates.length === 0) {
         wx.showToast({
@@ -575,13 +567,11 @@ Page({
         return;
       }
 
-      // 查找当前日期已有的排班对应的班次模板
       let pickerValue = [0];
       let selectedTemplateIndex = -1;
       let selectedShiftIndex = -1;
       
       if (selectedShift) {
-        // 查找匹配的班次模板
         const matchingIndex = templates.findIndex(template => 
           template.name === selectedShift.name && 
           template.startTime === selectedShift.startTime && 
@@ -596,6 +586,9 @@ Page({
       }
       
       this.setData({
+        selectedDate: date,
+        selectedShift: selectedShift,
+        currentTag: selectedShift && selectedShift.tag ? selectedShift.tag : '',
         pickerValue: pickerValue,
         selectedTemplateIndex: selectedTemplateIndex,
         selectedShiftIndex: selectedShiftIndex,
@@ -693,16 +686,13 @@ Page({
       const templates = this.data.shiftTemplates;
       const selectedIndex = this.data.selectedTemplateIndex;
 
-      // 隐藏选择器
       this.setData({
         showShiftSelectorModal: false
       });
 
       if (selectedIndex === -1) {
-        // 如果未选择任何班次，则删除排班
         this.removeShift();
       } else {
-        // 否则保存选中的排班
         const selectedTemplate = templates[selectedIndex];
         if (!selectedTemplate) {
           wx.showToast({
@@ -719,7 +709,6 @@ Page({
         title: '操作失败，请重试',
         icon: 'none'
       });
-      // 确保选择器关闭
       this.setData({
         showShiftSelectorModal: false
       });
