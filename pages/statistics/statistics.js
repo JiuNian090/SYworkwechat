@@ -372,81 +372,47 @@ Page({
       // 计算统计周期内的天数
       const dayCount = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
       
-      // 只在非年视图时生成详细的filteredSchedules，减少年视图的计算量
       let filteredSchedules = [];
-      if (chartTimeUnit !== 'month') {
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          const dateStr = this.formatDate(d);
-          const shiftData = allShifts[dateStr];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = this.formatDate(d);
+        const shiftData = allShifts[dateStr];
+        
+        if (shiftData) {
+          const shift = {
+            date: dateStr,
+            ...shiftData
+          };
+          shiftsInRange.push(shift);
+          totalHours += parseFloat(shiftData.workHours) || 0;
           
-          if (shiftData) {
-            const shift = {
-              date: dateStr,
-              ...shiftData
-            };
-            shiftsInRange.push(shift);
-            totalHours += parseFloat(shiftData.workHours) || 0;
-            
-            const shiftType = shiftData.type;
-            if (shiftType === '白天班') {
-              workDays++;
-              dayShifts++;
-            } else if (shiftType === '跨夜班') {
-              workDays++;
-              nightShifts++;
-            } else if (shiftType === '休息日') {
-              offDays++;
-            }
-            
-            filteredSchedules.push({
-              date: dateStr,
-              day: this.formatDayDisplay(dateStr),
-              weekday: this.getWeekday(dateStr),
-              shiftType: shiftType,
-              startTime: shiftData.startTime || '--:--'
-            });
-          } else {
-            filteredSchedules.push({
-              date: dateStr,
-              day: this.formatDayDisplay(dateStr),
-              weekday: this.getWeekday(dateStr),
-              shiftType: '休息日',
-              startTime: '--:--'
-            });
+          const shiftType = shiftData.type;
+          if (shiftType === '白天班') {
+            workDays++;
+            dayShifts++;
+          } else if (shiftType === '跨夜班') {
+            workDays++;
+            nightShifts++;
+          } else if (shiftType === '休息日') {
             offDays++;
           }
-        }
-      } else {
-        // 年视图优化：只计算统计数据，不生成详细列表
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          const dateStr = this.formatDate(d);
-          const shiftData = allShifts[dateStr];
           
-          if (shiftData) {
-            const shift = {
-              date: dateStr,
-              ...shiftData
-            };
-            shiftsInRange.push(shift);
-            totalHours += parseFloat(shiftData.workHours) || 0;
-            
-            // 按班次类型统计工作班次和休息日
-            const shiftType = shiftData.type;
-            if (shiftType === '白天班') {
-              workDays++;
-              dayShifts++;
-            } else if (shiftType === '跨夜班') {
-              workDays++;
-              nightShifts++;
-            } else if (shiftType === '休息日') {
-              offDays++;
-            }
-          } else {
-            offDays++;
-          }
+          filteredSchedules.push({
+            date: dateStr,
+            day: this.formatDayDisplay(dateStr),
+            weekday: this.getWeekday(dateStr),
+            shiftType: shiftType,
+            startTime: shiftData.startTime || '--:--'
+          });
+        } else {
+          filteredSchedules.push({
+            date: dateStr,
+            day: this.formatDayDisplay(dateStr),
+            weekday: this.getWeekday(dateStr),
+            shiftType: '休息日',
+            startTime: '--:--'
+          });
+          offDays++;
         }
-        // 年视图不需要显示详细的班次明细，清空列表以提高性能
-        filteredSchedules = [];
       }
       
       // 计算标准工时和工时差额
