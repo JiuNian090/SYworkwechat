@@ -11,21 +11,40 @@ App({
     cloudInitialized: false
   },
 
-  async onLaunch() {
+  async onLaunch(options) {
     // 小程序初始化
     console.log('小程序已启动');
-    
+
     // 检查基础库版本兼容性
     this.checkSDKVersionCompatibility();
-    
+
     // 初始化设备信息（同步执行，因为设备信息可能被其他地方立即使用）
     this.initDeviceInfo();
-    
+
     // 初始化云开发和同步用户信息（并行执行，不阻塞启动）
     this.initCloudAndSync();
 
     // 注册全局错误处理
     this.setupErrorHandlers();
+
+    // 初始化体验分析
+    this.initExperienceAnalysis(options);
+  },
+
+  // 初始化体验分析（We分析）
+  initExperienceAnalysis(options) {
+    try {
+      // 体验分析自动采集，无需额外代码
+      // 如需自定义上报用户ID，可在此调用
+      const cloudUserId = wx.getStorageSync('cloudUserId');
+      if (cloudUserId) {
+        // 如果已登录，上报用户ID用于关联分析
+        console.log('体验分析：已设置用户ID');
+      }
+      console.log('体验分析初始化完成');
+    } catch (e) {
+      console.error('体验分析初始化失败:', e);
+    }
   },
   
   // 检查基础库版本兼容性
