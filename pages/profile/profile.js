@@ -344,6 +344,16 @@ Page({
     // 通知其他页面更新头像信息
     this.updateAvatarInOtherPages();
     
+    // 同步更新 savedAccounts 里当前账号的头像
+    if (this.data.cloudAccount) {
+      this.updateSavedAccountAvatar(this.data.cloudAccount, {
+        avatarType: 'emoji',
+        avatarEmoji: emoji,
+        avatarText: '',
+        avatarEmojiEmotion: emojiEmotion
+      });
+    }
+    
     wx.showToast({
       title: '表情已设为头像',
       icon: 'success'
@@ -1291,8 +1301,14 @@ Page({
         wx.setStorageSync('cloudUserInfo', cloudUserInfo);
         this.userId = result.data.userId;
         
-        // 保存账号到列表
+        // 保存账号到列表并更新头像信息
         this.saveAccount(account, password);
+        this.updateSavedAccountAvatar(account, {
+          avatarType,
+          avatarEmoji,
+          avatarText,
+          avatarEmojiEmotion: emojiEmotion
+        });
         
         // 显示成功提示
         wx.showToast({
@@ -1599,8 +1615,14 @@ Page({
         wx.setStorageSync('cloudUserInfo', cloudUserInfo);
         this.userId = result.data.userId;
         
-        // 保存账号到列表
+        // 保存账号到列表并更新头像信息
         this.saveAccount(cloudAccountInput, cloudPasswordInput);
+        this.updateSavedAccountAvatar(cloudAccountInput, {
+          avatarType,
+          avatarEmoji,
+          avatarText,
+          avatarEmojiEmotion: emojiEmotion
+        });
         
         // 显示成功提示
         wx.showToast({
@@ -1863,6 +1885,29 @@ Page({
       return `${year}/${month}/${day}`;
     } catch (e) {
       return isoString.substring(0, 10);
+    }
+  },
+
+  // 更新 savedAccounts 里指定账号的头像信息
+  updateSavedAccountAvatar(account, avatarInfo) {
+    try {
+      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      const index = savedAccounts.findIndex(item => item.account === account);
+      
+      if (index !== -1) {
+        savedAccounts[index] = {
+          ...savedAccounts[index],
+          avatarType: avatarInfo.avatarType,
+          avatarEmoji: avatarInfo.avatarEmoji,
+          avatarText: avatarInfo.avatarText,
+          avatarEmojiEmotion: avatarInfo.avatarEmojiEmotion
+        };
+        
+        wx.setStorageSync('savedAccounts', savedAccounts);
+        this.setData({ savedAccounts });
+      }
+    } catch (e) {
+      console.error('更新 savedAccounts 头像失败:', e);
     }
   },
 });
