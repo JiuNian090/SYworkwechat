@@ -314,16 +314,17 @@
   <view class="modal-mask {{showUserManagementModal ? 'show' : ''}}" wx:if="{{showUserManagementModal}}" bindtap="hideUserManagementModal"></view>
   <view class="modal-container user-management-modal {{showUserManagementModal ? 'show' : ''}}" wx:if="{{showUserManagementModal}}">
     <view class="modal-header">
-      <view class="header-left" bindtap="goBackToUserManagement" wx:if="{{currentUserPage !== 'main'}}">
+      <view class="header-left" bindtap="goBackToUserManagement" wx:if="{{currentUserPage !== 'main'}}" hover-class="header-btn-hover" hover-stay-time="100">
         <text class="back-icon">←</text>
       </view>
+      <view class="header-placeholder" wx:else></view>
       <text class="modal-title">{{currentUserPage === 'main' ? '用户管理' : 
         (currentUserPage === 'updateNickname' ? '修改昵称' : 
         (currentUserPage === 'updatePassword' ? '修改密码' : 
         (currentUserPage === 'avatar' ? '选择头像' : 
         (currentUserPage === 'switchAccount' ? '切换账号' : 
         (currentUserPage === 'login' ? '登录' : '删除账户')))))}}</text>
-      <view class="modal-close" bindtap="hideUserManagementModal">
+      <view class="modal-close" bindtap="hideUserManagementModal" hover-class="header-btn-hover" hover-stay-time="100">
         <text class="close-icon">×</text>
       </view>
     </view>
