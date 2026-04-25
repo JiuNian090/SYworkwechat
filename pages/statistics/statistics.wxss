@@ -271,6 +271,70 @@ page {
   color: var(--text-secondary);
 }
 
+/* 累计工时里程碑 */
+.cumulative-card {
+  margin-bottom: 30rpx;
+}
+
+.cumulative-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  margin: 10rpx 0 24rpx;
+}
+
+.cumulative-number {
+  font-size: 76rpx;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1;
+  letter-spacing: -2rpx;
+}
+
+.cumulative-unit {
+  font-size: 28rpx;
+  color: var(--text-tertiary);
+  margin-left: 8rpx;
+}
+
+.cumulative-info {
+  background: var(--bg-color);
+  border-radius: 16rpx;
+  padding: 20rpx;
+}
+
+.cumulative-info-item {
+  margin-bottom: 12rpx;
+}
+
+.cumulative-info-item:last-child {
+  margin-bottom: 0;
+}
+
+.cumulative-info-row {
+  display: flex;
+  gap: 20rpx;
+}
+
+.cumulative-info-row .cumulative-info-item {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.info-label {
+  display: block;
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  margin-bottom: 4rpx;
+}
+
+.info-value {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 /* 图表卡片 */
 .chart-card {
   margin-bottom: 30rpx;

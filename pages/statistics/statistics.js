@@ -62,7 +62,12 @@ Page({
     heatmapCellSizeRpx: 60, // 热力图单元格大小(rpx)
     heatmapGapRpx: 6, // 热力图单元格间距(rpx)
     heatmapWeekLabels: ['一', '二', '三', '四', '五', '六', '日'], // 星期标签
-    heatmapColumnsPerRow: 7 // 热力图每行的列数
+    heatmapColumnsPerRow: 7, // 热力图每行的列数
+    cumulativeTotalHours: 0, // 累计总工时
+    cumulativeDays: 0, // 累计有数据的天数
+    cumulativeStartDate: '', // 最早有数据的日期
+    cumulativeEndDate: '', // 最新有数据的日期
+    cumulativeDailyAvg: 0 // 日均工时
   },
 
   /**
@@ -362,6 +367,7 @@ Page({
         this.setData(cachedData);
         this.drawChart();
         this.drawPieChart();
+        this.calculateCumulativeStats();
         return;
       }
       
@@ -503,6 +509,8 @@ Page({
       this.drawChart();
       // 绘制饼图
       this.drawPieChart();
+      // 计算累计工时
+      this.calculateCumulativeStats();
     } catch (e) {
       console.error('计算统计数据失败', e);
       wx.showToast({
@@ -1536,6 +1544,41 @@ Page({
     });
   },
 
+  // 计算累计工时数据
+  calculateCumulativeStats() {
+    const allShifts = wx.getStorageSync('shifts') || {};
+    const dates = Object.keys(allShifts).sort();
+    if (dates.length === 0) return;
+
+    let totalHours = 0;
+    let daysWithData = 0;
+    let firstDate = '';
+    let lastDate = '';
+
+    dates.forEach(dateStr => {
+      const shiftData = allShifts[dateStr];
+      const hours = parseFloat(shiftData.workHours) || 0;
+      if (hours > 0) {
+        totalHours += hours;
+        daysWithData++;
+        if (!firstDate) firstDate = dateStr;
+        lastDate = dateStr;
+      }
+    });
+
+    if (totalHours === 0) return;
+
+    const dailyAvg = totalHours / daysWithData;
+
+    this.setData({
+      cumulativeTotalHours: totalHours.toFixed(1),
+      cumulativeDays: daysWithData,
+      cumulativeStartDate: firstDate,
+      cumulativeEndDate: lastDate,
+      cumulativeDailyAvg: dailyAvg.toFixed(1)
+    });
+  },
+
   onShow() {
     // 页面显示时只在排班数据发生变化时重新计算统计数据
     const allShifts = wx.getStorageSync('shifts') || {};
@@ -1549,6 +1592,7 @@ Page({
       this.calculateStatistics();
       this.drawChart();
       this.drawPieChart();
+      this.calculateCumulativeStats();
     }
   },
 

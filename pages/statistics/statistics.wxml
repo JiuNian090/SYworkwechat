@@ -141,6 +141,32 @@
       </view>
     </view>
 
+    <!-- 班次统计卡片 -->
+    <view class="card stats-card">
+      <view class="card-header">
+        <view class="card-icon">📈</view>
+        <text class="card-title">班次统计</text>
+        <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
+      </view>
+      <view class="pie-chart-wrapper">
+        <canvas type="2d" id="pieCanvas" class="pie-canvas"></canvas>
+      </view>
+      <view class="pie-legend">
+        <view class="pie-legend-item">
+          <view class="legend-dot" style="background-color: #FCD34D;"></view>
+          <text class="legend-label">白天班 {{statistics.dayShifts}} 天</text>
+        </view>
+        <view class="pie-legend-item">
+          <view class="legend-dot" style="background-color: #93C5FD;"></view>
+          <text class="legend-label">跨夜班 {{statistics.nightShifts}} 天</text>
+        </view>
+        <view class="pie-legend-item">
+          <view class="legend-dot" style="background-color: #D8B4FE;"></view>
+          <text class="legend-label">休息日 {{statistics.offDays}} 天</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 工时热力图 -->
     <view class="card heatmap-card" wx:if="{{heatmapWeeks.length > 0}}">
       <view class="card-header">
@@ -183,43 +209,35 @@
       </view>
     </view>
 
-    <!-- 班次统计卡片 -->
-    <view class="card stats-card">
+    <!-- 累计工时里程碑 -->
+    <view class="card cumulative-card" wx:if="{{cumulativeTotalHours > 0}}">
       <view class="card-header">
-        <view class="card-icon">📈</view>
-        <text class="card-title">班次统计</text>
-        <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
+        <view class="card-icon">🏆</view>
+        <text class="card-title">累计工时</text>
+        <text class="card-subtitle">全部历史</text>
       </view>
-      <view class="pie-chart-wrapper">
-        <canvas type="2d" id="pieCanvas" class="pie-canvas"></canvas>
+      <view class="cumulative-main">
+        <text class="cumulative-number">{{cumulativeTotalHours}}</text>
+        <text class="cumulative-unit">小时</text>
       </view>
-      <view class="pie-legend">
-        <view class="pie-legend-item">
-          <view class="legend-dot" style="background-color: #FCD34D;"></view>
-          <text class="legend-label">白天班 {{statistics.dayShifts}} 天</text>
+      <view class="cumulative-info">
+        <view class="cumulative-info-item">
+          <text class="info-label">数据跨度</text>
+          <text class="info-value">{{cumulativeStartDate}} ~ {{cumulativeEndDate}}</text>
         </view>
-        <view class="pie-legend-item">
-          <view class="legend-dot" style="background-color: #93C5FD;"></view>
-          <text class="legend-label">跨夜班 {{statistics.nightShifts}} 天</text>
-        </view>
-        <view class="pie-legend-item">
-          <view class="legend-dot" style="background-color: #D8B4FE;"></view>
-          <text class="legend-label">休息日 {{statistics.offDays}} 天</text>
+        <view class="cumulative-info-row">
+          <view class="cumulative-info-item">
+            <text class="info-label">有数据天数</text>
+            <text class="info-value">{{cumulativeDays}} 天</text>
+          </view>
+          <view class="cumulative-info-item">
+            <text class="info-label">日均工时</text>
+            <text class="info-value">{{cumulativeDailyAvg}}h</text>
+          </view>
         </view>
       </view>
     </view>
-  </view>
 
-  <!-- 快捷操作区 -->
-  <view class="action-buttons">
-    <view class="action-btn export-btn" bindtap="onExportBtnTap">
-      <text class="btn-icon">📥</text>
-      <text class="btn-text">导出CSV</text>
-    </view>
-    <view class="action-btn share-btn" bindtap="shareCSV">
-      <text class="btn-icon">📤</text>
-      <text class="btn-text">分享文件</text>
-    </view>
   </view>
 
   <!-- 班次明细列表 -->
@@ -260,6 +278,18 @@
         <text class="empty-icon">📭</text>
         <text class="empty-text">该时间段暂无班次记录</text>
       </view>
+    </view>
+  </view>
+
+  <!-- 快捷操作区 -->
+  <view class="action-buttons">
+    <view class="action-btn export-btn" bindtap="onExportBtnTap">
+      <text class="btn-icon">📥</text>
+      <text class="btn-text">导出CSV</text>
+    </view>
+    <view class="action-btn share-btn" bindtap="shareCSV">
+      <text class="btn-icon">📤</text>
+      <text class="btn-text">分享文件</text>
     </view>
   </view>
 
