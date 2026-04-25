@@ -1,6 +1,7 @@
 // app.js
 const { deviceInfo, getPlatformName, isHarmonyOS, supportsFeature, compareVersion, getSDKVersion } = require('./utils/deviceInfo.js');
 const config = require('./config.js');
+const { store } = require('./utils/store.js');
 
 App({
   globalData: {
@@ -99,6 +100,7 @@ App({
             ]);
             
             this.globalData.cloudInitialized = true;
+            store.setState({ cloudInitialized: true });
             console.log('云开发初始化成功');
             break;
           } catch (e) {
@@ -147,6 +149,7 @@ App({
       wx.removeStorageSync('avatarType');
       wx.removeStorageSync('avatarEmoji');
       wx.removeStorageSync('username');
+      store.setState({ cloudUserId: '', cloudAccount: '', cloudUserInfo: null, username: '', avatarType: 'text', avatarEmoji: '', _lastDataRestore: Date.now() });
       console.log('本地登录信息已清除');
     } catch (e) {
       console.error('清除登录信息失败:', e);
@@ -225,6 +228,7 @@ App({
         };
         
         wx.setStorageSync('cloudUserInfo', cloudUserInfo);
+        store.setState({ cloudUserInfo, avatarType: userData.avatarType || 'emoji', avatarEmoji: userData.avatarEmoji || '😊', username: userData.nickname || '' }, ['cloudUserInfo', 'avatarType', 'avatarEmoji', 'username']);
         
         // 同步头像信息到本地存储
         wx.setStorageSync('avatarType', userData.avatarType || 'emoji');

@@ -3,6 +3,7 @@ const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/co
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation.js');
 const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth, getWeekday } = require('../../utils/dateUtils.js');
 const { calculateHash } = require('../../utils/hashUtils.js');
+const { store } = require('../../utils/store.js');
 
 Page({
   formatDate,
@@ -82,6 +83,25 @@ Page({
     this.generateWeekDates();
     this.generateMonthDates();
     this.loadWeekImages();
+
+    const schedulePage = this;
+    this._storeUnsubRestore = store.subscribe('_lastDataRestore', function () {
+      schedulePage.loadShiftTemplates();
+      schedulePage.loadShifts();
+      schedulePage.generateWeekDates();
+      schedulePage.generateMonthDates();
+      schedulePage.loadWeekImages();
+    });
+    this._storeUnsubAvatar = store.subscribe('avatarType', function (newVal) {
+      const data = {};
+      const storedEmoji = wx.getStorageSync('avatarEmoji') || '';
+      const storedType = wx.getStorageSync('avatarType') || 'text';
+      const storedUsername = wx.getStorageSync('username') || '';
+      data.avatarType = storedType;
+      data.avatarEmoji = storedEmoji;
+      data.avatarText = storedUsername ? storedUsername.charAt(0).toUpperCase() : '用';
+      schedulePage.setData(data);
+    });
   },
 
   onShow() {

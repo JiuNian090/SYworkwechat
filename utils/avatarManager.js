@@ -1,4 +1,5 @@
 const emojiManager = require('./emojiManager.js');
+const { store } = require('./store.js');
 
 class AvatarManager {
   constructor() {
@@ -115,21 +116,7 @@ class AvatarManager {
 
   // 通知其他页面更新头像信息
   updateAvatarInOtherPages(avatarType, avatarText, avatarEmoji) {
-    // 获取当前所有页面实例
-    const pages = getCurrentPages();
-    
-    // 遍历所有页面，更新头像信息
-    pages.forEach(page => {
-      // 排除当前页面
-      if (page.route !== 'pages/profile/profile') {
-        // 更新头像信息
-        page.setData({
-          avatarType: avatarType,
-          avatarText: avatarText,
-          avatarEmoji: avatarEmoji
-        });
-      }
-    });
+    store.setState({ avatarType, avatarText, avatarEmoji }, ['avatarType', 'avatarEmoji']);
   }
 
   // 获取表情对应的文字和情绪类型

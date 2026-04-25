@@ -1,5 +1,6 @@
 const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation, getImageRelationTable, removeImageFromRelation } = require('./imageRelation.js');
 const { calculateHash } = require('./hashUtils.js');
+const { store } = require('./store.js');
 
 /**
  * 云开发工具类 - 增量备份和恢复
@@ -71,8 +72,7 @@ class CloudManager {
       
       if (result.result.success) {
         this.userId = result.result.data.userId;
-        wx.setStorageSync('cloudUserId', this.userId);
-        wx.setStorageSync('cloudAccount', account);
+        store.setState({ cloudUserId: this.userId, cloudAccount: account }, ['cloudUserId', 'cloudAccount']);
         return result.result;
       } else {
         return result.result;
@@ -89,7 +89,6 @@ class CloudManager {
   // 用户登录
   async login(account, password) {
     try {
-      // 检查云开发是否初始化成功
       if (!this.isCloudInitialized()) {
         return {
           success: false,
@@ -105,8 +104,7 @@ class CloudManager {
       
       if (result.result.success) {
         this.userId = result.result.data.userId;
-        wx.setStorageSync('cloudUserId', this.userId);
-        wx.setStorageSync('cloudAccount', account);
+        store.setState({ cloudUserId: this.userId, cloudAccount: account }, ['cloudUserId', 'cloudAccount']);
         return result.result;
       } else {
         return result.result;
@@ -902,12 +900,7 @@ class CloudManager {
     
     // 刷新页面数据
     setTimeout(() => {
-      const pages = getCurrentPages();
-      pages.forEach(page => {
-        if (page.refreshPageData) {
-          page.refreshPageData();
-        }
-      });
+      store.setState({ _lastDataRestore: Date.now() });
     }, 500);
     
     return {
@@ -1265,15 +1258,7 @@ class CloudManager {
         });
       }
       
-      // 刷新页面数据
-      setTimeout(() => {
-        const pages = getCurrentPages();
-        pages.forEach(page => {
-          if (page.refreshPageData) {
-            page.refreshPageData();
-          }
-        });
-      }, 500);
+      store.setState({ _lastDataRestore: Date.now() });
       
       return {
         success: true,

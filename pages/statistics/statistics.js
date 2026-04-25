@@ -1,6 +1,7 @@
 // pages/statistics/statistics.js
 const { formatDate, getWeekday, formatDayDisplay, getWeekOfMonth: getWOM, getMondayOfWeek } = require('../../utils/dateUtils.js');
 const { calculateHash } = require('../../utils/hashUtils.js');
+const { store } = require('../../utils/store.js');
 
 Page({
   formatDate,
@@ -770,6 +771,13 @@ Page({
     
     // 页面加载时默认选定本周
     this.selectThisWeek();
+
+    const statsPage = this;
+    this._storeUnsub = store.subscribe('_lastDataRestore', function () {
+      statsPage.parsePeriodData();
+      statsPage.calculateStatistics();
+      statsPage.drawChart();
+    });
   },
   
   // 切换图表类型
