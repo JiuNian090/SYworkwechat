@@ -454,7 +454,7 @@
       <!-- 表情选择页面 -->
       <view class="user-page user-page-emoji-select" wx:if="{{currentUserPage === 'avatar'}}">
         <!-- 表情分类标签 -->
-        <view class="emoji-tabs-container">
+        <view class="emoji-tabs-wrapper">
           <view class="emoji-tabs">
             <view 
               class="emoji-tab-item {{currentEmojiCategory === item.id ? 'active' : ''}}" 
@@ -462,6 +462,8 @@
               wx:key="id"
               bindtap="switchEmojiCategory" 
               data-category="{{item.id}}"
+              hover-class="emoji-tab-hover"
+              hover-stay-time="100"
             >
               <text class="emoji-tab-icon">{{item.icon}}</text>
               <text class="emoji-tab-name">{{item.name}}</text>
@@ -469,7 +471,7 @@
           </view>
         </view>
         <!-- 表情网格 -->
-        <scroll-view class="emoji-scroll" scroll-y="true">
+        <scroll-view class="emoji-scroll" scroll-y="true" enhanced show-scrollbar="false">
           <view class="emoji-grid">
             <view 
               class="emoji-item {{selectedEmoji === item ? 'selected' : ''}}" 
@@ -477,16 +479,22 @@
               wx:key="index"
               bindtap="selectEmoji" 
               data-emoji="{{item}}"
+              hover-class="emoji-item-hover"
+              hover-stay-time="100"
             >
               <text class="emoji-char">{{item}}</text>
             </view>
           </view>
         </scroll-view>
         <!-- 表情预览 -->
-        <view class="emoji-preview" wx:if="{{selectedEmoji}}">
-          <text class="preview-label">已选择：</text>
-          <text class="preview-emoji">{{selectedEmoji}}</text>
-          <text class="preview-text">{{emojiTextMap[selectedEmoji]}}</text>
+        <view class="emoji-preview {{selectedEmoji ? 'show' : ''}}">
+          <view class="preview-content">
+            <text class="preview-emoji">{{selectedEmoji || '😊'}}</text>
+            <view class="preview-info">
+              <text class="preview-text">{{selectedEmoji ? emojiTextMap[selectedEmoji] : '请选择一个表情'}}</text>
+              <text class="preview-hint" wx:if="{{selectedEmoji}}">点击确定设为头像</text>
+            </view>
+          </view>
         </view>
       </view>
       
