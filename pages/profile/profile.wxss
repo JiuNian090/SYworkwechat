@@ -1065,15 +1065,15 @@ page {
 
 .modal-footer {
   display: flex;
-  gap: 20rpx;
-  padding: 0 28rpx 28rpx;
+  gap: 16rpx;
+  padding: 0 24rpx 24rpx;
   flex-direction: row;
   justify-content: space-between;
 }
 
 .modal-footer > view {
   display: flex;
-  gap: 20rpx;
+  gap: 16rpx;
   width: 100%;
 }
 
@@ -1088,28 +1088,27 @@ page {
   border: none;
   padding: 0;
   margin: 0;
+  transition: all 0.2s ease;
 }
 
 .modal-btn::after {
   border: none;
 }
 
-.btn-cancel {
-  background: var(--bg-color);
-  color: var(--text-secondary);
+.modal-btn:active {
+  transform: scale(0.96);
+  opacity: 0.9;
 }
 
-.btn-cancel:active {
-  background: var(--border-color);
+.btn-cancel {
+  background: #f3f4f6;
+  color: var(--text-secondary);
 }
 
 .btn-confirm {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: #ffffff;
-}
-
-.btn-confirm:active {
-  opacity: 0.9;
+  box-shadow: 0 4rpx 12rpx rgba(52, 211, 153, 0.3);
 }
 
 /* ========== 输入框样式 ========== */
@@ -2032,34 +2031,41 @@ page {
   display: flex;
   align-items: center;
   gap: 24rpx;
-  padding: 36rpx;
+  padding: 32rpx;
   background: linear-gradient(135deg, var(--primary-light) 0%, #f0fff4 100%);
   border-radius: var(--radius-lg);
-  margin: 0 28rpx 28rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  margin: 0 24rpx 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(52, 211, 153, 0.1);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.user-info-header-hover {
+  transform: scale(0.98) !important;
+  box-shadow: 0 4rpx 20rpx rgba(52, 211, 153, 0.2) !important;
 }
 
 .user-avatar {
-  width: 120rpx;
-  height: 120rpx;
+  width: 110rpx;
+  height: 110rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
-  border: 4rpx solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  border: 3rpx solid rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
 }
 
 .user-avatar-text {
-  font-size: 48rpx;
+  font-size: 44rpx;
   font-weight: bold;
   color: var(--primary-color);
 }
 
 .user-avatar-emoji {
-  font-size: 80rpx;
+  font-size: 72rpx;
   line-height: 1;
 }
 
@@ -2067,58 +2073,130 @@ page {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 6rpx;
   justify-content: center;
+  min-width: 0;
 }
 
 .user-nickname {
-  font-size: 36rpx;
+  font-size: 34rpx;
   font-weight: 600;
   color: var(--text-primary);
-  line-height: 1.2;
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .user-account {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.2;
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .user-status {
-  font-size: 22rpx;
-  color: var(--primary-dark);
-  font-weight: 500;
-  line-height: 1.2;
-  background-color: rgba(16, 185, 129, 0.1);
-  padding: 2rpx 12rpx;
-  border-radius: 12rpx;
-  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
   margin-top: 4rpx;
 }
 
-.user-info-divider {
-  height: 2rpx;
-  background: var(--border-color);
-  margin: 0 28rpx;
+.status-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: var(--primary-color);
+  box-shadow: 0 0 8rpx rgba(52, 211, 153, 0.6);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.85);
+  }
+}
+
+.status-text {
+  font-size: 22rpx;
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+.header-arrow {
+  font-size: 36rpx;
+  color: var(--text-tertiary);
+  line-height: 1;
+  margin-left: 8rpx;
+}
+
+.user-info-list {
+  margin: 0 24rpx;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  overflow: hidden;
 }
 
 .user-info-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28rpx;
-  border-bottom: 2rpx solid var(--border-color);
+  padding: 24rpx 28rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+  transition: background-color 0.2s ease;
+}
+
+.user-info-item-hover {
+  background-color: #f9fafb !important;
 }
 
 .user-info-item:last-child {
   border-bottom: none;
+}
+
+.info-item-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.info-icon-wrapper {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.account-icon {
+  background: linear-gradient(135deg, #dcfce7, #f0fdf4);
+}
+
+.nickname-icon {
+  background: linear-gradient(135deg, #e0f2fe, #f0f9ff);
+}
+
+.password-icon {
+  background: linear-gradient(135deg, #fef3c7, #fffbeb);
+}
+
+.avatar-icon {
+  background: linear-gradient(135deg, #fce7f3, #fdf2f8);
+}
+
+.info-icon {
+  font-size: 26rpx;
+  line-height: 1;
 }
 
 .info-label {
@@ -2139,18 +2217,23 @@ page {
 }
 
 .arrow-icon {
-  font-size: 40rpx;
+  font-size: 36rpx;
   color: var(--text-tertiary);
   line-height: 1;
 }
 
-.status-online {
-  color: var(--primary-dark);
+/* ========== 表单卡片样式 ========== */
+.form-card {
+  margin: 0 24rpx;
+  padding: 28rpx;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
 /* ========== 表单样式 ========== */
 .form-group {
-  margin-bottom: 32rpx;
+  margin-bottom: 28rpx;
 }
 
 .form-group:last-child {
@@ -2159,20 +2242,21 @@ page {
 
 .form-label {
   display: block;
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: var(--text-secondary);
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
+  font-weight: 500;
 }
 
 .form-input {
   width: 100%;
-  height: 88rpx;
+  height: 84rpx;
   padding: 0 24rpx;
   font-size: 30rpx;
   color: var(--text-primary);
-  background: #f7f7f7;
+  background: #f8f9fa;
   border-radius: 12rpx;
-  border: 2rpx solid transparent;
+  border: 2rpx solid #f0f0f0;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
@@ -2180,6 +2264,7 @@ page {
 .form-input:focus {
   background: #ffffff;
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
 }
 
 .btn-danger {
@@ -2192,6 +2277,49 @@ page {
 }
 
 /* ========== 删除账户相关样式 ========== */
+.warning-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32rpx 28rpx;
+  margin: 0 24rpx 20rpx;
+  background: linear-gradient(135deg, #fff7e6 0%, #fff9f0 100%);
+  border-radius: var(--radius-lg);
+  border: 1rpx solid #ffd591;
+  box-shadow: 0 2rpx 12rpx rgba(250, 173, 20, 0.08);
+}
+
+.warning-icon-wrapper {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #faad14, #ffc53d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(250, 173, 20, 0.3);
+}
+
+.warning-icon {
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.warning-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #d46b08;
+  margin-bottom: 8rpx;
+}
+
+.warning-content {
+  font-size: 26rpx;
+  color: #d46b08;
+  line-height: 1.6;
+}
+
 .btn-delete-account {
   background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
   color: #ffffff;
@@ -2199,8 +2327,8 @@ page {
 
 /* ========== 记住密码选项样式 ========== */
 .remember-password {
-  margin-top: 20rpx;
-  margin-bottom: 10rpx;
+  margin-top: 16rpx;
+  margin-bottom: 4rpx;
 }
 
 .checkbox-wrapper {
@@ -2210,24 +2338,25 @@ page {
 }
 
 .checkbox {
-  width: 32rpx;
-  height: 32rpx;
-  border: 2rpx solid var(--border-color);
-  border-radius: 6rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #d1d5db;
+  border-radius: 8rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  background: #ffffff;
 }
 
 .checkbox.checked {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   border-color: var(--primary-color);
 }
 
 .checkbox-icon {
   color: white;
-  font-size: 20rpx;
+  font-size: 22rpx;
   font-weight: bold;
 }
 
@@ -2517,6 +2646,7 @@ page {
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
   color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(52, 211, 153, 0.3);
 }
 
 /* ========== 按钮容器布局 ========== */
@@ -2532,38 +2662,20 @@ page {
   margin: 0;
 }
 
-.btn-delete-account:active {
-  opacity: 0.9;
+.btn-delete-account {
+  background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
+  color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(250, 173, 20, 0.25);
 }
 
 .btn-delete-confirm {
   background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
   color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.25);
 }
 
-.btn-delete-confirm:active {
-  opacity: 0.9;
-}
-
-.warning-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16rpx;
-  padding: 32rpx 24rpx;
-  background: #fff7e6;
-  border-radius: 16rpx;
-  border: 2rpx solid #ffd591;
-  margin-bottom: 32rpx;
-}
-
-.warning-icon {
-  font-size: 64rpx;
-}
-
-.warning-content {
-  font-size: 28rpx;
-  color: #d46b08;
-  text-align: center;
-  line-height: 1.6;
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger-color) 0%, #ef4444 100%);
+  color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(248, 113, 113, 0.25);
 }
