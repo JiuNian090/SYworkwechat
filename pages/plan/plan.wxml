@@ -49,24 +49,33 @@
     <view class="modal-mask show" bindtap="hideAddTemplateModal" catchtouchmove="true"></view>
     <view class="modal-content show" catchtouchmove="true">
       <view class="modal-header">
-        <text class="modal-title">添加班次模板</text>
+        <view class="modal-header-left">
+          <text class="modal-header-icon">📋</text>
+          <text class="modal-title">添加班次模板</text>
+        </view>
         <view class="modal-close" bindtap="hideAddTemplateModal">
           <text class="close-icon">✕</text>
         </view>
       </view>
       <view class="modal-body">
         <view class="form-group">
-          <text class="label">班次名称 <text style="color:red">*</text></text>
-          <input class="input" placeholder="请输入班次名称" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name || ''}}" />
+          <view class="label-row">
+            <text class="label">班次名称</text>
+            <text class="label-required">*</text>
+          </view>
+          <input class="input" placeholder="请输入班次名称" placeholder-class="input-placeholder" bindinput="onTemplateInput" data-field="name" value="{{newTemplate.name || ''}}" />
         </view>
         <view class="form-group">
           <text class="label">班次类型</text>
           <picker mode="selector" range="{{shiftTypes}}" bindchange="onTypeChange" value="{{newTemplate.typeIndex}}">
-            <view class="picker">{{shiftTypes[newTemplate.typeIndex]}}</view>
+            <view class="picker">
+              <text class="picker-text">{{shiftTypes[newTemplate.typeIndex]}}</text>
+              <text class="picker-arrow">›</text>
+            </view>
           </picker>
         </view>
         <view class="form-group">
-          <view class="label-container">
+          <view class="label-row">
             <text class="label">颜色</text>
             <view class="color-indicator" style="background-color:{{newTemplate.color}}"></view>
             <text class="color-name-tag" style="color:{{newTemplate.color}}">{{colorNames[newTemplate.color] || '自定义'}}</text>
@@ -98,7 +107,6 @@
                 </view>
                 <view class="hue-slider-container">
                   <view class="hue-slider" bindtouchstart="onHueSliderTouchStart" bindtouchmove="onHueSliderTouchMove" bindtouchend="onHueSliderTouchEnd" data-picker="add">
-                    <view class="hue-slider-track"></view>
                     <view class="hue-slider-thumb" style="left: {{pickerHue / 360 * 100}}%; background-color: {{pickerColor}};"></view>
                   </view>
                 </view>
@@ -115,27 +123,44 @@
           </block>
         </view>
         <view class="form-group">
-          <text class="label">开始时间 - 结束时间</text>
-          <view class="time-input-container">
-            <picker class="time-picker" mode="time" value="{{newTemplate.startTime}}" bindchange="onTemplateInput" data-field="startTime">
-              <view class="picker">{{newTemplate.startTime}}</view>
-            </picker>
-            <picker class="time-picker" mode="time" value="{{newTemplate.endTime}}" bindchange="onTemplateInput" data-field="endTime">
-              <view class="picker">{{newTemplate.endTime}}</view>
-            </picker>
+          <text class="label">时间段</text>
+          <view class="time-pair">
+            <view class="time-pair-col">
+              <text class="time-pair-label">开始</text>
+              <picker class="time-picker" mode="time" value="{{newTemplate.startTime}}" bindchange="onTemplateInput" data-field="startTime">
+                <view class="picker picker-time">
+                  <text class="picker-text">{{newTemplate.startTime}}</text>
+                </view>
+              </picker>
+            </view>
+            <view class="time-pair-col">
+              <text class="time-pair-label">结束</text>
+              <picker class="time-picker" mode="time" value="{{newTemplate.endTime}}" bindchange="onTemplateInput" data-field="endTime">
+                <view class="picker picker-time">
+                  <text class="picker-text">{{newTemplate.endTime}}</text>
+                </view>
+              </picker>
+            </view>
           </view>
         </view>
         <view class="form-group">
           <text class="label">工时</text>
           <view class="time-input-container">
             <picker class="time-picker" mode="selector" range="{{hoursRange}}" bindchange="onHoursChange" value="{{newTemplate.hoursIndex}}">
-              <view class="picker">{{hoursRange[newTemplate.hoursIndex || 0]}} 小时</view>
+              <view class="picker picker-time">
+                <text class="picker-text">{{hoursRange[newTemplate.hoursIndex || 0]}} 小时</text>
+              </view>
             </picker>
             <picker class="time-picker" mode="selector" range="{{minutesRange}}" bindchange="onMinutesChange" value="{{newTemplate.minutesIndex}}">
-              <view class="picker">{{minutesRange[newTemplate.minutesIndex || 0]}} 分钟</view>
+              <view class="picker picker-time">
+                <text class="picker-text">{{minutesRange[newTemplate.minutesIndex || 0]}} 分钟</text>
+              </view>
             </picker>
           </view>
-          <text class="work-hours-display">总计：{{newTemplate.workHours}} 小时</text>
+          <view class="work-hours-display">
+            <text class="work-hours-text">工时总计：</text>
+            <text class="work-hours-value">{{newTemplate.workHours}} 小时</text>
+          </view>
         </view>
         <view class="modal-footer">
           <button class="cancel-btn" bindtap="hideAddTemplateModal">取消</button>
@@ -150,24 +175,33 @@
     <view class="modal-mask show" bindtap="hideEditTemplateModal" catchtouchmove="true"></view>
     <view class="modal-content show" catchtouchmove="true">
       <view class="modal-header">
-        <text class="modal-title">编辑班次模板</text>
+        <view class="modal-header-left">
+          <text class="modal-header-icon">✏️</text>
+          <text class="modal-title">编辑班次模板</text>
+        </view>
         <view class="modal-close" bindtap="hideEditTemplateModal">
           <text class="close-icon">✕</text>
         </view>
       </view>
       <view class="modal-body">
         <view class="form-group">
-          <text class="label">班次名称 <text style="color:red">*</text></text>
-          <input class="input" placeholder="请输入班次名称" bindinput="onEditTemplateInput" data-field="name" value="{{editTemplate.name || ''}}" />
+          <view class="label-row">
+            <text class="label">班次名称</text>
+            <text class="label-required">*</text>
+          </view>
+          <input class="input" placeholder="请输入班次名称" placeholder-class="input-placeholder" bindinput="onEditTemplateInput" data-field="name" value="{{editTemplate.name || ''}}" />
         </view>
         <view class="form-group">
           <text class="label">班次类型</text>
           <picker mode="selector" range="{{shiftTypes}}" bindchange="onEditTypeChange" value="{{editTemplate.typeIndex}}">
-            <view class="picker">{{shiftTypes[editTemplate.typeIndex]}}</view>
+            <view class="picker">
+              <text class="picker-text">{{shiftTypes[editTemplate.typeIndex]}}</text>
+              <text class="picker-arrow">›</text>
+            </view>
           </picker>
         </view>
         <view class="form-group">
-          <view class="label-container">
+          <view class="label-row">
             <text class="label">颜色</text>
             <view class="color-indicator" style="background-color:{{editTemplate.color}}"></view>
             <text class="color-name-tag" style="color:{{editTemplate.color}}">{{colorNames[editTemplate.color] || '自定义'}}</text>
@@ -199,7 +233,6 @@
                 </view>
                 <view class="hue-slider-container">
                   <view class="hue-slider" bindtouchstart="onHueSliderTouchStart" bindtouchmove="onHueSliderTouchMove" bindtouchend="onHueSliderTouchEnd" data-picker="edit">
-                    <view class="hue-slider-track"></view>
                     <view class="hue-slider-thumb" style="left: {{pickerHue / 360 * 100}}%; background-color: {{pickerColor}};"></view>
                   </view>
                 </view>
@@ -216,27 +249,44 @@
           </block>
         </view>
         <view class="form-group">
-          <text class="label">开始时间 - 结束时间</text>
-          <view class="time-input-container">
-            <picker class="time-picker" mode="time" value="{{editTemplate.startTime}}" bindchange="onEditTemplateInput" data-field="startTime">
-              <view class="picker">{{editTemplate.startTime}}</view>
-            </picker>
-            <picker class="time-picker" mode="time" value="{{editTemplate.endTime}}" bindchange="onEditTemplateInput" data-field="endTime">
-              <view class="picker">{{editTemplate.endTime}}</view>
-            </picker>
+          <text class="label">时间段</text>
+          <view class="time-pair">
+            <view class="time-pair-col">
+              <text class="time-pair-label">开始</text>
+              <picker class="time-picker" mode="time" value="{{editTemplate.startTime}}" bindchange="onEditTemplateInput" data-field="startTime">
+                <view class="picker picker-time">
+                  <text class="picker-text">{{editTemplate.startTime}}</text>
+                </view>
+              </picker>
+            </view>
+            <view class="time-pair-col">
+              <text class="time-pair-label">结束</text>
+              <picker class="time-picker" mode="time" value="{{editTemplate.endTime}}" bindchange="onEditTemplateInput" data-field="endTime">
+                <view class="picker picker-time">
+                  <text class="picker-text">{{editTemplate.endTime}}</text>
+                </view>
+              </picker>
+            </view>
           </view>
         </view>
         <view class="form-group">
           <text class="label">工时</text>
           <view class="time-input-container">
             <picker class="time-picker" mode="selector" range="{{hoursRange}}" bindchange="onEditHoursChange" value="{{editTemplate.hoursIndex}}">
-              <view class="picker">{{hoursRange[editTemplate.hoursIndex || 0]}} 小时</view>
+              <view class="picker picker-time">
+                <text class="picker-text">{{hoursRange[editTemplate.hoursIndex || 0]}} 小时</text>
+              </view>
             </picker>
             <picker class="time-picker" mode="selector" range="{{minutesRange}}" bindchange="onEditMinutesChange" value="{{editTemplate.minutesIndex}}">
-              <view class="picker">{{minutesRange[editTemplate.minutesIndex || 0]}} 分钟</view>
+              <view class="picker picker-time">
+                <text class="picker-text">{{minutesRange[editTemplate.minutesIndex || 0]}} 分钟</text>
+              </view>
             </picker>
           </view>
-          <text class="work-hours-display">总计：{{editTemplate.workHours}} 小时</text>
+          <view class="work-hours-display">
+            <text class="work-hours-text">工时总计：</text>
+            <text class="work-hours-value">{{editTemplate.workHours}} 小时</text>
+          </view>
         </view>
         <view class="modal-footer">
           <button class="cancel-btn" bindtap="hideEditTemplateModal">取消</button>
