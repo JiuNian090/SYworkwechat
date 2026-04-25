@@ -962,15 +962,16 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 28rpx;
-  border-bottom: 2rpx solid var(--border-color);
-  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  gap: 12rpx;
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
 }
 
 .header-left,
 .header-placeholder {
-  width: 48rpx;
-  height: 48rpx;
+  width: 44rpx;
+  height: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -978,11 +979,11 @@ page {
 }
 
 .back-icon {
-  font-size: 32rpx;
-  color: var(--text-primary);
+  font-size: 28rpx;
+  color: var(--text-secondary);
   line-height: 1;
-  width: 44rpx;
-  height: 44rpx;
+  width: 40rpx;
+  height: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -996,31 +997,44 @@ page {
   transform: scale(0.9) !important;
 }
 
-.modal-title {
+.modal-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  flex: 1;
+}
+
+.modal-title-icon {
   font-size: 32rpx;
+  line-height: 1;
+}
+
+.modal-title {
+  font-size: 30rpx;
   font-weight: 600;
   color: var(--text-primary);
-  flex: 1;
-  text-align: center;
   line-height: 1.2;
+  letter-spacing: 1rpx;
 }
 
 .modal-close {
-  width: 48rpx;
-  height: 48rpx;
+  width: 44rpx;
+  height: 44rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--bg-color);
+  background: transparent;
   flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
 .close-icon {
-  font-size: 36rpx;
+  font-size: 28rpx;
   color: var(--text-tertiary);
   line-height: 1;
+  font-weight: 300;
 }
 
 .modal-header-left {

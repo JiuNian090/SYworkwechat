@@ -318,14 +318,22 @@
         <text class="back-icon">←</text>
       </view>
       <view class="header-placeholder" wx:else></view>
-      <text class="modal-title">{{currentUserPage === 'main' ? '用户管理' : 
-        (currentUserPage === 'updateNickname' ? '修改昵称' : 
-        (currentUserPage === 'updatePassword' ? '修改密码' : 
-        (currentUserPage === 'avatar' ? '选择头像' : 
-        (currentUserPage === 'switchAccount' ? '切换账号' : 
-        (currentUserPage === 'login' ? '登录' : '删除账户')))))}}</text>
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">{{currentUserPage === 'main' ? '👤' : 
+          (currentUserPage === 'updateNickname' ? '🏷️' : 
+          (currentUserPage === 'updatePassword' ? '🔐' : 
+          (currentUserPage === 'avatar' ? '🎭' : 
+          (currentUserPage === 'switchAccount' ? '🔄' : 
+          (currentUserPage === 'login' ? '🔑' : '🗑️')))))}}</text>
+        <text class="modal-title">{{currentUserPage === 'main' ? '用户管理' : 
+          (currentUserPage === 'updateNickname' ? '修改昵称' : 
+          (currentUserPage === 'updatePassword' ? '修改密码' : 
+          (currentUserPage === 'avatar' ? '选择头像' : 
+          (currentUserPage === 'switchAccount' ? '切换账号' : 
+          (currentUserPage === 'login' ? '账号登录' : '删除账户')))))}}</text>
+      </view>
       <view class="modal-close" bindtap="hideUserManagementModal" hover-class="header-btn-hover" hover-stay-time="100">
-        <text class="close-icon">×</text>
+        <text class="close-icon">✕</text>
       </view>
     </view>
     <view class="modal-body">
