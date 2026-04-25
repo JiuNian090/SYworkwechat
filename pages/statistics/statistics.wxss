@@ -384,6 +384,86 @@ page {
   margin-top: 16rpx;
 }
 
+/* 工时热力图 */
+.heatmap-card {
+  overflow: hidden;
+}
+
+.heatmap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.heatmap-header {
+  display: flex;
+  gap: inherit;
+  margin-bottom: 8rpx;
+  padding: 0 4rpx;
+}
+
+.heatmap-header-label {
+  text-align: center;
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.heatmap-body {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+}
+
+.heatmap-row {
+  display: flex;
+  gap: inherit;
+}
+
+.heatmap-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6rpx;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.heatmap-cell:active {
+  transform: scale(0.92);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+  z-index: 1;
+}
+
+.heatmap-cell-blur {
+  background-color: #f5f5f5 !important;
+  pointer-events: none;
+  border-radius: 6rpx;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  margin-top: 20rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border-color);
+}
+
+.legend-label {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  margin: 0 4rpx;
+}
+
+.legend-item {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 4rpx;
+}
+
 /* 工时统计卡片 */
 .hours-stats {
   padding: 10rpx 0;

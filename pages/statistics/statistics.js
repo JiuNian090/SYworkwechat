@@ -57,7 +57,12 @@ Page({
       months: {}, // 按年份分组的月份
       weeks: {} // 按年月分组的周数
     },
-    hasTooManyRecords: false // 班次明细是否超过30条
+    hasTooManyRecords: false, // 班次明细是否超过30条
+    heatmapWeeks: [], // 热力图数据（按周分组）
+    heatmapCellSizeRpx: 60, // 热力图单元格大小(rpx)
+    heatmapGapRpx: 6, // 热力图单元格间距(rpx)
+    heatmapWeekLabels: ['一', '二', '三', '四', '五', '六', '日'], // 星期标签
+    heatmapColumnsPerRow: 7 // 热力图每行的列数
   },
 
   /**
@@ -477,6 +482,13 @@ Page({
           hourDifferenceWithSign: hourDifferenceWithSign
         }
       };
+
+      // 生成热力图数据
+      const heatmapResult = this.generateHeatmapData(filteredSchedules);
+      newData.heatmapWeeks = heatmapResult.weeks;
+      newData.heatmapCellSizeRpx = heatmapResult.cellSizeRpx;
+      newData.heatmapGapRpx = heatmapResult.gapRpx;
+      newData.heatmapColumnsPerRow = heatmapResult.columnsPerRow;
       
       // 更新缓存
       this._cache.lastShiftsHash = currentShiftsHash;
@@ -949,6 +961,126 @@ Page({
       yAxisMax,
       yAxisMin
     };
+  },
+
+  // 生成热力图数据
+  generateHeatmapData(filteredSchedules) {
+    const days = filteredSchedules || [];
+    const totalDays = days.length;
+
+    if (totalDays === 0) {
+      return { weeks: [], cellSizeRpx: 60, gapRpx: 6, columnsPerRow: 7 };
+    }
+
+    // 根据天数确定单元格大小（rpx）
+    let cellSizeRpx, gapRpx;
+    if (totalDays <= 14) {
+      cellSizeRpx = 74;
+      gapRpx = 8;
+    } else if (totalDays <= 35) {
+      cellSizeRpx = 58;
+      gapRpx = 6;
+    } else if (totalDays <= 90) {
+      cellSizeRpx = 40;
+      gapRpx = 5;
+    } else if (totalDays <= 180) {
+      cellSizeRpx = 28;
+      gapRpx = 4;
+    } else {
+      cellSizeRpx = 20;
+      gapRpx = 3;
+    }
+
+    // 计算每行列数：卡片内容区宽度 = 750rpx - 60rpx(左右margin) - 60rpx(左右padding) = 630rpx
+    const cardContentWidth = 630;
+    let columnsPerRow = Math.floor(cardContentWidth / (cellSizeRpx + gapRpx));
+    columnsPerRow = Math.max(7, Math.min(columnsPerRow, 31));
+
+    // 当数据量不大时保持 7 列（星期对齐），数据量大时填满宽度
+    if (totalDays <= 35) {
+      columnsPerRow = 7;
+    }
+
+    // 构建热力图格子数据
+    const cellItems = days.map(d => {
+      const hours = parseFloat(d.workHours);
+      const validHours = !isNaN(hours) ? hours : 0;
+      const color = this.getHeatmapColor(validHours);
+      return {
+        date: d.date,
+        day: d.day,
+        weekday: d.weekday,
+        shiftType: d.shiftType,
+        workHours: d.workHours,
+        color: color
+      };
+    });
+
+    // 按列数分组为行
+    const rows = [];
+    let currentRow = [];
+
+    if (totalDays <= 35) {
+      // 小数据量：按星期对齐，相邻月份用模糊块补齐
+      const firstDate = new Date(days[0].date);
+      let firstDayOfWeek = firstDate.getDay();
+      firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        currentRow.push({ isPlaceholder: true, color: '#f0f0f0' });
+      }
+
+      cellItems.forEach(cell => {
+        currentRow.push(cell);
+        if (currentRow.length === columnsPerRow) {
+          rows.push(currentRow);
+          currentRow = [];
+        }
+      });
+
+      if (currentRow.length > 0) {
+        while (currentRow.length < columnsPerRow) {
+          currentRow.push({ isPlaceholder: true, color: '#f0f0f0' });
+        }
+        rows.push(currentRow);
+      }
+    } else {
+      // 大数据量：按宽度填充，从左到右排列
+      cellItems.forEach(cell => {
+        currentRow.push(cell);
+        if (currentRow.length === columnsPerRow) {
+          rows.push(currentRow);
+          currentRow = [];
+        }
+      });
+
+      // 末行不填充空白（让剩余空间自然留白，视觉上更自然）
+      if (currentRow.length > 0) {
+        rows.push(currentRow);
+      }
+    }
+
+    return { weeks: rows, cellSizeRpx, gapRpx, columnsPerRow };
+  },
+
+  // 根据工时获取热力图颜色（由浅到深）
+  getHeatmapColor(hours) {
+    if (hours <= 0) return '#ebedf0';
+    if (hours <= 6) return '#c6e48b';
+    if (hours <= 7) return '#7bc96f';
+    if (hours <= 8) return '#239a3b';
+    if (hours < 9) return '#196127';
+    return '#0d4d1a';
+  },
+
+  // 热力图单元格点击事件
+  onHeatmapCellTap(e) {
+    const { date, hours, type } = e.currentTarget.dataset;
+    wx.showToast({
+      title: `${date} ${hours}小时`,
+      icon: 'none',
+      duration: 1500
+    });
   },
 
   // 绘制图表（支持折线图和柱状图）

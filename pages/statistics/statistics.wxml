@@ -141,6 +141,48 @@
       </view>
     </view>
 
+    <!-- 工时热力图 -->
+    <view class="card heatmap-card" wx:if="{{heatmapWeeks.length > 0}}">
+      <view class="card-header">
+        <view class="card-icon">🔥</view>
+        <text class="card-title">工时热力图</text>
+        <text class="card-subtitle">{{statistics.totalDays}} 天</text>
+      </view>
+      <view class="heatmap-container" style="gap: {{heatmapGapRpx}}rpx;">
+          <view wx:if="{{heatmapColumnsPerRow === 7}}" class="heatmap-header" style="gap: {{heatmapGapRpx}}rpx;">
+            <text wx:for="{{heatmapWeekLabels}}" wx:key="index" class="heatmap-header-label" style="width: {{heatmapCellSizeRpx}}rpx;">{{item}}</text>
+          </view>
+          <view class="heatmap-body" style="gap: {{heatmapGapRpx}}rpx;">
+            <view class="heatmap-row" wx:for="{{heatmapWeeks}}" wx:key="index" style="gap: {{heatmapGapRpx}}rpx;">
+              <block wx:for="{{item}}" wx:for-item="cell" wx:key="index">
+                <view wx:if="{{cell.isPlaceholder}}"
+                  class="heatmap-cell heatmap-cell-blur"
+                  style="width: {{heatmapCellSizeRpx}}rpx; height: {{heatmapCellSizeRpx}}rpx;"
+                ></view>
+                <view wx:else
+                  class="heatmap-cell"
+                  style="width: {{heatmapCellSizeRpx}}rpx; height: {{heatmapCellSizeRpx}}rpx; background-color: {{cell.color}};"
+                  bindtap="onHeatmapCellTap"
+                  data-date="{{cell.date}}"
+                  data-hours="{{cell.workHours}}"
+                  data-type="{{cell.shiftType}}"
+                ></view>
+              </block>
+            </view>
+          </view>
+        </view>
+      <view class="heatmap-legend">
+        <text class="legend-label">0</text>
+        <view class="legend-item" style="background-color: #ebedf0;"></view>
+        <view class="legend-item" style="background-color: #c6e48b;"></view>
+        <view class="legend-item" style="background-color: #7bc96f;"></view>
+        <view class="legend-item" style="background-color: #239a3b;"></view>
+        <view class="legend-item" style="background-color: #196127;"></view>
+        <view class="legend-item" style="background-color: #0d4d1a;"></view>
+        <text class="legend-label">≥9h</text>
+      </view>
+    </view>
+
     <!-- 班次统计卡片 -->
     <view class="card stats-card">
       <view class="card-header">
