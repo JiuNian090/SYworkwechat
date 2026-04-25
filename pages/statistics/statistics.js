@@ -361,6 +361,7 @@ Page({
         });
         this.setData(cachedData);
         this.drawChart();
+        this.drawPieChart();
         return;
       }
       
@@ -500,6 +501,8 @@ Page({
       
       // 绘制图表
       this.drawChart();
+      // 绘制饼图
+      this.drawPieChart();
     } catch (e) {
       console.error('计算统计数据失败', e);
       wx.showToast({
@@ -1068,9 +1071,9 @@ Page({
     if (hours <= 0) return '#ebedf0';
     if (hours <= 6) return '#c6e48b';
     if (hours <= 7) return '#7bc96f';
-    if (hours <= 8) return '#239a3b';
-    if (hours < 9) return '#196127';
-    return '#0d4d1a';
+    if (hours <= 8) return '#5aad4a';
+    if (hours < 9) return '#3d8b37';
+    return '#2d6a2b';
   },
 
   // 热力图单元格点击事件
@@ -1473,6 +1476,66 @@ Page({
     }
   },
 
+  // 绘制扇形图
+  drawPieChart() {
+    const { statistics } = this.data;
+    const total = statistics.dayShifts + statistics.nightShifts + statistics.offDays;
+    if (total === 0) return;
+
+    const query = wx.createSelectorQuery();
+    query.select('#pieCanvas').fields({ node: true, size: true }).exec(res => {
+      const canvas = res[0]?.node;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = wx.getWindowInfo().pixelRatio;
+      const width = res[0].width;
+      const height = res[0].height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = Math.min(centerX, centerY) - 10;
+
+      const pieData = [
+        { label: '白天班', value: statistics.dayShifts, color: '#FCD34D' },
+        { label: '跨夜班', value: statistics.nightShifts, color: '#93C5FD' },
+        { label: '休息日', value: statistics.offDays, color: '#D8B4FE' }
+      ];
+
+      // 过滤掉0值的项
+      const validData = pieData.filter(d => d.value > 0);
+      if (validData.length === 0) return;
+
+      const totalValue = validData.reduce((sum, d) => sum + d.value, 0);
+
+      // 计算起始角度，使白天班与跨夜班的分界线位于正上方（12点钟方向）
+      const daySliceAngle = (statistics.dayShifts / total) * 2 * Math.PI;
+      let startAngle = -Math.PI / 2 - daySliceAngle;
+
+      // 绘制扇形图
+      validData.forEach((d, i) => {
+        const sliceAngle = (d.value / totalValue) * 2 * Math.PI;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+        ctx.closePath();
+
+        ctx.fillStyle = d.color;
+        ctx.fill();
+
+        // 扇区之间加白色分割线
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        startAngle += sliceAngle;
+      });
+    });
+  },
+
   onShow() {
     // 页面显示时只在排班数据发生变化时重新计算统计数据
     const allShifts = wx.getStorageSync('shifts') || {};
@@ -1485,6 +1548,7 @@ Page({
       this.parsePeriodData();
       this.calculateStatistics();
       this.drawChart();
+      this.drawPieChart();
     }
   },
 

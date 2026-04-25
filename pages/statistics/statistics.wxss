@@ -233,81 +233,41 @@ page {
   animation: pulse 0.5s ease-in-out;
 }
 
-/* 班次统计卡片 */
-.shift-stats-grid {
+/* 班次统计卡片 - 饼图 */
+.pie-chart-wrapper {
   display: flex;
-  gap: 20rpx;
+  justify-content: center;
+  margin: 10rpx 0;
 }
 
-.shift-stat-item {
-  flex: 1;
-  background: linear-gradient(145deg, #fafafa 0%, #f0f0f0 100%);
-  border-radius: 20rpx;
-  padding: 24rpx 16rpx;
-  text-align: center;
-  transition: all 0.2s ease;
-  border: 2rpx solid transparent;
+.pie-canvas {
+  width: 280rpx;
+  height: 280rpx;
 }
 
-.shift-stat-item:active {
-  transform: translateY(-4rpx);
+.pie-legend {
+  display: flex;
+  justify-content: center;
+  gap: 30rpx;
+  margin-top: 16rpx;
+  flex-wrap: wrap;
 }
 
-.shift-stat-item.day-shift {
-  background: linear-gradient(145deg, #ffeedd 0%, #ffd4a8 100%);
-  border-color: rgba(255, 149, 0, 0.3);
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
 }
 
-.shift-stat-item.night-shift {
-  background: linear-gradient(145deg, #9ca3af 0%, #6b7280 100%);
-  border-color: rgba(107, 114, 128, 0.3);
+.legend-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.shift-stat-item.off-day {
-  background: linear-gradient(145deg, #f3e8ff 0%, #e9d5ff 100%);
-  border-color: rgba(168, 85, 247, 0.3);
-}
-
-.stat-icon {
-  font-size: 48rpx;
-  margin-bottom: 12rpx;
-}
-
-.shift-stat-item.night-shift .stat-icon {
-  filter: brightness(1.5);
-}
-
-.stat-value {
-  display: block;
-  font-size: 48rpx;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 8rpx;
-}
-
-.shift-stat-item.day-shift .stat-value {
-  color: var(--day-shift-color);
-}
-
-.shift-stat-item.night-shift .stat-value {
-  color: #ffffff;
-}
-
-.shift-stat-item.night-shift .stat-label {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.shift-stat-item.off-day .stat-value {
-  color: #9333ea;
-}
-
-.shift-stat-item.off-day .stat-label {
-  color: #7c3aed;
-}
-
-.stat-label {
-  display: block;
-  font-size: 22rpx;
+.pie-legend .legend-label {
+  font-size: 24rpx;
   color: var(--text-secondary);
 }
 
@@ -932,19 +892,16 @@ page {
 
 /* 响应式适配 */
 @media (max-width: 320px) {
-  .shift-stats-grid {
-    gap: 12rpx;
+  .pie-canvas {
+    width: 220rpx;
+    height: 220rpx;
   }
-  
-  .shift-stat-item {
-    padding: 20rpx 10rpx;
+
+  .pie-legend {
+    gap: 20rpx;
   }
-  
-  .stat-value {
-    font-size: 40rpx;
-  }
-  
-  .stat-label {
+
+  .pie-legend .legend-label {
     font-size: 20rpx;
   }
   
@@ -985,32 +942,25 @@ page {
     margin: 0 60rpx 40rpx;
   }
   
-  .shift-stats-grid {
-    gap: 30rpx;
+  .pie-canvas {
+    width: 340rpx;
+    height: 340rpx;
   }
-  
-  .shift-stat-item {
-    padding: 30rpx 20rpx;
+
+  .pie-legend .legend-label {
+    font-size: 28rpx;
   }
-  
+
   .header-title {
     font-size: 56rpx;
   }
-  
+
   .header-subtitle {
     font-size: 32rpx;
   }
-  
+
   .card-title {
     font-size: 36rpx;
-  }
-  
-  .stat-value {
-    font-size: 56rpx;
-  }
-  
-  .stat-label {
-    font-size: 24rpx;
   }
   
   .hours-value {
@@ -1094,33 +1044,7 @@ page {
   .list-card {
     grid-column: 1 / 3;
   }
-  
-  /* 班次统计网格横屏布局 */
-  .shift-stats-grid {
-    flex-direction: column;
-    gap: 16rpx;
-  }
-  
-  .shift-stat-item {
-    flex-direction: row;
-    text-align: left;
-    padding: 20rpx;
-  }
-  
-  .stat-icon {
-    font-size: 40rpx;
-    margin-bottom: 0;
-    margin-right: 20rpx;
-  }
-  
-  .stat-info {
-    flex: 1;
-  }
-  
-  .stat-value {
-    font-size: 40rpx;
-  }
-  
+
   /* 工时统计横屏布局 */
   .hours-stats {
     display: flex;
@@ -1273,26 +1197,10 @@ page {
   .stats-card {
     grid-column: 1 / 3;
   }
-  
-  .shift-stats-grid {
-    gap: 20rpx;
-  }
-  
-  .shift-stat-item {
-    padding: 24rpx;
-  }
-  
-  .stat-icon {
-    font-size: 48rpx;
-    margin-right: 24rpx;
-  }
-  
-  .stat-value {
-    font-size: 48rpx;
-  }
-  
-  .stat-label {
-    font-size: 28rpx;
+
+  .pie-canvas {
+    width: 320rpx;
+    height: 320rpx;
   }
   
   .hours-value {

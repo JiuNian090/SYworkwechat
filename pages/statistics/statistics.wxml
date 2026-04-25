@@ -176,9 +176,9 @@
         <view class="legend-item" style="background-color: #ebedf0;"></view>
         <view class="legend-item" style="background-color: #c6e48b;"></view>
         <view class="legend-item" style="background-color: #7bc96f;"></view>
-        <view class="legend-item" style="background-color: #239a3b;"></view>
-        <view class="legend-item" style="background-color: #196127;"></view>
-        <view class="legend-item" style="background-color: #0d4d1a;"></view>
+        <view class="legend-item" style="background-color: #5aad4a;"></view>
+        <view class="legend-item" style="background-color: #3d8b37;"></view>
+        <view class="legend-item" style="background-color: #2d6a2b;"></view>
         <text class="legend-label">≥9h</text>
       </view>
     </view>
@@ -190,27 +190,21 @@
         <text class="card-title">班次统计</text>
         <text class="card-subtitle">共 {{statistics.totalDays}} 天</text>
       </view>
-      <view class="shift-stats-grid">
-        <view class="shift-stat-item day-shift">
-          <view class="stat-icon">☀️</view>
-          <view class="stat-info">
-            <text class="stat-value">{{statistics.dayShifts}}</text>
-            <text class="stat-label">白天班天数</text>
-          </view>
+      <view class="pie-chart-wrapper">
+        <canvas type="2d" id="pieCanvas" class="pie-canvas"></canvas>
+      </view>
+      <view class="pie-legend">
+        <view class="pie-legend-item">
+          <view class="legend-dot" style="background-color: #FCD34D;"></view>
+          <text class="legend-label">白天班 {{statistics.dayShifts}} 天</text>
         </view>
-        <view class="shift-stat-item night-shift">
-          <view class="stat-icon">🌙</view>
-          <view class="stat-info">
-            <text class="stat-value">{{statistics.nightShifts}}</text>
-            <text class="stat-label">跨夜班天数</text>
-          </view>
+        <view class="pie-legend-item">
+          <view class="legend-dot" style="background-color: #93C5FD;"></view>
+          <text class="legend-label">跨夜班 {{statistics.nightShifts}} 天</text>
         </view>
-        <view class="shift-stat-item off-day">
-          <view class="stat-icon">😴</view>
-          <view class="stat-info">
-            <text class="stat-value">{{statistics.offDays}}</text>
-            <text class="stat-label">休息天数</text>
-          </view>
+        <view class="pie-legend-item">
+          <view class="legend-dot" style="background-color: #D8B4FE;"></view>
+          <text class="legend-label">休息日 {{statistics.offDays}} 天</text>
         </view>
       </view>
     </view>
