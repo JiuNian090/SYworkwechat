@@ -1,6 +1,8 @@
+const env = require('./utils/env');
+
 var config = {
-  cloudEnv: 'YOUR_CLOUD_ENV_ID',
-  appid: 'YOUR_APP_ID',
+  cloudEnv: env.CLOUD_ENV,
+  appid: env.APP_ID,
   appName: 'SYwork',
 
   cloudFunctions: {
