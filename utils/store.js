@@ -53,14 +53,14 @@ function createStore(initialState) {
 
     Object.keys(updates).forEach(key => {
       if (listeners[key]) {
-        listeners[key].forEach(cb => {
+        Object.values(listeners[key]).forEach(cb => {
           try { cb(state[key], prevState[key]); } catch (e) {}
         });
       }
     });
 
     if (listeners['*']) {
-      listeners['*'].forEach(cb => {
+      Object.values(listeners['*']).forEach(cb => {
         try { cb(state, prevState); } catch (e) {}
       });
     }
