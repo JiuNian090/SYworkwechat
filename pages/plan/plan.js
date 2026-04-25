@@ -33,27 +33,25 @@ Page({
       color: '#07c160'
     },
     shiftTypes: ['白天班', '跨夜班', '休息日'],
-    colorList: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1'],
+    presetColors: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#722ed1', '#13c2c2'],
     colorNames: {
-      '#07c160': '绿色',
-      '#faad14': '橙色',
-      '#1890ff': '蓝色',
-      '#ff4d4f': '红色',
-      '#13c2c2': '青色',
-      '#722ed1': '紫色'
+      '#07c160': '翠绿',
+      '#faad14': '暖橙',
+      '#1890ff': '湛蓝',
+      '#ff4d4f': '嫣红',
+      '#722ed1': '魅紫',
+      '#13c2c2': '黛青'
     },
-    colorOptions: [
-      { value: '#07c160', name: '绿色' },
-      { value: '#faad14', name: '橙色' },
-      { value: '#1890ff', name: '蓝色' },
-      { value: '#ff4d4f', name: '红色' },
-      { value: '#13c2c2', name: '青色' },
-      { value: '#722ed1', name: '紫色' }
-    ],
-    colorBarPosition: 50, // 添加颜色条位置（百分比）
-    editColorBarPosition: 50, // 编辑颜色条位置（百分比）
-    hue: 120,
-    presetColors: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1', '#000000', '#ffffff']
+    customColor: '#34d399',
+    editCustomColor: '#34d399',
+    selectedColorType: 'preset',
+    showColorPicker: false,
+    colorPickerMode: 'add',
+    pickerHue: 120,
+    pickerSaturation: 100,
+    pickerBrightness: 50,
+    pickerColor: '#34d399',
+    pickerHueColor: '#34d399'
   },
 
   onLoad() {
@@ -82,6 +80,9 @@ Page({
   },
 
   showAddTemplateModal() {
+    const initialColor = '#07c160';
+    const hsv = this.hexToHsv(initialColor);
+    const hueColor = this.hsvToHex(hsv.h, 100, 100);
     this.setData({
       showAddTemplate: true,
       newTemplate: {
@@ -94,10 +95,17 @@ Page({
         minutesIndex: 0,
         workHours: 8.0,
         typeIndex: 0,
-        color: '#07c160'
-      }
+        color: initialColor
+      },
+      selectedColorType: 'preset',
+      customColor: '#34d399',
+      showColorPicker: false,
+      pickerHue: hsv.h,
+      pickerSaturation: hsv.s,
+      pickerBrightness: hsv.v,
+      pickerColor: initialColor,
+      pickerHueColor: hueColor
     });
-    this._cacheColorBarRect();
   },
 
   hideAddTemplateModal() {
@@ -171,11 +179,6 @@ Page({
   },
 
 
-
-  onColorChange(e) {
-    const selectedColor = this.data.colorOptions[e.detail.value];
-    this.setData({ 'newTemplate.color': selectedColor.value });
-  },
 
   onTypeChange(e) {
     this.setData({
@@ -285,8 +288,13 @@ Page({
     // 查找班次类型索引
     const typeIndex = this.data.shiftTypes.indexOf(tpl.type);
     
-    // 计算颜色在颜色条上的位置
-    const editColorBarPosition = this.getColorBarPositionFromColor(tpl.color);
+    // 判断当前颜色是否为预设颜色
+    const isPreset = this.data.presetColors.indexOf(tpl.color) >= 0;
+    const selectedColorType = isPreset ? 'preset' : 'custom';
+    
+    // 初始化颜色选择器状态
+    const hsv = this.hexToHsv(tpl.color);
+    const hueColor = this.hsvToHex(hsv.h, 100, 100);
     
     const templateWithTime = {
       ...tpl,
@@ -301,9 +309,15 @@ Page({
       showEditTemplate: true,
       editIndex: index,
       editTemplate: templateWithTime,
-      editColorBarPosition: editColorBarPosition
+      selectedColorType: selectedColorType,
+      editCustomColor: isPreset ? '#34d399' : tpl.color,
+      showColorPicker: false,
+      pickerHue: hsv.h,
+      pickerSaturation: hsv.s,
+      pickerBrightness: hsv.v,
+      pickerColor: tpl.color,
+      pickerHueColor: hueColor
     });
-    this._cacheColorBarRect();
   },
 
   hideEditTemplateModal() {
@@ -405,38 +419,191 @@ Page({
     };
   },
 
-  // 自定义颜色选择器相关方法
+  // ============ 颜色圆圈选择器 ============
+
   /**
-   * HSL转RGB颜色值
-   * @param {number} h 色相 (0-360)
-   * @param {number} s 饱和度 (0-100)
-   * @param {number} l 亮度 (0-100)
-   * @returns {string} RGB颜色字符串
+   * 选择预设颜色
    */
-  hslToRgb(h, s, l) {
+  selectColor(e) {
+    const color = e.currentTarget.dataset.color;
+    const mode = e.currentTarget.dataset.mode || 'add';
+    
+    if (mode === 'edit') {
+      this.setData({
+        'editTemplate.color': color,
+        selectedColorType: 'preset'
+      });
+    } else {
+      this.setData({
+        'newTemplate.color': color,
+        selectedColorType: 'preset'
+      });
+    }
+  },
+
+  /**
+   * 打开颜色调色器
+   */
+  openColorPicker(e) {
+    const mode = e.currentTarget.dataset.mode || 'add';
+    const currentColor = mode === 'edit' ? this.data.editTemplate.color : this.data.newTemplate.color;
+    const hsv = this.hexToHsv(currentColor);
+    const hueColor = this.hsvToHex(hsv.h, 100, 100);
+    
+    this.setData({
+      showColorPicker: true,
+      colorPickerMode: mode,
+      pickerHue: hsv.h,
+      pickerSaturation: hsv.s,
+      pickerBrightness: hsv.v,
+      pickerColor: currentColor,
+      pickerHueColor: hueColor
+    });
+    
+    this._cachePickerRects();
+  },
+
+  /**
+   * 取消颜色选择
+   */
+  cancelColorPicker() {
+    this.setData({ showColorPicker: false });
+  },
+
+  /**
+   * 确认颜色选择
+   */
+  confirmColorPicker() {
+    const color = this.data.pickerColor;
+    const mode = this.data.colorPickerMode;
+    
+    if (mode === 'edit') {
+      this.setData({
+        'editTemplate.color': color,
+        editCustomColor: color,
+        selectedColorType: 'custom',
+        showColorPicker: false
+      });
+    } else {
+      this.setData({
+        'newTemplate.color': color,
+        customColor: color,
+        selectedColorType: 'custom',
+        showColorPicker: false
+      });
+    }
+  },
+
+  // ============ 颜色调色器交互 ============
+
+  _cachePickerRects() {
+    setTimeout(() => {
+      try {
+        const page = this;
+        const query = wx.createSelectorQuery();
+        query.select('.palette-area').boundingClientRect();
+        query.select('.hue-slider').boundingClientRect();
+        query.exec(function (res) {
+          if (res[0]) page._paletteRect = res[0];
+          if (res[1]) page._hueSliderRect = res[1];
+        });
+      } catch (e) {}
+    }, 300);
+  },
+
+  onPaletteTouchStart(e) {
+    this._updatePaletteColor(e);
+  },
+
+  onPaletteTouchMove(e) {
+    if (this._paletteMoveTimer) return;
+    this._paletteMoveTimer = setTimeout(() => {
+      this._paletteMoveTimer = null;
+      this._updatePaletteColor(e);
+    }, 10);
+  },
+
+  onPaletteTouchEnd() {
+    // 无需额外操作
+  },
+
+  _updatePaletteColor(e) {
+    if (!this._paletteRect || !this._paletteRect.width) {
+      this._cachePickerRects();
+      return;
+    }
+    const touch = e.touches[0];
+    const rect = this._paletteRect;
+    const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left));
+    const y = Math.max(0, Math.min(rect.height, touch.clientY - rect.top));
+    
+    const saturation = Math.round((x / rect.width) * 100);
+    const brightness = Math.round((1 - y / rect.height) * 100);
+    const color = this.hsvToHex(this.data.pickerHue, saturation, brightness);
+    
+    this.setData({
+      pickerSaturation: saturation,
+      pickerBrightness: brightness,
+      pickerColor: color
+    });
+  },
+
+  onHueSliderTouchStart(e) {
+    this._updateHueFromTouch(e);
+  },
+
+  onHueSliderTouchMove(e) {
+    if (this._hueMoveTimer) return;
+    this._hueMoveTimer = setTimeout(() => {
+      this._hueMoveTimer = null;
+      this._updateHueFromTouch(e);
+    }, 10);
+  },
+
+  onHueSliderTouchEnd() {
+    // 无需额外操作
+  },
+
+  _updateHueFromTouch(e) {
+    if (!this._hueSliderRect || !this._hueSliderRect.width) return;
+    const touch = e.touches[0];
+    const rect = this._hueSliderRect;
+    const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left));
+    const hue = Math.round((x / rect.width) * 360);
+    const hueColor = this.hsvToHex(hue, 100, 100);
+    const color = this.hsvToHex(hue, this.data.pickerSaturation, this.data.pickerBrightness);
+    
+    this.setData({
+      pickerHue: hue,
+      pickerHueColor: hueColor,
+      pickerColor: color
+    });
+  },
+
+  // ============ 颜色转换工具 ============
+
+  /**
+   * HSV 转 HEX 颜色
+   */
+  hsvToHex(h, s, v) {
     h = h / 360;
     s = s / 100;
-    l = l / 100;
+    v = v / 100;
+    
+    const i = Math.floor(h * 6);
+    const f = h * 6 - i;
+    const p = v * (1 - s);
+    const q = v * (1 - f * s);
+    const t = v * (1 - (1 - f) * s);
     
     let r, g, b;
-    
-    if (s === 0) {
-      r = g = b = l; // 灰色
-    } else {
-      const hue2rgb = (p, q, t) => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1/6) return p + (q - p) * 6 * t;
-        if (t < 1/2) return q;
-        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-        return p;
-      };
-      
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1/3);
-      g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1/3);
+    switch (i % 6) {
+      case 0: r = v; g = t; b = p; break;
+      case 1: r = q; g = v; b = p; break;
+      case 2: r = p; g = v; b = t; break;
+      case 3: r = p; g = q; b = v; break;
+      case 4: r = t; g = p; b = v; break;
+      case 5: r = v; g = p; b = q; break;
     }
     
     const toHex = (c) => {
@@ -448,226 +615,44 @@ Page({
   },
 
   /**
+   * HEX 转 HSV
+   */
+  hexToHsv(hex) {
+    if (!hex || hex.length < 7) return { h: 0, s: 0, v: 0 };
+    const rgb = hex.replace('#', '');
+    const r = parseInt(rgb.substr(0, 2), 16) / 255;
+    const g = parseInt(rgb.substr(2, 2), 16) / 255;
+    const b = parseInt(rgb.substr(4, 2), 16) / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    
+    let h = 0;
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    
+    if (max !== min) {
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h = (h / 6) * 360;
+    }
+    
+    return { h: Math.round(h), s: Math.round(s * 100), v: Math.round(v * 100) };
+  },
+
+  /**
    * 判断颜色是否为浅色
-   * @param {string} hexColor 十六进制颜色值
-   * @returns {boolean} 是否为浅色
    */
   isLightColor(hexColor) {
-    // 移除 # 符号
     const hex = hexColor.replace('#', '');
-    
-    // 解析RGB值
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
-    
-    // 使用亮度公式计算亮度
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    
-    return brightness > 128;
-  },
-
-  /**
-   * 处理色相变化事件
-   * @param {Object} e 事件对象
-   */
-  onHueChange(e) {
-    const hue = e.detail.value;
-    const color = this.hslToRgb(hue, 100, 50);
-    
-    this.setData({
-      hue: hue,
-      'newTemplate.color': color
-    });
-  },
-
-  /**
-   * 选择预设颜色
-   * @param {Object} e 事件对象
-   */
-  selectPresetColor(e) {
-    const color = e.currentTarget.dataset.color;
-    
-    // 如果选择的是白色或黑色，使用默认色相值
-    let hue = this.data.hue;
-    if (color === '#ffffff' || color === '#000000') {
-      hue = color === '#ffffff' ? 0 : 0;
-    } else {
-      // 对于其他颜色，计算近似的色相值
-      // 这里简化处理，实际应用中可能需要更精确的转换算法
-      const colorMap = {
-        '#07c160': 120,   // 绿色
-        '#faad14': 39,    // 橙色
-        '#1890ff': 210,   // 蓝色
-        '#ff4d4f': 0,     // 红色
-        '#13c2c2': 180,   // 青色
-        '#722ed1': 270    // 紫色
-      };
-      hue = colorMap[color] || this.data.hue;
-    }
-    
-    this.setData({
-      hue: hue,
-      'newTemplate.color': color
-    });
-  },
-
-  // 颜色条选择功能相关方法
-  getColorFromPosition(position) {
-    // 定义颜色条的渐变色标（与wxml中的渐变保持一致）
-    const colorStops = [
-      { position: 0, color: [255, 0, 0] },      // #ff0000 红色
-      { position: 17, color: [255, 255, 0] },   // #ffff00 黄色
-      { position: 33, color: [0, 204, 0] },     // #00cc00 深绿色（修改后的绿色）
-      { position: 50, color: [0, 204, 204] },   // #00cccc 深青色（修改后的天蓝色）
-      { position: 67, color: [0, 0, 255] },     // #0000ff 蓝色
-      { position: 83, color: [255, 0, 255] },   // #ff00ff 紫色
-      { position: 100, color: [255, 0, 0] }     // #ff0000 红色（回到红色）
-    ];
-    
-    // 确保位置在0-100范围内
-    position = Math.max(0, Math.min(100, position));
-    
-    // 找到相邻的两个色标
-    let leftStop = colorStops[0];
-    let rightStop = colorStops[colorStops.length - 1];
-    
-    for (let i = 0; i < colorStops.length - 1; i++) {
-      if (position >= colorStops[i].position && position <= colorStops[i + 1].position) {
-        leftStop = colorStops[i];
-        rightStop = colorStops[i + 1];
-        break;
-      }
-    }
-    
-    // 计算插值比例
-    const range = rightStop.position - leftStop.position;
-    const ratio = range === 0 ? 0 : (position - leftStop.position) / range;
-    
-    // 在两个色标之间进行线性插值
-    const r = Math.round(leftStop.color[0] + (rightStop.color[0] - leftStop.color[0]) * ratio);
-    const g = Math.round(leftStop.color[1] + (rightStop.color[1] - leftStop.color[1]) * ratio);
-    const b = Math.round(leftStop.color[2] + (rightStop.color[2] - leftStop.color[2]) * ratio);
-    
-    // 转换为十六进制颜色值
-    return '#' + [r, g, b].map(x => {
-      const hex = x.toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    }).join('');
-  },
-
-  /**
-   * 根据颜色值计算在颜色条上的位置
-   * @param {string} color 十六进制颜色值
-   * @returns {number} 位置百分比 (0-100)
-   */
-  getColorBarPositionFromColor(color) {
-    // 如果颜色不在预设颜色中，计算其在颜色条上的位置
-    if (!color || !color.startsWith('#') || color.length !== 7) {
-      return 50; // 默认位置
-    }
-    
-    // 尝试匹配预设颜色
-    const presetColors = this.data.presetColors;
-    const index = presetColors.indexOf(color);
-    if (index >= 0) {
-      // 如果是预设颜色，均匀分布在颜色条上
-      return (index / (presetColors.length - 1)) * 100;
-    }
-    
-    // 对于自定义颜色，尝试计算其色相值
-    try {
-      // 移除 # 符号
-      const hex = color.replace('#', '');
-      
-      // 解析RGB值
-      const r = parseInt(hex.substr(0, 2), 16) / 255;
-      const g = parseInt(hex.substr(2, 2), 16) / 255;
-      const b = parseInt(hex.substr(4, 2), 16) / 255;
-      
-      // 转换为HSL
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      let h;
-      
-      if (max === min) {
-        h = 0; // 灰色
-      } else {
-        const d = max - min;
-        switch (max) {
-          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-          case g: h = (b - r) / d + 2; break;
-          case b: h = (r - g) / d + 4; break;
-        }
-        h /= 6;
-      }
-      
-      // 转换为位置百分比
-      return h * 100;
-    } catch (e) {
-      console.error('计算颜色位置失败', e);
-      return 50; // 默认位置
-    }
-  },
-
-  _cacheColorBarRect() {
-    setTimeout(() => {
-      try {
-        const page = this;
-        const query = wx.createSelectorQuery();
-        query.select('.color-bar').boundingClientRect();
-        query.exec(function (res) {
-          if (res[0]) {
-            page._barRect = res[0];
-          }
-        });
-      } catch (e) {}
-    }, 300);
-  },
-
-  _getColorBarPosition(clientX) {
-    if (!this._barRect || !this._barRect.width) return -1;
-    return Math.max(0, Math.min(100, ((clientX - this._barRect.left) / this._barRect.width) * 100));
-  },
-
-  onColorBarTouchStart(e) {
-    try {
-      const mode = e.currentTarget.dataset.mode || 'add';
-      const clientX = e.touches ? e.touches[0].clientX : e.detail.x;
-      const position = this._getColorBarPosition(clientX);
-      if (position >= 0) this._updateColorBarPosition(mode, position);
-    } catch (e) {
-      console.error('颜色条触摸错误', e);
-    }
-  },
-
-  onColorBarTouchMove(e) {
-    if (!e.touches) return;
-    if (this._colorBarMoveTimer) return;
-    const mode = e.currentTarget.dataset.mode || 'add';
-    const clientX = e.touches[0].clientX;
-    this._colorBarMoveTimer = setTimeout(() => {
-      this._colorBarMoveTimer = null;
-      try {
-        const position = this._getColorBarPosition(clientX);
-        if (position >= 0) this._updateColorBarPosition(mode, position);
-      } catch (e) {}
-    }, 20);
-  },
-
-  _updateColorBarPosition(mode, position) {
-    const color = this.getColorFromPosition(position);
-    if (mode === 'edit') {
-      this.setData({
-        editColorBarPosition: position,
-        'editTemplate.color': color
-      });
-    } else {
-      this.setData({
-        colorBarPosition: position,
-        'newTemplate.color': color
-      });
-    }
+    return (r * 299 + g * 587 + b * 114) / 1000 > 128;
   },
 
   stopPropagation() {
