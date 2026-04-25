@@ -1,8 +1,9 @@
 function getDeviceKey() {
   let deviceKey = wx.getStorageSync('_device_key');
   if (!deviceKey) {
-    const systemInfo = wx.getSystemInfoSync();
-    const seed = systemInfo.model + systemInfo.system + systemInfo.platform + Math.random().toString(36);
+    const deviceInfo = wx.getDeviceInfo();
+    const appBaseInfo = wx.getAppBaseInfo();
+    const seed = deviceInfo.model + appBaseInfo.system + appBaseInfo.platform + Math.random().toString(36);
     let hash = 0;
     for (let i = 0; i < seed.length; i++) {
       const char = seed.charCodeAt(i);

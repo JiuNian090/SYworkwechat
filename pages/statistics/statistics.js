@@ -499,8 +499,8 @@ Page({
 
   _initVirtualScrollParams() {
     if (this._itemHeightPx) return;
-    const sysInfo = wx.getSystemInfoSync();
-    this._rpxRatio = sysInfo.windowWidth / 750;
+    const windowInfo = wx.getWindowInfo();
+    this._rpxRatio = windowInfo.windowWidth / 750;
     this._itemHeightRpx = 110;
     this._itemHeightPx = Math.ceil(this._itemHeightRpx * this._rpxRatio);
     this._visibleBuffer = 7;
