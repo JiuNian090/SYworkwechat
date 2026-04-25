@@ -70,6 +70,36 @@ Page({
     cumulativeDailyAvg: 0 // 日均工时
   },
 
+  // 日期范围持久化存储键名
+  STATISTICS_DATE_KEY: 'statisticsDateRange',
+
+  /**
+   * 保存当前日期范围状态到本地存储
+   */
+  saveDateRangeState() {
+    const { startDate, endDate, activeQuickBtn, activePeriodBtn, weekPickerValue, monthPickerValue, yearPickerValue } = this.data;
+    wx.setStorageSync(this.STATISTICS_DATE_KEY, {
+      startDate,
+      endDate,
+      activeQuickBtn,
+      activePeriodBtn,
+      weekPickerValue,
+      monthPickerValue,
+      yearPickerValue
+    });
+  },
+
+  /**
+   * 从本地存储恢复日期范围状态
+   */
+  loadDateRangeState() {
+    try {
+      return wx.getStorageSync(this.STATISTICS_DATE_KEY) || null;
+    } catch (e) {
+      return null;
+    }
+  },
+
   /**
    * 跳转到使用说明页面
    */
@@ -162,6 +192,7 @@ Page({
       activeQuickBtn: 'lastWeek',
       activePeriodBtn: ''
     });
+    this.saveDateRangeState();
     this.calculateStatistics();
   },
 
@@ -175,6 +206,7 @@ Page({
       activeQuickBtn: 'thisWeek',
       activePeriodBtn: ''
     });
+    this.saveDateRangeState();
     this.calculateStatistics();
   },
 
@@ -190,6 +222,7 @@ Page({
       activeQuickBtn: 'nextWeek',
       activePeriodBtn: ''
     });
+    this.saveDateRangeState();
     this.calculateStatistics();
   },
 
@@ -204,6 +237,7 @@ Page({
       activePeriodBtn: '',
       chartTimeUnit: 'week' // 选择本月时切换到周视图
     });
+    this.saveDateRangeState();
     this.calculateStatistics();
   },
 
@@ -221,6 +255,7 @@ Page({
       activeQuickBtn: '', // 清除快捷按钮选中状态
       activePeriodBtn: ''
     });
+    this.saveDateRangeState();
     this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
     this.calculateStatistics();
   },
@@ -232,6 +267,7 @@ Page({
       activeQuickBtn: '', // 清除快捷按钮选中状态
       activePeriodBtn: ''
     });
+    this.saveDateRangeState();
     this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
     this.calculateStatistics();
   },
@@ -792,8 +828,23 @@ Page({
     // 解析周期数据
     this.parsePeriodData();
     
-    // 页面加载时默认选定本周
-    this.selectThisWeek();
+    // 尝试恢复上次选中的日期范围
+    const savedState = this.loadDateRangeState();
+    if (savedState && savedState.startDate && savedState.endDate) {
+      this.setData({
+        startDate: savedState.startDate,
+        endDate: savedState.endDate,
+        activeQuickBtn: savedState.activeQuickBtn || '',
+        activePeriodBtn: savedState.activePeriodBtn || '',
+        weekPickerValue: savedState.weekPickerValue || [0, 0, 0],
+        monthPickerValue: savedState.monthPickerValue || [0, 0],
+        yearPickerValue: savedState.yearPickerValue || 0
+      });
+      this.calculateStatistics();
+    } else {
+      // 没有保存的记录，默认选中本周
+      this.selectThisWeek();
+    }
 
     const statsPage = this;
     this._storeUnsub = store.subscribe('_lastDataRestore', function () {
@@ -1850,6 +1901,7 @@ Page({
         activePeriodBtn: 'week',
         weekPickerValue: value
       });
+      this.saveDateRangeState();
       this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       this.calculateStatistics();
     }
@@ -1900,6 +1952,7 @@ Page({
         activePeriodBtn: 'month',
         monthPickerValue: value
       });
+      this.saveDateRangeState();
       this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       this.calculateStatistics();
     }
@@ -1921,6 +1974,7 @@ Page({
         activePeriodBtn: 'year',
         yearPickerValue: value
       });
+      this.saveDateRangeState();
       this._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       this.calculateStatistics();
     }
