@@ -2240,140 +2240,229 @@ page {
 .account-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 32rpx;
-  margin: 0 20rpx 20rpx;
-  background: #ffffff;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
-  border: 2rpx solid transparent;
+  padding: 28rpx 32rpx;
+  margin: 0 24rpx 20rpx;
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid #f0f0f0;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.account-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 20rpx;
-  flex-shrink: 0;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-}
-
-.avatar-text {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: white;
-  line-height: 1;
-}
-
-.avatar-emoji {
-  font-size: 54rpx;
-  line-height: 1;
-}
-
-.account-item:hover {
-  border-color: var(--primary-light);
-  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.12);
-  transform: translateY(-2rpx);
+.account-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6rpx;
+  background: linear-gradient(180deg, var(--primary-color), var(--primary-dark));
+  border-radius: 0 4rpx 4rpx 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .account-item:last-child {
   margin-bottom: 0;
 }
 
+.account-item-hover {
+  transform: scale(0.98) !important;
+  border-color: var(--primary-light) !important;
+  box-shadow: 0 6rpx 24rpx rgba(52, 211, 153, 0.15) !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%) !important;
+}
+
+.account-item-hover::before {
+  opacity: 1 !important;
+}
+
+.account-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  position: relative;
+  border: 2rpx solid #f0f0f0;
+}
+
+.account-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -4rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba(0, 0, 0, 0.03);
+}
+
+.avatar-text {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: var(--primary-color);
+  line-height: 1;
+  z-index: 1;
+}
+
+.avatar-emoji {
+  font-size: 52rpx;
+  line-height: 1;
+  z-index: 1;
+}
+
 .account-info {
   flex: 1;
-  padding-right: 20rpx;
+  min-width: 0;
+  padding-right: 16rpx;
 }
 
 .account-name {
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 8rpx;
   display: block;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-bottom: 10rpx;
 }
 
-.account-time {
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-  background-color: rgba(0, 0, 0, 0.05);
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
-  display: inline-block;
-}
-
-.account-actions {
-  margin-left: 10rpx;
+.account-meta {
   display: flex;
   align-items: center;
   gap: 12rpx;
+  flex-wrap: wrap;
 }
 
-.auto-restore-checkbox {
-  width: 40rpx;
-  height: 40rpx;
-  border: 3rpx solid var(--border-color);
+.account-time {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  background-color: #f5f5f5;
+  padding: 4rpx 12rpx;
   border-radius: 8rpx;
+  display: inline-block;
+  line-height: 1.3;
+}
+
+.account-password-status {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1;
+  background-color: #f5f5f5;
+}
+
+.account-password-status.has-password {
+  color: var(--primary-dark);
+  background-color: rgba(52, 211, 153, 0.1);
+}
+
+.account-actions {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+  gap: 16rpx;
   flex-shrink: 0;
 }
 
+.auto-restore-checkbox {
+  width: 48rpx;
+  height: 48rpx;
+  border: 3rpx solid #d1d5db;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  background: #ffffff;
+  position: relative;
+}
+
 .auto-restore-checkbox.checked {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   border-color: var(--primary-color);
+  box-shadow: 0 2rpx 8rpx rgba(52, 211, 153, 0.3);
+}
+
+.checkbox-hover {
+  transform: scale(0.9) !important;
+  opacity: 0.7 !important;
 }
 
 .checkmark {
   color: white;
-  font-size: 24rpx;
+  font-size: 26rpx;
   font-weight: bold;
   line-height: 1;
 }
 
 .delete-btn {
-  width: 52rpx;
-  height: 52rpx;
+  width: 48rpx;
+  height: 48rpx;
   border-radius: 50%;
   background-color: #f5f5f5;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.06);
 }
 
-.delete-btn:hover {
-  background-color: #fee2e2;
-  transform: scale(1.1);
-  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.2);
+.delete-hover {
+  background-color: #fee2e2 !important;
+  transform: scale(1.15) !important;
+  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.25) !important;
 }
 
 .delete-icon {
-  font-size: 28rpx;
-  color: #9ca3af;
-  font-weight: bold;
-  transition: all 0.3s ease;
+  font-size: 26rpx;
+  line-height: 1;
+  transition: all 0.25s ease;
 }
 
-.delete-btn:hover .delete-icon {
-  color: #ef4444;
+.delete-hover .delete-icon {
+  filter: brightness(1.2);
 }
 
 /* 账号列表容器 */
 .user-page-switch-account {
-  padding: 20rpx 0;
+  padding: 24rpx 0;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+/* 复选框功能提示 */
+.switch-tip {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 28rpx;
+  margin: 0 24rpx 20rpx;
+  background: rgba(52, 211, 153, 0.08);
+  border: 1rpx solid rgba(52, 211, 153, 0.2);
+  border-radius: 12rpx;
+}
+
+.switch-tip-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.switch-tip-text {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 /* 空状态美化 */
@@ -2385,13 +2474,13 @@ page {
   padding: 100rpx 40rpx;
   text-align: center;
   background: #f9fafb;
-  margin: 20rpx;
-  border-radius: 16rpx;
-  border: 2rpx dashed var(--border-color);
+  margin: 24rpx;
+  border-radius: 20rpx;
+  border: 2rpx dashed #e0e0e0;
 }
 
 .empty-icon {
-  font-size: 100rpx;
+  font-size: 96rpx;
   margin-bottom: 32rpx;
   animation: bounce 2s infinite;
 }
@@ -2422,33 +2511,6 @@ page {
   60% {
     transform: translateY(-5rpx);
   }
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80rpx 0;
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 80rpx;
-  margin-bottom: 24rpx;
-}
-
-.empty-text {
-  font-size: 32rpx;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 16rpx;
-}
-
-.empty-hint {
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-  line-height: 1.5;
 }
 
 /* ========== 主按钮样式 ========== */

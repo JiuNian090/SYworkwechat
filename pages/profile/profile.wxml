@@ -450,22 +450,25 @@
       
       <!-- 切换账号页面 -->
       <view class="user-page user-page-switch-account" wx:if="{{currentUserPage === 'switchAccount'}}">
+        <view class="switch-tip" wx:if="{{savedAccounts.length > 0}}">
+          <text class="switch-tip-icon">☑️</text>
+          <text class="switch-tip-text">勾选后下次登录自动恢复数据</text>
+        </view>
         <view wx:if="{{savedAccounts.length > 0}}">
-          <view class="account-item" wx:for="{{savedAccounts}}" wx:key="account" bindtap="selectAccount" data-index="{{index}}">
-            <view class="account-avatar">
+          <view class="account-item" wx:for="{{savedAccounts}}" wx:key="account" bindtap="selectAccount" data-index="{{index}}" hover-class="account-item-hover" hover-stay-time="100">
+            <view class="account-avatar {{item.avatarEmoji ? 'avatar-emotion-' + (item.avatarEmojiEmotion || 'neutral') : ''}}">
               <text wx:if="{{item.avatarType === 'text'}}" class="avatar-text">{{item.avatarText || ((item.account && item.account.length > 0) ? item.account.charAt(0).toUpperCase() : 'U')}}</text>
               <text wx:else class="avatar-emoji">{{item.avatarEmoji || '😊'}}</text>
             </view>
             <view class="account-info">
               <text class="account-name">{{item.account}}</text>
-              <text class="account-time">{{item.lastLogin.substring(0, 10)}}</text>
             </view>
             <view class="account-actions">
-              <view class="auto-restore-checkbox {{autoRestoreMap[item.account] ? 'checked' : ''}}" catchtap="toggleAutoRestore" data-account="{{item.account}}">
+              <view class="auto-restore-checkbox {{autoRestoreMap[item.account] ? 'checked' : ''}}" catchtap="toggleAutoRestore" data-account="{{item.account}}" hover-class="checkbox-hover" hover-stay-time="50">
                 <text wx:if="{{autoRestoreMap[item.account]}}" class="checkmark">✓</text>
               </view>
-              <view class="delete-btn" catchtap="deleteSavedAccount" data-account="{{item.account}}">
-                <text class="delete-icon">×</text>
+              <view class="delete-btn" catchtap="deleteSavedAccount" data-account="{{item.account}}" hover-class="delete-hover" hover-stay-time="50">
+                <text class="delete-icon">🗑️</text>
               </view>
             </view>
           </view>

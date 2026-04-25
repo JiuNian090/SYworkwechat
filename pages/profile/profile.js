@@ -1097,6 +1097,7 @@ Page({
       const avatarEmoji = this.data.avatarEmoji;
       const avatarType = this.data.avatarType;
       const avatarText = this.data.avatarText;
+      const emojiEmotion = this.data.emojiEmotion || 'neutral';
       
       // 检查账号是否已存在
       const existingIndex = savedAccounts.findIndex(item => item.account === account);
@@ -1109,7 +1110,8 @@ Page({
           lastLogin: new Date().toISOString(),
           avatarType: avatarType || 'emoji',
           avatarEmoji: avatarEmoji || '😊',
-          avatarText: avatarText || ''
+          avatarText: avatarText || '',
+          avatarEmojiEmotion: emojiEmotion
         };
       } else {
         // 添加新账号
@@ -1119,7 +1121,8 @@ Page({
           lastLogin: new Date().toISOString(),
           avatarType: avatarType || 'emoji',
           avatarEmoji: avatarEmoji || '😊',
-          avatarText: avatarText || ''
+          avatarText: avatarText || '',
+          avatarEmojiEmotion: emojiEmotion
         });
       }
       
@@ -1830,5 +1833,36 @@ Page({
         }
       }
     });
+  },
+
+  // 格式化日期显示
+  formatDate(isoString) {
+    if (!isoString) return '';
+    try {
+      const date = new Date(isoString);
+      const now = new Date();
+      const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `今天 ${hours}:${minutes}`;
+      } else if (diffDays === 1) {
+        return '昨天';
+      } else if (diffDays < 7) {
+        return `${diffDays}天前`;
+      }
+      
+      const year = date.getFullYear().toString();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      
+      if (year === now.getFullYear().toString()) {
+        return `${month}/${day}`;
+      }
+      return `${year}/${month}/${day}`;
+    } catch (e) {
+      return isoString.substring(0, 10);
+    }
   },
 });
