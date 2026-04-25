@@ -50,85 +50,14 @@ Page({
       { value: '#13c2c2', name: '青色' },
       { value: '#722ed1', name: '紫色' }
     ],
-    // 自定义颜色选择器相关属性
+    colorBarPosition: 50, // 添加颜色条位置（百分比）
+    editColorBarPosition: 50, // 编辑颜色条位置（百分比）
     hue: 120,
-    presetColors: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1', '#000000', '#ffffff'],
-    colorBarPosition: 50, // 添加颜色条位置数据（百分比）
-    editColorBarPosition: 50, // 添加编辑颜色条位置数据（百分比）
-    colorBarPositionPx: 0, // 添加颜色条位置数据（像素值）
-    editColorBarPositionPx: 0 // 添加编辑颜色条位置数据（像素值）
+    presetColors: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#13c2c2', '#722ed1', '#000000', '#ffffff']
   },
 
   onLoad() {
     this.loadShiftTemplates();
-    this.initColorBarPosition();
-  },
-
-  /**
-   * 初始化颜色条位置像素值
-   */
-  initColorBarPosition() {
-    // 延迟执行以确保DOM已渲染
-    setTimeout(() => {
-      const query = wx.createSelectorQuery();
-      query.select('.color-bar').boundingClientRect();
-      query.exec((res) => {
-        if (res[0]) {
-          const barWidth = res[0].width;
-          // 初始化添加模板的颜色条位置
-          const positionPx = (this.data.colorBarPosition / 100) * barWidth;
-          // 初始化编辑模板的颜色条位置
-          const editPositionPx = (this.data.editColorBarPosition / 100) * barWidth;
-          
-          this.setData({
-            colorBarPositionPx: positionPx,
-            editColorBarPositionPx: editPositionPx
-          });
-        }
-      });
-    }, 500);
-  },
-
-  /**
-   * 更新添加模板颜色条位置像素值
-   */
-  updateColorBarPositionPx() {
-    // 延迟执行以确保DOM已渲染
-    setTimeout(() => {
-      const query = wx.createSelectorQuery();
-      query.select('.color-bar').boundingClientRect();
-      query.exec((res) => {
-        if (res[0]) {
-          const barWidth = res[0].width;
-          const positionPx = (this.data.colorBarPosition / 100) * barWidth;
-          
-          this.setData({
-            colorBarPositionPx: positionPx
-          });
-        }
-      });
-    }, 100);
-  },
-
-  /**
-   * 更新编辑模板颜色条位置像素值
-   */
-  updateEditColorBarPositionPx() {
-    // 延迟执行以确保DOM已渲染
-    setTimeout(() => {
-      const query = wx.createSelectorQuery();
-      query.select('.color-bar').boundingClientRect();
-      query.exec((res) => {
-        if (res[0]) {
-          const barWidth = res[0].width;
-          const positionPx = (this.data.editColorBarPosition / 100) * barWidth;
-          
-          this.setData({
-            editColorBarPositionPx: positionPx
-          });
-        }
-      });
-    }, 100);
   },
 
   onShow() {
@@ -168,9 +97,7 @@ Page({
         color: '#07c160'
       }
     });
-    
-    // 更新颜色条位置像素值
-    this.updateColorBarPositionPx();
+    this._cacheColorBarRect();
   },
 
   hideAddTemplateModal() {
@@ -376,9 +303,7 @@ Page({
       editTemplate: templateWithTime,
       editColorBarPosition: editColorBarPosition
     });
-    
-    // 更新颜色条位置像素值
-    this.updateEditColorBarPositionPx();
+    this._cacheColorBarRect();
   },
 
   hideEditTemplateModal() {
@@ -685,98 +610,66 @@ Page({
     }
   },
 
-  onColorBarTap(e) {
-    // 获取点击位置
-    const query = wx.createSelectorQuery();
-    query.select('.color-bar').boundingClientRect();
-    query.exec((res) => {
-      if (res[0]) {
-        const barWidth = res[0].width;
-        const tapX = e.detail.x - res[0].left;
-        const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
-        const color = this.getColorFromPosition(position);
-        // 计算像素位置
-        const positionPx = (position / 100) * barWidth;
-        
-        this.setData({
-          colorBarPosition: position,
-          colorBarPositionPx: positionPx,
-          'newTemplate.color': color
+  _cacheColorBarRect() {
+    setTimeout(() => {
+      try {
+        const page = this;
+        const query = wx.createSelectorQuery();
+        query.select('.color-bar').boundingClientRect();
+        query.exec(function (res) {
+          if (res[0]) {
+            page._barRect = res[0];
+          }
         });
-      }
-    });
+      } catch (e) {}
+    }, 300);
   },
 
-  onColorBarMove(e) {
-    // 获取滑动位置
-    const query = wx.createSelectorQuery();
-    query.select('.color-bar').boundingClientRect();
-    query.exec((res) => {
-      if (res[0]) {
-        const barWidth = res[0].width;
-        const tapX = e.touches[0].clientX - res[0].left;
-        const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
-        const color = this.getColorFromPosition(position);
-        // 计算像素位置
-        const positionPx = (position / 100) * barWidth;
-        
-        this.setData({
-          colorBarPosition: position,
-          colorBarPositionPx: positionPx,
-          'newTemplate.color': color
-        });
-      }
-    });
+  _getColorBarPosition(clientX) {
+    if (!this._barRect || !this._barRect.width) return -1;
+    return Math.max(0, Math.min(100, ((clientX - this._barRect.left) / this._barRect.width) * 100));
   },
 
-  onEditColorBarTap(e) {
-    // 获取点击位置
-    const query = wx.createSelectorQuery();
-    query.select('.color-bar').boundingClientRect();
-    query.exec((res) => {
-      if (res[0]) {
-        const barWidth = res[0].width;
-        const tapX = e.detail.x - res[0].left;
-        const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
-        const color = this.getColorFromPosition(position);
-        // 计算像素位置
-        const positionPx = (position / 100) * barWidth;
-        
-        this.setData({
-          editColorBarPosition: position,
-          editColorBarPositionPx: positionPx,
-          'editTemplate.color': color
-        });
-      }
-    });
+  onColorBarTouchStart(e) {
+    try {
+      const mode = e.currentTarget.dataset.mode || 'add';
+      const clientX = e.touches ? e.touches[0].clientX : e.detail.x;
+      const position = this._getColorBarPosition(clientX);
+      if (position >= 0) this._updateColorBarPosition(mode, position);
+    } catch (e) {
+      console.error('颜色条触摸错误', e);
+    }
   },
 
-  onEditColorBarMove(e) {
-    // 获取滑动位置
-    const query = wx.createSelectorQuery();
-    query.select('.color-bar').boundingClientRect();
-    query.exec((res) => {
-      if (res[0]) {
-        const barWidth = res[0].width;
-        const tapX = e.touches[0].clientX - res[0].left;
-        const position = Math.max(0, Math.min(100, (tapX / barWidth) * 100));
-        const color = this.getColorFromPosition(position);
-        // 计算像素位置
-        const positionPx = (position / 100) * barWidth;
-        
-        this.setData({
-          editColorBarPosition: position,
-          editColorBarPositionPx: positionPx,
-          'editTemplate.color': color
-        });
-      }
-    });
+  onColorBarTouchMove(e) {
+    if (!e.touches) return;
+    if (this._colorBarMoveTimer) return;
+    const mode = e.currentTarget.dataset.mode || 'add';
+    const clientX = e.touches[0].clientX;
+    this._colorBarMoveTimer = setTimeout(() => {
+      this._colorBarMoveTimer = null;
+      try {
+        const position = this._getColorBarPosition(clientX);
+        if (position >= 0) this._updateColorBarPosition(mode, position);
+      } catch (e) {}
+    }, 20);
   },
 
-  /**
-   * 阻止事件冒泡
-   */
+  _updateColorBarPosition(mode, position) {
+    const color = this.getColorFromPosition(position);
+    if (mode === 'edit') {
+      this.setData({
+        editColorBarPosition: position,
+        'editTemplate.color': color
+      });
+    } else {
+      this.setData({
+        colorBarPosition: position,
+        'newTemplate.color': color
+      });
+    }
+  },
+
   stopPropagation() {
-    // 阻止事件冒泡，防止点击弹窗内容时关闭弹窗
   }
 });

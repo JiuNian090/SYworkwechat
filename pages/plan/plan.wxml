@@ -72,16 +72,9 @@
           </view>
           <!-- 颜色条选择器 -->
           <view class="color-bar-container">
-            <view class="color-bar">
-              <!-- 使用渐变背景创建颜色条 -->
-              <view 
-                class="color-slider" 
-                style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00cc00 33%, #00cccc 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);"
-                bindtap="onColorBarTap"
-                bindtouchmove="onColorBarMove"
-              ></view>
-              <!-- 滑块指示器 -->
-              <view class="slider-indicator" style="left: {{colorBarPositionPx}}px"></view>
+            <view class="color-bar" data-mode="add" bindtouchstart="onColorBarTouchStart" bindtouchmove="onColorBarTouchMove">
+              <view class="color-slider"></view>
+              <view class="slider-indicator" style="left: {{colorBarPosition}}%"></view>
             </view>
           </view>
         </view>
@@ -144,16 +137,9 @@
           </view>
           <!-- 颜色条选择器 -->
           <view class="color-bar-container">
-            <view class="color-bar">
-              <!-- 使用渐变背景创建颜色条 -->
-              <view 
-                class="color-slider" 
-                style="background: linear-gradient(to right, #ff0000 0%, #ffff00 17%, #00cc00 33%, #00cccc 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);"
-                bindtap="onEditColorBarTap"
-                bindtouchmove="onEditColorBarMove"
-              ></view>
-              <!-- 滑块指示器 -->
-              <view class="slider-indicator" style="left: {{editColorBarPositionPx}}px"></view>
+            <view class="color-bar" data-mode="edit" bindtouchstart="onColorBarTouchStart" bindtouchmove="onColorBarTouchMove">
+              <view class="color-slider"></view>
+              <view class="slider-indicator" style="left: {{editColorBarPosition}}%"></view>
             </view>
           </view>
         </view>
