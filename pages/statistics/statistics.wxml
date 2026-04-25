@@ -214,8 +214,7 @@
             </view>
           </view>
           <view class="schedule-time">
-            <text wx:if="{{item.shiftType !== '休息'}}">{{item.startTime}}</text>
-            <text wx:else>--:--</text>
+            <text>{{item.workHours || '--:--'}}</text>
           </view>
         </view>
       </view>

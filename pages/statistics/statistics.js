@@ -402,7 +402,7 @@ Page({
             day: this.formatDayDisplay(dateStr),
             weekday: this.getWeekday(dateStr),
             shiftType: shiftType,
-            startTime: shiftData.startTime || '--:--'
+            workHours: shiftData.workHours || '--:--'
           });
         } else {
           filteredSchedules.push({
@@ -410,7 +410,7 @@ Page({
             day: this.formatDayDisplay(dateStr),
             weekday: this.getWeekday(dateStr),
             shiftType: '休息日',
-            startTime: '--:--'
+            workHours: '--:--'
           });
           offDays++;
         }
