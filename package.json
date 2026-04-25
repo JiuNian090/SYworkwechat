@@ -1,6 +1,6 @@
 {
   "name": "sywork-wechat-mini-program",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "description": "SYwork 工时记录系统 - 微信小程序",
   "main": "app.js",
   "scripts": {
