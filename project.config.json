@@ -1,5 +1,5 @@
 {
-  "version": "3.8.4",
+  "version": "3.8.7",
   "cloudfunctionRoot": "cloudfunctions/",
   "cloudEnv": "YOUR_CLOUD_ENV_ID",
   "setting": {
