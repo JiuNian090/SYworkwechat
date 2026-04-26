@@ -1,7 +1,7 @@
 'use strict';
 // pages/statistics/statistics.js
-const { formatDate, getWeekday, formatDayDisplay, getWeekOfMonth: getWOM, getMondayOfWeek } = require('../../utils/dateUtils.js');
-const { calculateHash } = require('../../utils/hashUtils.js');
+const { formatDate, getWeekday, formatDayDisplay, getWeekOfMonth: getWOM, getMondayOfWeek } = require('../../utils/date.js');
+const { calculateHash } = require('../../utils/encrypt.js');
 const { store } = require('../../utils/store.js');
 
 Page({

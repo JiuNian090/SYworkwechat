@@ -1,23 +1,5 @@
 'use strict';
-const STORAGE_KEYS = {
-  cloudInitialized: 'cloudInitialized',
-  cloudUserId: 'cloudUserId',
-  cloudAccount: 'cloudAccount',
-  cloudUserInfo: 'cloudUserInfo',
-  cloudLoggedIn: 'cloudLoggedIn',
-  username: 'username',
-  avatarType: 'avatarType',
-  avatarEmoji: 'avatarEmoji',
-  shifts: 'shifts',
-  shiftTemplates: 'shiftTemplates',
-  customWeeklyHours: 'customWeeklyHours',
-  customHours: 'customHours',
-  chartType: 'statisticsChartType',
-  savedAccounts: 'savedAccounts',
-  autoRestoreMap: 'autoRestoreMap',
-  lastBackupTime: 'lastBackupTime',
-  lastRestoreTime: 'lastRestoreTime'
-};
+const { STORAGE_KEYS } = require('./storage.js');
 
 function loadFromStorage() {
   const state = {};

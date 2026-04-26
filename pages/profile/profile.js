@@ -1,6 +1,5 @@
 'use strict';
 // pages/profile/profile.js
-const api = require('../../utils/api.js');
 const changelogData = require('../../utils/changelog.js');
 const emojiManager = require('../../utils/emojiManager.js');
 const CloudManager = require('../../utils/cloudManager.js');
@@ -9,8 +8,7 @@ const DataExportManager = require('../../utils/dataExportManager.js');
 const DataImportManager = require('../../utils/dataImportManager.js');
 const DataClearManager = require('../../utils/dataClearManager.js');
 const { store } = require('../../utils/store.js');
-const { encryptPassword, decryptPassword, hashPassword, verifyPassword, isOldFormat } = require('../../utils/cryptoUtils.js');
-const { calculateHash } = require('../../utils/hashUtils.js');
+const { encryptPassword, decryptPassword, hashPassword, verifyPassword, isOldFormat, calculateHash } = require('../../utils/encrypt.js');
 
 Page({
   data: {

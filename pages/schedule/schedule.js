@@ -1,9 +1,9 @@
 'use strict';
 // pages/schedule/schedule.js
-const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/colorUtils.js');
+const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/util.js');
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation.js');
-const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth, getWeekday } = require('../../utils/dateUtils.js');
-const { calculateHash } = require('../../utils/hashUtils.js');
+const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth, getWeekday } = require('../../utils/date.js');
+const { calculateHash } = require('../../utils/encrypt.js');
 const { store } = require('../../utils/store.js');
 
 Page({

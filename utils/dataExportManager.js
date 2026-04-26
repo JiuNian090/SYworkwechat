@@ -1,6 +1,6 @@
 'use strict';
 const JSZip = require('./jszip.min.js');
-const { calculateHash } = require('./hashUtils.js');
+const { calculateHash } = require('./encrypt.js');
 
 class DataExportManager {
   constructor() {

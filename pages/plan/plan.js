@@ -1,6 +1,6 @@
 'use strict';
 // pages/plan/plan.js
-const { calculateHash } = require('../../utils/hashUtils.js');
+const { calculateHash } = require('../../utils/encrypt.js');
 const { store } = require('../../utils/store.js');
 Page({
   data: {

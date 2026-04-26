@@ -1,6 +1,6 @@
 'use strict';
 const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation, getImageRelationTable, removeImageFromRelation } = require('./imageRelation.js');
-const { calculateHash } = require('./hashUtils.js');
+const { calculateHash } = require('./encrypt.js');
 const { store } = require('./store.js');
 
 /**
