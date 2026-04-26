@@ -1,8 +1,8 @@
 {
   "lazyCodeLoading": "requiredComponents",
   "pages": [
-    "pages/schedule/schedule",
     "pages/plan/plan",
+    "pages/schedule/schedule",
     "pages/statistics/statistics",
     "pages/profile/profile",
     "pages/docs/docs"

@@ -106,55 +106,48 @@ Page({
   },
 
   onShow() {
-    // 页面显示时只更新必要的数据，减少重复加载
-    // 读取自定义每周标准工时
     const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
-    // 读取用户头像信息
     const avatarType = wx.getStorageSync('avatarType') || 'text';
     const avatarEmoji = wx.getStorageSync('avatarEmoji') || '';
     const username = wx.getStorageSync('username') || '';
-    // 生成头像文字
     const avatarText = username ? username.charAt(0).toUpperCase() : '用';
 
-    // 只有当数据发生变化时才更新，减少不必要的setData
+    const dataToUpdate = {};
+
     if (customWeeklyHours !== this.data.customWeeklyHours ||
         avatarType !== this.data.avatarType ||
         avatarEmoji !== this.data.avatarEmoji ||
         avatarText !== this.data.avatarText) {
-      this.setData({
-        customWeeklyHours: customWeeklyHours,
-        // 更新用户头像信息
-        avatarType: avatarType,
-        avatarEmoji: avatarEmoji,
-        avatarText: avatarText
-      });
+      dataToUpdate.customWeeklyHours = customWeeklyHours;
+      dataToUpdate.avatarType = avatarType;
+      dataToUpdate.avatarEmoji = avatarEmoji;
+      dataToUpdate.avatarText = avatarText;
     }
 
-    // 只在必要时重新加载数据
     const shifts = wx.getStorageSync('shifts') || {};
     const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
 
     if (calculateHash(JSON.stringify(shifts)) !== calculateHash(JSON.stringify(this.data.shifts)) ||
         calculateHash(JSON.stringify(shiftTemplates)) !== calculateHash(JSON.stringify(this.data.shiftTemplates))) {
-      this.setData({
-        shifts: shifts,
-        shiftTemplates: shiftTemplates
-      });
-      // 重新生成日期数据
+      dataToUpdate.shifts = shifts;
+      dataToUpdate.shiftTemplates = shiftTemplates;
+    }
+
+    const currentDate = new Date(this.data.currentDate);
+    const isCurrentMonth = isCurMonth(currentDate);
+    if (isCurrentMonth !== this.data.isCurrentMonth) {
+      dataToUpdate.isCurrentMonth = isCurrentMonth;
+    }
+
+    if (Object.keys(dataToUpdate).length > 0) {
+      this.setData(dataToUpdate);
+    }
+
+    if (dataToUpdate.shifts || dataToUpdate.shiftTemplates) {
       this.generateWeekDates();
       this.generateMonthDates();
     }
 
-    // 确保在onShow中也正确初始化当前月份的判断
-    const currentDate = new Date(this.data.currentDate);
-    const isCurrentMonth = isCurMonth(currentDate);
-    if (isCurrentMonth !== this.data.isCurrentMonth) {
-      this.setData({
-        isCurrentMonth: isCurrentMonth
-      });
-    }
-
-    // 加载本周图片
     this.loadWeekImages();
   },
 
@@ -169,27 +162,20 @@ Page({
     }
   },
 
-  // 当班次模板更新时调用此方法
   onShiftTemplatesUpdate(templates) {
-    this.setData({
-      shiftTemplates: templates
-    });
+    const dataToUpdate = { shiftTemplates: templates };
 
-    // 更新已有的排班数据，确保颜色与模板一致
     const updatedShifts = {...this.data.shifts};
     let shiftsChanged = false;
 
-    // 遍历所有已有的排班数据
     for (const date in updatedShifts) {
       const shift = updatedShifts[date];
-      // 查找匹配的模板（根据名称、开始时间和结束时间）
       const matchingTemplate = templates.find(template =>
         template.name === shift.name &&
         template.startTime === shift.startTime &&
         template.endTime === shift.endTime
       );
 
-      // 如果找到了匹配的模板且颜色不同，则更新颜色
       if (matchingTemplate && matchingTemplate.color !== shift.color) {
         updatedShifts[date] = {
           ...shift,
@@ -197,26 +183,19 @@ Page({
         };
         shiftsChanged = true;
       }
-      // 如果没有找到匹配的模板，说明模板已被删除，但保留排班数据
-      else if (!matchingTemplate) {
-        // 保留排班数据，不做任何处理
-        // 这样可以确保删除模板时不会影响已有的排班
-      }
     }
 
-    // 如果排班数据有变化，则更新存储和视图
     if (shiftsChanged) {
       try {
         store.setState({ shifts: updatedShifts }, ['shifts']);
-        this.setData({
-          shifts: updatedShifts
-        });
+        dataToUpdate.shifts = updatedShifts;
       } catch (e) {
         console.error('更新排班数据失败', e);
       }
     }
 
-    // 更新视图以反映模板变化
+    this.setData(dataToUpdate);
+
     this.generateWeekDates();
     this.generateMonthDates();
   },
