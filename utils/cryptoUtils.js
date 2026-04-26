@@ -1,3 +1,49 @@
+const CryptoJS = require('crypto-js');
+
+function deriveKey() {
+  const deviceInfo = wx.getDeviceInfo();
+  const appBaseInfo = wx.getAppBaseInfo();
+  const seed = [
+    deviceInfo.model,
+    deviceInfo.platform,
+    deviceInfo.system,
+    appBaseInfo.sdkVersion,
+    appBaseInfo.version,
+    appBaseInfo.language
+  ].join('|');
+  return CryptoJS.SHA256(seed).toString();
+}
+
+function encryptPassword(password) {
+  if (!password) return '';
+  try {
+    const key = deriveKey();
+    const encrypted = CryptoJS.AES.encrypt(password, key);
+    return encrypted.toString();
+  } catch (e) {
+    console.error('密码加密失败:', e);
+    return '';
+  }
+}
+
+function decryptPassword(encryptedStr) {
+  if (!encryptedStr) return '';
+  const aesResult = decryptAES(encryptedStr);
+  if (aesResult) return aesResult;
+  return xorDecrypt(encryptedStr);
+}
+
+function decryptAES(encryptedStr) {
+  try {
+    const key = deriveKey();
+    const decrypted = CryptoJS.AES.decrypt(encryptedStr, key);
+    const result = decrypted.toString(CryptoJS.enc.Utf8);
+    return result || '';
+  } catch (e) {
+    return '';
+  }
+}
+
 function getDeviceKey() {
   let deviceKey = wx.getStorageSync('_device_key');
   if (!deviceKey) {
@@ -66,26 +112,38 @@ function xorWithKey(text, key) {
   return result;
 }
 
-function encryptPassword(password) {
-  if (!password) return '';
-  const key = getDeviceKey();
-  const xored = xorWithKey(password, key);
-  return base64Encode(xored);
-}
-
-function decryptPassword(encrypted) {
+function xorDecrypt(encrypted) {
   if (!encrypted) return '';
   try {
     const key = getDeviceKey();
+    if (!key) return '';
     const xored = base64Decode(encrypted);
+    if (!xored) return '';
     return xorWithKey(xored, key);
   } catch (e) {
-    console.error('密码解密失败:', e);
     return '';
   }
 }
 
+function hashPassword(password) {
+  if (!password) return '';
+  return CryptoJS.SHA256(password).toString();
+}
+
+function verifyPassword(password, hash) {
+  if (!password || !hash) return false;
+  return hashPassword(password) === hash;
+}
+
+function isOldFormat(encryptedStr) {
+  if (!encryptedStr) return false;
+  return !encryptedStr.startsWith('U2FsdGVkX1');
+}
+
 module.exports = {
   encryptPassword,
-  decryptPassword
+  decryptPassword,
+  hashPassword,
+  verifyPassword,
+  isOldFormat
 };

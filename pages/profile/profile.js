@@ -7,7 +7,7 @@ const AvatarManager = require('../../utils/avatarManager.js');
 const DataExportManager = require('../../utils/dataExportManager.js');
 const DataImportManager = require('../../utils/dataImportManager.js');
 const DataClearManager = require('../../utils/dataClearManager.js');
-const { encryptPassword, decryptPassword } = require('../../utils/cryptoUtils.js');
+const { encryptPassword, decryptPassword, hashPassword, verifyPassword, isOldFormat } = require('../../utils/cryptoUtils.js');
 const { calculateHash } = require('../../utils/hashUtils.js');
 
 Page({
@@ -141,8 +141,11 @@ Page({
       savedAccounts.forEach(item => {
         if (item.password && item.password.length > 0) {
           const decrypted = decryptPassword(item.password);
-          if (!decrypted) {
-            item.password = encryptPassword(item.password);
+          if (decrypted && isOldFormat(item.password)) {
+            item.password = encryptPassword(decrypted);
+            migrated = true;
+          } else if (!decrypted) {
+            item.password = '';
             migrated = true;
           }
         }
@@ -1112,11 +1115,14 @@ Page({
       // 检查账号是否已存在
       const existingIndex = savedAccounts.findIndex(item => item.account === account);
       
+      const encryptedPwd = this.data.rememberPassword ? encryptPassword(password) : '';
+      const pwdHash = this.data.rememberPassword ? hashPassword(password) : '';
+      
       if (existingIndex >= 0) {
-        // 更新现有账号
         savedAccounts[existingIndex] = {
           account: account,
-          password: this.data.rememberPassword ? encryptPassword(password) : '',
+          password: encryptedPwd,
+          passwordHash: pwdHash,
           lastLogin: new Date().toISOString(),
           avatarType: avatarType || 'emoji',
           avatarEmoji: avatarEmoji || '😊',
@@ -1124,10 +1130,10 @@ Page({
           avatarEmojiEmotion: emojiEmotion
         };
       } else {
-        // 添加新账号
         savedAccounts.push({
           account: account,
-          password: this.data.rememberPassword ? encryptPassword(password) : '',
+          password: encryptedPwd,
+          passwordHash: pwdHash,
           lastLogin: new Date().toISOString(),
           avatarType: avatarType || 'emoji',
           avatarEmoji: avatarEmoji || '😊',
@@ -1230,9 +1236,28 @@ Page({
     
     const account = savedAccounts[index].account;
     const encryptedPassword = savedAccounts[index].password;
+    const storedHash = savedAccounts[index].passwordHash;
+    
+    if (!encryptedPassword) {
+      this.setData({
+        cloudAccountInput: account,
+        cloudPasswordInput: '',
+        currentUserPage: 'login'
+      });
+      return;
+    }
+    
     const password = decryptPassword(encryptedPassword);
     
     if (password) {
+      if (storedHash && !verifyPassword(password, storedHash)) {
+        this.setData({
+          cloudAccountInput: account,
+          cloudPasswordInput: '',
+          currentUserPage: 'login'
+        });
+        return;
+      }
       this.loginWithSavedAccount(account, password);
     } else {
       this.setData({
