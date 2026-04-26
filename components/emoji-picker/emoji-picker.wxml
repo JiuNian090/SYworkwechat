@@ -1,0 +1,42 @@
+<view class="emoji-picker-component">
+  <view class="emoji-tabs-wrapper">
+    <view class="emoji-tabs">
+      <view
+        class="emoji-tab-item {{innerCategory === item.id ? 'active' : ''}}"
+        wx:for="{{emojiCategories}}"
+        wx:key="id"
+        catchtap="switchEmojiCategory"
+        data-category="{{item.id}}"
+        hover-class="emoji-tab-hover"
+        hover-stay-time="100"
+      >
+        <text class="emoji-tab-icon">{{item.icon}}</text>
+        <text class="emoji-tab-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+  <scroll-view class="emoji-scroll" scroll-y="true" enhanced show-scrollbar="false">
+    <view class="emoji-grid">
+      <view
+        class="emoji-item {{innerEmoji === item ? 'selected' : ''}}"
+        wx:for="{{currentCategoryEmojis}}"
+        wx:key="index"
+        catchtap="selectEmoji"
+        data-emoji="{{item}}"
+        hover-class="emoji-item-hover"
+        hover-stay-time="100"
+      >
+        <text class="emoji-char">{{item}}</text>
+      </view>
+    </view>
+  </scroll-view>
+  <view class="emoji-preview {{innerEmoji ? 'show' : ''}}">
+    <view class="preview-content">
+      <text class="preview-emoji">{{innerEmoji || '😊'}}</text>
+      <view class="preview-info">
+        <text class="preview-text">{{innerEmoji ? getEmojiText(innerEmoji) : '请选择一个表情'}}</text>
+        <text class="preview-hint" wx:if="{{innerEmoji}}">点击确定设为头像</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -137,7 +137,15 @@
         </view>
       </view>
       <view class="chart-container">
-        <canvas type="2d" id="lineCanvas" style="width: 100%; height: 310px;"></canvas>
+        <chart-view
+          id="trendChart"
+          chartData="{{chartData}}"
+          chartType="{{chartType}}"
+          startDate="{{startDate}}"
+          endDate="{{endDate}}"
+          chartTimeUnit="{{chartTimeUnit}}"
+          bind:chartinit="onChartInit"
+        />
       </view>
     </view>
 

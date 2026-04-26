@@ -1,0 +1,3 @@
+<view class="chart-view-component">
+  <canvas type="2d" id="chartCanvas" style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"></canvas>
+</view>

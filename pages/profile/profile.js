@@ -259,19 +259,9 @@ Page({
 
   // 显示表情选择弹窗（已改为页面切换）
   showEmojiModal() {
-    this.updateCurrentCategoryEmojis();
     this.setData({
       selectedEmoji: this.data.avatarEmoji,
       currentUserPage: 'avatar'
-    });
-  },
-
-  // 更新当前分类的表情
-  updateCurrentCategoryEmojis() {
-    const currentEmojiCategory = this.data.currentEmojiCategory;
-    const currentCategoryEmojis = emojiManager.getCategoryEmojis(currentEmojiCategory);
-    this.setData({
-      currentCategoryEmojis: currentCategoryEmojis
     });
   },
 
@@ -282,25 +272,22 @@ Page({
     });
   },
 
-  // 切换表情分类
-  switchEmojiCategory(e) {
-    const categoryId = e.currentTarget.dataset.category;
+  // 组件事件：表情分类切换
+  onEmojiCategoryChange(e) {
     this.setData({
-      currentEmojiCategory: categoryId
-    });
-    this.updateCurrentCategoryEmojis();
-  },
-
-  // 选择表情
-  selectEmoji(e) {
-    const emoji = e.currentTarget.dataset.emoji;
-    this.setData({
-      selectedEmoji: emoji
+      currentEmojiCategory: e.detail.category
     });
   },
 
-  // 确认表情设置
-  confirmEmoji() {
+  // 组件事件：选择表情
+  onEmojiSelect(e) {
+    this.setData({
+      selectedEmoji: e.detail.emoji
+    });
+  },
+
+  // 组件事件：确认表情设置
+  onEmojiConfirm() {
     const emoji = this.data.selectedEmoji;
     if (!emoji) {
       wx.showToast({

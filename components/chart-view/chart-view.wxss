@@ -1,0 +1,6 @@
+.chart-view-component {
+  position: relative;
+  width: 100%;
+  min-height: 60rpx;
+  margin-top: 16rpx;
+}
