@@ -5,7 +5,7 @@ const { calculateHash } = require('../../utils/encrypt.js');
 const { store } = require('../../utils/store.js');
 
 const DAY_THRESHOLD = 7;
-const WEEK_THRESHOLD = 60;
+const WEEK_THRESHOLD = 62;
 const STATISTICS_DATE_KEY = 'statisticsDateRange';
 
 const formatMonthDay = (dateStr) => dateStr.substring(5, 10);
@@ -979,12 +979,14 @@ Page({
         longLabels.push(dateStr);
       }
     } else if (chartTimeUnit === 'week') {
-      // 周视图：8~60天，显示起始MM-DD~结束MM-DD格式
+      // 周视图：8~60天，按顺序显示1周、2周...
       const firstMonday = new Date(start);
       const dayOfWeek = firstMonday.getDay();
       firstMonday.setDate(firstMonday.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
 
+      let weekIndex = 0;
       for (let d = new Date(firstMonday); d <= end; d.setDate(d.getDate() + 7)) {
+        weekIndex++;
         const weekStart = new Date(d);
         const weekEnd = new Date(d);
         weekEnd.setDate(weekEnd.getDate() + 6);
@@ -1003,7 +1005,7 @@ Page({
           }
         }
 
-        labels.push(`${formatMonthDay(this.formatDate(actualStart))}~${formatMonthDay(this.formatDate(actualEnd))}`);
+        labels.push(`${weekIndex}周`);
         data.push(weekTotal);
         standardData.push(customHours);
         longLabels.push(`${this.formatDate(actualStart)}~${this.formatDate(actualEnd)}`);
@@ -1038,7 +1040,7 @@ Page({
       while (currentYear < yearEnd || (currentYear === yearEnd && currentMonth <= monthEnd)) {
         const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
         if (monthHoursMap.hasOwnProperty(monthKey)) {
-          labels.push(monthKey);
+          labels.push(`${currentMonth + 1}月`);
           data.push(monthHoursMap[monthKey]);
           standardData.push(customHours * 4.35);
           longLabels.push(`${currentYear}年${monthNames[currentMonth]}`);
@@ -1199,6 +1201,11 @@ Page({
     const chartWidth = windowWidth - 60;
     const chartHeight = 310;
     const padding = { left: 52, right: 24, top: 64, bottom: 62 };
+    // 月份视图且标签>=6个时启用45度倾斜显示，需增大底部空间
+    const useTiltLabels = chartTimeUnit === 'month' && chartData.labels.length >= 6;
+    if (useTiltLabels) {
+      padding.bottom = 100;
+    }
     const plotLeft = padding.left;
     const plotTop = padding.top;
     const plotWidth = chartWidth - padding.left - padding.right;
@@ -1312,20 +1319,39 @@ Page({
         }
       }
 
-      // 横轴标签（标签密度控制：超过12个时每隔一个显示）
-      const useLabelSkip = chartData.labels.length > 12;
-      const labelFontSize = useLabelSkip ? 9 : 11;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = '#6b7280';
-      ctx.font = `${labelFontSize}px -apple-system, sans-serif`;
+      // 横轴标签
       const labelY = plotTop + plotHeight + 8;
 
-      for (let i = 0; i < chartData.labels.length; i++) {
-        if (useLabelSkip && i % 2 !== 0 && i !== chartData.labels.length - 1) continue;
-        const x = plotLeft + extraPadding + (chartData.labels.length > 1
-          ? adjustedXStep * i : dataPlotWidth / 2);
-        ctx.fillText(chartData.labels[i], x, labelY);
+      if (useTiltLabels) {
+        // 月份视图且标签密集：45度倾斜显示，确保所有月份信息清晰可见
+        const tiltAngle = -Math.PI / 4;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '11px -apple-system, sans-serif';
+        for (let i = 0; i < chartData.labels.length; i++) {
+          const x = plotLeft + extraPadding + (chartData.labels.length > 1
+            ? adjustedXStep * i : dataPlotWidth / 2);
+          ctx.save();
+          ctx.translate(x, labelY);
+          ctx.rotate(tiltAngle);
+          ctx.fillText(chartData.labels[i], 0, 0);
+          ctx.restore();
+        }
+      } else {
+        // 水平显示 + 标签密度控制（超过12个时每隔一个显示）
+        const useLabelSkip = chartData.labels.length > 12;
+        const labelFontSize = useLabelSkip ? 9 : 11;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#6b7280';
+        ctx.font = `${labelFontSize}px -apple-system, sans-serif`;
+        for (let i = 0; i < chartData.labels.length; i++) {
+          if (useLabelSkip && i % 2 !== 0 && i !== chartData.labels.length - 1) continue;
+          const x = plotLeft + extraPadding + (chartData.labels.length > 1
+            ? adjustedXStep * i : dataPlotWidth / 2);
+          ctx.fillText(chartData.labels[i], x, labelY);
+        }
       }
 
       // 图例 — 居中显示
