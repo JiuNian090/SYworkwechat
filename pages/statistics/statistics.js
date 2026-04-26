@@ -107,7 +107,7 @@ Page({
   navigateToDocs(e) {
     const type = e.currentTarget.dataset.type || 'statistics';
     wx.navigateTo({
-      url: `/pages/docs/docs?type=${type}`
+      url: `/subpkg-common/pages/docs/docs?type=${type}`
     });
   },
 

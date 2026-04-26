@@ -4,9 +4,27 @@
     "pages/plan/plan",
     "pages/schedule/schedule",
     "pages/statistics/statistics",
-    "pages/profile/profile",
-    "pages/docs/docs"
+    "pages/profile/profile"
   ],
+  "subpackages": [
+    {
+      "root": "subpkg-common",
+      "name": "common",
+      "pages": [
+        "pages/docs/docs"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/profile/profile": {
+      "network": "all",
+      "packages": ["common"]
+    },
+    "pages/statistics/statistics": {
+      "network": "all",
+      "packages": ["common"]
+    }
+  },
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#fff",

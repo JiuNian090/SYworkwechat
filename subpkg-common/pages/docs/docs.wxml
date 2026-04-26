@@ -1,4 +1,4 @@
-<!-- pages/docs/docs.wxml -->
+<!-- subpkg-common/pages/docs/docs.wxml -->
 <view class="container">
   <!-- 页面标题区 -->
   <view class="page-header">

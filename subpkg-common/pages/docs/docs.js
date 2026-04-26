@@ -1,5 +1,5 @@
 'use strict';
-// pages/docs/docs.js
+// subpkg-common/pages/docs/docs.js
 Page({
 
   /**
@@ -86,7 +86,7 @@ Page({
   onShareAppMessage() {
     return {
       title: 'SY工时记录 - 使用说明',
-      path: '/pages/docs/docs'
+      path: '/subpkg-common/pages/docs/docs'
     };
   },
 
