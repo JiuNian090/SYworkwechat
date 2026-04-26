@@ -257,64 +257,16 @@
 
 
 
-<!-- 底部滚动班次选择器 - WeUI 风格 -->
-<block wx:if="{{showShiftSelectorModal}}">
-  <view class="weui-mask show" bindtap="hideShiftSelectorModal"></view>
-  <view class="weui-sheet show">
-    <!-- WeUI 风格标题栏 -->
-    <view class="weui-sheet__hd">
-      <view class="weui-sheet__action weui-sheet__action_default" bindtap="hideShiftSelectorModal">
-        取消
-      </view>
-      <view class="weui-sheet__title">
-        {{selectedDate}}
-      </view>
-      <view class="weui-sheet__action weui-sheet__action_primary" bindtap="confirmShiftSelection">
-        确定
-      </view>
-    </view>
-    
-
-    
-    <!-- 标签输入区 -->
-    <view class="tag-input-section">
-      <view class="tag-input-wrapper">
-        <text class="tag-input-label">标签：</text>
-        <input 
-          class="tag-input" 
-          placeholder="点击添加标签" 
-          value="{{currentTag || ''}}" 
-          bindtap="showTagInputModal"
-          disabled="true"
-        />
-      </view>
-    </view>
-
-    <!-- 班次列表 - WeUI 风格 -->
-    <view class="weui-sheet__bd">
-      <view class="weui-cells weui-cells_radio">
-        <view 
-          class="weui-cell weui-check__label {{selectedShiftIndex === index ? 'weui-cell_checked' : ''}}" 
-          wx:for="{{shiftTemplates}}" 
-          wx:key="index"
-          bindtap="onShiftSelect"
-          data-index="{{index}}"
-        >
-          <view class="weui-cell__bd">
-            <view class="shift-label">
-              <view class="shift-color-dot" style="background-color: {{item.color}};"></view>
-              <text class="shift-name">{{item.name}}</text>
-            </view>
-            <view class="shift-time">{{item.startTime}} - {{item.endTime}}</view>
-          </view>
-          <view class="weui-cell__ft">
-            <icon wx:if="{{selectedShiftIndex === index}}" type="success" size="20" color="#07c160"></icon>
-          </view>
-        </view>
-      </view>
-    </view>
-  </view>
-</block>
+<shift-selector
+  shiftTemplates="{{shiftTemplates}}"
+  selectedDate="{{selectedDate}}"
+  visible="{{showShiftSelectorModal}}"
+  selectedIndex="{{selectedShiftIndex}}"
+  currentTag="{{currentTag}}"
+  bind:confirm="onShiftSelectorConfirm"
+  bind:cancel="hideShiftSelectorModal"
+  bind:tagtap="showTagInputModal"
+/>
 
 <!-- 图片管理弹窗 -->
 <block wx:if="{{showAddImageModal}}">

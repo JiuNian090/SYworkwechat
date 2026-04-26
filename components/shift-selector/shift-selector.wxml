@@ -1,0 +1,52 @@
+<block wx:if="{{visible}}">
+  <view class="weui-mask show" catchtap="onCancel"></view>
+  <view class="weui-sheet show">
+    <view class="weui-sheet__hd">
+      <view class="weui-sheet__action weui-sheet__action_default" catchtap="onCancel">
+        取消
+      </view>
+      <view class="weui-sheet__title">
+        {{selectedDate}}
+      </view>
+      <view class="weui-sheet__action weui-sheet__action_primary" catchtap="onConfirm">
+        确定
+      </view>
+    </view>
+
+    <view class="tag-input-section">
+      <view class="tag-input-wrapper">
+        <text class="tag-input-label">标签：</text>
+        <input
+          class="tag-input"
+          placeholder="点击添加标签"
+          value="{{currentTag || ''}}"
+          catchtap="onTagTap"
+          disabled="true"
+        />
+      </view>
+    </view>
+
+    <view class="weui-sheet__bd">
+      <view class="weui-cells weui-cells_radio">
+        <view
+          class="weui-cell weui-check__label {{innerSelectedIndex === index ? 'weui-cell_checked' : ''}}"
+          wx:for="{{shiftTemplates}}"
+          wx:key="index"
+          catchtap="onShiftSelect"
+          data-index="{{index}}"
+        >
+          <view class="weui-cell__bd">
+            <view class="shift-label">
+              <view class="shift-color-dot" style="background-color: {{item.color}};"></view>
+              <text class="shift-name">{{item.name}}</text>
+            </view>
+            <view class="shift-time">{{item.startTime}} - {{item.endTime}}</view>
+          </view>
+          <view class="weui-cell__ft">
+            <icon wx:if="{{innerSelectedIndex === index}}" type="success" size="20" color="#07c160"></icon>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</block>
