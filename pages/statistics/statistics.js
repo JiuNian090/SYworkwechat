@@ -4,6 +4,12 @@ const { formatDate, getWeekday, formatDayDisplay, getWeekOfMonth: getWOM, getMon
 const { calculateHash } = require('../../utils/encrypt.js');
 const { store } = require('../../utils/store.js');
 
+const DAY_THRESHOLD = 7;
+const WEEK_THRESHOLD = 60;
+const STATISTICS_DATE_KEY = 'statisticsDateRange';
+
+const formatMonthDay = (dateStr) => dateStr.substring(5, 10);
+
 Page({
   formatDate,
   getWeekday,
@@ -71,15 +77,12 @@ Page({
     cumulativeDailyAvg: 0 // 日均工时
   },
 
-  // 日期范围持久化存储键名
-  STATISTICS_DATE_KEY: 'statisticsDateRange',
-
   /**
    * 保存当前日期范围状态到本地存储
    */
   saveDateRangeState() {
     const { startDate, endDate, activeQuickBtn, activePeriodBtn, weekPickerValue, monthPickerValue, yearPickerValue } = this.data;
-    wx.setStorageSync(this.STATISTICS_DATE_KEY, {
+    wx.setStorageSync(STATISTICS_DATE_KEY, {
       startDate,
       endDate,
       activeQuickBtn,
@@ -95,7 +98,7 @@ Page({
    */
   loadDateRangeState() {
     try {
-      return wx.getStorageSync(this.STATISTICS_DATE_KEY) || null;
+      return wx.getStorageSync(STATISTICS_DATE_KEY) || null;
     } catch (e) {
       return null;
     }
@@ -369,11 +372,21 @@ Page({
 
     if (!startDate || !endDate) return;
 
+    // 开始日期不能晚于结束日期
+    if (new Date(startDate) > new Date(endDate)) {
+      wx.showToast({
+        title: '开始日期不能晚于结束日期',
+        icon: 'none'
+      });
+      return;
+    }
+
     // 自动计算最优的图表时间单位
     const optimalUnit = this.calculateOptimalChartUnit(startDate, endDate);
     const chartTimeUnit = optimalUnit;
 
     try {
+      // TODO: 后续改为云数据库按需查询时，在此加上日期条件过滤以减少数据传输量
       const allShifts = wx.getStorageSync('shifts') || {};
       const currentShiftsHash = calculateHash(JSON.stringify(allShifts));
       const currentDateRange = `${startDate}_${endDate}_${chartTimeUnit}_${customHours}`;
@@ -929,89 +942,117 @@ Page({
     const labels = [];
     const data = [];
     const standardData = [];
+    const longLabels = [];
+    const unitLabelMap = { day: '按天汇总', week: '按周汇总', month: '按月汇总' };
+    let subtext = unitLabelMap[chartTimeUnit] || '';
+
+    if (shifts.length === 0) {
+      return { labels: [], data: [], standardData: [], yAxisMax: 10, yAxisMin: 0, longLabels: [], subtext: '暂无数据' };
+    }
+
+    // 大数据量时使用 Map 缓存按日期分组的工时，避免多次 find 循环
+    const useCache = shifts.length > 2000;
+    let hoursByDate = null;
+    if (useCache) {
+      hoursByDate = new Map();
+      shifts.forEach(shift => {
+        hoursByDate.set(shift.date, parseFloat(shift.workHours) || 0);
+      });
+    }
 
     // 根据时间单位生成数据
     if (chartTimeUnit === 'day') {
-      // 日视图：≤14天，显示单个日期
+      // 日视图：≤7天，显示单个日期
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
         const dateStr = this.formatDate(d);
-        const dayData = shifts.find(shift => shift.date === dateStr);
+        let hours = 0;
+        if (useCache && hoursByDate) {
+          hours = hoursByDate.get(dateStr) || 0;
+        } else {
+          const dayData = shifts.find(shift => shift.date === dateStr);
+          hours = parseFloat(dayData?.workHours) || 0;
+        }
         const dayNum = d.getDate();
         labels.push(`${dayNum}号`);
-        data.push(parseFloat(dayData?.workHours) || 0);
+        data.push(hours);
         standardData.push(dailyStandardHours);
+        longLabels.push(dateStr);
       }
     } else if (chartTimeUnit === 'week') {
-      // 周视图：>15天且≤2个月，显示第几周，纵轴显示一周的总小时数
-      const weeklyData = {};
-
-      // 找到起始周的周一
+      // 周视图：8~60天，显示起始MM-DD~结束MM-DD格式
       const firstMonday = new Date(start);
       const dayOfWeek = firstMonday.getDay();
       firstMonday.setDate(firstMonday.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
 
-      // 遍历所有日期，按周分组
       for (let d = new Date(firstMonday); d <= end; d.setDate(d.getDate() + 7)) {
         const weekStart = new Date(d);
         const weekEnd = new Date(d);
         weekEnd.setDate(weekEnd.getDate() + 6);
 
-        // 计算这是第几周（从起始周开始算）
-        const weekNumber = Math.floor((weekStart - firstMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
-        const weekKey = `week_${weekNumber}`;
-        weeklyData[weekKey] = {
-          label: `第${weekNumber}周`,
-          total: 0
-        };
+        const actualStart = new Date(Math.max(weekStart.getTime(), start.getTime()));
+        const actualEnd = new Date(Math.min(weekEnd.getTime(), end.getTime()));
 
-        // 统计这一周的数据
-        for (let day = new Date(weekStart); day <= weekEnd; day.setDate(day.getDate() + 1)) {
-          if (day >= start && day <= end) {
-            const dateStr = this.formatDate(day);
+        let weekTotal = 0;
+        for (let day = new Date(actualStart); day <= actualEnd; day.setDate(day.getDate() + 1)) {
+          const dateStr = this.formatDate(day);
+          if (useCache && hoursByDate) {
+            weekTotal += hoursByDate.get(dateStr) || 0;
+          } else {
             const dayData = shifts.find(shift => shift.date === dateStr);
-            weeklyData[weekKey].total += parseFloat(dayData?.workHours) || 0;
+            weekTotal += parseFloat(dayData?.workHours) || 0;
           }
         }
-      }
 
-      // 生成标签和数据
-      Object.keys(weeklyData).forEach(key => {
-        labels.push(weeklyData[key].label);
-        data.push(weeklyData[key].total);
+        labels.push(`${formatMonthDay(this.formatDate(actualStart))}~${formatMonthDay(this.formatDate(actualEnd))}`);
+        data.push(weekTotal);
         standardData.push(customHours);
-      });
+        longLabels.push(`${this.formatDate(actualStart)}~${this.formatDate(actualEnd)}`);
+      }
     } else if (chartTimeUnit === 'month') {
-      // 月视图：>2个月，显示12个月，纵轴显示每月总小时数
-      const monthlyData = {};
+      // 月视图：>60天，显示YYYY-MM格式，只显示有数据的月份
+      const yearStart = start.getFullYear();
+      const monthStart = start.getMonth();
+      const yearEnd = end.getFullYear();
+      const monthEnd = end.getMonth();
 
-      // 初始化全年12个月
-      for (let m = 1; m <= 12; m++) {
-        const monthKey = `${start.getFullYear()}-${String(m).padStart(2, '0')}`;
-        monthlyData[monthKey] = {
-          label: `${m}月`,
-          total: 0
-        };
+      // 构建按月份分组的数据映射
+      const monthHoursMap = {};
+      const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+      if (useCache && hoursByDate) {
+        hoursByDate.forEach((hours, dateStr) => {
+          if (dateStr >= startDate && dateStr <= endDate) {
+            const monthKey = dateStr.substring(0, 7);
+            monthHoursMap[monthKey] = (monthHoursMap[monthKey] || 0) + hours;
+          }
+        });
+      } else {
+        shifts.forEach(shift => {
+          const monthKey = shift.date.substring(0, 7);
+          monthHoursMap[monthKey] = (monthHoursMap[monthKey] || 0) + parseFloat(shift.workHours) || 0;
+        });
       }
 
-      // 只遍历有数据的日期
-      shifts.forEach(shift => {
-        const monthKey = shift.date.substring(0, 7); // YYYY-MM
-        if (monthlyData.hasOwnProperty(monthKey)) {
-          monthlyData[monthKey].total += parseFloat(shift.workHours) || 0;
+      let currentYear = yearStart;
+      let currentMonth = monthStart;
+      while (currentYear < yearEnd || (currentYear === yearEnd && currentMonth <= monthEnd)) {
+        const monthKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        if (monthHoursMap.hasOwnProperty(monthKey)) {
+          labels.push(monthKey);
+          data.push(monthHoursMap[monthKey]);
+          standardData.push(customHours * 4.35);
+          longLabels.push(`${currentYear}年${monthNames[currentMonth]}`);
         }
-      });
-
-      // 生成标签和数据
-      Object.keys(monthlyData).forEach(key => {
-        labels.push(monthlyData[key].label);
-        data.push(monthlyData[key].total);
-        // 月视图标准工时：每周标准工时 × 4周
-        standardData.push(customHours * 4);
-      });
+        currentMonth++;
+        if (currentMonth > 11) {
+          currentMonth = 0;
+          currentYear++;
+        }
+      }
     }
 
     // 计算纵轴范围（考虑标准工时）
-    const allValues = [...data, ...standardData];
+    const allValues = data.length > 0 ? [...data, ...standardData] : [0];
     const maxValue = Math.max(...allValues, 0);
     const minValue = Math.min(...allValues, 0);
     const yAxisMax = maxValue > 0 ? Math.ceil(maxValue * 1.1) : 10;
@@ -1022,7 +1063,9 @@ Page({
       data,
       standardData,
       yAxisMax,
-      yAxisMin
+      yAxisMin,
+      longLabels,
+      subtext
     };
   },
 
@@ -1180,6 +1223,15 @@ Page({
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, chartWidth, chartHeight);
 
+      if (chartData.labels.length === 0) {
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '14px -apple-system, sans-serif';
+        ctx.fillText(chartData.subtext || '暂无数据', chartWidth / 2, chartHeight / 2);
+        return;
+      }
+
       // 绘图区背景
       ctx.fillStyle = '#fafbfc';
       ctx.fillRect(plotLeft, plotTop, plotWidth, plotHeight);
@@ -1209,7 +1261,7 @@ Page({
         ? dataPlotWidth / (chartData.labels.length - 1)
         : dataPlotWidth;
 
-      if (chartTimeUnit === 'day' && chartData.labels.length <= 14) {
+      if (chartTimeUnit === 'day' && chartData.labels.length <= DAY_THRESHOLD) {
         ctx.setLineDash([2, 4]);
         ctx.strokeStyle = '#e5e7eb';
         ctx.lineWidth = 0.5;
@@ -1260,14 +1312,17 @@ Page({
         }
       }
 
-      // 横轴标签
+      // 横轴标签（标签密度控制：超过12个时每隔一个显示）
+      const useLabelSkip = chartData.labels.length > 12;
+      const labelFontSize = useLabelSkip ? 9 : 11;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#6b7280';
-      ctx.font = '11px -apple-system, sans-serif';
+      ctx.font = `${labelFontSize}px -apple-system, sans-serif`;
       const labelY = plotTop + plotHeight + 8;
 
       for (let i = 0; i < chartData.labels.length; i++) {
+        if (useLabelSkip && i % 2 !== 0 && i !== chartData.labels.length - 1) continue;
         const x = plotLeft + extraPadding + (chartData.labels.length > 1
           ? adjustedXStep * i : dataPlotWidth / 2);
         ctx.fillText(chartData.labels[i], x, labelY);
@@ -1363,6 +1418,13 @@ Page({
       ctx.font = 'bold 14px -apple-system, sans-serif';
       ctx.fillStyle = '#374151';
       ctx.fillText(titleText, chartWidth / 2, titleBarY + 8);
+
+      // 副标题 — 聚合粒度
+      if (chartData.subtext) {
+        ctx.font = '10px -apple-system, sans-serif';
+        ctx.fillStyle = '#9ca3af';
+        ctx.fillText(chartData.subtext, chartWidth / 2, titleBarY + titleBarH + 4);
+      }
 
     });
   },
@@ -2007,20 +2069,17 @@ Page({
     const end = new Date(endDate);
     const dayCount = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
-    // 计算月份跨度
-    const monthCount = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
-
-    // 规则1：≤14天 → 日视图
-    if (dayCount <= 14) {
+    // 规则1：≤7天 → 日视图
+    if (dayCount <= DAY_THRESHOLD) {
       return 'day';
     }
 
-    // 规则2：>15天且≤2个月 → 周视图
-    if (dayCount > 14 && monthCount <= 2) {
+    // 规则2：8~60天 → 周视图
+    if (dayCount <= WEEK_THRESHOLD) {
       return 'week';
     }
 
-    // 规则3：>2个月 → 月视图
+    // 规则3：>60天 → 月视图
     return 'month';
   },
 
