@@ -294,31 +294,18 @@ Component({
 
     drawLineChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin) {
       const dataPlotWidth = adjustedXStep * (chartData.labels.length - 1);
-
-      this.drawArea(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin, dataPlotWidth);
+      const plotBottom = plotTop + plotHeight;
 
       const points = [];
       for (let i = 0; i < chartData.data.length; i++) {
         const x = plotLeft + extraPadding + (chartData.labels.length > 1 ? adjustedXStep * i : dataPlotWidth / 2);
-        const y = plotTop + plotHeight - (chartData.data[i] - yAxisMin) * yScale;
+        const y = plotBottom - (chartData.data[i] - yAxisMin) * yScale;
         points.push({ x, y });
       }
 
-      ctx.save();
-      ctx.beginPath();
-      const gradient = ctx.createLinearGradient(0, plotTop, 0, plotTop + plotHeight);
-      gradient.addColorStop(0, 'rgba(52,211,153,0.08)');
-      gradient.addColorStop(0.5, 'rgba(52,211,153,0.03)');
-      gradient.addColorStop(1, 'rgba(52,211,153,0.01)');
-      ctx.fillStyle = gradient;
-      ctx.moveTo(points[0].x, plotTop + plotHeight);
-      for (let i = 0; i < points.length; i++) {
-        ctx.lineTo(points[i].x, points[i].y);
-      }
-      ctx.lineTo(points[points.length - 1].x, plotTop + plotHeight);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      if (points.length < 2) return;
+
+      this.drawArea(ctx, points, plotTop, plotBottom);
 
       ctx.save();
       ctx.shadowColor = 'rgba(52,211,153,0.15)';
@@ -329,11 +316,20 @@ Component({
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        const cx = (points[i].x + points[i - 1].x) / 2;
-        ctx.quadraticCurveTo(points[i - 1].x, points[i - 1].y, cx, (points[i - 1].y + points[i].y) / 2);
+      if (points.length === 2) {
+        ctx.lineTo(points[1].x, points[1].y);
+      } else {
+        const stepRatio = 0.35;
+        for (let i = 0; i < points.length - 1; i++) {
+          const current = points[i];
+          const next = points[i + 1];
+          const cp1x = current.x + (next.x - current.x) * stepRatio;
+          const cp1y = current.y;
+          const cp2x = next.x - (next.x - current.x) * stepRatio;
+          const cp2y = next.y;
+          ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, next.x, next.y);
+        }
       }
-      ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
       ctx.stroke();
       ctx.restore();
 
@@ -350,6 +346,16 @@ Component({
         ctx.arc(points[i].x, points[i].y, 2.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
+
+        if (chartData.data[i] > 0) {
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillStyle = '#374151';
+          ctx.font = '10px -apple-system, sans-serif';
+          ctx.fillText(chartData.data[i].toFixed(1), points[i].x, points[i].y - 10);
+          ctx.restore();
+        }
       }
 
       if (chartData.standardData && chartData.standardData.length > 0) {
@@ -361,7 +367,7 @@ Component({
         ctx.beginPath();
         for (let i = 0; i < chartData.standardData.length; i++) {
           const x = plotLeft + extraPadding + (chartData.labels.length > 1 ? adjustedXStep * i : dataPlotWidth / 2);
-          const y = plotTop + plotHeight - (chartData.standardData[i] - yAxisMin) * yScale;
+          const y = plotBottom - (chartData.standardData[i] - yAxisMin) * yScale;
           if (i === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
@@ -371,62 +377,86 @@ Component({
       }
     },
 
-    drawArea(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin, dataPlotWidth) {
-      const points = [];
-      for (let i = 0; i < chartData.data.length; i++) {
-        const x = plotLeft + extraPadding + (chartData.labels.length > 1 ? adjustedXStep * i : dataPlotWidth / 2);
-        const y = plotTop + plotHeight - (chartData.data[i] - yAxisMin) * yScale;
-        points.push({ x, y });
-      }
+    drawArea(ctx, points, plotTop, plotBottom) {
       if (points.length < 2) return;
 
       ctx.save();
       ctx.beginPath();
-      const gradient = ctx.createLinearGradient(0, plotTop, 0, plotTop + plotHeight);
+      const gradient = ctx.createLinearGradient(0, plotTop, 0, plotBottom);
       gradient.addColorStop(0, 'rgba(52,211,153,0.12)');
       gradient.addColorStop(1, 'rgba(52,211,153,0.02)');
       ctx.fillStyle = gradient;
-      ctx.moveTo(points[0].x, plotTop + plotHeight);
+      ctx.moveTo(points[0].x, plotBottom);
       for (let i = 0; i < points.length; i++) {
         ctx.lineTo(points[i].x, points[i].y);
       }
-      ctx.lineTo(points[points.length - 1].x, plotTop + plotHeight);
+      ctx.lineTo(points[points.length - 1].x, plotBottom);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
     },
 
     drawBarChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin) {
-      const barWidth = adjustedXStep * 0.35;
+      const barWidth = Math.min(36, adjustedXStep * 0.55);
       const dataPlotWidth = adjustedXStep * (chartData.labels.length - 1);
+      const plotBottom = plotTop + plotHeight;
+
+      if (chartData.standardData && chartData.standardData.length > 0) {
+        ctx.save();
+        ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        for (let i = 0; i < chartData.standardData.length; i++) {
+          const x = plotLeft + extraPadding + (chartData.labels.length > 1 ? adjustedXStep * i : dataPlotWidth / 2);
+          const y = plotBottom - (chartData.standardData[i] - yAxisMin) * yScale;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+      }
 
       for (let i = 0; i < chartData.data.length; i++) {
-        const x = plotLeft + extraPadding + (chartData.labels.length > 1 ? adjustedXStep * i : dataPlotWidth / 2) - barWidth / 2;
-        const y = plotTop + plotHeight - (chartData.data[i] - yAxisMin) * yScale;
-        const barHeight = (chartData.data[i] - yAxisMin) * yScale;
+        const centerX = plotLeft + extraPadding + (chartData.labels.length > 1 ? adjustedXStep * i : dataPlotWidth / 2);
+        const value = chartData.data[i];
+        const barHeight = (value - yAxisMin) * yScale;
+        const x = centerX - barWidth / 2;
+        const y = plotBottom - barHeight;
 
         ctx.save();
         ctx.shadowColor = 'rgba(52,211,153,0.12)';
         ctx.shadowBlur = 6;
-        const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
+        const gradient = ctx.createLinearGradient(x, y, x, plotBottom);
         gradient.addColorStop(0, '#34d399');
-        gradient.addColorStop(1, '#6ee7b7');
+        gradient.addColorStop(0.7, '#6ee7b7');
+        gradient.addColorStop(1, '#a7f3d0');
         ctx.fillStyle = gradient;
 
-        const radius = 4;
-        const bw = barWidth;
-        const bh = barHeight;
+        const radius = 5;
         ctx.beginPath();
         ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + bw - radius, y);
-        ctx.quadraticCurveTo(x + bw, y, x + bw, y + radius);
-        ctx.lineTo(x + bw, y + bh);
-        ctx.lineTo(x, y + bh);
+        ctx.lineTo(x + barWidth - radius, y);
+        ctx.quadraticCurveTo(x + barWidth, y, x + barWidth, y + radius);
+        ctx.lineTo(x + barWidth, plotBottom);
+        ctx.lineTo(x, plotBottom);
         ctx.lineTo(x, y + radius);
         ctx.quadraticCurveTo(x, y, x + radius, y);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
+
+        if (value > 0) {
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillStyle = '#374151';
+          ctx.font = '10px -apple-system, sans-serif';
+          ctx.fillText(value.toFixed(1), centerX, y - 6);
+          ctx.restore();
+        }
       }
     }
   }

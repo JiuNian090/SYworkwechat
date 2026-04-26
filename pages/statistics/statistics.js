@@ -50,7 +50,7 @@ Page({
     },
     chartTimeUnit: 'day', // 图表时间单位：day, week, month, year
     chartType: 'line', // 图表类型：line（折线图）, bar（柱状图）
-    chartData: [], // 图表数据
+    chartData: { labels: [], data: [], standardData: [], yAxisMin: 0, yAxisMax: 10, subtext: '' }, // 图表数据
     // 周期选择器相关数据
     weekPickerRange: [], // 周选择器的数据范围
     weekPickerValue: [0, 0, 0], // 周选择器当前选中的值
