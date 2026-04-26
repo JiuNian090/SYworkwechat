@@ -346,7 +346,7 @@ Page({
     });
     
     // 保存到本地存储
-    wx.setStorageSync('customHours', customHours);
+    store.setState({ customHours }, ['customHours']);
     
     // 重新计算统计数据
     this.calculateStatistics();
@@ -861,7 +861,7 @@ Page({
       chartType: type
     });
     // 保存用户选择的图表类型
-    wx.setStorageSync('statisticsChartType', type);
+    store.setState({ chartType: type }, ['chartType']);
     this.drawChart();
   },
 

@@ -1,5 +1,6 @@
 // pages/plan/plan.js
 const { calculateHash } = require('../../utils/hashUtils.js');
+const { store } = require('../../utils/store.js');
 Page({
   data: {
     shiftTemplates: [],
@@ -60,7 +61,7 @@ Page({
 
   onShow() {
     // 页面显示时只在数据发生变化时重新加载班次模板
-    const templates = wx.getStorageSync('shiftTemplates') || [];
+    const templates = store.getState('shiftTemplates') || [];
     if (calculateHash(JSON.stringify(templates)) !== calculateHash(JSON.stringify(this.data.shiftTemplates))) {
       this.setData({
         shiftTemplates: templates
@@ -70,7 +71,7 @@ Page({
 
   loadShiftTemplates() {
     try {
-      const templates = wx.getStorageSync('shiftTemplates') || [];
+      const templates = store.getState('shiftTemplates') || [];
       this.setData({
         shiftTemplates: templates
       });
@@ -214,9 +215,8 @@ Page({
     };
 
     const templates = [...shiftTemplates, templateToSave];
-    
     try {
-      wx.setStorageSync('shiftTemplates', templates);
+      store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
       this.setData({
         shiftTemplates: templates,
         showAddTemplate: false
@@ -248,7 +248,7 @@ Page({
 
   saveTemplates() {
     try {
-      wx.setStorageSync('shiftTemplates', this.data.shiftTemplates);
+      store.setState({ shiftTemplates: this.data.shiftTemplates }, ['shiftTemplates']);
       wx.showToast({
         title: '保存成功',
         icon: 'success'
@@ -344,7 +344,7 @@ Page({
     const templates = [...shiftTemplates];
     templates[editIndex] = templateToSave;
     try {
-      wx.setStorageSync('shiftTemplates', templates);
+      store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
       this.setData({ 
         shiftTemplates: templates, 
         showEditTemplate: false, 
@@ -374,7 +374,7 @@ Page({
     const templates = this.data.shiftTemplates.filter((_, i) => i !== index);
     
     try {
-      wx.setStorageSync('shiftTemplates', templates);
+      store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
       this.setData({
         shiftTemplates: templates
       });

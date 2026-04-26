@@ -7,8 +7,7 @@ App({
   globalData: {
     deviceInfo: null,
     platform: null,
-    isHarmonyOS: false,
-    cloudInitialized: false
+    isHarmonyOS: false
   },
 
   async onLaunch(options) {
@@ -118,7 +117,6 @@ App({
               timeoutPromise
             ]);
             
-            this.globalData.cloudInitialized = true;
             store.setState({ cloudInitialized: true });
             console.log('云开发初始化成功');
             break;
@@ -133,12 +131,11 @@ App({
         }
       } catch (e) {
         console.error('云开发初始化失败', e);
-        this.globalData.cloudInitialized = false;
-        // 云开发初始化失败不影响其他功能
+        store.setState({ cloudInitialized: false });
       }
     } else {
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
-      this.globalData.cloudInitialized = false;
+      store.setState({ cloudInitialized: false });
     }
   },
 
@@ -186,7 +183,7 @@ App({
       }
       
       // 检查云开发是否初始化成功
-      if (!this.globalData.cloudInitialized) {
+      if (!store.getState('cloudInitialized')) {
         console.log('云开发未初始化，跳过云端同步');
         return;
       }

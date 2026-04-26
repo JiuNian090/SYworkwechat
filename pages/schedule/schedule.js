@@ -206,7 +206,7 @@ Page({
     // 如果排班数据有变化，则更新存储和视图
     if (shiftsChanged) {
       try {
-        wx.setStorageSync('shifts', updatedShifts);
+        store.setState({ shifts: updatedShifts }, ['shifts']);
         this.setData({
           shifts: updatedShifts
         });
@@ -767,7 +767,7 @@ Page({
     };
 
     try {
-      wx.setStorageSync('shifts', newShifts);
+      store.setState({ shifts: newShifts }, ['shifts']);
       this.setData({
         shifts: newShifts
       });

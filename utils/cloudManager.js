@@ -16,10 +16,8 @@ class CloudManager {
     return 'v2.0.0';
   }
   
-  // 检查云开发是否初始化成功
   isCloudInitialized() {
-    const app = getApp();
-    return app.globalData.cloudInitialized;
+    return store.getState('cloudInitialized');
   }
   
   // 调用云函数的通用方法，包含超时处理和重试机制

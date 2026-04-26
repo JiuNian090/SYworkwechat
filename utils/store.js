@@ -1,7 +1,9 @@
 const STORAGE_KEYS = {
+  cloudInitialized: 'cloudInitialized',
   cloudUserId: 'cloudUserId',
   cloudAccount: 'cloudAccount',
   cloudUserInfo: 'cloudUserInfo',
+  cloudLoggedIn: 'cloudLoggedIn',
   username: 'username',
   avatarType: 'avatarType',
   avatarEmoji: 'avatarEmoji',
@@ -11,7 +13,9 @@ const STORAGE_KEYS = {
   customHours: 'customHours',
   chartType: 'statisticsChartType',
   savedAccounts: 'savedAccounts',
-  autoRestoreMap: 'autoRestoreMap'
+  autoRestoreMap: 'autoRestoreMap',
+  lastBackupTime: 'lastBackupTime',
+  lastRestoreTime: 'lastRestoreTime'
 };
 
 function loadFromStorage() {
@@ -66,6 +70,32 @@ function createStore(initialState) {
     }
   }
 
+  function removeState(keys, persistKeys) {
+    const updates = {};
+    const prevState = { ...state };
+    keys.forEach(key => { state[key] = undefined; updates[key] = undefined; });
+
+    if (persistKeys) {
+      persistKeys.forEach(storageKey => {
+        try { wx.removeStorageSync(STORAGE_KEYS[storageKey] || storageKey); } catch (e) {}
+      });
+    }
+
+    keys.forEach(key => {
+      if (listeners[key]) {
+        Object.values(listeners[key]).forEach(cb => {
+          try { cb(state[key], prevState[key]); } catch (e) {}
+        });
+      }
+    });
+
+    if (listeners['*']) {
+      Object.values(listeners['*']).forEach(cb => {
+        try { cb(state, prevState); } catch (e) {}
+      });
+    }
+  }
+
   function subscribe(key, callback) {
     const id = ++listenerId;
     const eventKey = key || '*';
@@ -83,7 +113,7 @@ function createStore(initialState) {
     setState(updates, persistKeys);
   }
 
-  return { getState, setState, subscribe, persistToStorage };
+  return { getState, setState, removeState, subscribe, persistToStorage };
 }
 
 const store = createStore({

@@ -7,6 +7,7 @@ const AvatarManager = require('../../utils/avatarManager.js');
 const DataExportManager = require('../../utils/dataExportManager.js');
 const DataImportManager = require('../../utils/dataImportManager.js');
 const DataClearManager = require('../../utils/dataClearManager.js');
+const { store } = require('../../utils/store.js');
 const { encryptPassword, decryptPassword, hashPassword, verifyPassword, isOldFormat } = require('../../utils/cryptoUtils.js');
 const { calculateHash } = require('../../utils/hashUtils.js');
 
@@ -98,46 +99,34 @@ Page({
     this.initPageData();
   },
   
-  // 初始化页面数据
   initPageData() {
-    // 云开发已在 app.js 中初始化
-    const app = getApp();
-    const cloudInitialized = app.globalData.cloudInitialized;
-    console.log('云开发初始化状态:', cloudInitialized);
+    const cloudInitialized = store.getState('cloudInitialized');
     
-    // 检查是否已登录
-    const cloudUserId = wx.getStorageSync('cloudUserId');
-    const cloudAccount = wx.getStorageSync('cloudAccount') || '';
-    const cloudUserInfo = wx.getStorageSync('cloudUserInfo') || null;
+    const cloudUserId = store.getState('cloudUserId');
+    const cloudAccount = store.getState('cloudAccount') || '';
+    const cloudUserInfo = store.getState('cloudUserInfo');
     const cloudLoggedIn = !!cloudUserId;
     
-    // 同步云账号到用户名：优先使用云昵称
-    let username = wx.getStorageSync('username') || '';
+    let username = store.getState('username') || '';
     if (cloudLoggedIn && cloudUserInfo) {
       username = cloudUserInfo.nickname || cloudAccount;
-      // 确保本地存储的 username 与昵称同步
-      wx.setStorageSync('username', username);
+      store.setState({ username }, ['username']);
     }
     this.userId = cloudUserId;
     
-    // 初始化头像信息
     let avatarInfo;
     if (cloudLoggedIn && cloudUserInfo) {
-      // 从云端用户信息初始化头像
       avatarInfo = this.avatarManager.initAvatarFromCloud(cloudUserInfo);
     } else {
-      // 从本地存储初始化头像
       avatarInfo = this.avatarManager.initAvatarInfo();
     }
     
-    // 解析更新日志
     const changelog = this.parseChangelog();
     
-    // 加载保存的账号列表
     let savedAccounts = [];
     let migrated = false;
     try {
-      savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      savedAccounts = store.getState('savedAccounts') || [];
       savedAccounts.forEach(item => {
         if (item.password && item.password.length > 0) {
           const decrypted = decryptPassword(item.password);
@@ -151,16 +140,15 @@ Page({
         }
       });
       if (migrated) {
-        wx.setStorageSync('savedAccounts', savedAccounts);
+        store.setState({ savedAccounts }, ['savedAccounts']);
       }
     } catch (e) {
       console.error('加载保存的账号列表失败:', e);
     }
     
-    // 加载自动恢复勾选状态
     let autoRestoreMap = {};
     try {
-      autoRestoreMap = wx.getStorageSync('autoRestoreMap') || {};
+      autoRestoreMap = store.getState('autoRestoreMap') || {};
     } catch (e) {
       console.error('加载自动恢复勾选状态失败:', e);
     }
@@ -181,7 +169,6 @@ Page({
       autoRestoreMap: autoRestoreMap
     });
     
-    // 如果已登录，尝试从云端获取最新的头像信息
     if (cloudLoggedIn && cloudInitialized) {
       this.getLatestAvatarFromCloud();
     }
@@ -263,8 +250,7 @@ Page({
       showUsernameModal: false
     });
     
-    // 保存到本地存储
-    wx.setStorageSync('username', username);
+    store.setState({ username }, ['username']);
     
     wx.showToast({
       title: '保存成功',
@@ -337,9 +323,7 @@ Page({
       currentUserPage: 'main'
     });
     
-    // 保存到本地存储
-    wx.setStorageSync('avatarType', 'emoji');
-    wx.setStorageSync('avatarEmoji', emoji);
+    store.setState({ avatarType: 'emoji', avatarEmoji: emoji }, ['avatarType', 'avatarEmoji']);
     
     // 同步到云端
     this.syncAvatarToCloud('emoji', emoji, '');
@@ -857,7 +841,7 @@ Page({
     if (page === 'updateNickname') {
       let cloudUserInfo = this.data.cloudUserInfo;
       if (!cloudUserInfo) {
-        cloudUserInfo = wx.getStorageSync('cloudUserInfo');
+        cloudUserInfo = store.getState('cloudUserInfo');
       }
       this.setData({
         newNickname: cloudUserInfo?.nickname || ''
@@ -901,9 +885,8 @@ Page({
     const { newNickname } = this.data;
     let cloudUserInfo = this.data.cloudUserInfo;
     
-    // 如果 data 中没有 cloudUserInfo，尝试从本地存储获取
     if (!cloudUserInfo) {
-      cloudUserInfo = wx.getStorageSync('cloudUserInfo');
+      cloudUserInfo = store.getState('cloudUserInfo');
     }
 
     console.log('修改昵称 - cloudUserInfo:', cloudUserInfo);
@@ -941,9 +924,7 @@ Page({
           username: newNickname.trim(),
           currentUserPage: 'main'
         });
-        // 同步更新本地存储
-        wx.setStorageSync('cloudUserInfo', updatedCloudUserInfo);
-        wx.setStorageSync('username', newNickname.trim());
+        store.setState({ cloudUserInfo: updatedCloudUserInfo, username: newNickname.trim() }, ['cloudUserInfo', 'username']);
 
         wx.showToast({
           title: '昵称修改成功',
@@ -1100,12 +1081,10 @@ Page({
     });
   },
 
-  // 保存账号到列表
   saveAccount(account, password) {
     try {
-      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      let savedAccounts = store.getState('savedAccounts') || [];
       
-      // 获取当前用户的头像信息
       const cloudUserInfo = this.data.cloudUserInfo;
       const avatarEmoji = this.data.avatarEmoji;
       const avatarType = this.data.avatarType;
@@ -1142,12 +1121,11 @@ Page({
         });
       }
       
-      // 限制保存的账号数量（最多5个）
       if (savedAccounts.length > 5) {
         savedAccounts = savedAccounts.sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin)).slice(0, 5);
       }
       
-      wx.setStorageSync('savedAccounts', savedAccounts);
+      store.setState({ savedAccounts }, ['savedAccounts']);
       this.setData({
         savedAccounts: savedAccounts
       });
@@ -1177,46 +1155,37 @@ Page({
   // 检查并清理无效账户
   async checkAndCleanInvalidAccounts() {
     try {
-      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      let savedAccounts = store.getState('savedAccounts') || [];
       if (savedAccounts.length === 0) return;
       
-      // 检查云开发是否初始化
-      const app = getApp();
-      if (!app.globalData.cloudInitialized) return;
+      if (!store.getState('cloudInitialized')) return;
       
-      // 检查每个保存的账户是否仍然有效
       const validAccounts = [];
       const autoRestoreMap = { ...this.data.autoRestoreMap };
       
       for (const account of savedAccounts) {
         try {
-          // 尝试调用云函数检查账户是否存在
           const result = await wx.cloud.callFunction({
             name: 'userLogin',
             data: {
               action: 'checkAccountExists',
               account: account.account
             },
-            timeout: 5000 // 5秒超时
+            timeout: 5000
           });
           
           if (result.result.success && result.result.exists) {
-            // 账户仍然有效，保留
             validAccounts.push(account);
           } else {
-            // 账户已被删除，从自动恢复映射中移除
             delete autoRestoreMap[account.account];
           }
         } catch (e) {
-          // 网络错误或其他异常，暂时保留账户
           validAccounts.push(account);
         }
       }
       
-      // 如果有账户被清理，更新存储和页面数据
       if (validAccounts.length !== savedAccounts.length) {
-        wx.setStorageSync('savedAccounts', validAccounts);
-        wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+        store.setState({ savedAccounts: validAccounts, autoRestoreMap }, ['savedAccounts', 'autoRestoreMap']);
         
         this.setData({
           savedAccounts: validAccounts,
@@ -1316,17 +1285,17 @@ Page({
           cloudUserInfo: cloudUserInfo,
           currentUserPage: 'main'
         });
-        // 保存到本地存储（不保存密码，只保存用户信息）
-        wx.setStorageSync('username', displayUsername);
-        wx.setStorageSync('avatarType', avatarType);
-        wx.setStorageSync('avatarEmoji', avatarEmoji);
-        wx.setStorageSync('cloudAccount', account);
-        wx.setStorageSync('cloudLoggedIn', true);
-        wx.setStorageSync('cloudUserId', result.data.userId);
-        wx.setStorageSync('cloudUserInfo', cloudUserInfo);
+        store.setState({
+          username: displayUsername,
+          avatarType,
+          avatarEmoji: avatarEmoji,
+          cloudAccount: account,
+          cloudLoggedIn: true,
+          cloudUserId: result.data.userId,
+          cloudUserInfo
+        }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
         this.userId = result.data.userId;
         
-        // 保存账号到列表并更新头像信息
         this.saveAccount(account, password);
         this.updateSavedAccountAvatar(account, {
           avatarType,
@@ -1335,16 +1304,13 @@ Page({
           avatarEmojiEmotion: emojiEmotion
         });
         
-        // 显示成功提示
         wx.showToast({
           title: '登录成功',
           icon: 'success',
           duration: 1000
         });
         
-        // 检查是否需要自动恢复数据
         if (this.data.autoRestoreMap[account]) {
-          // 自动恢复数据
           this.autoRestoreData();
         }
       } else {
@@ -1370,7 +1336,6 @@ Page({
     const newValue = !currentValue;
     
     if (newValue) {
-      // 如果用户要勾选，弹出提示确认
       wx.showModal({
         title: '自动恢复数据',
         content: '勾选此项后，下次点击此账号登录时会自动静默恢复云备份数据。确定要开启吗？',
@@ -1378,26 +1343,22 @@ Page({
         cancelText: '取消',
         success: (res) => {
           if (res.confirm) {
-            // 用户确认，更新勾选状态
             const autoRestoreMap = { ...this.data.autoRestoreMap };
             autoRestoreMap[account] = true;
             this.setData({
               autoRestoreMap: autoRestoreMap
             });
-            // 保存到本地存储
-            wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+            store.setState({ autoRestoreMap }, ['autoRestoreMap']);
           }
         }
       });
     } else {
-      // 如果用户要取消勾选，直接取消
       const autoRestoreMap = { ...this.data.autoRestoreMap };
       autoRestoreMap[account] = false;
       this.setData({
         autoRestoreMap: autoRestoreMap
       });
-      // 保存到本地存储
-      wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+      store.setState({ autoRestoreMap }, ['autoRestoreMap']);
     }
   },
   
@@ -1421,14 +1382,13 @@ Page({
       wx.hideLoading();
       
       if (result.success) {
-        wx.setStorageSync('lastRestoreTime', Date.now());
+        store.setState({ lastRestoreTime: Date.now() }, ['lastRestoreTime']);
         wx.showToast({
           title: '数据恢复成功',
           icon: 'success',
           duration: 1500
         });
         
-        // 重新加载页面数据
         this.initPageData();
       } else {
         console.error('自动恢复失败:', result.errMsg);
@@ -1439,20 +1399,17 @@ Page({
     }
   },
   
-  // 删除保存的账号
   deleteSavedAccount(e) {
     const account = e.currentTarget.dataset.account;
     
     try {
-      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      let savedAccounts = store.getState('savedAccounts') || [];
       savedAccounts = savedAccounts.filter(item => item.account !== account);
       
-      // 同时删除对应的自动恢复勾选状态
       const autoRestoreMap = { ...this.data.autoRestoreMap };
       delete autoRestoreMap[account];
       
-      wx.setStorageSync('savedAccounts', savedAccounts);
-      wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+      store.setState({ savedAccounts, autoRestoreMap }, ['savedAccounts', 'autoRestoreMap']);
       
       this.setData({
         savedAccounts: savedAccounts,
@@ -1507,19 +1464,16 @@ Page({
             wx.hideLoading();
 
             if (result.result.success) {
-              // 从保存的账号列表中删除该账户
               let savedAccounts = [];
               try {
-                savedAccounts = wx.getStorageSync('savedAccounts') || [];
+                savedAccounts = store.getState('savedAccounts') || [];
                 const accountToDelete = cloudUserInfo.account;
                 savedAccounts = savedAccounts.filter(item => item.account !== accountToDelete);
                 
-                // 同时删除对应的自动恢复勾选状态
                 const autoRestoreMap = { ...this.data.autoRestoreMap };
                 delete autoRestoreMap[accountToDelete];
                 
-                wx.setStorageSync('savedAccounts', savedAccounts);
-                wx.setStorageSync('autoRestoreMap', autoRestoreMap);
+                store.setState({ savedAccounts, autoRestoreMap }, ['savedAccounts', 'autoRestoreMap']);
                 
                 this.setData({
                   savedAccounts: savedAccounts,
@@ -1529,7 +1483,6 @@ Page({
                 console.error('从保存的账号列表中删除账户失败:', e);
               }
               
-              // 清除本地登录信息
               this.logoutFromCloud();
               
               // 检查是否有其他保存的账户
@@ -1630,17 +1583,17 @@ Page({
           cloudUserInfo: cloudUserInfo,
           currentUserPage: 'main'
         });
-        // 保存到本地存储（不保存密码，只保存用户信息）
-        wx.setStorageSync('username', displayUsername);
-        wx.setStorageSync('avatarType', avatarType);
-        wx.setStorageSync('avatarEmoji', avatarEmoji);
-        wx.setStorageSync('cloudAccount', cloudAccountInput);
-        wx.setStorageSync('cloudLoggedIn', true);
-        wx.setStorageSync('cloudUserId', result.data.userId);
-        wx.setStorageSync('cloudUserInfo', cloudUserInfo);
+        store.setState({
+          username: displayUsername,
+          avatarType,
+          avatarEmoji: avatarEmoji,
+          cloudAccount: cloudAccountInput,
+          cloudLoggedIn: true,
+          cloudUserId: result.data.userId,
+          cloudUserInfo
+        }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
         this.userId = result.data.userId;
         
-        // 保存账号到列表并更新头像信息
         this.saveAccount(cloudAccountInput, cloudPasswordInput);
         this.updateSavedAccountAvatar(cloudAccountInput, {
           avatarType,
@@ -1742,14 +1695,15 @@ Page({
           emojiEmotion: emojiEmotion,
           cloudUserInfo: cloudUserInfo
         });
-        // 保存到本地存储（不保存密码，只保存用户信息）
-        wx.setStorageSync('username', displayUsername);
-        wx.setStorageSync('avatarType', avatarType);
-        wx.setStorageSync('avatarEmoji', avatarEmoji);
-        wx.setStorageSync('cloudAccount', cloudAccountInput);
-        wx.setStorageSync('cloudLoggedIn', true);
-        wx.setStorageSync('cloudUserId', result.result.data.userId);
-        wx.setStorageSync('cloudUserInfo', cloudUserInfo);
+        store.setState({
+          username: displayUsername,
+          avatarType,
+          avatarEmoji: avatarEmoji,
+          cloudAccount: cloudAccountInput,
+          cloudLoggedIn: true,
+          cloudUserId: result.result.data.userId,
+          cloudUserInfo
+        }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
         this.userId = result.result.data.userId;
         
         this.hideCloudRegisterModal();
@@ -1794,14 +1748,10 @@ Page({
       emojiText: '',
       emojiEmotion: 'neutral'
     });
-    // 清空本地存储
-    wx.removeStorageSync('username');
-    wx.removeStorageSync('avatarType');
-    wx.removeStorageSync('avatarEmoji');
-    wx.removeStorageSync('cloudAccount');
-    wx.removeStorageSync('cloudLoggedIn');
-    wx.removeStorageSync('cloudUserId');
-    wx.removeStorageSync('cloudUserInfo');
+    store.removeState(
+      ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo'],
+      ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']
+    );
     this.userId = null;
     
     wx.showToast({
@@ -1833,7 +1783,7 @@ Page({
           const result = await cloudManager.backup();
 
           if (result.success) {
-            wx.setStorageSync('lastBackupTime', Date.now());
+            store.setState({ lastBackupTime: Date.now() }, ['lastBackupTime']);
           }
         } catch (e) {
           console.error('备份失败', e);
@@ -1869,7 +1819,7 @@ Page({
           const result = await cloudManager.restore();
 
           if (result.success) {
-            wx.setStorageSync('lastRestoreTime', Date.now());
+            store.setState({ lastRestoreTime: Date.now() }, ['lastRestoreTime']);
           }
         } catch (e) {
           console.error('恢复失败', e);
@@ -1913,10 +1863,9 @@ Page({
     }
   },
 
-  // 更新 savedAccounts 里指定账号的头像信息
   updateSavedAccountAvatar(account, avatarInfo) {
     try {
-      let savedAccounts = wx.getStorageSync('savedAccounts') || [];
+      let savedAccounts = store.getState('savedAccounts') || [];
       const index = savedAccounts.findIndex(item => item.account === account);
       
       if (index !== -1) {
@@ -1928,7 +1877,7 @@ Page({
           avatarEmojiEmotion: avatarInfo.avatarEmojiEmotion
         };
         
-        wx.setStorageSync('savedAccounts', savedAccounts);
+        store.setState({ savedAccounts }, ['savedAccounts']);
         this.setData({ savedAccounts });
       }
     } catch (e) {
