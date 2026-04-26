@@ -1,0 +1,46 @@
+<view class="color-picker-component">
+  <view class="label-row">
+    <text class="label">颜色</text>
+    <view class="color-indicator" style="background-color:{{value}}"></view>
+    <text class="color-name-tag" style="color:{{value}}">{{colorNames[value] || '自定义'}}</text>
+  </view>
+  <view class="color-circles-container">
+    <view class="color-circles-row">
+      <view class="color-circle-item {{selectedColorType === 'custom' ? 'active' : ''}}" bindtap="openPicker">
+        <view class="custom-color-entry" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);">
+          <text class="custom-color-icon" wx:if="{{selectedColorType !== 'custom' || !customColor}}">+</text>
+          <view class="custom-color-overlay" wx:else style="background-color:{{customColor}}"></view>
+        </view>
+        <text class="color-circle-label">自定义</text>
+      </view>
+      <view class="color-circle-item {{value === item && selectedColorType === 'preset' ? 'active' : ''}}" wx:for="{{presetColors}}" wx:key="item" data-color="{{item}}" bindtap="selectPresetColor">
+        <view class="color-dot" style="background-color:{{item}}"></view>
+        <text class="color-circle-label">{{colorNames[item]}}</text>
+      </view>
+    </view>
+  </view>
+  <block wx:if="{{showPicker}}">
+    <view class="color-picker-panel">
+      <view class="palette-container">
+        <view class="palette-area" style="background-color:{{pickerHueColor}}" bindtouchstart="onPaletteTouchStart" bindtouchmove="onPaletteTouchMove" bindtouchend="onPaletteTouchEnd">
+          <view class="palette-white"></view>
+          <view class="palette-black"></view>
+          <view class="palette-cursor" style="left: {{pickerSaturation}}%; bottom: {{pickerBrightness}}%;"></view>
+        </view>
+        <view class="hue-slider-container">
+          <view class="hue-slider" bindtouchstart="onHueSliderTouchStart" bindtouchmove="onHueSliderTouchMove" bindtouchend="onHueSliderTouchEnd">
+            <view class="hue-slider-thumb" style="left: {{pickerHue / 360 * 100}}%; background-color: {{pickerColor}};"></view>
+          </view>
+        </view>
+      </view>
+      <view class="picker-preview-row">
+        <view class="picker-preview" style="background-color:{{pickerColor}}"></view>
+        <text class="picker-hex-value">{{pickerColor}}</text>
+      </view>
+      <view class="picker-actions">
+        <button class="picker-cancel-btn" bindtap="cancelPicker">取消</button>
+        <button class="picker-confirm-btn" bindtap="confirmPicker">确认</button>
+      </view>
+    </view>
+  </block>
+</view>

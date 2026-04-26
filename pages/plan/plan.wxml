@@ -75,52 +75,13 @@
           </picker>
         </view>
         <view class="form-group">
-          <view class="label-row">
-            <text class="label">颜色</text>
-            <view class="color-indicator" style="background-color:{{newTemplate.color}}"></view>
-            <text class="color-name-tag" style="color:{{newTemplate.color}}">{{colorNames[newTemplate.color] || '自定义'}}</text>
-          </view>
-          <!-- 颜色圆圈选择器 -->
-          <view class="color-circles-container">
-            <view class="color-circles-row">
-              <view class="color-circle-item {{selectedColorType === 'custom' ? 'active' : ''}}" bindtap="openColorPicker" data-mode="add">
-                <view class="custom-color-entry" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);">
-                  <text class="custom-color-icon" wx:if="{{selectedColorType !== 'custom' || !customColor}}">+</text>
-                  <view class="custom-color-overlay" wx:else style="background-color:{{customColor}}"></view>
-                </view>
-                <text class="color-circle-label">自定义</text>
-              </view>
-              <view class="color-circle-item {{newTemplate.color === item && selectedColorType === 'preset' ? 'active' : ''}}" wx:for="{{presetColors}}" wx:key="item" data-color="{{item}}" data-mode="add" bindtap="selectColor">
-                <view class="color-dot" style="background-color:{{item}}"></view>
-                <text class="color-circle-label">{{colorNames[item]}}</text>
-              </view>
-            </view>
-          </view>
-          <!-- 颜色调色器 -->
-          <block wx:if="{{showColorPicker && colorPickerMode === 'add'}}">
-            <view class="color-picker-panel">
-              <view class="palette-container">
-                <view class="palette-area" style="background-color:{{pickerHueColor}}" bindtouchstart="onPaletteTouchStart" bindtouchmove="onPaletteTouchMove" bindtouchend="onPaletteTouchEnd" data-picker="add">
-                  <view class="palette-white"></view>
-                  <view class="palette-black"></view>
-                  <view class="palette-cursor" style="left: {{pickerSaturation}}%; bottom: {{pickerBrightness}}%;"></view>
-                </view>
-                <view class="hue-slider-container">
-                  <view class="hue-slider" bindtouchstart="onHueSliderTouchStart" bindtouchmove="onHueSliderTouchMove" bindtouchend="onHueSliderTouchEnd" data-picker="add">
-                    <view class="hue-slider-thumb" style="left: {{pickerHue / 360 * 100}}%; background-color: {{pickerColor}};"></view>
-                  </view>
-                </view>
-              </view>
-              <view class="picker-preview-row">
-                <view class="picker-preview" style="background-color:{{pickerColor}}"></view>
-                <text class="picker-hex-value">{{pickerColor}}</text>
-              </view>
-              <view class="picker-actions">
-                <button class="picker-cancel-btn" bindtap="cancelColorPicker">取消</button>
-                <button class="picker-confirm-btn" bindtap="confirmColorPicker">确认</button>
-              </view>
-            </view>
-          </block>
+          <color-picker
+            presetColors="{{presetColors}}"
+            colorNames="{{colorNames}}"
+            value="{{newTemplate.color}}"
+            bind:change="onColorChange"
+            data-mode="add"
+          />
         </view>
         <view class="form-group">
           <text class="label">时间段</text>
@@ -201,52 +162,13 @@
           </picker>
         </view>
         <view class="form-group">
-          <view class="label-row">
-            <text class="label">颜色</text>
-            <view class="color-indicator" style="background-color:{{editTemplate.color}}"></view>
-            <text class="color-name-tag" style="color:{{editTemplate.color}}">{{colorNames[editTemplate.color] || '自定义'}}</text>
-          </view>
-          <!-- 颜色圆圈选择器 -->
-          <view class="color-circles-container">
-            <view class="color-circles-row">
-              <view class="color-circle-item {{selectedColorType === 'custom' ? 'active' : ''}}" bindtap="openColorPicker" data-mode="edit">
-                <view class="custom-color-entry" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);">
-                  <text class="custom-color-icon" wx:if="{{selectedColorType !== 'custom' || !editCustomColor}}">+</text>
-                  <view class="custom-color-overlay" wx:else style="background-color:{{editCustomColor}}"></view>
-                </view>
-                <text class="color-circle-label">自定义</text>
-              </view>
-              <view class="color-circle-item {{editTemplate.color === item && selectedColorType === 'preset' ? 'active' : ''}}" wx:for="{{presetColors}}" wx:key="item" data-color="{{item}}" data-mode="edit" bindtap="selectColor">
-                <view class="color-dot" style="background-color:{{item}}"></view>
-                <text class="color-circle-label">{{colorNames[item]}}</text>
-              </view>
-            </view>
-          </view>
-          <!-- 颜色调色器 -->
-          <block wx:if="{{showColorPicker && colorPickerMode === 'edit'}}">
-            <view class="color-picker-panel">
-              <view class="palette-container">
-                <view class="palette-area" style="background-color:{{pickerHueColor}}" bindtouchstart="onPaletteTouchStart" bindtouchmove="onPaletteTouchMove" bindtouchend="onPaletteTouchEnd" data-picker="edit">
-                  <view class="palette-white"></view>
-                  <view class="palette-black"></view>
-                  <view class="palette-cursor" style="left: {{pickerSaturation}}%; bottom: {{pickerBrightness}}%;"></view>
-                </view>
-                <view class="hue-slider-container">
-                  <view class="hue-slider" bindtouchstart="onHueSliderTouchStart" bindtouchmove="onHueSliderTouchMove" bindtouchend="onHueSliderTouchEnd" data-picker="edit">
-                    <view class="hue-slider-thumb" style="left: {{pickerHue / 360 * 100}}%; background-color: {{pickerColor}};"></view>
-                  </view>
-                </view>
-              </view>
-              <view class="picker-preview-row">
-                <view class="picker-preview" style="background-color:{{pickerColor}}"></view>
-                <text class="picker-hex-value">{{pickerColor}}</text>
-              </view>
-              <view class="picker-actions">
-                <button class="picker-cancel-btn" bindtap="cancelColorPicker">取消</button>
-                <button class="picker-confirm-btn" bindtap="confirmColorPicker">确认</button>
-              </view>
-            </view>
-          </block>
+          <color-picker
+            presetColors="{{presetColors}}"
+            colorNames="{{colorNames}}"
+            value="{{editTemplate.color}}"
+            bind:change="onColorChange"
+            data-mode="edit"
+          />
         </view>
         <view class="form-group">
           <text class="label">时间段</text>

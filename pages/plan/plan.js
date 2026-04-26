@@ -43,17 +43,7 @@ Page({
       '#ff4d4f': '嫣红',
       '#722ed1': '魅紫',
       '#13c2c2': '黛青'
-    },
-    customColor: '#34d399',
-    editCustomColor: '#34d399',
-    selectedColorType: 'preset',
-    showColorPicker: false,
-    colorPickerMode: 'add',
-    pickerHue: 120,
-    pickerSaturation: 100,
-    pickerBrightness: 50,
-    pickerColor: '#34d399',
-    pickerHueColor: '#34d399'
+    }
   },
 
   onLoad() {
@@ -82,9 +72,6 @@ Page({
   },
 
   showAddTemplateModal() {
-    const initialColor = '#07c160';
-    const hsv = this.hexToHsv(initialColor);
-    const hueColor = this.hsvToHex(hsv.h, 100, 100);
     this.setData({
       showAddTemplate: true,
       newTemplate: {
@@ -97,16 +84,8 @@ Page({
         minutesIndex: 0,
         workHours: 8.0,
         typeIndex: 0,
-        color: initialColor
-      },
-      selectedColorType: 'preset',
-      customColor: '#34d399',
-      showColorPicker: false,
-      pickerHue: hsv.h,
-      pickerSaturation: hsv.s,
-      pickerBrightness: hsv.v,
-      pickerColor: initialColor,
-      pickerHueColor: hueColor
+        color: '#07c160'
+      }
     });
   },
 
@@ -289,14 +268,6 @@ Page({
     // 查找班次类型索引
     const typeIndex = this.data.shiftTypes.indexOf(tpl.type);
 
-    // 判断当前颜色是否为预设颜色
-    const isPreset = this.data.presetColors.indexOf(tpl.color) >= 0;
-    const selectedColorType = isPreset ? 'preset' : 'custom';
-
-    // 初始化颜色选择器状态
-    const hsv = this.hexToHsv(tpl.color);
-    const hueColor = this.hsvToHex(hsv.h, 100, 100);
-
     const templateWithTime = {
       ...tpl,
       hours: hours,
@@ -309,15 +280,7 @@ Page({
     this.setData({
       showEditTemplate: true,
       editIndex: index,
-      editTemplate: templateWithTime,
-      selectedColorType: selectedColorType,
-      editCustomColor: isPreset ? '#34d399' : tpl.color,
-      showColorPicker: false,
-      pickerHue: hsv.h,
-      pickerSaturation: hsv.s,
-      pickerBrightness: hsv.v,
-      pickerColor: tpl.color,
-      pickerHueColor: hueColor
+      editTemplate: templateWithTime
     });
   },
 
@@ -420,242 +383,17 @@ Page({
     };
   },
 
-  // ============ 颜色圆圈选择器 ============
-
-  /**
-   * 选择预设颜色
-   */
-  selectColor(e) {
-    const color = e.currentTarget.dataset.color;
-    const mode = e.currentTarget.dataset.mode || 'add';
-
+  onColorChange(e) {
+    const { color } = e.detail;
+    const mode = e.currentTarget.dataset.mode;
     if (mode === 'edit') {
       this.setData({
-        'editTemplate.color': color,
-        selectedColorType: 'preset'
+        'editTemplate.color': color
       });
     } else {
       this.setData({
-        'newTemplate.color': color,
-        selectedColorType: 'preset'
+        'newTemplate.color': color
       });
     }
-  },
-
-  /**
-   * 打开颜色调色器
-   */
-  openColorPicker(e) {
-    const mode = e.currentTarget.dataset.mode || 'add';
-    const currentColor = mode === 'edit' ? this.data.editTemplate.color : this.data.newTemplate.color;
-    const hsv = this.hexToHsv(currentColor);
-    const hueColor = this.hsvToHex(hsv.h, 100, 100);
-
-    this.setData({
-      showColorPicker: true,
-      colorPickerMode: mode,
-      pickerHue: hsv.h,
-      pickerSaturation: hsv.s,
-      pickerBrightness: hsv.v,
-      pickerColor: currentColor,
-      pickerHueColor: hueColor
-    });
-
-    this._cachePickerRects();
-  },
-
-  /**
-   * 取消颜色选择
-   */
-  cancelColorPicker() {
-    this.setData({ showColorPicker: false });
-  },
-
-  /**
-   * 确认颜色选择
-   */
-  confirmColorPicker() {
-    const color = this.data.pickerColor;
-    const mode = this.data.colorPickerMode;
-
-    if (mode === 'edit') {
-      this.setData({
-        'editTemplate.color': color,
-        editCustomColor: color,
-        selectedColorType: 'custom',
-        showColorPicker: false
-      });
-    } else {
-      this.setData({
-        'newTemplate.color': color,
-        customColor: color,
-        selectedColorType: 'custom',
-        showColorPicker: false
-      });
-    }
-  },
-
-  // ============ 颜色调色器交互 ============
-
-  _cachePickerRects() {
-    setTimeout(() => {
-      try {
-        const page = this;
-        const query = wx.createSelectorQuery();
-        query.select('.palette-area').boundingClientRect();
-        query.select('.hue-slider').boundingClientRect();
-        query.exec(function (res) {
-          if (res[0]) page._paletteRect = res[0];
-          if (res[1]) page._hueSliderRect = res[1];
-        });
-      } catch (e) {}
-    }, 300);
-  },
-
-  onPaletteTouchStart(e) {
-    this._updatePaletteColor(e);
-  },
-
-  onPaletteTouchMove(e) {
-    if (this._paletteMoveTimer) return;
-    this._paletteMoveTimer = setTimeout(() => {
-      this._paletteMoveTimer = null;
-      this._updatePaletteColor(e);
-    }, 10);
-  },
-
-  onPaletteTouchEnd() {
-    // 无需额外操作
-  },
-
-  _updatePaletteColor(e) {
-    if (!this._paletteRect || !this._paletteRect.width) {
-      this._cachePickerRects();
-      return;
-    }
-    const touch = e.touches[0];
-    const rect = this._paletteRect;
-    const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left));
-    const y = Math.max(0, Math.min(rect.height, touch.clientY - rect.top));
-
-    const saturation = Math.round((x / rect.width) * 100);
-    const brightness = Math.round((1 - y / rect.height) * 100);
-    const color = this.hsvToHex(this.data.pickerHue, saturation, brightness);
-
-    this.setData({
-      pickerSaturation: saturation,
-      pickerBrightness: brightness,
-      pickerColor: color
-    });
-  },
-
-  onHueSliderTouchStart(e) {
-    this._updateHueFromTouch(e);
-  },
-
-  onHueSliderTouchMove(e) {
-    if (this._hueMoveTimer) return;
-    this._hueMoveTimer = setTimeout(() => {
-      this._hueMoveTimer = null;
-      this._updateHueFromTouch(e);
-    }, 10);
-  },
-
-  onHueSliderTouchEnd() {
-    // 无需额外操作
-  },
-
-  _updateHueFromTouch(e) {
-    if (!this._hueSliderRect || !this._hueSliderRect.width) return;
-    const touch = e.touches[0];
-    const rect = this._hueSliderRect;
-    const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left));
-    const hue = Math.round((x / rect.width) * 360);
-    const hueColor = this.hsvToHex(hue, 100, 100);
-    const color = this.hsvToHex(hue, this.data.pickerSaturation, this.data.pickerBrightness);
-
-    this.setData({
-      pickerHue: hue,
-      pickerHueColor: hueColor,
-      pickerColor: color
-    });
-  },
-
-  // ============ 颜色转换工具 ============
-
-  /**
-   * HSV 转 HEX 颜色
-   */
-  hsvToHex(h, s, v) {
-    h = h / 360;
-    s = s / 100;
-    v = v / 100;
-
-    const i = Math.floor(h * 6);
-    const f = h * 6 - i;
-    const p = v * (1 - s);
-    const q = v * (1 - f * s);
-    const t = v * (1 - (1 - f) * s);
-
-    let r, g, b;
-    switch (i % 6) {
-      case 0: r = v; g = t; b = p; break;
-      case 1: r = q; g = v; b = p; break;
-      case 2: r = p; g = v; b = t; break;
-      case 3: r = p; g = q; b = v; break;
-      case 4: r = t; g = p; b = v; break;
-      case 5: r = v; g = p; b = q; break;
-    }
-
-    const toHex = (c) => {
-      const hex = Math.round(c * 255).toString(16);
-      return hex.length === 1 ? '0' + hex : hex;
-    };
-
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  },
-
-  /**
-   * HEX 转 HSV
-   */
-  hexToHsv(hex) {
-    if (!hex || hex.length < 7) return { h: 0, s: 0, v: 0 };
-    const rgb = hex.replace('#', '');
-    const r = parseInt(rgb.substr(0, 2), 16) / 255;
-    const g = parseInt(rgb.substr(2, 2), 16) / 255;
-    const b = parseInt(rgb.substr(4, 2), 16) / 255;
-
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const d = max - min;
-
-    let h = 0;
-    const s = max === 0 ? 0 : d / max;
-    const v = max;
-
-    if (max !== min) {
-      switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
-      }
-      h = (h / 6) * 360;
-    }
-
-    return { h: Math.round(h), s: Math.round(s * 100), v: Math.round(v * 100) };
-  },
-
-  /**
-   * 判断颜色是否为浅色
-   */
-  isLightColor(hexColor) {
-    const hex = hexColor.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
-    return (r * 299 + g * 587 + b * 114) / 1000 > 128;
-  },
-
-  stopPropagation() {
   }
 });
