@@ -1,3 +1,4 @@
+'use strict';
 const cloud = require('wx-server-sdk');
 const crypto = require('crypto');
 
@@ -234,32 +235,32 @@ exports.main = async (event, context) => {
         const imageBackupResult = await imageBackupCollection.where({
           userId: userId
         }).get();
-        
+
         if (imageBackupResult.data.length > 0) {
           const imageBackup = imageBackupResult.data[0];
-          
+
           // 删除云存储中的图片
           if (imageBackup.images && imageBackup.images.length > 0) {
             const fileIDs = imageBackup.images
               .filter(img => img.fileID)
               .map(img => img.fileID);
-            
+
             if (fileIDs.length > 0) {
               await cloud.deleteFile({
                 fileList: fileIDs
               });
             }
           }
-          
+
           // 删除图片备份记录
           await imageBackupCollection.doc(imageBackup._id).remove();
         }
-        
+
         // 删除数据备份集合
         const dataBackupResult = await dataBackupCollection.where({
           userId: userId
         }).get();
-        
+
         if (dataBackupResult.data.length > 0) {
           // 删除数据备份记录
           await dataBackupCollection.doc(dataBackupResult.data[0]._id).remove();

@@ -1,3 +1,4 @@
+'use strict';
 const fs = require('fs');
 const path = require('path');
 
@@ -23,15 +24,15 @@ function getLatestVersionFromChangelog() {
 // 更新版本号
 function updateVersion() {
   const latestVersion = getLatestVersionFromChangelog();
-  
+
   // 更新package.json
   packageJson.version = latestVersion;
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-  
+
   // 更新project.config.json
   projectConfig.version = latestVersion;
   fs.writeFileSync(projectConfigPath, JSON.stringify(projectConfig, null, 2));
-  
+
   console.log(`版本号已更新为: v${latestVersion}`);
   return latestVersion;
 }
@@ -44,18 +45,18 @@ function generateVersionInfo() {
     buildTime: new Date().toISOString(),
     commit: process.env.GIT_COMMIT || 'unknown'
   };
-  
+
   const versionInfoPath = path.join(__dirname, 'utils', 'versionInfo.js');
-  const versionInfoContent = `// 自动生成的版本信息文件
+  const versionInfoContent = `'use strict';\n// 自动生成的版本信息文件
 const versionInfo = ${JSON.stringify(versionInfo, null, 2)};
 module.exports = versionInfo;
 `;
-  
+
   // 确保utils目录存在
   if (!fs.existsSync(path.join(__dirname, 'utils'))) {
     fs.mkdirSync(path.join(__dirname, 'utils'));
   }
-  
+
   fs.writeFileSync(versionInfoPath, versionInfoContent);
   console.log('版本信息文件已生成');
 }

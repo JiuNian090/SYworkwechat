@@ -1,3 +1,4 @@
+'use strict';
 class DataClearManager {
   constructor() {
   }
@@ -13,7 +14,7 @@ class DataClearManager {
           wx.showLoading({
             title: '正在清空...'
           });
-          
+
           try {
             // 1. 清空基础数据
             wx.removeStorageSync('shifts');
@@ -23,10 +24,10 @@ class DataClearManager {
             wx.removeStorageSync('statLastModified');
             wx.removeStorageSync('standardHours');
             wx.removeStorageSync('imagesLastModified');
-            
+
             // 2. 清空图片关联表
             wx.removeStorageSync('imageRelation');
-            
+
             // 3. 查找并清空所有周图片存储 (week_images_*)
             const info = wx.getStorageInfoSync();
             const keys = info.keys || [];
@@ -35,18 +36,18 @@ class DataClearManager {
                 wx.removeStorageSync(key);
               }
             });
-            
+
             // 4. 清空更新数据
             wx.removeStorageSync('lastUpdateCheck');
-            
+
             // 隐藏loading
             wx.hideLoading();
-            
+
             wx.showToast({
               title: '数据已清空',
               icon: 'success'
             });
-            
+
             // 延迟一段时间确保数据清空完成后再刷新页面
             setTimeout(() => {
               // 通知所有相关页面刷新数据
@@ -84,7 +85,7 @@ class DataClearManager {
                   }
                 }
               }
-              
+
               if (callback) callback(true);
             }, 500);
           } catch (e) {

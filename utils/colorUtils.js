@@ -1,3 +1,4 @@
+'use strict';
 function hexToRgb(hex) {
   if (!hex || !hex.startsWith('#') || hex.length !== 7) {
     return null;

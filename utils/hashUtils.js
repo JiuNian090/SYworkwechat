@@ -1,3 +1,4 @@
+'use strict';
 function calculateHash(data) {
   if (typeof data === 'string') {
     let hash = 0;

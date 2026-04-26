@@ -1,3 +1,4 @@
+'use strict';
 // utils/api.js
 const config = require('../config.js');
 
@@ -9,7 +10,7 @@ class ApiClient {
   // 通用请求方法
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const defaultOptions = {
       headers: {
         'Content-Type': 'application/json'
@@ -47,9 +48,9 @@ class ApiClient {
     const queryString = Object.keys(params)
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
       .join('&');
-    
+
     const urlWithParams = queryString ? `${endpoint}?${queryString}` : endpoint;
-    
+
     return this.request(urlWithParams, {
       method: 'GET'
     });

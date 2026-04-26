@@ -1,3 +1,4 @@
+'use strict';
 // pages/docs/docs.js
 Page({
 
@@ -24,7 +25,7 @@ Page({
       };
       const sectionId = typeMap[options.type];
       if (sectionId) {
-        this.setData({ 
+        this.setData({
           scrollToId: sectionId,
           activeSection: options.type
         });
@@ -124,7 +125,7 @@ Page({
     this.updateSectionRects();
     // 获取导航栏位置信息
     this.getNavPosition();
-    
+
     // 页面加载后立即检查当前位置
     setTimeout(() => {
       wx.createSelectorQuery().selectViewport().scrollOffset().exec((res) => {
@@ -133,7 +134,7 @@ Page({
         }
       });
     }, 100);
-    
+
     // 监听图片加载完成事件，重新计算区块位置
     this.observeImageLoad();
   },
@@ -175,13 +176,13 @@ Page({
   updateSectionRects() {
     const query = wx.createSelectorQuery();
     const sections = ['section-about', 'section-statistics', 'section-cloud', 'section-data', 'section-profile'];
-    
+
     this.sectionRects = {};
-    
+
     sections.forEach(id => {
       query.select('#' + id).boundingClientRect();
     });
-    
+
     query.exec((res) => {
       if (res && res.length > 0) {
         sections.forEach((id, index) => {
@@ -201,7 +202,7 @@ Page({
   calcSectionTopPositions() {
     this.sectionTopPositions = [];
     const sections = ['section-about', 'section-statistics', 'section-cloud', 'section-data', 'section-profile'];
-    
+
     sections.forEach(id => {
       if (this.sectionRects[id]) {
         // 获取当前滚动位置
@@ -235,7 +236,7 @@ Page({
       const sectionTop = this.sectionTopPositions[i];
       // 当滚动距离超过当前区块顶部，且未超过下一个区块顶部时，选中当前导航
       if (
-        scrollTop >= sectionTop - offset 
+        scrollTop >= sectionTop - offset
         && (i === this.sectionTopPositions.length - 1 || scrollTop < this.sectionTopPositions[i + 1] - offset)
       ) {
         activeSection = sections[i];

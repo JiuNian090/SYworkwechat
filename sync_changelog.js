@@ -1,3 +1,4 @@
+'use strict';
 // sync_changelog.js
 // 用于将CHANGELOG.md的内容同步到utils/changelog.js中
 
@@ -15,7 +16,7 @@ function syncChangelog() {
             console.error('读取CHANGELOG.md失败:', err);
             process.exit(1);
         }
-        
+
         // 生成utils/changelog.js文件内容
         const changelogContent = `// utils/changelog.js
 // 存储更新日志内容，与CHANGELOG.md保持一致
@@ -23,14 +24,14 @@ function syncChangelog() {
 module.exports = {
   changelogContent: \`${data.trim()}\`
 };`;
-        
+
         // 写入utils/changelog.js文件
         fs.writeFile(utilsPath, changelogContent, 'utf8', (err) => {
             if (err) {
                 console.error('写入utils/changelog.js失败:', err);
                 process.exit(1);
             }
-            
+
             console.log('CHANGELOG.md内容已成功同步到utils/changelog.js!');
             process.exit(0);
         });

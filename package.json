@@ -8,7 +8,9 @@
     "update-version": "node version-manager.js",
     "build": "node version-manager.js && node sync_changelog.js && gulp build",
     "dev": "node version-manager.js && node sync_changelog.js && gulp dev",
-    "clean": "gulp clean"
+    "clean": "gulp clean",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "keywords": [
     "wechat",
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.23.0",
+    "eslint": "^10.2.1",
     "gulp": "^5.0.1",
     "gulp-clean": "^0.4.0"
   },

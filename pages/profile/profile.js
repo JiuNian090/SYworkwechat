@@ -1,3 +1,4 @@
+'use strict';
 // pages/profile/profile.js
 const api = require('../../utils/api.js');
 const changelogData = require('../../utils/changelog.js');
@@ -81,7 +82,7 @@ Page({
     currentEmojiCategory: 'face', // 当前选中的表情分类
     selectedEmoji: '' // 当前选中的表情
   },
-  
+
   // 初始化各个管理器
   onLoad() {
     // 初始化云开发管理器
@@ -94,35 +95,35 @@ Page({
     this.dataImportManager = new DataImportManager();
     // 初始化数据清空管理器
     this.dataClearManager = new DataClearManager();
-    
+
     // 调用原有的onLoad逻辑
     this.initPageData();
   },
-  
+
   initPageData() {
     const cloudInitialized = store.getState('cloudInitialized');
-    
+
     const cloudUserId = store.getState('cloudUserId');
     const cloudAccount = store.getState('cloudAccount') || '';
     const cloudUserInfo = store.getState('cloudUserInfo');
     const cloudLoggedIn = !!cloudUserId;
-    
+
     let username = store.getState('username') || '';
     if (cloudLoggedIn && cloudUserInfo) {
       username = cloudUserInfo.nickname || cloudAccount;
       store.setState({ username }, ['username']);
     }
     this.userId = cloudUserId;
-    
+
     let avatarInfo;
     if (cloudLoggedIn && cloudUserInfo) {
       avatarInfo = this.avatarManager.initAvatarFromCloud(cloudUserInfo);
     } else {
       avatarInfo = this.avatarManager.initAvatarInfo();
     }
-    
+
     const changelog = this.parseChangelog();
-    
+
     let savedAccounts = [];
     let migrated = false;
     try {
@@ -145,14 +146,14 @@ Page({
     } catch (e) {
       console.error('加载保存的账号列表失败:', e);
     }
-    
+
     let autoRestoreMap = {};
     try {
       autoRestoreMap = store.getState('autoRestoreMap') || {};
     } catch (e) {
       console.error('加载自动恢复勾选状态失败:', e);
     }
-    
+
     this.setData({
       username: avatarInfo.username,
       avatarText: avatarInfo.avatarText,
@@ -168,7 +169,7 @@ Page({
       savedAccounts: savedAccounts,
       autoRestoreMap: autoRestoreMap
     });
-    
+
     if (cloudLoggedIn && cloudInitialized) {
       this.getLatestAvatarFromCloud();
     }
@@ -181,7 +182,7 @@ Page({
       url: '/pages/docs/docs?type=' + type
     });
   },
-  
+
   // 从云端获取最新的头像信息
   async getLatestAvatarFromCloud() {
     try {
@@ -198,7 +199,7 @@ Page({
           emojiEmotion: avatarInfo.emojiEmotion,
           cloudUserInfo: avatarInfo.cloudUserInfo
         });
-        
+
         // 通知其他页面更新头像信息
         this.updateAvatarInOtherPages();
       }
@@ -240,18 +241,18 @@ Page({
       });
       return;
     }
-    
+
     // 生成新的头像文字
     const avatarText = this.generateAvatarText(username);
-    
+
     this.setData({
       username: username,
       avatarText: avatarText,
       showUsernameModal: false
     });
-    
+
     store.setState({ username }, ['username']);
-    
+
     wx.showToast({
       title: '保存成功',
       icon: 'success'
@@ -266,7 +267,7 @@ Page({
       currentUserPage: 'avatar'
     });
   },
-  
+
   // 更新当前分类的表情
   updateCurrentCategoryEmojis() {
     const currentEmojiCategory = this.data.currentEmojiCategory;
@@ -310,11 +311,11 @@ Page({
       });
       return;
     }
-    
+
     // 获取表情对应的文字和情绪类型
     const emojiText = emojiManager.getEmojiText(emoji) || '';
     const emojiEmotion = emojiManager.getEmojiEmotion(emoji) || 'neutral';
-    
+
     this.setData({
       avatarEmoji: emoji,
       avatarType: 'emoji',
@@ -322,15 +323,15 @@ Page({
       emojiEmotion: emojiEmotion,
       currentUserPage: 'main'
     });
-    
+
     store.setState({ avatarType: 'emoji', avatarEmoji: emoji }, ['avatarType', 'avatarEmoji']);
-    
+
     // 同步到云端
     this.syncAvatarToCloud('emoji', emoji, '');
-    
+
     // 通知其他页面更新头像信息
     this.updateAvatarInOtherPages();
-    
+
     // 同步更新 savedAccounts 里当前账号的头像
     if (this.data.cloudAccount) {
       this.updateSavedAccountAvatar(this.data.cloudAccount, {
@@ -340,7 +341,7 @@ Page({
         avatarEmojiEmotion: emojiEmotion
       });
     }
-    
+
     wx.showToast({
       title: '表情已设为头像',
       icon: 'success'
@@ -362,7 +363,7 @@ Page({
       ...type,
       checked: false
     }));
-    
+
     this.setData({
       dataTypes: resetDataTypes,
       selectedDataTypes: [],
@@ -380,7 +381,7 @@ Page({
   // 处理数据类型选择
   onDataTypeSelect(e) {
     const dataTypeId = e.currentTarget.dataset.typeid;
-    
+
     // 更新数据类型选择状态
     const updatedDataTypes = this.data.dataTypes.map(type => {
       if (type.id === dataTypeId) {
@@ -391,12 +392,12 @@ Page({
       }
       return type;
     });
-    
+
     // 获取选中的数据类型
     const selectedDataTypes = updatedDataTypes
       .filter(type => type.checked)
       .map(type => type.id);
-    
+
     this.setData({
       dataTypes: updatedDataTypes,
       selectedDataTypes: selectedDataTypes
@@ -412,10 +413,10 @@ Page({
       });
       return;
     }
-    
+
     // 隐藏数据类型选择弹窗
     this.hideDataTypeModal();
-    
+
     // 显示文件名设置弹窗
     this.showFileNameModal();
   },
@@ -426,18 +427,18 @@ Page({
     const username = this.data.username || '未命名用户';
     const selectedDataTypes = this.data.selectedDataTypes;
     const allDataTypes = this.data.dataTypes.map(type => type.id);
-    
+
     const currentDate = new Date().toLocaleString('zh-CN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
     }).replace(/[\/\s:]/g, '-');
-    
+
     let defaultFileNameHint;
-    
+
     // 检查是否全选了所有导出项目
     const isAllSelected = selectedDataTypes.length === allDataTypes.length && selectedDataTypes.every(type => allDataTypes.includes(type));
-    
+
     if (isAllSelected) {
       // 全选时使用"用户名+备份+日期"格式
       defaultFileNameHint = `${username}+备份+${currentDate}`;
@@ -447,7 +448,7 @@ Page({
         .filter(type => selectedDataTypes.includes(type.id))
         .map(type => type.name)
         .join('+');
-      
+
       const currentTime = new Date().toLocaleString('zh-CN', {
         year: 'numeric',
         month: '2-digit',
@@ -457,10 +458,10 @@ Page({
         second: '2-digit',
         hour12: false
       }).replace(/[\/\s:]/g, '-');
-      
+
       defaultFileNameHint = `${username}+${dataTypeNames}+${currentTime}`;
     }
-    
+
     this.setData({
       tempFileName: defaultFileNameHint,
       defaultFileNameHint: defaultFileNameHint,
@@ -486,10 +487,10 @@ Page({
   confirmExport() {
     // 获取用户输入的文件名
     const customFileName = this.data.tempFileName;
-    
+
     // 隐藏弹窗
     this.hideFileNameModal();
-    
+
     // 导出选择的数据类型
     this.dataExportManager.exportSelectedData(this.data.selectedDataTypes, customFileName, (result) => {
       if (result) {
@@ -516,11 +517,11 @@ Page({
     this.dataImportManager.importData();
   },
 
-  
-  
-  
 
-  
+
+
+
+
   // 清空所有数据（包括班次模板）
   clearAllData() {
     this.dataClearManager.clearAllData();
@@ -603,7 +604,7 @@ Page({
     const { avatarType, avatarText, avatarEmoji } = this.data;
     this.avatarManager.updateAvatarInOtherPages(avatarType, avatarText, avatarEmoji);
   },
-  
+
   // 同步头像信息到云端
   async syncAvatarToCloud(avatarType, avatarEmoji, avatarText) {
     try {
@@ -634,33 +635,33 @@ Page({
     // 读取CHANGELOG.md文件内容
     // 从utils/changelog.js中获取更新日志内容，确保与实际的CHANGELOG.md文件保持一致
     const changelogContent = changelogData.changelogContent;
-    
+
     // 按版本分割更新日志
     const versions = changelogContent.split('##');
     const changelog = [];
-    
+
     // 跳过第一个空元素（标题部分）
     for (let i = 1; i < versions.length; i++) {
       const versionContent = versions[i].trim();
       if (!versionContent) continue;
-      
+
       // 解析版本号和日期
       const lines = versionContent.split('\n');
       const versionLine = lines[0].trim();
-      
+
       // 支持版本号格式：vX.X.X (YYYY-MM-DD)
       const versionMatch = versionLine.match(/([vV]\d+\.\d+\.\d+)(?:\.\d+)?\s+\((\d{4}-\d{2}-\d{2})\)/);
-      
+
       if (versionMatch) {
         const version = versionMatch[1];
         const date = versionMatch[2];
-        
+
         // 提取版本内容（去掉版本号和日期行）
-        let contentLines = lines.slice(1);
-        
+        const contentLines = lines.slice(1);
+
         // 移除开头和结尾的空行，然后重新组合内容
         const content = contentLines.join('\n').trim();
-        
+
         changelog.push({
           version: version,
           date: date,
@@ -668,10 +669,10 @@ Page({
         });
       }
     }
-    
+
     return changelog;
   },
-  
+
   onShow() {
     // 页面显示时只在更新日志发生变化时重新解析
     const changelog = this.parseChangelog();
@@ -681,23 +682,23 @@ Page({
       });
     }
   },
-  
+
   onShareTimeline() {
     return {
       title: 'SYwork排班管理系统 - 个人中心',
       query: 'page=profile'
     };
   },
-  
+
   // 数据管理使用说明弹窗相关方法
-  
+
   // 显示数据管理使用说明弹窗
   showDataManagementHelpModal() {
     this.setData({
       showDataManagementHelpModal: true
     });
   },
-  
+
   // 隐藏数据管理使用说明弹窗
   hideDataManagementHelpModal() {
     this.setData({
@@ -709,7 +710,7 @@ Page({
   showCloudLoginOrRegisterModal() {
     console.log('showCloudLoginOrRegisterModal 被调用');
     console.log('cloudLoggedIn:', this.data.cloudLoggedIn);
-    
+
     // 根据当前是否已登录，选择显示用户管理或登录/注册弹窗
     if (this.data.cloudLoggedIn) {
       console.log('已登录，显示用户管理弹窗');
@@ -719,7 +720,7 @@ Page({
       });
       return;
     }
-    
+
     console.log('未登录，显示选择弹窗');
     // 未登录：显示选择弹窗
     wx.showActionSheet({
@@ -742,7 +743,7 @@ Page({
       }
     });
   },
-  
+
   showCloudLoginModal() {
     console.log('showCloudLoginModal 被调用');
     this.setData({
@@ -830,13 +831,13 @@ Page({
   // 切换用户管理页面
   switchUserPage(e) {
     const page = e.currentTarget.dataset.page;
-    
+
     // 特殊处理头像页面，仍然使用原有的表情选择弹窗
     if (page === 'avatar') {
       this.showEmojiModal();
       return;
     }
-    
+
     // 重置相应页面的表单数据
     if (page === 'updateNickname') {
       let cloudUserInfo = this.data.cloudUserInfo;
@@ -857,7 +858,7 @@ Page({
         deleteAccountPassword: ''
       });
     }
-    
+
     this.setData({
       currentUserPage: page
     });
@@ -884,7 +885,7 @@ Page({
   async confirmUpdateNickname() {
     const { newNickname } = this.data;
     let cloudUserInfo = this.data.cloudUserInfo;
-    
+
     if (!cloudUserInfo) {
       cloudUserInfo = store.getState('cloudUserInfo');
     }
@@ -918,7 +919,7 @@ Page({
           ...cloudUserInfo,
           nickname: newNickname.trim()
         };
-        
+
         this.setData({
           cloudUserInfo: updatedCloudUserInfo,
           username: newNickname.trim(),
@@ -1084,19 +1085,19 @@ Page({
   saveAccount(account, password) {
     try {
       let savedAccounts = store.getState('savedAccounts') || [];
-      
+
       const cloudUserInfo = this.data.cloudUserInfo;
       const avatarEmoji = this.data.avatarEmoji;
       const avatarType = this.data.avatarType;
       const avatarText = this.data.avatarText;
       const emojiEmotion = this.data.emojiEmotion || 'neutral';
-      
+
       // 检查账号是否已存在
       const existingIndex = savedAccounts.findIndex(item => item.account === account);
-      
+
       const encryptedPwd = this.data.rememberPassword ? encryptPassword(password) : '';
       const pwdHash = this.data.rememberPassword ? hashPassword(password) : '';
-      
+
       if (existingIndex >= 0) {
         savedAccounts[existingIndex] = {
           account: account,
@@ -1120,11 +1121,11 @@ Page({
           avatarEmojiEmotion: emojiEmotion
         });
       }
-      
+
       if (savedAccounts.length > 5) {
         savedAccounts = savedAccounts.sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin)).slice(0, 5);
       }
-      
+
       store.setState({ savedAccounts }, ['savedAccounts']);
       this.setData({
         savedAccounts: savedAccounts
@@ -1133,36 +1134,36 @@ Page({
       console.error('保存账号失败:', e);
     }
   },
-  
+
   // 切换记住密码状态
   toggleRememberPassword() {
     this.setData({
       rememberPassword: !this.data.rememberPassword
     });
   },
-  
+
   // 显示切换账号页面
   showSwitchAccountModal() {
     // 检查并清理无效账户
     this.checkAndCleanInvalidAccounts();
-    
+
     this.setData({
       showUserManagementModal: true,
       currentUserPage: 'switchAccount'
     });
   },
-  
+
   // 检查并清理无效账户
   async checkAndCleanInvalidAccounts() {
     try {
-      let savedAccounts = store.getState('savedAccounts') || [];
+      const savedAccounts = store.getState('savedAccounts') || [];
       if (savedAccounts.length === 0) return;
-      
+
       if (!store.getState('cloudInitialized')) return;
-      
+
       const validAccounts = [];
       const autoRestoreMap = { ...this.data.autoRestoreMap };
-      
+
       for (const account of savedAccounts) {
         try {
           const result = await wx.cloud.callFunction({
@@ -1173,7 +1174,7 @@ Page({
             },
             timeout: 5000
           });
-          
+
           if (result.result.success && result.result.exists) {
             validAccounts.push(account);
           } else {
@@ -1183,10 +1184,10 @@ Page({
           validAccounts.push(account);
         }
       }
-      
+
       if (validAccounts.length !== savedAccounts.length) {
         store.setState({ savedAccounts: validAccounts, autoRestoreMap }, ['savedAccounts', 'autoRestoreMap']);
-        
+
         this.setData({
           savedAccounts: validAccounts,
           autoRestoreMap: autoRestoreMap
@@ -1196,17 +1197,17 @@ Page({
       console.error('检查和清理无效账户失败:', e);
     }
   },
-  
+
   // 选择账号进行登录
   selectAccount(e) {
     const index = e.currentTarget.dataset.index;
     const savedAccounts = this.data.savedAccounts;
     if (index === undefined || !savedAccounts[index]) return;
-    
+
     const account = savedAccounts[index].account;
     const encryptedPassword = savedAccounts[index].password;
     const storedHash = savedAccounts[index].passwordHash;
-    
+
     if (!encryptedPassword) {
       this.setData({
         cloudAccountInput: account,
@@ -1215,9 +1216,9 @@ Page({
       });
       return;
     }
-    
+
     const password = decryptPassword(encryptedPassword);
-    
+
     if (password) {
       if (storedHash && !verifyPassword(password, storedHash)) {
         this.setData({
@@ -1236,7 +1237,7 @@ Page({
       });
     }
   },
-  
+
   // 使用保存的账号直接登录
   async loginWithSavedAccount(account, password) {
     if (!account || !password) {
@@ -1268,11 +1269,11 @@ Page({
         const avatarType = result.data.avatarType || 'emoji';
         const avatarEmoji = result.data.avatarEmoji || '😊';
         const avatarText = '';
-        
+
         // 获取表情对应的文字和情绪类型
         const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
         const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
-        
+
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: account,
@@ -1295,7 +1296,7 @@ Page({
           cloudUserInfo
         }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
         this.userId = result.data.userId;
-        
+
         this.saveAccount(account, password);
         this.updateSavedAccountAvatar(account, {
           avatarType,
@@ -1303,13 +1304,13 @@ Page({
           avatarText,
           avatarEmojiEmotion: emojiEmotion
         });
-        
+
         wx.showToast({
           title: '登录成功',
           icon: 'success',
           duration: 1000
         });
-        
+
         if (this.data.autoRestoreMap[account]) {
           this.autoRestoreData();
         }
@@ -1328,13 +1329,13 @@ Page({
       });
     }
   },
-  
+
   // 切换自动恢复选项
   toggleAutoRestore(e) {
     const account = e.currentTarget.dataset.account;
     const currentValue = this.data.autoRestoreMap[account] || false;
     const newValue = !currentValue;
-    
+
     if (newValue) {
       wx.showModal({
         title: '自动恢复数据',
@@ -1361,26 +1362,26 @@ Page({
       store.setState({ autoRestoreMap }, ['autoRestoreMap']);
     }
   },
-  
+
   // 自动恢复数据
   async autoRestoreData() {
     try {
       const cloudManager = this.data.cloudManager;
-      
+
       // 检查是否有备份
       const backupInfo = await cloudManager.getBackupInfo();
       if (!backupInfo.success || !backupInfo.hasBackup) {
         console.log('没有备份数据，跳过自动恢复');
         return;
       }
-      
+
       // 静默恢复数据
       wx.showLoading({ title: '恢复数据中...' });
-      
+
       const result = await cloudManager.restore();
-      
+
       wx.hideLoading();
-      
+
       if (result.success) {
         store.setState({ lastRestoreTime: Date.now() }, ['lastRestoreTime']);
         wx.showToast({
@@ -1388,7 +1389,7 @@ Page({
           icon: 'success',
           duration: 1500
         });
-        
+
         this.initPageData();
       } else {
         console.error('自动恢复失败:', result.errMsg);
@@ -1398,19 +1399,19 @@ Page({
       console.error('自动恢复数据异常:', e);
     }
   },
-  
+
   deleteSavedAccount(e) {
     const account = e.currentTarget.dataset.account;
-    
+
     try {
       let savedAccounts = store.getState('savedAccounts') || [];
       savedAccounts = savedAccounts.filter(item => item.account !== account);
-      
+
       const autoRestoreMap = { ...this.data.autoRestoreMap };
       delete autoRestoreMap[account];
-      
+
       store.setState({ savedAccounts, autoRestoreMap }, ['savedAccounts', 'autoRestoreMap']);
-      
+
       this.setData({
         savedAccounts: savedAccounts,
         autoRestoreMap: autoRestoreMap
@@ -1419,7 +1420,7 @@ Page({
       console.error('删除保存的账号失败:', e);
     }
   },
-  
+
   // 确认删除账户
   async confirmDeleteAccount() {
     const { deleteAccountPassword } = this.data;
@@ -1469,12 +1470,12 @@ Page({
                 savedAccounts = store.getState('savedAccounts') || [];
                 const accountToDelete = cloudUserInfo.account;
                 savedAccounts = savedAccounts.filter(item => item.account !== accountToDelete);
-                
+
                 const autoRestoreMap = { ...this.data.autoRestoreMap };
                 delete autoRestoreMap[accountToDelete];
-                
+
                 store.setState({ savedAccounts, autoRestoreMap }, ['savedAccounts', 'autoRestoreMap']);
-                
+
                 this.setData({
                   savedAccounts: savedAccounts,
                   autoRestoreMap: autoRestoreMap
@@ -1482,15 +1483,15 @@ Page({
               } catch (e) {
                 console.error('从保存的账号列表中删除账户失败:', e);
               }
-              
+
               this.logoutFromCloud();
-              
+
               // 检查是否有其他保存的账户
               if (savedAccounts.length > 0) {
                 // 有其他账户，跳转到切换账户界面
-                this.setData({ 
+                this.setData({
                   currentUserPage: 'switchAccount',
-                  showUserManagementModal: true 
+                  showUserManagementModal: true
                 });
               } else {
                 // 没有其他账户，直接关闭弹窗
@@ -1566,11 +1567,11 @@ Page({
         const avatarType = result.data.avatarType || 'emoji';
         const avatarEmoji = result.data.avatarEmoji || '😊';
         const avatarText = '';
-        
+
         // 获取表情对应的文字和情绪类型
         const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
         const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
-        
+
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
@@ -1593,7 +1594,7 @@ Page({
           cloudUserInfo
         }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
         this.userId = result.data.userId;
-        
+
         this.saveAccount(cloudAccountInput, cloudPasswordInput);
         this.updateSavedAccountAvatar(cloudAccountInput, {
           avatarType,
@@ -1601,14 +1602,14 @@ Page({
           avatarText,
           avatarEmojiEmotion: emojiEmotion
         });
-        
+
         // 显示成功提示
         wx.showToast({
           title: '登录成功',
           icon: 'success',
           duration: 1000
         });
-        
+
         // 检查是否需要自动恢复数据
         if (this.data.autoRestoreMap[cloudAccountInput]) {
           // 自动恢复数据
@@ -1679,11 +1680,11 @@ Page({
         const avatarType = result.result.data.avatarType || 'emoji';
         const avatarEmoji = result.result.data.avatarEmoji || '😊';
         const avatarText = '';
-        
+
         // 获取表情对应的文字和情绪类型
         const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
         const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
-        
+
         this.setData({
           cloudLoggedIn: true,
           cloudAccount: cloudAccountInput,
@@ -1705,7 +1706,7 @@ Page({
           cloudUserInfo
         }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
         this.userId = result.result.data.userId;
-        
+
         this.hideCloudRegisterModal();
         // 显示成功提示并立即打开用户管理弹窗
         wx.showToast({
@@ -1713,7 +1714,7 @@ Page({
           icon: 'success',
           duration: 1000
         });
-        
+
         // 立即打开用户管理弹窗，不需要延迟
         this.setData({
           showUserManagementModal: true
@@ -1753,7 +1754,7 @@ Page({
       ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']
     );
     this.userId = null;
-    
+
     wx.showToast({
       title: '已退出登录',
       icon: 'success'
@@ -1839,7 +1840,7 @@ Page({
       const date = new Date(isoString);
       const now = new Date();
       const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === 0) {
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
@@ -1849,11 +1850,11 @@ Page({
       } else if (diffDays < 7) {
         return `${diffDays}天前`;
       }
-      
+
       const year = date.getFullYear().toString();
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const day = date.getDate().toString().padStart(2, '0');
-      
+
       if (year === now.getFullYear().toString()) {
         return `${month}/${day}`;
       }
@@ -1865,9 +1866,9 @@ Page({
 
   updateSavedAccountAvatar(account, avatarInfo) {
     try {
-      let savedAccounts = store.getState('savedAccounts') || [];
+      const savedAccounts = store.getState('savedAccounts') || [];
       const index = savedAccounts.findIndex(item => item.account === account);
-      
+
       if (index !== -1) {
         savedAccounts[index] = {
           ...savedAccounts[index],
@@ -1876,12 +1877,12 @@ Page({
           avatarText: avatarInfo.avatarText,
           avatarEmojiEmotion: avatarInfo.avatarEmojiEmotion
         };
-        
+
         store.setState({ savedAccounts }, ['savedAccounts']);
         this.setData({ savedAccounts });
       }
     } catch (e) {
       console.error('更新 savedAccounts 头像失败:', e);
     }
-  },
+  }
 });

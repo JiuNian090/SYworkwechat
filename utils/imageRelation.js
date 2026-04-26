@@ -1,3 +1,4 @@
+'use strict';
 // 图片关联表管理工具
 // 完全集成周关联表功能，自动同步图片在周之间的变化
 
@@ -69,7 +70,7 @@ function addImageToRelation(weekKey, image) {
   if (!exists) {
     // 计算图片哈希值
     const hash = calculateImageHash(image);
-    
+
     table[weekKey].push({
       id: image.id,
       name: image.name,
@@ -84,13 +85,13 @@ function addImageToRelation(weekKey, image) {
     if (index !== -1) {
       // 检查图片信息是否有变化
       const existingImage = table[weekKey][index];
-      const hasChanged = existingImage.name !== image.name || 
+      const hasChanged = existingImage.name !== image.name ||
                         existingImage.path !== image.path;
-      
+
       if (hasChanged) {
         // 计算新的哈希值
         const hash = calculateImageHash(image);
-        
+
         table[weekKey][index] = {
           ...existingImage,
           name: image.name,
@@ -112,7 +113,7 @@ function addImageToRelation(weekKey, image) {
 function calculateImageHash(image) {
   // 基于四个变量计算哈希值：图片时间戳、图片名称、图片内容、图片大小
   const hashInput = `${image.addedTime || new Date().toISOString()}_${image.name || ''}_${image.path || ''}_${image.size || 0}`;
-  
+
   // 简单的哈希算法
   let hash = 0;
   for (let i = 0; i < hashInput.length; i++) {
@@ -343,10 +344,10 @@ async function getValidImagesForWeek(weekKey) {
 async function getAllValidImages() {
   // 同步关联表与本地存储，确保关联表是最新的
   syncRelationWithLocal();
-  
+
   // 清理无效图片，确保关联表只包含存在的图片
   await cleanupInvalidImages();
-  
+
   const table = getImageRelationTable();
   const allValidImages = [];
   const imageWeekRelation = {};
@@ -433,7 +434,7 @@ function importImageWeekRelation(relation) {
       path: img.path, // 暂时使用云端的路径，后续会被实际下载的路径替换
       addedTime: new Date().toISOString()
     }));
-    
+
     // 不要直接同步到本地存储，避免覆盖已经下载的图片
     // 本地存储会在下载图片时更新
   }

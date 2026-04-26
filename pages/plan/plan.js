@@ -1,3 +1,4 @@
+'use strict';
 // pages/plan/plan.js
 const { calculateHash } = require('../../utils/hashUtils.js');
 const { store } = require('../../utils/store.js');
@@ -195,7 +196,7 @@ Page({
 
   saveTemplate() {
     const { newTemplate, shiftTemplates } = this.data;
-    
+
     if (!newTemplate.name) {
       wx.showToast({
         title: '请输入班次名称',
@@ -221,7 +222,7 @@ Page({
         shiftTemplates: templates,
         showAddTemplate: false
       });
-      
+
       // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
@@ -232,7 +233,7 @@ Page({
           break;
         }
       }
-      
+
       wx.showToast({
         title: '保存成功',
         icon: 'success'
@@ -253,7 +254,7 @@ Page({
         title: '保存成功',
         icon: 'success'
       });
-      
+
       // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
@@ -276,26 +277,26 @@ Page({
   showEditTemplateModal(e) {
     const index = e.currentTarget.dataset.index;
     const tpl = this.data.shiftTemplates[index];
-    
+
     // 确保模板包含hours和minutes字段
     const hours = tpl.hours || Math.floor(tpl.workHours || 0);
     const minutes = tpl.minutes || Math.round(((tpl.workHours || 0) - Math.floor(tpl.workHours || 0)) * 60);
-    
+
     // 计算小时和分钟的索引
     const hoursIndex = hours;
     const minutesIndex = minutes / 5; // 因为分钟是5分钟间隔
-    
+
     // 查找班次类型索引
     const typeIndex = this.data.shiftTypes.indexOf(tpl.type);
-    
+
     // 判断当前颜色是否为预设颜色
     const isPreset = this.data.presetColors.indexOf(tpl.color) >= 0;
     const selectedColorType = isPreset ? 'preset' : 'custom';
-    
+
     // 初始化颜色选择器状态
     const hsv = this.hexToHsv(tpl.color);
     const hueColor = this.hsvToHex(hsv.h, 100, 100);
-    
+
     const templateWithTime = {
       ...tpl,
       hours: hours,
@@ -304,7 +305,7 @@ Page({
       minutesIndex: minutesIndex,
       typeIndex: typeIndex >= 0 ? typeIndex : 0
     };
-    
+
     this.setData({
       showEditTemplate: true,
       editIndex: index,
@@ -330,7 +331,7 @@ Page({
       wx.showToast({ title: '请输入班次名称', icon: 'none' });
       return;
     }
-    
+
     // 确保工时计算正确
     const workHours = (editTemplate.hours || 0) + ((editTemplate.minutes || 0) / 60);
     // 获取班次类型
@@ -340,17 +341,17 @@ Page({
       type: type,
       workHours: parseFloat(workHours.toFixed(2))
     };
-    
+
     const templates = [...shiftTemplates];
     templates[editIndex] = templateToSave;
     try {
       store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
-      this.setData({ 
-        shiftTemplates: templates, 
-        showEditTemplate: false, 
-        editIndex: -1 
+      this.setData({
+        shiftTemplates: templates,
+        showEditTemplate: false,
+        editIndex: -1
       });
-      
+
       // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
@@ -361,7 +362,7 @@ Page({
           break;
         }
       }
-      
+
       wx.showToast({ title: '编辑成功', icon: 'success' });
     } catch (e) {
       wx.showToast({ title: '编辑失败', icon: 'none' });
@@ -372,13 +373,13 @@ Page({
     const index = e.currentTarget.dataset.index;
     const templateToDelete = this.data.shiftTemplates[index];
     const templates = this.data.shiftTemplates.filter((_, i) => i !== index);
-    
+
     try {
       store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
       this.setData({
         shiftTemplates: templates
       });
-      
+
       // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
@@ -389,7 +390,7 @@ Page({
           break;
         }
       }
-      
+
       wx.showToast({
         title: '删除成功',
         icon: 'success'
@@ -427,7 +428,7 @@ Page({
   selectColor(e) {
     const color = e.currentTarget.dataset.color;
     const mode = e.currentTarget.dataset.mode || 'add';
-    
+
     if (mode === 'edit') {
       this.setData({
         'editTemplate.color': color,
@@ -449,7 +450,7 @@ Page({
     const currentColor = mode === 'edit' ? this.data.editTemplate.color : this.data.newTemplate.color;
     const hsv = this.hexToHsv(currentColor);
     const hueColor = this.hsvToHex(hsv.h, 100, 100);
-    
+
     this.setData({
       showColorPicker: true,
       colorPickerMode: mode,
@@ -459,7 +460,7 @@ Page({
       pickerColor: currentColor,
       pickerHueColor: hueColor
     });
-    
+
     this._cachePickerRects();
   },
 
@@ -476,7 +477,7 @@ Page({
   confirmColorPicker() {
     const color = this.data.pickerColor;
     const mode = this.data.colorPickerMode;
-    
+
     if (mode === 'edit') {
       this.setData({
         'editTemplate.color': color,
@@ -536,11 +537,11 @@ Page({
     const rect = this._paletteRect;
     const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left));
     const y = Math.max(0, Math.min(rect.height, touch.clientY - rect.top));
-    
+
     const saturation = Math.round((x / rect.width) * 100);
     const brightness = Math.round((1 - y / rect.height) * 100);
     const color = this.hsvToHex(this.data.pickerHue, saturation, brightness);
-    
+
     this.setData({
       pickerSaturation: saturation,
       pickerBrightness: brightness,
@@ -572,7 +573,7 @@ Page({
     const hue = Math.round((x / rect.width) * 360);
     const hueColor = this.hsvToHex(hue, 100, 100);
     const color = this.hsvToHex(hue, this.data.pickerSaturation, this.data.pickerBrightness);
-    
+
     this.setData({
       pickerHue: hue,
       pickerHueColor: hueColor,
@@ -589,13 +590,13 @@ Page({
     h = h / 360;
     s = s / 100;
     v = v / 100;
-    
+
     const i = Math.floor(h * 6);
     const f = h * 6 - i;
     const p = v * (1 - s);
     const q = v * (1 - f * s);
     const t = v * (1 - (1 - f) * s);
-    
+
     let r, g, b;
     switch (i % 6) {
       case 0: r = v; g = t; b = p; break;
@@ -605,12 +606,12 @@ Page({
       case 4: r = t; g = p; b = v; break;
       case 5: r = v; g = p; b = q; break;
     }
-    
+
     const toHex = (c) => {
       const hex = Math.round(c * 255).toString(16);
       return hex.length === 1 ? '0' + hex : hex;
     };
-    
+
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   },
 
@@ -623,15 +624,15 @@ Page({
     const r = parseInt(rgb.substr(0, 2), 16) / 255;
     const g = parseInt(rgb.substr(2, 2), 16) / 255;
     const b = parseInt(rgb.substr(4, 2), 16) / 255;
-    
+
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
     const d = max - min;
-    
+
     let h = 0;
     const s = max === 0 ? 0 : d / max;
     const v = max;
-    
+
     if (max !== min) {
       switch (max) {
         case r: h = (g - b) / d + (g < b ? 6 : 0); break;
@@ -640,7 +641,7 @@ Page({
       }
       h = (h / 6) * 360;
     }
-    
+
     return { h: Math.round(h), s: Math.round(s * 100), v: Math.round(v * 100) };
   },
 

@@ -1,3 +1,4 @@
+'use strict';
 // pages/schedule/schedule.js
 const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/colorUtils.js');
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation.js');
@@ -65,7 +66,7 @@ Page({
     const username = wx.getStorageSync('username') || '';
     // 生成头像文字
     const avatarText = username ? username.charAt(0).toUpperCase() : '用';
-    
+
     this.setData({
       currentDate: this.formatDate(today),
       currentWeekTitle: this.formatWeekTitle(today),
@@ -114,11 +115,11 @@ Page({
     const username = wx.getStorageSync('username') || '';
     // 生成头像文字
     const avatarText = username ? username.charAt(0).toUpperCase() : '用';
-    
+
     // 只有当数据发生变化时才更新，减少不必要的setData
-    if (customWeeklyHours !== this.data.customWeeklyHours || 
-        avatarType !== this.data.avatarType || 
-        avatarEmoji !== this.data.avatarEmoji || 
+    if (customWeeklyHours !== this.data.customWeeklyHours ||
+        avatarType !== this.data.avatarType ||
+        avatarEmoji !== this.data.avatarEmoji ||
         avatarText !== this.data.avatarText) {
       this.setData({
         customWeeklyHours: customWeeklyHours,
@@ -128,12 +129,12 @@ Page({
         avatarText: avatarText
       });
     }
-    
+
     // 只在必要时重新加载数据
     const shifts = wx.getStorageSync('shifts') || {};
     const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
-    
-    if (calculateHash(JSON.stringify(shifts)) !== calculateHash(JSON.stringify(this.data.shifts)) || 
+
+    if (calculateHash(JSON.stringify(shifts)) !== calculateHash(JSON.stringify(this.data.shifts)) ||
         calculateHash(JSON.stringify(shiftTemplates)) !== calculateHash(JSON.stringify(this.data.shiftTemplates))) {
       this.setData({
         shifts: shifts,
@@ -143,7 +144,7 @@ Page({
       this.generateWeekDates();
       this.generateMonthDates();
     }
-    
+
     // 确保在onShow中也正确初始化当前月份的判断
     const currentDate = new Date(this.data.currentDate);
     const isCurrentMonth = isCurMonth(currentDate);
@@ -152,7 +153,7 @@ Page({
         isCurrentMonth: isCurrentMonth
       });
     }
-    
+
     // 加载本周图片
     this.loadWeekImages();
   },
@@ -173,21 +174,21 @@ Page({
     this.setData({
       shiftTemplates: templates
     });
-    
+
     // 更新已有的排班数据，确保颜色与模板一致
     const updatedShifts = {...this.data.shifts};
     let shiftsChanged = false;
-    
+
     // 遍历所有已有的排班数据
     for (const date in updatedShifts) {
       const shift = updatedShifts[date];
       // 查找匹配的模板（根据名称、开始时间和结束时间）
-      const matchingTemplate = templates.find(template => 
-        template.name === shift.name && 
-        template.startTime === shift.startTime && 
+      const matchingTemplate = templates.find(template =>
+        template.name === shift.name &&
+        template.startTime === shift.startTime &&
         template.endTime === shift.endTime
       );
-      
+
       // 如果找到了匹配的模板且颜色不同，则更新颜色
       if (matchingTemplate && matchingTemplate.color !== shift.color) {
         updatedShifts[date] = {
@@ -202,7 +203,7 @@ Page({
         // 这样可以确保删除模板时不会影响已有的排班
       }
     }
-    
+
     // 如果排班数据有变化，则更新存储和视图
     if (shiftsChanged) {
       try {
@@ -214,7 +215,7 @@ Page({
         console.error('更新排班数据失败', e);
       }
     }
-    
+
     // 更新视图以反映模板变化
     this.generateWeekDates();
     this.generateMonthDates();
@@ -233,7 +234,7 @@ Page({
 
   // 格式化周视图标题为"几月 第几周"
   formatWeekTitle(date) {
-    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', 
+    const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月',
                        '七月', '八月', '九月', '十月', '十一月', '十二月'];
     const month = date.getMonth();
     const weekNumber = this.getWeekOfMonth(date);
@@ -245,21 +246,21 @@ Page({
     // 如果是当前周，获取今天班次的颜色
     const today = new Date();
     const todayStr = this.formatDate(today);
-    
+
     // 查找今天是否有排班
     for (let i = 0; i < weekDates.length; i++) {
       if (weekDates[i].date === todayStr && weekDates[i].shift) {
         return lightenColor(weekDates[i].shift.color);
       }
     }
-    
+
     // 如果今天没有排班，查找本周其他天的班次颜色
     for (let i = 0; i < weekDates.length; i++) {
       if (weekDates[i].shift) {
         return lightenColor(weekDates[i].shift.color);
       }
     }
-    
+
     // 如果本周都没有排班，返回默认绿色（更浅一些）
     return lightenColor('#07c160');
   },
@@ -269,7 +270,7 @@ Page({
     // 如果是当前月，获取今天班次的颜色
     const today = new Date();
     const todayStr = this.formatDate(today);
-    
+
     // 查找今天是否有排班
     for (let i = 0; i < monthDates.length; i++) {
       const week = monthDates[i];
@@ -279,7 +280,7 @@ Page({
         }
       }
     }
-    
+
     // 如果今天没有排班，查找本月其他天的班次颜色
     for (let i = 0; i < monthDates.length; i++) {
       const week = monthDates[i];
@@ -289,7 +290,7 @@ Page({
         }
       }
     }
-    
+
     // 如果本月都没有排班，返回默认绿色（更浅一些）
     return lightenColor('#07c160');
   },
@@ -299,18 +300,18 @@ Page({
     // 如果是十六进制颜色值
     if (color && color.startsWith('#') && color.length === 7) {
       // 将十六进制转换为RGB
-      let r = parseInt(color.slice(1, 3), 16);
-      let g = parseInt(color.slice(3, 5), 16);
-      let b = parseInt(color.slice(5, 7), 16);
-      
+      const r = parseInt(color.slice(1, 3), 16);
+      const g = parseInt(color.slice(3, 5), 16);
+      const b = parseInt(color.slice(5, 7), 16);
+
       // 检查解析是否成功
       if (isNaN(r) || isNaN(g) || isNaN(b)) {
         return 'rgba(0, 0, 0, 0.12)'; // 如果解析失败，返回默认色
       }
-      
+
       // 计算颜色的亮度
       const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-      
+
       // 根据亮度调整标签背景色
       if (brightness > 200) {
         // 浅色班次 - 使用稍深的标签背景
@@ -323,7 +324,7 @@ Page({
         return `rgba(${Math.min(255, r + 60)}, ${Math.min(255, g + 60)}, ${Math.min(255, b + 60)}, 0.30)`;
       }
     }
-    
+
     // 如果不是十六进制颜色值，返回默认标签色
     return 'rgba(0, 0, 0, 0.12)';
   },
@@ -334,7 +335,7 @@ Page({
     const startDate = new Date(currentDate);
     // 修改为周一作为每周第一天 (周一为1，周日为0)
     startDate.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-    
+
     const weekDates = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(startDate);
@@ -361,10 +362,10 @@ Page({
         shift: modifiedShift
       });
     }
-    
+
     // 获取当前周的班次颜色
     const weekShiftColor = this.getWeekShiftColor(weekDates);
-    
+
     // 计算本周总工时
     let weekTotalHours = 0;
     weekDates.forEach(day => {
@@ -372,14 +373,14 @@ Page({
         weekTotalHours += parseFloat(day.shift.workHours) || 0;
       }
     });
-    
+
     // 计算本周工时差额/超额
     const weekDifference = weekTotalHours - this.data.customWeeklyHours;
-    
+
     // 计算差额类型和显示值
     const differenceType = weekDifference >= 0 ? '超额' : '差额';
     const differenceValue = Math.abs(weekDifference).toFixed(1);
-    
+
     this.setData({
       weekDates: weekDates,
       currentWeekShiftColor: weekShiftColor,
@@ -394,23 +395,23 @@ Page({
     const currentDate = new Date(this.data.currentDate);
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
+
     const startDate = new Date(firstDay);
     // 修改为周一作为每周第一天
     const firstDayOfWeek = firstDay.getDay();
     startDate.setDate(firstDay.getDate() - (firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1));
-    
+
     const endDate = new Date(lastDay);
     // 修改为周一作为每周第一天
     const lastDayOfWeek = lastDay.getDay();
     endDate.setDate(lastDay.getDate() + (lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek));
-    
+
     const monthDates = [];
     const current = new Date(startDate);
-    
+
     while (current <= endDate) {
       const week = [];
         for (let i = 0; i < 7; i++) {
@@ -438,14 +439,14 @@ Page({
         }
       monthDates.push(week);
     }
-    
+
     // 获取当前月的班次颜色
     const monthShiftColor = this.getMonthShiftColor(monthDates);
-    
+
     // 判断是否为当前月
     const today = new Date();
     const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
-    
+
     // 计算当月总工时
     let monthTotalHours = 0;
     monthDates.forEach(week => {
@@ -455,7 +456,7 @@ Page({
         }
       });
     });
-    
+
     // 计算当月标准工时（每周标准工时 * 当月周数）
     // 计算当月天数
     const daysInMonth = lastDay.getDate();
@@ -463,14 +464,14 @@ Page({
     const weeksInMonth = daysInMonth / 7;
     // 当月标准工时 = 每周标准工时 * 当月周数
     const monthStandardHours = this.data.customWeeklyHours * weeksInMonth;
-    
+
     // 计算当月工时差额/超额
     const monthDifference = monthTotalHours - monthStandardHours;
-    
+
     // 计算差额类型和显示值
     const monthDifferenceType = monthDifference >= 0 ? '超额' : '差额';
     const monthDifferenceValue = Math.abs(monthDifference).toFixed(1);
-    
+
     this.setData({
       monthDates: monthDates,
       currentMonthShiftColor: monthShiftColor,
@@ -485,7 +486,7 @@ Page({
 
   switchView(e) {
     const view = e.currentTarget.dataset.view;
-    
+
     if (view === 'month') {
       const currentDate = new Date(this.data.currentDate);
       const isCurrentMonth = isCurMonth(currentDate);
@@ -578,7 +579,7 @@ Page({
       const selectedShift = this.data.shifts[date] || null;
 
       this.loadShiftTemplates();
-      
+
       const templates = this.data.shiftTemplates;
       if (templates.length === 0) {
         wx.showToast({
@@ -591,21 +592,21 @@ Page({
       let pickerValue = [0];
       let selectedTemplateIndex = -1;
       let selectedShiftIndex = -1;
-      
+
       if (selectedShift) {
-        const matchingIndex = templates.findIndex(template => 
-          template.name === selectedShift.name && 
-          template.startTime === selectedShift.startTime && 
+        const matchingIndex = templates.findIndex(template =>
+          template.name === selectedShift.name &&
+          template.startTime === selectedShift.startTime &&
           template.endTime === selectedShift.endTime
         );
-        
+
         if (matchingIndex !== -1) {
           pickerValue = [matchingIndex];
           selectedTemplateIndex = matchingIndex;
           selectedShiftIndex = matchingIndex;
         }
       }
-      
+
       this.setData({
         selectedDate: date,
         selectedShift: selectedShift,
@@ -663,7 +664,7 @@ Page({
   onShiftSelect(e) {
     const index = e.currentTarget.dataset.index;
     const { selectedShiftIndex } = this.data;
-    
+
     // 如果点击的是当前已选中的班次，则取消选中
     if (selectedShiftIndex === index) {
       this.setData({
@@ -686,13 +687,13 @@ Page({
     const value = e.detail.value;
     const selectedTemplateIndex = value[0];
     const { shiftTemplates, selectedShift } = this.data;
-    
+
     // 检查选中的班次是否与当天的排班对应
-    const isSelectedShiftMatching = selectedShift && shiftTemplates[selectedTemplateIndex] && 
+    const isSelectedShiftMatching = selectedShift && shiftTemplates[selectedTemplateIndex] &&
       shiftTemplates[selectedTemplateIndex].name === selectedShift.name &&
       shiftTemplates[selectedTemplateIndex].startTime === selectedShift.startTime &&
       shiftTemplates[selectedTemplateIndex].endTime === selectedShift.endTime;
-    
+
     this.setData({
       pickerValue: value,
       selectedTemplateIndex: selectedTemplateIndex,
@@ -846,7 +847,7 @@ Page({
   // 确认删除排班
   confirmDeleteShift() {
     const date = this.data.selectedDate;
-    
+
     if (!date) {
       wx.showToast({
         title: '未选择日期',
@@ -854,7 +855,7 @@ Page({
       });
       return;
     }
-    
+
     // 显示确认弹窗
     wx.showModal({
       title: '确认删除',
@@ -882,17 +883,17 @@ Page({
     const month = String(currentViewDate.getMonth() + 1).padStart(2, '0');
     const week = this.getWeekOfMonth(currentViewDate);
     const baseImageName = `${year}-${month}-${week}`;
-    
+
     // 检查默认名称是否重复，如果重复则在后面加(1),(2)等
     let defaultImageName = baseImageName;
     let counter = 1;
     const { weekImages } = this.data;
-    
+
     while (weekImages.some(image => image.name === defaultImageName)) {
       defaultImageName = `${baseImageName}(${counter})`;
       counter++;
     }
-    
+
     this.setData({
       showAddImageModal: true,
       selectedImagePath: '',
@@ -908,7 +909,7 @@ Page({
       imageName: null
     });
   },
-  
+
   // 选择图片
   chooseImage() {
     const that = this;
@@ -925,14 +926,14 @@ Page({
       }
     });
   },
-  
+
   // 处理图片名称输入
   onImageNameInput(e) {
     this.setData({
       imageName: e.detail.value
     });
   },
-  
+
   // 添加图片
   addImage() {
     const { selectedImagePath, imageName, weekImages } = this.data;
@@ -947,7 +948,7 @@ Page({
     const month = String(currentViewDate.getMonth() + 1).padStart(2, '0');
     const week = this.getWeekOfMonth(currentViewDate);
     const newNameFormat = `${year}-${month}-${week}`;
-    
+
     // 如果用户没有输入名称，使用新格式作为默认名称
     if (!finalImageName) {
       finalImageName = newNameFormat;
@@ -958,7 +959,7 @@ Page({
     let counter = 1;
     // 提取基础名称（去掉可能存在的数字后缀）
     const baseName = finalImageName.replace(/\(\d+\)$/, '').trim();
-    
+
     while (weekImages.some(image => image.name === uniqueImageName)) {
       uniqueImageName = `${baseName}(${counter})`;
       counter++;
@@ -972,49 +973,49 @@ Page({
       addedTime: new Date().toISOString(),
       hash: '' // 哈希值将在备份时计算
     };
-    
+
     // 更新图片列表
     const updatedImages = [...weekImages, newImage];
     this.setData({
       weekImages: updatedImages
     });
-    
+
     // 保存到本地存储
     const weekKey = this.getWeekKey();
     const storageKey = `week_images_${weekKey}`;
     wx.setStorageSync(storageKey, updatedImages);
-    
+
     // 同步更新到图片关联表
     addImageToRelation(storageKey, newImage);
-    
+
     // 关闭弹窗
     this.hideAddImageModal();
-    
+
     wx.showToast({
       title: '图片添加成功',
       icon: 'success'
     });
   },
-  
+
   // 查看图片
   viewImage(e) {
     const index = e.currentTarget.dataset.index;
     const { weekImages } = this.data;
     const image = weekImages[index];
-    
+
     // 使用微信的图片预览功能
     wx.previewImage({
       urls: [image.path],
       current: image.path
     });
   },
-  
+
   // 删除图片
   deleteImage(e) {
     const index = e.currentTarget.dataset.index;
     const { weekImages } = this.data;
     const imageToDelete = weekImages[index];
-    
+
     // 显示确认对话框
     wx.showModal({
       title: '确认删除',
@@ -1026,20 +1027,20 @@ Page({
           this.setData({
             weekImages: updatedImages
           });
-          
+
           // 更新本地存储
           const weekKey = this.getWeekKey();
           const storageKey = `week_images_${weekKey}`;
           wx.setStorageSync(storageKey, updatedImages);
-          
+
           // 同步更新到图片关联表
           if (imageToDelete && imageToDelete.id) {
             removeImageFromRelation(storageKey, imageToDelete.id);
           }
-          
+
           // 更新图片最后修改时间戳，确保下次备份时会重新备份
           wx.setStorageSync('imagesLastModified', Date.now());
-          
+
           wx.showToast({
             title: '图片删除成功',
             icon: 'success'
@@ -1048,7 +1049,7 @@ Page({
       }
     });
   },
-  
+
   // 获取当前周的唯一标识（用于本地存储键）
   getWeekKey() {
     // 使用当前显示的周的起始日期作为唯一标识
@@ -1059,13 +1060,13 @@ Page({
     startDate.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
     return startDate.toISOString().split('T')[0];
   },
-  
+
   // 加载本周图片
   loadWeekImages() {
     const weekKey = this.getWeekKey();
     const storageKey = `week_images_${weekKey}`;
-    let weekImages = wx.getStorageSync(storageKey) || [];
-    
+    const weekImages = wx.getStorageSync(storageKey) || [];
+
     // 检测并更新旧格式图片名称
     let hasOldFormat = false;
     const updatedImages = weekImages.map(image => {
@@ -1094,16 +1095,16 @@ Page({
       }
       return image;
     });
-    
+
     // 如果有旧格式图片，更新存储
     if (hasOldFormat) {
       wx.setStorageSync(storageKey, updatedImages);
       console.log(`已更新 ${updatedImages.length} 张图片的名称格式`);
     }
-    
+
     // 同步更新到图片关联表
     syncRelationWithLocal(storageKey);
-    
+
     this.setData({
       weekImages: updatedImages
     });
@@ -1113,7 +1114,7 @@ Page({
   removeShift() {
     const date = this.data.selectedDate;
     const { shifts } = this.data;
-    
+
     if (!date) {
       wx.showToast({
         title: '未选择日期',
@@ -1121,10 +1122,10 @@ Page({
       });
       return;
     }
-    
+
     const newShifts = { ...shifts };
     delete newShifts[date];
-    
+
     try {
       wx.setStorageSync('shifts', newShifts);
       this.setData({
@@ -1132,11 +1133,11 @@ Page({
         selectedShift: null,
         showShiftModal: false
       });
-      
+
       // 更新视图
       this.generateWeekDates();
       this.generateMonthDates();
-      
+
       // 通知统计页面更新数据
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
@@ -1151,7 +1152,7 @@ Page({
           break;
         }
       }
-      
+
       wx.showToast({
         title: '删除成功',
         icon: 'success'

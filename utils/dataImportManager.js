@@ -1,3 +1,4 @@
+'use strict';
 const JSZip = require('./jszip.min.js');
 
 class DataImportManager {
@@ -14,11 +15,11 @@ class DataImportManager {
       success: (res) => {
         const fileName = res.tempFiles[0].name;
         const filePath = res.tempFiles[0].path;
-        
+
         wx.showLoading({
           title: '正在导入...'
         });
-        
+
         if (fileName.toLowerCase().endsWith('.zip')) {
           // 处理ZIP文件
           this.importFromZip(filePath, callback);
@@ -45,7 +46,7 @@ class DataImportManager {
       }
     });
   }
-  
+
   // 从JSON文件导入
   importFromJson(filePath, callback) {
     wx.getFileSystemManager().readFile({
@@ -54,11 +55,11 @@ class DataImportManager {
       success: (readRes) => {
         try {
           const data = JSON.parse(readRes.data);
-          
+
           // 获取文件名，判断文件类型
           const fileName = filePath.split('/').pop();
           let importSuccess = false;
-          
+
           // 处理班次模板.json文件
           if (fileName === '班次模板.json') {
             // 验证数据格式
@@ -90,7 +91,7 @@ class DataImportManager {
             if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
               throw new Error('数据格式不正确');
             }
-            
+
             // 保存数据到本地存储
             if (data.shiftTemplates) {
               wx.setStorageSync('shiftTemplates', data.shiftTemplates);
@@ -103,7 +104,7 @@ class DataImportManager {
             }
             importSuccess = true;
           }
-          
+
           if (importSuccess) {
             this.finishImport(callback);
           }
@@ -128,17 +129,17 @@ class DataImportManager {
       }
     });
   }
-  
+
   // 从ZIP文件导入
   importFromZip(filePath, callback) {
     const fs = wx.getFileSystemManager();
-    
+
     fs.readFile({
       filePath: filePath,
       success: (readRes) => {
         try {
           const zip = new JSZip();
-          
+
           zip.loadAsync(readRes.data).then((zip) => {
             // 检查是否存在班次模板.json文件
             const shiftTemplatesFile = zip.file('班次模板.json');
@@ -146,14 +147,14 @@ class DataImportManager {
             const shiftsFile = zip.file('排班数据.json');
             // 检查是否存在旧格式的data.json文件
             const dataJsonFile = zip.file('data.json');
-            
+
             // 用于存储导入的数据
             const importData = {
               shiftTemplates: [],
               shifts: {},
               customWeeklyHours: 35
             };
-            
+
             // 处理班次模板文件
             const processShiftTemplates = () => {
               return new Promise((resolve) => {
@@ -177,7 +178,7 @@ class DataImportManager {
                 }
               });
             };
-            
+
             // 处理排班数据文件
             const processShifts = () => {
               return new Promise((resolve) => {
@@ -204,7 +205,7 @@ class DataImportManager {
                 }
               });
             };
-            
+
             // 处理旧格式的data.json文件
             const processDataJson = () => {
               return new Promise((resolve) => {
@@ -234,13 +235,13 @@ class DataImportManager {
                 }
               });
             };
-            
+
             // 检查是否存在图片周关联表.json文件
             const imageRelationFile = zip.file('图片周关联表.json');
-            
+
             // 用于存储图片周关联表
             let imageWeekRelation = {};
-            
+
             // 处理图片周关联表文件
             const processImageRelation = () => {
               return new Promise((resolve) => {
@@ -261,7 +262,7 @@ class DataImportManager {
                 }
               });
             };
-            
+
             // 按顺序处理所有文件
             Promise.all([
               processShiftTemplates(),
@@ -279,14 +280,14 @@ class DataImportManager {
               if (importData.customWeeklyHours !== undefined) {
                 wx.setStorageSync('customWeeklyHours', importData.customWeeklyHours);
               }
-              
+
               // 处理图片文件（统一使用images文件夹）
               const imageDir = zip.folder('images') || zip.folder('image');
               if (imageDir) {
                 const imagePromises = [];
                 // 用于存储已处理的图片路径
                 const processedImagePaths = new Set();
-                
+
                 // 递归处理图片文件夹中的所有文件
                 const processImageFolder = (folder, basePath = '') => {
                   folder.forEach((relativePath, file) => {
@@ -299,7 +300,7 @@ class DataImportManager {
                     } else {
                       // 构建完整的相对路径
                       const fullRelativePath = basePath ? `${basePath}${relativePath}` : relativePath;
-                      
+
                       // 处理图片文件
                       const promise = file.async('arraybuffer').then((content) => {
                         // 生成临时图片路径
@@ -311,7 +312,7 @@ class DataImportManager {
                           data: content,
                           success: () => {
                             processedImagePaths.add(fullRelativePath);
-                            
+
                             // 检查是否有图片周关联表，如果有则使用关联表恢复图片
                             if (Object.keys(imageWeekRelation).length > 0) {
                               // 处理路径格式，确保与关联表中的路径格式一致
@@ -324,7 +325,7 @@ class DataImportManager {
                                 // 如果路径以'image/'开头，替换为'images/'
                                 normalizedPath = normalizedPath.replace('image/', 'images/');
                               }
-                              
+
                               // 遍历关联表，找到匹配的图片路径
                               for (const weekKey in imageWeekRelation) {
                                 const weekImages = imageWeekRelation[weekKey];
@@ -332,10 +333,10 @@ class DataImportManager {
                                 if (matchingImageIndex !== -1) {
                                   // 获取现有图片数据
                                   const existingImages = wx.getStorageSync(weekKey) || [];
-                                  
+
                                   // 检查图片是否已存在
                                   const existingImage = existingImages.find(img => img.name === weekImages[matchingImageIndex].name);
-                                  
+
                                   // 计算新图片的哈希值（与云备份计算方式一致）
                                   let newImageHash = weekImages[matchingImageIndex].hash;
                                   if (!newImageHash) {
@@ -343,7 +344,7 @@ class DataImportManager {
                                       const fileInfo = fs.getFileInfoSync({ filePath: tempPath });
                                       const addedTime = weekImages[matchingImageIndex].addedTime || Date.now();
                                       const imageName = weekImages[matchingImageIndex].name;
-                                      
+
                                       // 计算哈希值（与云备份计算方式一致）
                                       newImageHash = (() => {
                                         let hash = 0;
@@ -369,7 +370,7 @@ class DataImportManager {
                                       })();
                                     }
                                   }
-                                  
+
                                   if (!existingImage || existingImage.hash !== newImageHash) {
                                     // 图片不存在或已变化，添加/更新图片
                                     const newImage = {
@@ -379,7 +380,7 @@ class DataImportManager {
                                       addedTime: weekImages[matchingImageIndex].addedTime || new Date().toISOString(),
                                       hash: newImageHash
                                     };
-                                    
+
                                     if (existingImage) {
                                       // 更新现有图片
                                       const index = existingImages.findIndex(img => img.name === existingImage.name);
@@ -388,11 +389,11 @@ class DataImportManager {
                                       // 添加新图片
                                       existingImages.push(newImage);
                                     }
-                                    
+
                                     // 保存图片数据
                                     wx.setStorageSync(weekKey, existingImages);
                                   }
-                                  
+
                                   // 更新关联表中的路径为实际的本地路径
                                   imageWeekRelation[weekKey][matchingImageIndex].path = tempPath;
                                   imageWeekRelation[weekKey][matchingImageIndex].hash = newImageHash;
@@ -405,10 +406,10 @@ class DataImportManager {
                               if (fileNameParts.length > 2 && fileNameParts[0] === 'week' && fileNameParts[1] === 'images') {
                                 const weekKey = fileNameParts.slice(2, -2).join('_');
                                 const weekImageKey = `week_images_${weekKey}`;
-                                
+
                                 // 获取现有图片数据
                                 const existingImages = wx.getStorageSync(weekImageKey) || [];
-                                
+
                                 // 计算哈希值
                                 let imageHash = '0';
                                 try {
@@ -426,7 +427,7 @@ class DataImportManager {
                                 } catch (e) {
                                   console.error('获取文件信息失败', e);
                                 }
-                                
+
                                 // 添加新图片
                                 existingImages.push({
                                   id: Date.now().toString(),
@@ -435,7 +436,7 @@ class DataImportManager {
                                   addedTime: new Date().toISOString(),
                                   hash: imageHash
                                 });
-                                
+
                                 // 保存图片数据
                                 wx.setStorageSync(weekImageKey, existingImages);
                               }
@@ -450,9 +451,9 @@ class DataImportManager {
                     }
                   });
                 };
-                
+
                 processImageFolder(imageDir);
-                
+
                 // 等待所有图片处理完成
                 Promise.all(imagePromises).then(() => {
                   // 同步关联表与本地存储
@@ -461,7 +462,7 @@ class DataImportManager {
                     // 重新从本地存储构建关联表，确保与本地存储同步
                     imageRelation.rebuildRelationFromLocal();
                   }
-                  
+
                   this.finishImport(callback);
                 });
               } else {
@@ -512,14 +513,14 @@ class DataImportManager {
       }
     });
   }
-  
+
   // 完成导入，刷新页面数据
   finishImport(callback) {
     wx.showToast({
       title: '导入成功',
       icon: 'success'
     });
-    
+
     // 延迟一段时间确保数据保存完成后再刷新页面
     setTimeout(() => {
       // 刷新所有相关页面数据
@@ -557,16 +558,16 @@ class DataImportManager {
           }
         }
       }
-      
+
       // 如果当前在tab页面，也需要刷新当前页面数据
       const currentPage = getCurrentPages()[getCurrentPages().length - 1];
       if (currentPage.loadUserData && typeof currentPage.loadUserData === 'function') {
         currentPage.loadUserData();
       }
-      
+
       // 隐藏loading
       wx.hideLoading();
-      
+
       if (callback) callback(true);
     }, 500);
   }

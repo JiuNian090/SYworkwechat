@@ -1,3 +1,4 @@
+'use strict';
 // app.js
 const { deviceInfo, getPlatformName, isHarmonyOS, supportsFeature, compareVersion, getSDKVersion } = require('./utils/deviceInfo.js');
 const config = require('./config.js');
@@ -45,52 +46,52 @@ App({
       console.error('体验分析初始化失败:', e);
     }
   },
-  
+
   // 检查基础库版本兼容性
   checkSDKVersionCompatibility() {
     const SDKVersion = getSDKVersion();
     console.log('当前基础库版本:', SDKVersion);
-    
+
     // 检查最低版本要求
     const minVersion = '2.10.0';
     if (compareVersion(SDKVersion, minVersion) < 0) {
       console.warn(`当前基础库版本 ${SDKVersion} 低于最低要求 ${minVersion}，某些功能可能无法正常使用`);
-      
+
       // 可以在这里添加用户提示
       wx.showModal({
         title: '版本提示',
-        content: `当前微信版本过低，可能无法使用全部功能，请更新微信至最新版本`,
+        content: '当前微信版本过低，可能无法使用全部功能，请更新微信至最新版本',
         showCancel: false
       });
     }
-    
+
     // 检查特定API的兼容性
     if (!supportsFeature('getAppBaseInfo')) {
       console.warn('当前基础库不支持 wx.getAppBaseInfo API');
     }
-    
+
     if (!supportsFeature('getDeviceInfo')) {
       console.warn('当前基础库不支持 wx.getDeviceInfo API');
     }
-    
+
     if (!supportsFeature('getWindowInfo')) {
       console.warn('当前基础库不支持 wx.getWindowInfo API');
     }
   },
-  
+
   // 初始化云开发并同步用户信息
   async initCloudAndSync() {
     try {
       // 初始化云开发
       await this.initCloud();
-      
+
       // 同步云端用户信息
       await this.syncUserInfoFromCloud();
     } catch (e) {
       console.error('初始化云开发和同步用户信息失败:', e);
     }
   },
-  
+
   // 初始化云开发
   async initCloud() {
     if (wx.cloud) {
@@ -99,7 +100,7 @@ App({
         let initAttempts = 0;
         const maxAttempts = 3;
         const retryDelay = 1000;
-        
+
         while (initAttempts < maxAttempts) {
           try {
             // 设置云开发初始化超时
@@ -108,15 +109,15 @@ App({
                 reject(new Error('云开发初始化超时'));
               }, 10000); // 10秒超时
             });
-            
+
             await Promise.race([
               wx.cloud.init({
                 env: config.cloudEnv,
-                traceUser: true,
+                traceUser: true
               }),
               timeoutPromise
             ]);
-            
+
             store.setState({ cloudInitialized: true });
             console.log('云开发初始化成功');
             break;
@@ -145,10 +146,10 @@ App({
       this.globalData.deviceInfo = deviceInfo.getDeviceInfo();
       this.globalData.platform = getPlatformName();
       this.globalData.isHarmonyOS = isHarmonyOS();
-      
+
       console.log('设备信息:', this.globalData.deviceInfo);
       console.log('平台:', this.globalData.platform);
-      
+
       if (this.globalData.isHarmonyOS) {
         console.log('检测到 HarmonyOS 平台');
       }
@@ -156,7 +157,7 @@ App({
       console.error('初始化设备信息失败:', e);
     }
   },
-  
+
   // 清除登录信息
   clearLoginInfo() {
     try {
@@ -181,21 +182,21 @@ App({
         console.log('用户未登录，跳过云端同步');
         return;
       }
-      
+
       // 检查云开发是否初始化成功
       if (!store.getState('cloudInitialized')) {
         console.log('云开发未初始化，跳过云端同步');
         return;
       }
-      
+
       console.log('开始同步云端用户信息...');
-      
+
       // 尝试调用云函数，最多重试2次
       let result;
       let retries = 0;
       const maxRetries = 2;
       const retryDelay = 1000; // 1秒重试延迟
-      
+
       while (retries <= maxRetries) {
         try {
           // 设置云函数调用超时
@@ -204,7 +205,7 @@ App({
               reject(new Error('云函数调用超时'));
             }, 10000); // 10秒超时
           });
-          
+
           // 调用云函数获取用户信息
           result = await Promise.race([
             wx.cloud.callFunction({
@@ -216,7 +217,7 @@ App({
             }),
             timeoutPromise
           ]);
-          
+
           // 成功获取结果，跳出循环
           break;
         } catch (e) {
@@ -229,10 +230,10 @@ App({
           await new Promise(resolve => setTimeout(resolve, retryDelay));
         }
       }
-      
+
       if (result.result.success && result.result.data) {
         const userData = result.result.data;
-        
+
         // 更新本地存储的用户信息
         const cloudUserInfo = {
           userId: userData.userId,
@@ -242,15 +243,15 @@ App({
           avatarEmoji: userData.avatarEmoji || '😊',
           avatarText: userData.avatarText || ''
         };
-        
+
         wx.setStorageSync('cloudUserInfo', cloudUserInfo);
         store.setState({ cloudUserInfo, avatarType: userData.avatarType || 'emoji', avatarEmoji: userData.avatarEmoji || '😊', username: userData.nickname || '' }, ['cloudUserInfo', 'avatarType', 'avatarEmoji', 'username']);
-        
+
         // 同步头像信息到本地存储
         wx.setStorageSync('avatarType', userData.avatarType || 'emoji');
         wx.setStorageSync('avatarEmoji', userData.avatarEmoji || '😊');
         wx.setStorageSync('username', userData.nickname || '');
-        
+
         console.log('云端用户信息同步成功');
       } else {
         console.log('获取云端用户信息失败:', result.result.errMsg);

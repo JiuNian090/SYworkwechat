@@ -1,6 +1,7 @@
+'use strict';
 module.exports = {
-  projectname: "SYworkwechat",
-  appid: "YOUR_APP_ID", // 与project.config.json保持一致
+  projectname: 'SYworkwechat',
+  appid: 'YOUR_APP_ID', // 与project.config.json保持一致
   setting: {
     urlCheck: true,
     preloadBackgroundData: false,
@@ -29,12 +30,12 @@ module.exports = {
     swc: false, // 从project.config.json同步
     disableSWC: true // 从project.config.json同步
   },
-  compileType: "miniprogram",
-  libVersion: "3.10.2", // 与project.config.json保持一致
-  srcMiniprogramRoot: "./",
+  compileType: 'miniprogram',
+  libVersion: '3.10.2', // 与project.config.json保持一致
+  srcMiniprogramRoot: './',
   packOptions: {
     ignore: [],
     include: []
   },
   editorSetting: {} // 清空editorSetting，由project.config.json统一管理
-}
+};

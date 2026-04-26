@@ -1,3 +1,4 @@
+'use strict';
 // utils/deviceInfo.js
 // 设备信息检测工具，用于 HarmonyOS 平台兼容
 
@@ -16,17 +17,17 @@ class DeviceInfo {
       if (wx.getAppBaseInfo) {
         this.appBaseInfo = wx.getAppBaseInfo();
       }
-      
+
       // 获取设备信息
       if (wx.getDeviceInfo) {
         this.deviceInfo = wx.getDeviceInfo();
       }
-      
+
       // 获取窗口信息
       if (wx.getWindowInfo) {
         this.windowInfo = wx.getWindowInfo();
       }
-      
+
       // 如果设备信息获取失败，使用兼容方案
       if (!this.deviceInfo) {
         this.deviceInfo = this.getFallbackDeviceInfo();
@@ -44,7 +45,7 @@ class DeviceInfo {
       const appBaseInfo = wx.getAppBaseInfo ? wx.getAppBaseInfo() : {};
       const deviceInfo = wx.getDeviceInfo ? wx.getDeviceInfo() : {};
       const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() : {};
-      
+
       return {
         platform: deviceInfo.platform || 'unknown',
         system: deviceInfo.system || 'unknown',
@@ -102,7 +103,7 @@ class DeviceInfo {
     if (!this.deviceInfo) return false;
     const platform = this.deviceInfo.platform || '';
     const system = this.deviceInfo.system || '';
-    return platform.toLowerCase().includes('harmony') || 
+    return platform.toLowerCase().includes('harmony') ||
            system.toLowerCase().includes('harmony') ||
            platform === 'harmony';
   }
@@ -171,12 +172,12 @@ class DeviceInfo {
       // 版本相关特性
       'minVersion': (version) => this.compareVersion(SDKVersion, version) >= 0
     };
-    
+
     // 处理版本检查
     if (typeof features[featureName] === 'function') {
       return features[featureName];
     }
-    
+
     return features[featureName] || false;
   }
 

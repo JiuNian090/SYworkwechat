@@ -1,3 +1,4 @@
+'use strict';
 const STORAGE_KEYS = {
   cloudInitialized: 'cloudInitialized',
   cloudUserId: 'cloudUserId',
@@ -30,7 +31,7 @@ function loadFromStorage() {
 }
 
 function createStore(initialState) {
-  let state = { ...initialState, ...loadFromStorage() };
+  const state = { ...initialState, ...loadFromStorage() };
   const listeners = {};
   let listenerId = 0;
 

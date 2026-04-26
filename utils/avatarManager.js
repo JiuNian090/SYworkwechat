@@ -1,3 +1,4 @@
+'use strict';
 const emojiManager = require('./emojiManager.js');
 const { store } = require('./store.js');
 
@@ -30,7 +31,7 @@ class AvatarManager {
             userId: cloudUserInfo.userId
           }
         });
-        
+
         if (result.result.success && result.result.data) {
           const userData = result.result.data;
           // 检查是否有头像信息
@@ -38,19 +39,19 @@ class AvatarManager {
             const avatarType = userData.avatarType || 'emoji';
             const avatarEmoji = userData.avatarEmoji || '😊';
             const username = userData.nickname || this.username;
-            
+
             // 生成头像文字
             const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
             const emojiText = avatarType === 'emoji' ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
             const emojiEmotion = avatarType === 'emoji' ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
-            
+
             // 更新本地存储
             wx.setStorageSync('avatarType', avatarType);
             wx.setStorageSync('avatarEmoji', avatarEmoji);
             if (username) {
               wx.setStorageSync('username', username);
             }
-            
+
             // 更新本地用户信息
             const updatedUserInfo = {
               ...cloudUserInfo,
@@ -59,7 +60,7 @@ class AvatarManager {
               nickname: username
             };
             wx.setStorageSync('cloudUserInfo', updatedUserInfo);
-            
+
             return {
               username: username,
               avatarType: avatarType,
@@ -94,7 +95,7 @@ class AvatarManager {
             avatarText: avatarText
           }
         });
-        
+
         if (result.result.success) {
           // 更新本地存储的用户信息
           const updatedUserInfo = {
@@ -132,22 +133,22 @@ class AvatarManager {
     const avatarType = wx.getStorageSync('avatarType') || 'emoji';
     const avatarEmoji = wx.getStorageSync('avatarEmoji') || '😊';
     const username = wx.getStorageSync('username') || '';
-    
+
     // 生成头像文字（仅当使用文字头像时）
     const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
-    
+
     // 确保表情头像有默认值
     const finalAvatarEmoji = avatarType === 'emoji' && avatarEmoji ? avatarEmoji : '😊';
-    
+
     // 获取表情对应的文字和情绪类型
     const { emojiText, emojiEmotion } = this.getEmojiInfo(finalAvatarEmoji);
-    
+
     // 更新实例属性
     this.avatarType = avatarType;
     this.avatarEmoji = finalAvatarEmoji;
     this.avatarText = avatarText;
     this.username = username;
-    
+
     return {
       username: username,
       avatarText: avatarText,
@@ -164,24 +165,24 @@ class AvatarManager {
       const avatarType = cloudUserInfo.avatarType || 'emoji';
       const avatarEmoji = cloudUserInfo.avatarEmoji || '😊';
       const username = cloudUserInfo.nickname || this.username;
-      
+
       // 生成头像文字
       const avatarText = avatarType === 'text' ? this.generateAvatarText(username) : '';
       const { emojiText, emojiEmotion } = this.getEmojiInfo(avatarEmoji);
-      
+
       // 同步到本地存储
       wx.setStorageSync('avatarType', avatarType);
       wx.setStorageSync('avatarEmoji', avatarEmoji);
       if (username) {
         wx.setStorageSync('username', username);
       }
-      
+
       // 更新实例属性
       this.avatarType = avatarType;
       this.avatarEmoji = avatarEmoji;
       this.avatarText = avatarText;
       this.username = username;
-      
+
       return {
         username: username,
         avatarText: avatarText,
