@@ -11,24 +11,20 @@ App({
     isHarmonyOS: false
   },
 
-  async onLaunch(options) {
-    // 小程序初始化
+  onLaunch(options) {
     console.log('小程序已启动');
 
-    // 检查基础库版本兼容性
-    this.checkSDKVersionCompatibility();
-
-    // 初始化设备信息（同步执行，因为设备信息可能被其他地方立即使用）
     this.initDeviceInfo();
 
-    // 初始化云开发和同步用户信息（并行执行，不阻塞启动）
-    this.initCloudAndSync();
-
-    // 注册全局错误处理
     this.setupErrorHandlers();
 
-    // 初始化体验分析
+    this.checkSDKVersionCompatibility();
+
     this.initExperienceAnalysis(options);
+
+    setTimeout(() => {
+      this.initCloudAndSync();
+    }, 0);
   },
 
   // 初始化体验分析（We分析）
