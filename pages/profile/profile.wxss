@@ -2225,7 +2225,7 @@ page {
   font-size: 40rpx;
   font-weight: 700;
   color: var(--text-primary);
-  text-align: center;
+  text-align: left;
   letter-spacing: 4rpx;
 }
 
