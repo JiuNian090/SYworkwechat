@@ -9,6 +9,7 @@ const DataImportManager = require('../../utils/dataImportManager.js');
 const DataClearManager = require('../../utils/dataClearManager.js');
 const { store } = require('../../utils/store.js');
 const { encryptPassword, decryptPassword, hashPassword, verifyPassword, isOldFormat, calculateHash } = require('../../utils/encrypt.js');
+const { getDailyMessage } = require('../../utils/dailyMessage.js');
 
 const STATUS_TEXT = {
   SYNCED: '已同步',
@@ -24,6 +25,9 @@ const CACHE_TTL = 300000; // 5分钟缓存有效期
 
 Page({
   data: {
+    todayMessage: '',
+    _lastMessage: '',
+    _lastTimePeriod: '',
     exportFileName: '',
     // 完整数据导出相关变量
     exportedFilePath: '',
@@ -143,8 +147,68 @@ Page({
     };
   },
 
+  /**
+   * 获取当前时段
+   * @param {number} hour 当前小时
+   * @returns {string} 时段名称
+   */
+  _getTimePeriod(hour) {
+    if (hour >= 0 && hour < 6) {
+      return '凌晨';
+    } else if (hour >= 6 && hour < 8) {
+      return '清晨';
+    } else if (hour >= 8 && hour < 12) {
+      return '上午';
+    } else if (hour >= 12 && hour < 18) {
+      return '下午';
+    } else if (hour >= 18 && hour < 22) {
+      return '晚上';
+    } else {
+      return '深夜';
+    }
+  },
+
+  /**
+   * 刷新今日心语
+   */
+  refreshDailyMessage() {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentTimePeriod = this._getTimePeriod(currentHour);
+    
+    // 获取昵称
+    let nickname = '';
+    const cloudUserInfo = this.data.cloudUserInfo || store.getState('cloudUserInfo');
+    if (cloudUserInfo && cloudUserInfo.nickname) {
+      nickname = cloudUserInfo.nickname;
+    } else {
+      const username = this.data.username || store.getState('username');
+      if (username) {
+        nickname = username;
+      }
+    }
+    
+    // 获取排班数据
+    const shifts = wx.getStorageSync('shifts') || {};
+    
+    // 生成消息
+    const newMessage = getDailyMessage(nickname, shifts, now);
+    
+    // 只有当消息变化或时段变化时才更新，避免闪烁
+    if (newMessage !== this.data._lastMessage || currentTimePeriod !== this.data._lastTimePeriod) {
+      this.setData({
+        todayMessage: newMessage,
+        _lastMessage: newMessage,
+        _lastTimePeriod: currentTimePeriod
+      });
+    }
+  },
+
   initPageData() {
     const cloudInitialized = store.getState('cloudInitialized');
+
+    // 刷新今日心语
+    this.refreshDailyMessage();
 
     const cloudUserId = store.getState('cloudUserId');
     const cloudAccount = store.getState('cloudAccount') || '';
@@ -775,6 +839,9 @@ Page({
         shiftGlowColor: shiftColorInfo.shiftGlowColor
       });
     }
+
+    // 刷新今日心语
+    this.refreshDailyMessage();
 
     // 更新本地时间并智能检查云备份状态
     this.updateLocalUpdateTime();
