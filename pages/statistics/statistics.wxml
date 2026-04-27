@@ -33,10 +33,10 @@
       </picker>
     </view>
     <view class="quick-buttons">
-      <view class="quick-btn {{activeQuickBtn === 'lastWeek' ? 'active' : ''}}" bindtap="selectLastWeek">上周</view>
       <view class="quick-btn {{activeQuickBtn === 'thisWeek' ? 'active' : ''}}" bindtap="selectThisWeek">本周</view>
       <view class="quick-btn {{activeQuickBtn === 'nextWeek' ? 'active' : ''}}" bindtap="selectNextWeek">下周</view>
       <view class="quick-btn {{activeQuickBtn === 'thisMonth' ? 'active' : ''}}" bindtap="selectThisMonth">本月</view>
+      <view class="quick-btn {{activeQuickBtn === 'thisYear' ? 'active' : ''}}" bindtap="selectThisYear">本年</view>
     </view>
     <view class="period-selector-buttons">
       <!-- 周选择器 -->

@@ -183,6 +183,18 @@ Page({
     };
   },
 
+  // 获取本年日期范围
+  getThisYearRange() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const end = new Date(now.getFullYear(), 11, 31);
+
+    return {
+      startDate: this.formatDate(start),
+      endDate: this.formatDate(end)
+    };
+  },
+
   // 快速选择按钮事件处理函数
   selectLastWeek() {
     // 添加点击动画
@@ -240,6 +252,19 @@ Page({
       activeQuickBtn: 'thisMonth',
       activePeriodBtn: '',
       chartTimeUnit: 'week' // 选择本月时切换到周视图
+    });
+    this.saveDateRangeState();
+    this.calculateStatistics();
+  },
+
+  selectThisYear() {
+    this.triggerButtonAnimation('thisYear');
+    const range = this.getThisYearRange();
+    this.setData({
+      startDate: range.startDate,
+      endDate: range.endDate,
+      activeQuickBtn: 'thisYear',
+      activePeriodBtn: ''
     });
     this.saveDateRangeState();
     this.calculateStatistics();
