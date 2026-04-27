@@ -92,6 +92,11 @@ Page({
     showDataManagementHelpModal: false,
     // 更新日志数据
     changelog: [],
+    // 声明相关
+    showPolicyModal: false,
+    currentPolicyType: '', // 'dataSecurity', 'privacy', 'disclaimer'
+    policyTitle: '',
+    policyContent: '',
 
     // 云备份状态指示器
     lastCloudCheckTime: 0,
@@ -2295,5 +2300,127 @@ Page({
     } catch (e) {
       console.error('更新 savedAccounts 头像失败:', e);
     }
+  },
+
+  // 获取声明内容
+  getPolicyContent(type) {
+    const policies = {
+      dataSecurity: {
+        title: '数据安全声明',
+        content: `
+<h3>一、数据存储</h3>
+<p>1. 本小程序默认将所有数据存储在您的微信小程序本地存储中，不会上传至任何第三方服务器。</p>
+<p>2. 本地数据存储采用微信小程序的安全机制，保障数据的安全性。</p>
+
+<h3>二、云备份功能</h3>
+<p>1. 云备份功能为可选功能，您可以选择是否使用。</p>
+<p>2. 使用云备份功能时，数据将存储在腾讯云微信云开发服务中。</p>
+<p>3. 云备份的数据采用加密存储，您的账号和密码将进行加密处理。</p>
+
+<h3>三、数据保护</h3>
+<p>1. 您的数据属于您个人，我们不会查看、使用或分享您的数据。</p>
+<p>2. 请妥善保管您的云备份账号和密码，避免数据泄露。</p>
+<p>3. 建议您定期备份重要数据，以防数据丢失。</p>
+
+<h3>四、免责声明</h3>
+<p>1. 本小程序致力于保护您的数据安全，但无法保证绝对的安全。</p>
+<p>2. 因不可抗力、设备故障等原因造成的数据丢失，开发者不承担责任。</p>
+        `
+      },
+      privacy: {
+        title: '隐私政策',
+        content: `
+<h3>一、信息收集</h3>
+<p>1. 本小程序仅收集您主动填写的信息，包括用户名、排班数据等。</p>
+<p>2. 我们不会收集您的微信个人信息、通讯录、地理位置等敏感信息。</p>
+<p>3. 您可以随时编辑或删除您的个人信息。</p>
+
+<h3>二、信息使用</h3>
+<p>1. 您提供的信息仅用于小程序的功能运行，不会用于其他目的。</p>
+<p>2. 我们不会将您的信息出售、出租或分享给任何第三方。</p>
+
+<h3>三、信息保护</h3>
+<p>1. 我们采取合理的技术措施保护您的信息安全。</p>
+<p>2. 数据传输过程中采用加密技术，防止数据泄露。</p>
+<p>3. 本地数据存储在您的设备上，您拥有完全控制权。</p>
+
+<h3>四、变更说明</h3>
+<p>1. 我们可能会不时更新本隐私政策。</p>
+<p>2. 隐私政策更新后，将在小程序中公示。</p>
+        `
+      },
+      disclaimer: {
+        title: '免责声明',
+        content: `
+<h3>一、使用说明</h3>
+<p>1. 本小程序为免费公益项目，仅供个人使用。</p>
+<p>2. 您可以自由使用本小程序，但请遵守法律法规。</p>
+
+<h3>二、功能说明</h3>
+<p>1. 本小程序尽力提供准确、稳定的功能，但不保证功能的绝对可用性。</p>
+<p>2. 因网络问题、系统升级等原因导致的服务中断，开发者不承担责任。</p>
+
+<h3>三、内容责任</h3>
+<p>1. 您对自己输入和使用的数据负全部责任。</p>
+<p>2. 您不应使用本小程序存储敏感或重要信息。</p>
+<p>3. 因数据丢失、泄露造成的损失，开发者不承担赔偿责任。</p>
+
+<h3>四、法律合规</h3>
+<p>1. 使用本小程序即表示您同意本免责声明。</p>
+<p>2. 本免责声明的解释权归开发者所有。</p>
+<p>3. 如有争议，应通过友好协商解决。</p>
+        `
+      }
+    };
+    return policies[type] || null;
+  },
+
+  // 显示数据安全声明
+  showDataSecurity() {
+    const policy = this.getPolicyContent('dataSecurity');
+    if (policy) {
+      this.setData({
+        showPolicyModal: true,
+        currentPolicyType: 'dataSecurity',
+        policyTitle: policy.title,
+        policyContent: policy.content
+      });
+    }
+  },
+
+  // 显示隐私政策
+  showPrivacyPolicy() {
+    const policy = this.getPolicyContent('privacy');
+    if (policy) {
+      this.setData({
+        showPolicyModal: true,
+        currentPolicyType: 'privacy',
+        policyTitle: policy.title,
+        policyContent: policy.content
+      });
+    }
+  },
+
+  // 显示免责声明
+  showDisclaimer() {
+    const policy = this.getPolicyContent('disclaimer');
+    if (policy) {
+      this.setData({
+        showPolicyModal: true,
+        currentPolicyType: 'disclaimer',
+        policyTitle: policy.title,
+        policyContent: policy.content
+      });
+    }
+  },
+
+  // 隐藏声明弹窗
+  hidePolicyModal() {
+    this.setData({
+      showPolicyModal: false,
+      currentPolicyType: '',
+      policyTitle: '',
+      policyContent: ''
+    });
   }
 });

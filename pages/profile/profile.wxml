@@ -59,10 +59,6 @@
             <text class="about-dot">🤝</text>
             <text class="about-text">若您觉得好用，可以分享此小程序以支持作者，也可以点击捐赠支持，支持公益事业！</text>
           </view>
-          <view class="about-item">
-            <text class="about-dot">🔒</text>
-            <text class="about-text">数据默认保存在本地，安全可靠。若使用云备份功能，请妥善保管您的账号密码，定期备份重要数据。如有任何问题或建议，欢迎随时联系作者反馈。</text>
-          </view>
         </view>
         
         <!-- 操作按钮 -->
@@ -214,6 +210,60 @@
         </view>
         
 
+      </view>
+    </view>
+
+    <!-- 声明板块 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-header-left">
+          <view class="section-icon policy-icon">
+            <text class="icon-text">📋</text>
+          </view>
+          <text class="section-title">声明与政策</text>
+        </view>
+      </view>
+      <view class="section-body">
+        <view class="policy-list">
+          <view class="policy-item" bindtap="showDataSecurity">
+            <view class="policy-icon-wrapper">
+              <text class="policy-icon">🔒</text>
+            </view>
+            <view class="policy-info">
+              <text class="policy-title">数据安全</text>
+              <text class="policy-desc">了解我们的数据存储和保护措施</text>
+            </view>
+            <view class="policy-arrow">
+              <text class="arrow-icon">›</text>
+            </view>
+          </view>
+          
+          <view class="policy-item" bindtap="showPrivacyPolicy">
+            <view class="policy-icon-wrapper">
+              <text class="policy-icon">🔐</text>
+            </view>
+            <view class="policy-info">
+              <text class="policy-title">隐私政策</text>
+              <text class="policy-desc">我们如何处理和保护您的个人信息</text>
+            </view>
+            <view class="policy-arrow">
+              <text class="arrow-icon">›</text>
+            </view>
+          </view>
+          
+          <view class="policy-item" bindtap="showDisclaimer">
+            <view class="policy-icon-wrapper">
+              <text class="policy-icon">⚠️</text>
+            </view>
+            <view class="policy-info">
+              <text class="policy-title">免责声明</text>
+              <text class="policy-desc">使用本小程序的注意事项和责任界定</text>
+            </view>
+            <view class="policy-arrow">
+              <text class="arrow-icon">›</text>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
   </view>
@@ -651,5 +701,26 @@
     </view>
   </view>
 
+
+  <!-- 声明详情弹窗 -->
+  <view class="modal-mask {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}" bindtap="hidePolicyModal"></view>
+  <view class="modal-container policy-detail-modal {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}">
+    <view class="modal-header">
+      <text class="modal-title">{{policyTitle}}</text>
+      <view class="modal-close" bindtap="hidePolicyModal">
+        <text class="close-icon">×</text>
+      </view>
+    </view>
+    <view class="modal-body">
+      <scroll-view class="policy-detail-scroll" scroll-y enhanced show-scrollbar="false">
+        <view class="policy-detail-content">
+          <rich-text nodes="{{policyContent}}"></rich-text>
+        </view>
+      </scroll-view>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn btn-confirm" bindtap="hidePolicyModal">我知道了</button>
+    </view>
+  </view>
 
 </view>
