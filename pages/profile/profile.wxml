@@ -705,21 +705,35 @@
   <!-- 声明详情弹窗 -->
   <view class="modal-mask {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}" bindtap="hidePolicyModal"></view>
   <view class="modal-container policy-detail-modal {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}">
-    <view class="modal-header">
+    <view class="modal-header" style="background: linear-gradient(135deg, {{policyColor}} 0%, {{policyColor}}dd 100%);">
+      <view class="policy-header-icon">{{policyIcon}}</view>
       <text class="modal-title">{{policyTitle}}</text>
       <view class="modal-close" bindtap="hidePolicyModal">
-        <text class="close-icon">×</text>
+        <text class="close-icon">✕</text>
       </view>
     </view>
     <view class="modal-body">
       <scroll-view class="policy-detail-scroll" scroll-y enhanced show-scrollbar="false">
         <view class="policy-detail-content">
-          <rich-text nodes="{{policyContent}}"></rich-text>
+          <view class="policy-section" wx:for="{{policySections}}" wx:key="heading">
+            <view class="policy-section-header">
+              <view class="policy-section-icon" style="background: linear-gradient(135deg, {{policyColor}}15 0%, {{policyColor}}25 100%); border-color: {{policyColor}}30;">
+                <text style="color: {{policyColor}};">{{item.icon}}</text>
+              </view>
+              <text class="policy-section-title" style="color: {{policyColor}};">{{item.heading}}</text>
+            </view>
+            <view class="policy-section-body">
+              <view class="policy-item" wx:for="{{item.items}}" wx:for-item="subItem" wx:key="*this">
+                <view class="policy-item-dot" style="background: {{policyColor}};"></view>
+                <text class="policy-item-text">{{subItem}}</text>
+              </view>
+            </view>
+          </view>
         </view>
       </scroll-view>
     </view>
     <view class="modal-footer">
-      <button class="modal-btn btn-confirm" bindtap="hidePolicyModal">我知道了</button>
+      <button class="modal-btn btn-confirm" style="background: linear-gradient(135deg, {{policyColor}} 0%, {{policyColor}}dd 100%);" bindtap="hidePolicyModal">我知道了</button>
     </view>
   </view>
 
