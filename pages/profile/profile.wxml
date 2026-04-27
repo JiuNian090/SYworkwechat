@@ -25,7 +25,14 @@
   <view class="sections-container">
     <!-- 今日心语区块 -->
     <view class="daily-message-card" wx:if="{{todayMessage}}">
-      <text class="daily-message-text">{{todayMessage}}</text>
+      <text class="daily-message-icon">💌</text>
+      <view class="daily-message-content">
+        <view class="daily-message-title">
+          <view class="daily-message-title-dot"></view>
+          <text>今日心语</text>
+        </view>
+        <text class="daily-message-text">{{todayMessage}}</text>
+      </view>
     </view>
     <!-- 项目介绍区块 -->
     <view class="section about-section">
