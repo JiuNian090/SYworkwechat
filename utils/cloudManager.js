@@ -1311,6 +1311,39 @@ class CloudManager {
       };
     }
   }
+
+  // 获取最新备份状态（用于页面状态指示器）
+  async getLatestBackupInfo() {
+    try {
+      if (!this.isCloudInitialized()) {
+        return { success: false, errMsg: '云开发未初始化' };
+      }
+      if (!this.isLoggedIn()) {
+        return { success: false, errMsg: '请先登录' };
+      }
+
+      const result = await this.callCloudFunction('backupRestore', {
+        action: 'getBackupInfo',
+        userId: this.userId
+      });
+
+      if (result.result && result.result.success) {
+        return {
+          success: true,
+          hasBackup: !!result.result.hasBackup,
+          backupTime: result.result.backupTime || null,
+          backupHash: result.result.backupHash || null
+        };
+      }
+      return {
+        success: false,
+        errMsg: (result.result && result.result.errMsg) || '获取备份信息失败'
+      };
+    } catch (e) {
+      console.error('获取最新备份信息失败', e);
+      return { success: false, errMsg: e.message };
+    }
+  }
 }
 
 module.exports = CloudManager;

@@ -10,6 +10,18 @@ const DataClearManager = require('../../utils/dataClearManager.js');
 const { store } = require('../../utils/store.js');
 const { encryptPassword, decryptPassword, hashPassword, verifyPassword, isOldFormat, calculateHash } = require('../../utils/encrypt.js');
 
+const STATUS_TEXT = {
+  SYNCED: '已同步',
+  LOCAL_NEWER: '本地最新',
+  CLOUD_NEWER: '云端最新',
+  UNBACKED: '未备份',
+  NOT_LOGGED_IN: '未备份 / 未登录',
+  CHECKING: '检查中...',
+  ERROR: '检查失败'
+};
+
+const CACHE_TTL = 300000; // 5分钟缓存有效期
+
 Page({
   data: {
     exportFileName: '',
@@ -75,6 +87,12 @@ Page({
     showDataManagementHelpModal: false,
     // 更新日志数据
     changelog: [],
+
+    // 云备份状态指示器
+    lastCloudCheckTime: 0,
+    cachedCloudStatus: null,
+    lastLocalUpdate: 0,
+    backupStatus: null,
     // 表情相关数据
     emojiCategories: emojiManager.getCategories(),
     currentEmojiCategory: 'face', // 当前选中的表情分类
@@ -165,7 +183,10 @@ Page({
       cloudUserInfo: cloudUserInfo,
       changelog: changelog,
       savedAccounts: savedAccounts,
-      autoRestoreMap: autoRestoreMap
+      autoRestoreMap: autoRestoreMap,
+      backupStatus: cloudLoggedIn
+        ? { type: 'checking', label: STATUS_TEXT.CHECKING }
+        : { type: 'unbacked', label: STATUS_TEXT.NOT_LOGGED_IN }
     });
 
     if (cloudLoggedIn && cloudInitialized) {
@@ -666,6 +687,10 @@ Page({
         changelog: changelog
       });
     }
+
+    // 更新本地时间并智能检查云备份状态
+    this.updateLocalUpdateTime();
+    this.checkBackupStatus(false);
   },
 
   onShareTimeline() {
@@ -1296,6 +1321,13 @@ Page({
           duration: 1000
         });
 
+        // 重置缓存并强制检查备份状态
+        this.setData({
+          lastCloudCheckTime: 0,
+          cachedCloudStatus: null
+        });
+        this.checkBackupStatus(true);
+
         if (this.data.autoRestoreMap[account]) {
           this.autoRestoreData();
         }
@@ -1588,6 +1620,13 @@ Page({
           avatarEmojiEmotion: emojiEmotion
         });
 
+        // 重置缓存并强制检查备份状态
+        this.setData({
+          lastCloudCheckTime: 0,
+          cachedCloudStatus: null
+        });
+        this.checkBackupStatus(true);
+
         // 显示成功提示
         wx.showToast({
           title: '登录成功',
@@ -1692,6 +1731,13 @@ Page({
         }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
         this.userId = result.result.data.userId;
 
+        // 重置缓存并强制检查备份状态
+        this.setData({
+          lastCloudCheckTime: 0,
+          cachedCloudStatus: null
+        });
+        this.checkBackupStatus(true);
+
         this.hideCloudRegisterModal();
         // 显示成功提示并立即打开用户管理弹窗
         wx.showToast({
@@ -1732,7 +1778,10 @@ Page({
       avatarText: '',
       avatarEmoji: '😊',
       emojiText: '',
-      emojiEmotion: 'neutral'
+      emojiEmotion: 'neutral',
+      lastCloudCheckTime: 0,
+      cachedCloudStatus: null,
+      backupStatus: { type: 'unbacked', label: STATUS_TEXT.NOT_LOGGED_IN }
     });
     store.removeState(
       ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo'],
@@ -1770,6 +1819,8 @@ Page({
 
           if (result.success) {
             store.setState({ lastBackupTime: Date.now() }, ['lastBackupTime']);
+            this.updateLocalUpdateTime();
+            this.checkBackupStatus(true);
           }
         } catch (e) {
           console.error('备份失败', e);
@@ -1806,6 +1857,8 @@ Page({
 
           if (result.success) {
             store.setState({ lastRestoreTime: Date.now() }, ['lastRestoreTime']);
+            this.updateLocalUpdateTime();
+            this.checkBackupStatus(true);
           }
         } catch (e) {
           console.error('恢复失败', e);
@@ -1847,6 +1900,165 @@ Page({
     } catch (e) {
       return isoString.substring(0, 10);
     }
+  },
+
+  // 计算本地数据的哈希值，用于与云端对比
+  computeLocalHash() {
+    const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+    const shifts = wx.getStorageSync('shifts') || {};
+    const combined = JSON.stringify(shiftTemplates) + JSON.stringify(shifts);
+    return calculateHash(combined);
+  },
+
+  // 更新本地数据最新变更时间
+  updateLocalUpdateTime() {
+    let latestTime = 0;
+    const shifts = wx.getStorageSync('shifts') || {};
+    Object.keys(shifts).forEach(dateKey => {
+      const ts = new Date(dateKey).getTime();
+      if (!isNaN(ts) && ts > latestTime) {
+        latestTime = ts;
+      }
+    });
+    const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
+    shiftTemplates.forEach(tpl => {
+      if (tpl.updatedTime) {
+        const ts = new Date(tpl.updatedTime).getTime();
+        if (!isNaN(ts) && ts > latestTime) {
+          latestTime = ts;
+        }
+      }
+    });
+    const lastBackupTime = store.getState('lastBackupTime') || 0;
+    if (lastBackupTime > latestTime) {
+      latestTime = lastBackupTime;
+    }
+    this.setData({ lastLocalUpdate: latestTime || Date.now() });
+  },
+
+  // 格式化备份时间：当天显示 HH:mm，非当天显示 MM-DD HH:mm
+  formatBackupTime(isoString) {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    const now = new Date();
+    const isToday = date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+    const hh = date.getHours().toString().padStart(2, '0');
+    const mm = date.getMinutes().toString().padStart(2, '0');
+    if (isToday) {
+      return hh + ':' + mm;
+    }
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return month + '-' + day + ' ' + hh + ':' + mm;
+  },
+
+  // 根据缓存数据更新界面上的状态指示器
+  updateBackupStatusUI(cache) {
+    if (!cache || !cache.status || cache.status === 'no_backup') {
+      this.setData({
+        backupStatus: { type: 'unbacked', label: STATUS_TEXT.UNBACKED }
+      });
+      return;
+    }
+    const localHash = this.computeLocalHash();
+    if (localHash === cache.hash) {
+      this.setData({
+        backupStatus: {
+          type: 'synced',
+          label: STATUS_TEXT.SYNCED + ' ' + this.formatBackupTime(cache.time)
+        }
+      });
+      return;
+    }
+    const { lastLocalUpdate } = this.data;
+    const backupTime = cache.time ? new Date(cache.time).getTime() : 0;
+    if (lastLocalUpdate > backupTime || !cache.time) {
+      this.setData({
+        backupStatus: {
+          type: 'local_newer',
+          label: STATUS_TEXT.LOCAL_NEWER + ' ' + this.formatBackupTime(cache.time)
+        }
+      });
+    } else {
+      this.setData({
+        backupStatus: {
+          type: 'cloud_newer',
+          label: STATUS_TEXT.CLOUD_NEWER + ' ' + this.formatBackupTime(cache.time)
+        }
+      });
+    }
+  },
+
+  // 检查云备份状态（智能决策树）
+  async checkBackupStatus(forceRefresh) {
+    const { cloudLoggedIn } = this.data;
+    if (!cloudLoggedIn) {
+      this.setData({
+        backupStatus: { type: 'unbacked', label: STATUS_TEXT.NOT_LOGGED_IN }
+      });
+      return;
+    }
+    if (forceRefresh) {
+      this.setData({
+        backupStatus: { type: 'checking', label: STATUS_TEXT.CHECKING }
+      });
+    }
+    const now = Date.now();
+    const { lastCloudCheckTime, cachedCloudStatus, lastLocalUpdate } = this.data;
+    let shouldFetch = !!forceRefresh;
+    if (!shouldFetch && lastLocalUpdate > lastCloudCheckTime) {
+      shouldFetch = true;
+    }
+    if (!shouldFetch && (now - lastCloudCheckTime > CACHE_TTL)) {
+      shouldFetch = true;
+    }
+    if (shouldFetch) {
+      try {
+        const cloudManager = this.data.cloudManager;
+        const info = await cloudManager.getLatestBackupInfo();
+        if (info.success) {
+          const localHash = this.computeLocalHash();
+          const newCache = {
+            status: info.hasBackup ? 'has_backup' : 'no_backup',
+            time: info.backupTime,
+            hash: info.backupHash
+          };
+          this.setData({
+            lastCloudCheckTime: now,
+            cachedCloudStatus: newCache
+          });
+          this.updateBackupStatusUI(newCache);
+        } else {
+          if (cachedCloudStatus) {
+            this.updateBackupStatusUI(cachedCloudStatus);
+          } else {
+            this.setData({
+              backupStatus: { type: 'unbacked', label: STATUS_TEXT.UNBACKED }
+            });
+          }
+        }
+      } catch (e) {
+        console.error('检查备份状态失败', e);
+        if (cachedCloudStatus) {
+          this.updateBackupStatusUI(cachedCloudStatus);
+        }
+      }
+    } else {
+      if (cachedCloudStatus) {
+        this.updateBackupStatusUI(cachedCloudStatus);
+      } else {
+        this.setData({
+          backupStatus: { type: 'checking', label: STATUS_TEXT.CHECKING }
+        });
+      }
+    }
+  },
+
+  // 点击呼吸灯手动刷新状态
+  onCloudStatusTap() {
+    this.checkBackupStatus(true);
   },
 
   updateSavedAccountAvatar(account, avatarInfo) {

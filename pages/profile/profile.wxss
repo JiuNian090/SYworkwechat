@@ -349,8 +349,15 @@ page {
   font-size: 32rpx;
 }
 
-.section-title {
+.section-header-left {
+  display: flex;
+  align-items: center;
   flex: 1;
+  min-width: 0;
+}
+
+.section-title {
+  flex-shrink: 0;
   font-size: 32rpx;
   font-weight: 600;
   color: var(--text-primary);
@@ -379,6 +386,94 @@ page {
   font-size: 28rpx;
   color: #ffffff;
   font-weight: bold;
+}
+
+/* ========== 云备份状态指示器 ========== */
+.cloud-status {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-right: 16rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.cloud-status-logged-in:active {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.status-breath {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-label {
+  font-size: 22rpx;
+  color: #9ca3af;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 绿色呼吸灯 - 已同步 */
+.status-breath.status-synced {
+  background: #34d399;
+  animation: breath-green 2s ease-in-out infinite;
+}
+
+@keyframes breath-green {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8rpx rgba(52, 211, 153, 0.8);
+  }
+  50% {
+    opacity: 0.3;
+    box-shadow: 0 0 2rpx rgba(52, 211, 153, 0.2);
+  }
+}
+
+/* 红色呼吸灯 - 本地最新 / 云端最新 */
+.status-breath.status-local_newer,
+.status-breath.status-cloud_newer {
+  background: #f87171;
+  animation: breath-red 2s ease-in-out infinite;
+}
+
+@keyframes breath-red {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 8rpx rgba(248, 113, 113, 0.8);
+  }
+  50% {
+    opacity: 0.3;
+    box-shadow: 0 0 2rpx rgba(248, 113, 113, 0.2);
+  }
+}
+
+/* 灰色脉冲灯 - 检查中 */
+.status-breath.status-checking {
+  background: #d1d5db;
+  animation: pulse-gray 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-gray {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.2; }
+}
+
+/* 灰色常亮灯 - 未备份 / 未登录 */
+.status-breath.status-unbacked {
+  background: #d1d5db;
+  opacity: 0.4;
+}
+
+/* 检查失败 */
+.status-breath.status-error {
+  background: #fbbf24;
+  opacity: 0.7;
 }
 
 .section-body {

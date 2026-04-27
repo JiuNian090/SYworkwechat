@@ -69,10 +69,16 @@
     <!-- 云备份区块 -->
     <view class="section">
       <view class="section-header">
-        <view class="section-icon cloud-icon">
-          <text class="icon-text">☁️</text>
+        <view class="section-header-left">
+          <view class="section-icon cloud-icon">
+            <text class="icon-text">☁️</text>
+          </view>
+          <text class="section-title">云备份</text>
+          <view class="cloud-status {{cloudLoggedIn ? 'cloud-status-logged-in' : ''}}" wx:if="{{backupStatus}}" catchtap="onCloudStatusTap">
+            <view class="status-breath status-{{backupStatus.type}}"></view>
+            <text class="status-label">{{backupStatus.label}}</text>
+          </view>
         </view>
-        <text class="section-title">云备份</text>
         <view class="help-btn" bindtap="navigateToDocs" data-type="cloud">
           <text class="help-icon">?</text>
         </view>
