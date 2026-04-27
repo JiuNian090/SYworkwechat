@@ -705,11 +705,13 @@
   <!-- 声明详情弹窗 -->
   <view class="modal-mask {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}" bindtap="hidePolicyModal"></view>
   <view class="modal-container policy-detail-modal {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}">
-    <view class="modal-header" style="background: linear-gradient(135deg, {{policyColor}} 0%, {{policyColor}}dd 100%);">
-      <view class="policy-header-icon">{{policyIcon}}</view>
-      <text class="modal-title">{{policyTitle}}</text>
+    <view class="modal-header policy-modal-header">
+      <view class="policy-header-icon-wrapper" style="background: linear-gradient(135deg, {{policyColor}}15 0%, {{policyColor}}25 100%); border-color: {{policyColor}}30;">
+        <text style="color: {{policyColor}};">{{policyIcon}}</text>
+      </view>
+      <text class="modal-title" style="color: {{policyColor}};">{{policyTitle}}</text>
       <view class="modal-close" bindtap="hidePolicyModal">
-        <text class="close-icon">✕</text>
+        <text class="close-icon" style="color: {{policyColor}};">✕</text>
       </view>
     </view>
     <view class="modal-body">

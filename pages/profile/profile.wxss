@@ -3104,28 +3104,28 @@ page {
   box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
 }
 
-.policy-detail-modal .modal-header {
+.policy-modal-header {
   padding: 28rpx 32rpx;
-  border-bottom: none;
+  border-bottom: 2rpx solid #f1f5f9;
   display: flex;
   align-items: center;
   gap: 16rpx;
+  background: #ffffff;
 }
 
-.policy-header-icon {
+.policy-header-icon-wrapper {
   width: 56rpx;
   height: 56rpx;
   border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32rpx;
   flex-shrink: 0;
+  border: 2rpx solid;
 }
 
 .policy-detail-modal .modal-title {
-  color: #ffffff;
   font-size: 32rpx;
   font-weight: 700;
   letter-spacing: 1rpx;
@@ -3133,7 +3133,6 @@ page {
 }
 
 .policy-detail-modal .close-icon {
-  color: rgba(255, 255, 255, 0.9);
   font-size: 36rpx;
   font-weight: 300;
 }
