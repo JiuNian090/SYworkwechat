@@ -114,25 +114,6 @@ Page({
     });
   },
 
-  // 获取上周日期范围
-  getLastWeekRange(referenceDate = new Date()) {
-    const now = new Date(referenceDate);
-    const start = new Date(now);
-    const end = new Date(now);
-
-    // 计算上周一（周一为一周第一天）
-    const day = now.getDay();
-    const diff = day === 0 ? 6 : day - 1; // 如果是周日，则上周一是6天前；否则是day-1天前
-    start.setDate(now.getDate() - diff - 7);
-    // 计算上周日（正确处理跨月份情况）
-    end.setTime(start.getTime() + 6 * 24 * 60 * 60 * 1000); // 通过时间戳加6天，避免月份计算问题
-
-    return {
-      startDate: this.formatDate(start),
-      endDate: this.formatDate(end)
-    };
-  },
-
   // 获取本周日期范围
   getThisWeekRange(referenceDate = new Date()) {
     const now = new Date(referenceDate);
@@ -196,22 +177,6 @@ Page({
   },
 
   // 快速选择按钮事件处理函数
-  selectLastWeek() {
-    // 添加点击动画
-    this.triggerButtonAnimation('lastWeek');
-    // 使用当前结束日期作为参考日期来计算上周
-    const referenceDate = this.data.endDate ? new Date(this.data.endDate) : new Date();
-    const range = this.getLastWeekRange(referenceDate);
-    this.setData({
-      startDate: range.startDate,
-      endDate: range.endDate,
-      activeQuickBtn: 'lastWeek',
-      activePeriodBtn: ''
-    });
-    this.saveDateRangeState();
-    this.calculateStatistics();
-  },
-
   selectThisWeek() {
     // 添加点击动画
     this.triggerButtonAnimation('thisWeek');
