@@ -97,6 +97,8 @@ Page({
     emojiCategories: emojiManager.getCategories(),
     currentEmojiCategory: 'face',
     selectedEmoji: '',
+    shiftColor: '#07c160',
+    shiftGlowColor: 'rgba(7, 193, 96, 0.6)',
 
     // 头像选择器
     avatarMode: 'emoji',          // 'emoji' | 'text'
@@ -123,6 +125,22 @@ Page({
 
     // 调用原有的onLoad逻辑
     this.initPageData();
+  },
+
+  getTodayShiftColorInfo() {
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const shifts = wx.getStorageSync('shifts') || {};
+    const todayShift = shifts[dateStr];
+    const color = (todayShift && todayShift.color) ? todayShift.color : '#07c160';
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return {
+      shiftColor: color,
+      shiftGlowColor: `rgba(${r}, ${g}, ${b}, 0.6)`
+    };
   },
 
   initPageData() {
@@ -202,6 +220,12 @@ Page({
       backupStatus: cloudLoggedIn
         ? { type: 'checking', label: STATUS_TEXT.CHECKING }
         : { type: 'unbacked', label: STATUS_TEXT.NOT_LOGGED_IN }
+    });
+
+    const shiftColorInfo = this.getTodayShiftColorInfo();
+    this.setData({
+      shiftColor: shiftColorInfo.shiftColor,
+      shiftGlowColor: shiftColorInfo.shiftGlowColor
     });
 
     if (cloudLoggedIn && cloudInitialized) {
@@ -740,6 +764,15 @@ Page({
     if (calculateHash(JSON.stringify(changelog)) !== calculateHash(JSON.stringify(this.data.changelog))) {
       this.setData({
         changelog: changelog
+      });
+    }
+
+    // 同步当天排班颜色到呼吸灯
+    const shiftColorInfo = this.getTodayShiftColorInfo();
+    if (shiftColorInfo.shiftColor !== this.data.shiftColor) {
+      this.setData({
+        shiftColor: shiftColorInfo.shiftColor,
+        shiftGlowColor: shiftColorInfo.shiftGlowColor
       });
     }
 

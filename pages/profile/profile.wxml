@@ -10,7 +10,7 @@
             <text class="header-avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
             <text class="header-avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
           </view>
-          <view class="header-avatar-edit {{avatarType === 'emoji' && emojiEmotion ? emojiEmotion : ''}}"></view>
+          <view class="header-avatar-edit" style="background: {{shiftColor}}; box-shadow: 0 0 8rpx {{shiftGlowColor}};"></view>
         </view>
         <view class="header-user-details">
           <text class="header-username" bindtap="showCloudLoginOrRegisterModal">{{username || '点击登录云账号'}}</text>
