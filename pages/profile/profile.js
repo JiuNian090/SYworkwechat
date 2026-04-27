@@ -45,7 +45,6 @@ Page({
     showFileNameModal: false, // 文件名设置弹窗显示状态
     tempFileName: '', // 临时存储用户输入的文件名
     defaultFileNameHint: '', // 默认文件名提示
-    showEmojiModal: false, // 表情选择弹窗显示状态
     // 数据类型选择相关变量
     showDataTypeModal: false, // 数据类型选择弹窗显示状态
     selectedDataTypes: [], // 选中的数据类型
@@ -96,8 +95,17 @@ Page({
     lastSyncHash: '',
     // 表情相关数据
     emojiCategories: emojiManager.getCategories(),
-    currentEmojiCategory: 'face', // 当前选中的表情分类
-    selectedEmoji: '' // 当前选中的表情
+    currentEmojiCategory: 'face',
+    selectedEmoji: '',
+
+    // 头像选择器
+    avatarMode: 'emoji',          // 'emoji' | 'text'
+    avatarModeCategory: 'face',   // 当前表情分类
+    avatarModeEmojis: emojiManager.getCategoryEmojis('face'),
+    avatarModeEmoji: '',          // 当前选中的表情
+    avatarModeText: '',           // 当前文字头像字符
+    avatarModeTextInput: '',      // 文字输入框内容
+    textInputFocus: false        // 文字输入框自动聚焦
   },
 
   // 初始化各个管理器
@@ -285,78 +293,118 @@ Page({
     });
   },
 
-  // 显示表情选择弹窗（已改为页面切换）
+  // 进入头像选择界面
   showEmojiModal() {
+    const { avatarType, avatarEmoji, username } = this.data;
+    const currentText = avatarType === 'text' ? (username ? username.charAt(0).toUpperCase() : '') : '';
     this.setData({
-      selectedEmoji: this.data.avatarEmoji,
+      avatarMode: avatarType || 'emoji',
+      avatarModeCategory: 'face',
+      avatarModeEmojis: emojiManager.getCategoryEmojis('face'),
+      avatarModeEmoji: avatarType === 'emoji' ? (avatarEmoji || '😊') : '',
+      avatarModeText: currentText || '用',
+      avatarModeTextInput: currentText || '',
       currentUserPage: 'avatar'
     });
   },
 
-  // 隐藏表情选择弹窗（已改为页面切换）
-  hideEmojiModal() {
+  // 切换头像模式（表情/文字）
+  onAvatarModeSwitch(e) {
+    const mode = e.currentTarget.dataset.mode;
+    if (mode === this.data.avatarMode) return;
     this.setData({
-      currentUserPage: 'main'
+      avatarMode: mode,
+      textInputFocus: mode === 'text'
     });
   },
 
-  // 组件事件：表情分类切换
-  onEmojiCategoryChange(e) {
+  // 切换表情分类
+  onAvatarCategorySwitch(e) {
+    const categoryId = e.currentTarget.dataset.category;
     this.setData({
-      currentEmojiCategory: e.detail.category
+      avatarModeCategory: categoryId,
+      avatarModeEmojis: emojiManager.getCategoryEmojis(categoryId)
     });
   },
 
-  // 组件事件：选择表情
-  onEmojiSelect(e) {
+  // 选择表情
+  onAvatarEmojiPick(e) {
+    const emoji = e.currentTarget.dataset.emoji;
     this.setData({
-      selectedEmoji: e.detail.emoji
+      avatarModeEmoji: emoji
     });
   },
 
-  // 组件事件：确认表情设置
-  onEmojiConfirm() {
-    const emoji = this.data.selectedEmoji;
-    if (!emoji) {
-      wx.showToast({
-        title: '请选择一个表情',
-        icon: 'none'
+  // 文字头像输入
+  onAvatarTextInput(e) {
+    const val = e.detail.value.trim();
+    this.setData({
+      avatarModeTextInput: val,
+      avatarModeText: val || '用'
+    });
+  },
+
+  // 文字头像确认（键盘回车）
+  onAvatarTextConfirm() {
+    // 不做特殊处理，用户点击"确定"按钮时统一提交
+  },
+
+  // 获取表情描述
+  getEmojiDesc(emoji) {
+    return emojiManager.getEmojiText(emoji) || '';
+  },
+
+  // 统一确认头像选择
+  onAvatarConfirm() {
+    const { avatarMode, avatarModeEmoji, avatarModeText } = this.data;
+
+    if (avatarMode === 'emoji') {
+      if (!avatarModeEmoji) {
+        wx.showToast({
+          title: '请选择一个表情',
+          icon: 'none'
+        });
+        return;
+      }
+      const emojiText = emojiManager.getEmojiText(avatarModeEmoji) || '';
+      const emojiEmotion = emojiManager.getEmojiEmotion(avatarModeEmoji) || 'neutral';
+
+      this.setData({
+        avatarEmoji: avatarModeEmoji,
+        avatarType: 'emoji',
+        emojiText: emojiText,
+        emojiEmotion: emojiEmotion,
+        selectedEmoji: avatarModeEmoji,
+        currentUserPage: 'main'
       });
-      return;
+      store.setState({ avatarType: 'emoji', avatarEmoji: avatarModeEmoji }, ['avatarType', 'avatarEmoji']);
+      this.syncAvatarToCloud('emoji', avatarModeEmoji, '');
+    } else {
+      const textChar = avatarModeText || '用';
+      this.setData({
+        avatarType: 'text',
+        avatarText: textChar,
+        avatarEmoji: '',
+        emojiText: '',
+        emojiEmotion: '',
+        currentUserPage: 'main'
+      });
+      store.setState({ avatarType: 'text', avatarText: textChar, avatarEmoji: '' }, ['avatarType', 'avatarText', 'avatarEmoji']);
+      this.syncAvatarToCloud('text', '', textChar);
     }
 
-    // 获取表情对应的文字和情绪类型
-    const emojiText = emojiManager.getEmojiText(emoji) || '';
-    const emojiEmotion = emojiManager.getEmojiEmotion(emoji) || 'neutral';
-
-    this.setData({
-      avatarEmoji: emoji,
-      avatarType: 'emoji',
-      emojiText: emojiText,
-      emojiEmotion: emojiEmotion,
-      currentUserPage: 'main'
-    });
-
-    store.setState({ avatarType: 'emoji', avatarEmoji: emoji }, ['avatarType', 'avatarEmoji']);
-
-    // 同步到云端
-    this.syncAvatarToCloud('emoji', emoji, '');
-
-    // 通知其他页面更新头像信息
     this.updateAvatarInOtherPages();
-
-    // 同步更新 savedAccounts 里当前账号的头像
     if (this.data.cloudAccount) {
       this.updateSavedAccountAvatar(this.data.cloudAccount, {
-        avatarType: 'emoji',
-        avatarEmoji: emoji,
-        avatarText: '',
-        avatarEmojiEmotion: emojiEmotion
+        avatarType: this.data.avatarType,
+        avatarEmoji: this.data.avatarEmoji,
+        avatarText: this.data.avatarText,
+        avatarEmojiEmotion: this.data.emojiEmotion || 'neutral'
       });
     }
 
     wx.showToast({
-      title: '表情已设为头像',
+      title: '头像已更新',
       icon: 'success'
     });
   },
@@ -849,7 +897,6 @@ Page({
   switchUserPage(e) {
     const page = e.currentTarget.dataset.page;
 
-    // 特殊处理头像页面，仍然使用原有的表情选择弹窗
     if (page === 'avatar') {
       this.showEmojiModal();
       return;

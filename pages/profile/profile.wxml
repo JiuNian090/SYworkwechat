@@ -457,16 +457,76 @@
         </view>
       </view>
       
-      <!-- 表情选择页面 -->
+      <!-- 头像选择页面 -->
       <view class="user-page user-page-emoji-select" wx:if="{{currentUserPage === 'avatar'}}">
-        <emoji-picker
-          emojiCategories="{{emojiCategories}}"
-          currentCategory="{{currentEmojiCategory}}"
-          selectedEmoji="{{selectedEmoji}}"
-          bind:categorychange="onEmojiCategoryChange"
-          bind:select="onEmojiSelect"
-          bind:confirm="onEmojiConfirm"
-        />
+        <view class="avatar-selector">
+          <!-- 头像实时预览 -->
+          <view class="avatar-preview-section">
+            <view class="avatar-preview-ring">
+              <view class="preview-avatar-circle">
+                <text wx:if="{{avatarMode === 'emoji'}}" class="preview-emoji">{{avatarModeEmoji || '😊'}}</text>
+                <text wx:else class="preview-text">{{avatarModeText || '用'}}</text>
+              </view>
+            </view>
+            <text class="preview-label">{{avatarMode === 'emoji' ? (avatarModeEmoji ? getEmojiDesc(avatarModeEmoji) : '请选择表情') : (avatarModeText ? avatarModeText + '（文字头像）' : '请输入文字')}}</text>
+          </view>
+
+          <!-- 模式切换 -->
+          <view class="avatar-mode-tabs">
+            <view class="avatar-mode-tab {{avatarMode === 'emoji' ? 'active' : ''}}" data-mode="emoji" catchtap="onAvatarModeSwitch">
+              <text class="mode-tab-icon">😊</text>
+              <text class="mode-tab-text">表情头像</text>
+            </view>
+            <view class="avatar-mode-tab {{avatarMode === 'text' ? 'active' : ''}}" data-mode="text" catchtap="onAvatarModeSwitch">
+              <text class="mode-tab-icon">🔤</text>
+              <text class="mode-tab-text">文字头像</text>
+            </view>
+          </view>
+
+          <!-- 文字头像模式 -->
+          <view wx:if="{{avatarMode === 'text'}}" class="text-avatar-section">
+            <view class="text-avatar-content">
+              <view class="text-avatar-input-wrap">
+                <text class="text-avatar-hint">输入 1~2 个字符作为头像</text>
+                <input class="text-avatar-input" placeholder="例如：乐、用、我" value="{{avatarModeTextInput}}" maxlength="2" bindinput="onAvatarTextInput" bindconfirm="onAvatarTextConfirm" focus="{{textInputFocus}}" />
+              </view>
+              <view class="text-avatar-preview-box">
+                <text class="preview-box-label">预览</text>
+                <view class="preview-box-circle">
+                  <text class="preview-box-char">{{avatarModeText || '用'}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 表情选择模式 -->
+          <view wx:elif="{{avatarMode === 'emoji'}}" class="emoji-select-section">
+            <!-- 分类标签栏 -->
+            <view class="emoji-categories">
+              <view
+                class="emoji-cat-item {{avatarModeCategory === item.id ? 'active' : ''}}"
+                wx:for="{{emojiCategories}}" wx:key="id"
+                catchtap="onAvatarCategorySwitch"
+                data-category="{{item.id}}"
+              >
+                <text class="emoji-cat-icon">{{item.icon}}</text>
+              </view>
+            </view>
+            <!-- 表情网格 -->
+            <scroll-view class="emoji-grid-scroll" scroll-y enhanced show-scrollbar="false">
+              <view class="emoji-grid-content">
+                <view
+                  class="emoji-grid-item {{avatarModeEmoji === item ? 'selected' : ''}}"
+                  wx:for="{{avatarModeEmojis}}" wx:key="index"
+                  catchtap="onAvatarEmojiPick"
+                  data-emoji="{{item}}"
+                >
+                  <text class="emoji-grid-char">{{item}}</text>
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+        </view>
       </view>
       
       <!-- 切换账号页面 -->
@@ -557,7 +617,7 @@
       <!-- 表情选择页面按钮 -->
       <view wx:if="{{currentUserPage === 'avatar'}}">
         <button class="modal-btn btn-cancel" bindtap="goBackToUserManagement">取消</button>
-        <button class="modal-btn btn-confirm" bindtap="onEmojiConfirm">确定</button>
+        <button class="modal-btn btn-confirm" bindtap="onAvatarConfirm">确定</button>
       </view>
       
       <!-- 切换账号页面按钮 -->
