@@ -5,70 +5,114 @@
  * 根据排班状态和当前时间，生成个性化关怀话语
  */
 
-// 表情状态映射
+// 表情状态映射（所有类别）
 const emojiStateMap = {
+  // ============== 表情类 ==============
   // 疲惫/累状态
-  '😩': 'tired',
-  '😫': 'tired',
-  '😴': 'tired',
-  '😪': 'tired',
-  '🥴': 'tired',
-  '😵': 'tired',
+  '😩': 'tired', '😫': 'tired', '😴': 'tired', '😪': 'tired', '🥴': 'tired', '😵': 'tired', '🤯': 'tired',
   
   // 难过/悲伤状态
-  '😔': 'sad',
-  '😞': 'sad',
-  '🙁': 'sad',
-  '☹️': 'sad',
-  '😢': 'sad',
-  '😭': 'sad',
-  '😟': 'sad',
+  '😔': 'sad', '😞': 'sad', '🙁': 'sad', '☹️': 'sad', '😢': 'sad', '😭': 'sad', '😟': 'sad', '😕': 'sad',
+  '�': 'sad', '😶': 'sad', '😑': 'sad', '😬': 'sad', '🙄': 'sad',
   
   // 压力/焦虑状态
-  '😰': 'stressed',
-  '😣': 'stressed',
-  '😖': 'stressed',
-  '😨': 'stressed',
-  '😱': 'stressed',
-  '😓': 'stressed',
-  '🤯': 'stressed',
+  '😰': 'stressed', '😣': 'stressed', '😖': 'stressed', '😨': 'stressed', '😱': 'stressed',
+  '😓': 'stressed', '😧': 'stressed', '😦': 'stressed', '�': 'stressed', '😮': 'stressed',
+  '😯': 'stressed', '😲': 'stressed',
   
   // 愤怒/生气状态
-  '😤': 'angry',
-  '😠': 'angry',
-  '😡': 'angry',
-  '🤬': 'angry',
+  '😤': 'angry', '😠': 'angry', '😡': 'angry', '🤬': 'angry',
   
   // 生病状态
-  '🤒': 'sick',
-  '🤕': 'sick',
-  '🤢': 'sick',
-  '🤮': 'sick',
-  '🤧': 'sick',
-  '😷': 'sick',
+  '🤒': 'sick', '🤕': 'sick', '🤢': 'sick', '🤮': 'sick', '🤧': 'sick', '😷': 'sick',
+  '🥵': 'sick', '🥶': 'sick',
   
   // 开心/积极状态
-  '😊': 'happy',
-  '😃': 'happy',
-  '😄': 'happy',
-  '😁': 'happy',
-  '😆': 'happy',
-  '🤣': 'happy',
-  '😂': 'happy',
-  '😉': 'happy',
-  '😍': 'happy',
-  '🥰': 'happy',
-  '😘': 'happy',
-  '😋': 'happy',
-  '🤪': 'happy',
-  '😎': 'happy',
-  '🤩': 'happy',
-  '🥳': 'happy',
-  '🤗': 'happy'
+  '😊': 'happy', '😃': 'happy', '😄': 'happy', '😁': 'happy', '😆': 'happy', '🤣': 'happy',
+  '😂': 'happy', '😉': 'happy', '😍': 'happy', '🥰': 'happy', '😘': 'happy', '😚': 'happy',
+  '😋': 'happy', '😛': 'happy', '😝': 'happy', '😜': 'happy', '🤪': 'happy', '😎': 'happy',
+  '🤩': 'happy', '🥳': 'happy', '🤗': 'happy', '🤓': 'happy', '🧐': 'happy', '😏': 'happy',
+  '�': 'happy', '🤑': 'happy', '🤤': 'happy', '😅': 'happy', '🙂': 'happy', '🙃': 'happy',
+  '😌': 'happy', '🎉': 'happy', '🎊': 'happy', '✨': 'happy',
+  
+  // 思考/专注状态
+  '🤔': 'thinking', '🧐': 'thinking', '🤨': 'thinking', '🤫': 'thinking', '🤐': 'thinking',
+  
+  // ============== 动物类 ==============
+  '🐶': 'animal', '🐱': 'animal', '🐭': 'animal', '🐹': 'animal', '🐰': 'animal', '🦊': 'animal',
+  '🐻': 'animal', '🐼': 'animal', '🐨': 'animal', '🐯': 'animal', '🦁': 'animal', '🐮': 'animal',
+  '🐷': 'animal', '🐸': 'animal', '🐵': 'animal', '🐔': 'animal', '🐧': 'animal', '🐦': 'animal',
+  '🐤': 'animal', '🦋': 'animal', '🐝': 'animal', '🐛': 'animal', '🦄': 'animal', '🐙': 'animal',
+  '🐠': 'animal', '🐟': 'animal', '🐬': 'animal', '🐳': 'animal', '🐋': 'animal', '🦈': 'animal',
+  '🐊': 'animal', '🐢': 'animal', '🐍': 'animal', '🦎': 'animal', '🦖': 'animal', '🦕': 'animal',
+  '🐘': 'animal', '🦛': 'animal', '🦏': 'animal', '🐪': 'animal', '🐫': 'animal', '🦒': 'animal',
+  '🦘': 'animal', '🐃': 'animal', '🐂': 'animal', '🐄': 'animal', '🐎': 'animal', '🐖': 'animal',
+  '🐏': 'animal', '🐑': 'animal', '🐐': 'animal', '🐓': 'animal', '🦃': 'animal', '🦅': 'animal',
+  '🦆': 'animal', '🦉': 'animal', '🦤': 'animal', '🪶': 'animal', '🦩': 'animal', '🦚': 'animal',
+  '🦜': 'animal', '🐿️': 'animal', '🦔': 'animal', '🐇': 'animal', '🐀': 'animal', '🐁': 'animal',
+  
+  // ============== 食物类 ==============
+  '🍎': 'food', '🍊': 'food', '🍋': 'food', '🍌': 'food', '🍉': 'food', '🍇': 'food', '🍓': 'food',
+  '🫐': 'food', '🍈': 'food', '🍒': 'food', '🍑': 'food', '🥭': 'food', '🍍': 'food', '🥥': 'food',
+  '🥝': 'food', '🍅': 'food', '🫒': 'food', '🥑': 'food', '🍆': 'food', '🥔': 'food', '🥕': 'food',
+  '🌽': 'food', '🌶️': 'food', '🫑': 'food', '🥒': 'food', '🥬': 'food', '🥦': 'food', '🧄': 'food',
+  '🧅': 'food', '🍄': 'food', '🥜': 'food', '🫘': 'food', '🌰': 'food', '🫚': 'food', '🫛': 'food',
+  '🍞': 'food', '🥐': 'food', '🥖': 'food', '🫓': 'food', '🥨': 'food', '🥯': 'food', '🥞': 'food',
+  '🧇': 'food', '🧀': 'food', '🍖': 'food', '🍗': 'food', '🥩': 'food', '🥓': 'food', '🍔': 'food',
+  '🍟': 'food', '🍕': 'food', '🌭': 'food', '🥪': 'food', '🌮': 'food', '🌯': 'food', '🫔': 'food',
+  '🥙': 'food', '🧆': 'food', '🥚': 'food', '🍳': 'food', '🥘': 'food', '🍲': 'food', '🫕': 'food',
+  '🥣': 'food', '🥗': 'food', '🍿': 'food', '🧈': 'food', '🧂': 'food', '🥫': 'food', '🍱': 'food',
+  '🍘': 'food', '🍙': 'food', '🍚': 'food', '🍛': 'food', '🍜': 'food', '🍝': 'food', '🍠': 'food',
+  '🍢': 'food', '🍣': 'food', '🍤': 'food', '🍥': 'food', '🦪': 'food', '🍦': 'food', '🍧': 'food',
+  '🍨': 'food', '🍩': 'food', '🍪': 'food', '🎂': 'food', '🍰': 'food', '🧁': 'food', '🥧': 'food',
+  '🍫': 'food', '🍬': 'food', '🍭': 'food', '🍮': 'food', '🍯': 'food', '🍼': 'food', '🥛': 'food',
+  '🫖': 'food', '🍵': 'food', '🍶': 'food', '🍾': 'food', '🍷': 'food', '🍸': 'food', '🍹': 'food',
+  '🍺': 'food', '🍻': 'food', '🥂': 'food', '🥃': 'food', '🫗': 'food', '🥤': 'food', '🧋': 'food',
+  '🧃': 'food', '🧉': 'food', '🧊': 'food', '🥢': 'food', '🍽️': 'food', '🍴': 'food', '🥄': 'food',
+  '🔪': 'food',
+  
+  // ============== 活动类 ==============
+  '🏃': 'activity', '🚶': 'activity', '🧎': 'activity', '🧍': 'activity', '🏋️': 'activity',
+  '🏊': 'activity', '🏄': 'activity', '🚣': 'activity', '🧗': 'activity', '🚵': 'activity',
+  '🚴': 'activity', '🏇': 'activity', '⛷️': 'activity', '🎿': 'activity', '🏂': 'activity',
+  '🤸': 'activity', '🤽': 'activity', '🤾': 'activity', '🤹': 'activity', '🎪': 'activity',
+  '🎭': 'activity', '🎨': 'activity', '🎬': 'activity', '🎤': 'activity', '🎧': 'activity',
+  '🎼': 'activity', '🎹': 'activity', '🥁': 'activity', '🎷': 'activity', '🎺': 'activity',
+  '🎸': 'activity', '🪕': 'activity', '🎻': 'activity', '🪗': 'activity', '🎯': 'activity',
+  '🎱': 'activity', '🎳': 'activity', '🎮': 'activity', '🎰': 'activity', '🎲': 'activity',
+  '🧩': 'activity',
+  
+  // ============== 旅行类 ==============
+  '🚗': 'travel', '🚕': 'travel', '🚙': 'travel', '🚌': 'travel', '🚎': 'travel', '🏎️': 'travel',
+  '🚓': 'travel', '🚑': 'travel', '🚒': 'travel', '🚐': 'travel', '🚚': 'travel', '🚛': 'travel',
+  '🚜': 'travel', '🛵': 'travel', '🏍️': 'travel', '🛺': 'travel', '🚲': 'travel', '🛴': 'travel',
+  '🚀': 'travel', '🛸': 'travel', '🚁': 'travel', '🛩️': 'travel', '✈️': 'travel', '🛫': 'travel',
+  '🛬': 'travel', '🪂': 'travel', '🚤': 'travel', '🛳️': 'travel', '⛴️': 'travel', '🚢': 'travel',
+  '⛰️': 'travel', '🌋': 'travel', '🏔️': 'travel', '🗻': 'travel', '🏕️': 'travel', '🏖️': 'travel',
+  '🏜️': 'travel', '🏝️': 'travel', '🏞️': 'travel', '🎡': 'travel', '🎢': 'travel', '🎠': 'travel',
+  '🎃': 'travel', '🎄': 'travel', '🎆': 'travel', '🎇': 'travel', '🧨': 'travel', '🎈': 'travel',
+  '🎋': 'travel', '🎍': 'travel', '🎎': 'travel', '🎏': 'travel', '🎐': 'travel', '🎑': 'travel',
+  '🧧': 'travel', '🎀': 'travel', '🎁': 'travel', '🤶': 'travel', '🎅': 'travel', '🦌': 'travel',
+  '⛄': 'travel', '🔥': 'travel', '❄️': 'travel', '☃️': 'travel', '🌨️': 'travel', '🌧️': 'travel',
+  '🌦️': 'travel', '🌥️': 'travel', '☁️': 'travel', '🌤️': 'travel', '☀️': 'travel', '🌝': 'travel',
+  '🌞': 'travel', '🪐': 'travel', '🌟': 'travel', '⭐': 'travel', '⚡': 'travel', '☄️': 'travel',
+  '💫': 'travel', '🌙': 'travel', '🌚': 'travel', '🌛': 'travel', '🌜': 'travel', '🌔': 'travel',
+  '🌓': 'travel', '🌒': 'travel', '🌑': 'travel', '🌘': 'travel', '🌗': 'travel', '🌖': 'travel',
+  '🌕': 'travel', '🌪️': 'travel', '🌫️': 'travel', '🌬️': 'travel', '🌀': 'travel', '🌈': 'travel',
+  '🌂': 'travel', '☂️': 'travel', '🌊': 'travel', '💧': 'travel', '💦': 'travel', '☔': 'travel',
+  
+  // ============== 物品类 ==============
+  '🏵️': 'object', '🎗️': 'object', '🎟️': 'object', '🎫': 'object', '🎖️': 'object', '🏆': 'object',
+  '🏅': 'object', '🥇': 'object', '🥈': 'object', '🥉': 'object', '⚽': 'object', '⚾': 'object',
+  '🥎': 'object', '🏀': 'object', '🏐': 'object', '🏈': 'object', '🏉': 'object', '🎾': 'object',
+  '🥏': 'object', '🎳': 'object', '🏏': 'object', '🏑': 'object', '🏒': 'object', '🥍': 'object',
+  '🏓': 'object', '🏸': 'object', '🥊': 'object', '🥋': 'object', '🥅': 'object', '🎣': 'object',
+  '🎽': 'object', '🛷': 'object', '🔮': 'object', '🎮': 'object', '🎵': 'object', '🎶': 'object'
 };
 
-// 表情专属话语库
+// 表情专属话语库（所有类别）
 const emojiMessageTemplates = {
+  // ============== 情绪类 ==============
   tired: [
     '💪 {name}，辛苦了！累了就休息一下吧。',
     '😴 {name}，休息是为了更好地出发。',
@@ -128,11 +172,82 @@ const emojiMessageTemplates = {
     '✨ {name}，继续保持好心情！',
     '🎈 {name}，开心每一天！',
     '🌺 {name}，心情棒棒哒！'
+  ],
+  thinking: [
+    '🤔 {name}，在思考什么呀？',
+    '💭 {name}，专注的样子真棒！',
+    '🧠 {name}，你的想法一定很棒！',
+    '📚 {name}，学习使人进步！',
+    '💡 {name}，灵感马上就来啦！',
+    '🔍 {name}，保持好奇心！',
+    '🎯 {name}，想清楚了再行动！',
+    '✨ {name}，你会找到答案的！'
+  ],
+  
+  // ============== 动物类 ==============
+  animal: [
+    '🐾 {name}，可爱的动物们真治愈！',
+    '🐱 {name}，猫猫狗狗太可爱啦！',
+    '🐼 {name}，你像熊猫一样可爱！',
+    '🦊 {name}，聪明又可爱！',
+    '🐰 {name}，蹦蹦跳跳真可爱！',
+    '🐬 {name}，每天都开心！',
+    '🦄 {name}，充满魔法的一天！',
+    '🦁 {name}，今天也要元气满满！'
+  ],
+  
+  // ============== 食物类 ==============
+  food: [
+    '🍔 {name}，今天也要好好吃饭哦！',
+    '🍕 {name}，美食让生活更美好！',
+    '🍰 {name}，给自己来点甜蜜吧！',
+    '🍜 {name}，热乎的食物最温暖了！',
+    '🍎 {name}，多吃水果身体棒！',
+    '☕ {name}，来杯咖啡提提神！',
+    '🍫 {name}，巧克力让心情变好！',
+    '🍹 {name}，享受美食享受生活！'
+  ],
+  
+  // ============== 活动类 ==============
+  activity: [
+    '🏃 {name}，生命在于运动！',
+    '🎨 {name}，享受艺术的美好！',
+    '🎵 {name}，音乐让心情更美好！',
+    '🎮 {name}，游戏时光最放松！',
+    '📚 {name}，阅读使人成长！',
+    '🎯 {name}，专注做自己喜欢的事！',
+    '🎭 {name}，生活就是一场表演！',
+    '✨ {name}，做自己喜欢的事最开心！'
+  ],
+  
+  // ============== 旅行类 ==============
+  travel: [
+    '✈️ {name}，期待一场美好的旅行！',
+    '🚗 {name}，去看看外面的世界吧！',
+    '🏖️ {name}，阳光沙滩海浪！',
+    '⛰️ {name}，爬山望远心情好！',
+    '🌈 {name}，旅途中总有惊喜！',
+    '🌟 {name}，去探索未知的美好！',
+    '🚂 {name}，火车旅行真浪漫！',
+    '🎡 {name}，享受生活的美好！'
+  ],
+  
+  // ============== 物品类 ==============
+  object: [
+    '🏆 {name}，你是最棒的！',
+    '🎮 {name}，游戏愉快！',
+    '🎵 {name}，听歌放松一下！',
+    '📚 {name}，好好学习天天向上！',
+    '🎨 {name}，发挥你的创造力！',
+    '🎯 {name}，目标明确加油干！',
+    '✨ {name}，让每一天都闪闪发光！',
+    '💫 {name}，美好的事物就在身边！'
   ]
 };
 
-// 表情专属无昵称话语库
+// 表情专属无昵称话语库（所有类别）
 const emojiMessageTemplatesNoName = {
+  // ============== 情绪类 ==============
   tired: [
     '💪 辛苦了！累了就休息一下吧。',
     '😴 休息是为了更好地出发。',
@@ -192,6 +307,607 @@ const emojiMessageTemplatesNoName = {
     '✨ 继续保持好心情！',
     '🎈 开心每一天！',
     '🌺 心情棒棒哒！'
+  ],
+  thinking: [
+    '🤔 在思考什么呀？',
+    '💭 专注的样子真棒！',
+    '🧠 你的想法一定很棒！',
+    '📚 学习使人进步！',
+    '💡 灵感马上就来啦！',
+    '🔍 保持好奇心！',
+    '🎯 想清楚了再行动！',
+    '✨ 你会找到答案的！'
+  ],
+  
+  // ============== 动物类 ==============
+  animal: [
+    '🐾 可爱的动物们真治愈！',
+    '🐱 猫猫狗狗太可爱啦！',
+    '🐼 你像熊猫一样可爱！',
+    '🦊 聪明又可爱！',
+    '🐰 蹦蹦跳跳真可爱！',
+    '🐬 每天都开心！',
+    '🦄 充满魔法的一天！',
+    '🦁 今天也要元气满满！'
+  ],
+  
+  // ============== 食物类 ==============
+  food: [
+    '🍔 今天也要好好吃饭哦！',
+    '🍕 美食让生活更美好！',
+    '🍰 给自己来点甜蜜吧！',
+    '🍜 热乎的食物最温暖了！',
+    '🍎 多吃水果身体棒！',
+    '☕ 来杯咖啡提提神！',
+    '🍫 巧克力让心情变好！',
+    '🍹 享受美食享受生活！'
+  ],
+  
+  // ============== 活动类 ==============
+  activity: [
+    '🏃 生命在于运动！',
+    '🎨 享受艺术的美好！',
+    '🎵 音乐让心情更美好！',
+    '🎮 游戏时光最放松！',
+    '📚 阅读使人成长！',
+    '🎯 专注做自己喜欢的事！',
+    '🎭 生活就是一场表演！',
+    '✨ 做自己喜欢的事最开心！'
+  ],
+  
+  // ============== 旅行类 ==============
+  travel: [
+    '✈️ 期待一场美好的旅行！',
+    '🚗 去看看外面的世界吧！',
+    '🏖️ 阳光沙滩海浪！',
+    '⛰️ 爬山望远心情好！',
+    '🌈 旅途中总有惊喜！',
+    '🌟 去探索未知的美好！',
+    '🚂 火车旅行真浪漫！',
+    '🎡 享受生活的美好！'
+  ],
+  
+  // ============== 物品类 ==============
+  object: [
+    '🏆 你是最棒的！',
+    '🎮 游戏愉快！',
+    '🎵 听歌放松一下！',
+    '📚 好好学习天天向上！',
+    '🎨 发挥你的创造力！',
+    '🎯 目标明确加油干！',
+    '✨ 让每一天都闪闪发光！',
+    '💫 美好的事物就在身边！'
+  ]
+};
+
+// ============== 表情+班次混合状态话语库 ==============
+const emojiScheduleMixedTemplates = {
+  // 疲惫时上班
+  'tired-working': [
+    '💪 {name}，虽然累但也要加油工作！',
+    '☕ {name}，忙里偷闲喝杯茶休息下。',
+    '😌 {name}，今天工作辛苦啦！',
+    '💫 {name}，再坚持一下就下班了！',
+    '✨ {name}，你是最棒的！',
+    '🌸 {name}，劳逸结合最重要。',
+    '🌟 {name}，加油！胜利在望！',
+    '💪 {name}，你可以的！'
+  ],
+  'tired-workingNoName': [
+    '💪 虽然累但也要加油工作！',
+    '☕ 忙里偷闲喝杯茶休息下。',
+    '😌 今天工作辛苦啦！',
+    '💫 再坚持一下就下班了！',
+    '✨ 你是最棒的！',
+    '🌸 劳逸结合最重要。',
+    '🌟 加油！胜利在望！',
+    '💪 你可以的！'
+  ],
+  
+  // 疲惫时休息
+  'tired-rest': [
+    '😴 {name}，累了就好好休息吧！',
+    '🛋️ {name}，今天是你的充电日！',
+    '☕ {name}，泡杯热茶放松下。',
+    '💤 {name}，补个好觉吧！',
+    '🌙 {name}，晚安好梦！',
+    '✨ {name}，明天会更好！',
+    '🌸 {name}，好好休息！',
+    '🎈 {name}，享受放松时光！'
+  ],
+  'tired-restNoName': [
+    '😴 累了就好好休息吧！',
+    '🛋️ 今天是你的充电日！',
+    '☕ 泡杯热茶放松下。',
+    '💤 补个好觉吧！',
+    '🌙 晚安好梦！',
+    '✨ 明天会更好！',
+    '🌸 好好休息！',
+    '🎈 享受放松时光！'
+  ],
+  
+  // 开心时上班
+  'happy-working': [
+    '🎉 {name}，开心的工作状态很棒！',
+    '🌟 {name}，开心工作效率更高！',
+    '💪 {name}，今天也要加油哦！',
+    '✨ {name}，保持好心情！',
+    '🌸 {name}，开心工作每一天！',
+    '🎈 {name}，你最棒！',
+    '🌈 {name}，今天会很顺利！',
+    '💫 {name}，享受工作！'
+  ],
+  'happy-workingNoName': [
+    '🎉 开心的工作状态很棒！',
+    '🌟 开心工作效率更高！',
+    '💪 今天也要加油哦！',
+    '✨ 保持好心情！',
+    '🌸 开心工作每一天！',
+    '🎈 你最棒！',
+    '🌈 今天会很顺利！',
+    '💫 享受工作！'
+  ],
+  
+  // 开心时休息
+  'happy-rest': [
+    '🎉 {name}，开心的休息日！',
+    '🎁 {name}，好好享受假期！',
+    '🎈 {name}，今天怎么安排呢？',
+    '✨ {name}，开心每一天！',
+    '🌸 {name}，享受美好时光！',
+    '🌟 {name}，做你喜欢的事！',
+    '🌈 {name}，享受生活！',
+    '💫 {name}，开心就好！'
+  ],
+  'happy-restNoName': [
+    '🎉 开心的休息日！',
+    '🎁 好好享受假期！',
+    '🎈 今天怎么安排呢？',
+    '✨ 开心每一天！',
+    '🌸 享受美好时光！',
+    '🌟 做你喜欢的事！',
+    '🌈 享受生活！',
+    '💫 开心就好！'
+  ],
+  
+  // 压力时上班
+  'stressed-working': [
+    '🧘 {name}，工作压力大，记得放松！',
+    '💪 {name}，深呼吸，慢慢来！',
+    '🎵 {name}，听首歌缓解下压力！',
+    '☕ {name}，歇一会喝杯茶！',
+    '💫 {name}，你很棒，别着急！',
+    '✨ {name}，加油，你可以的！',
+    '🌸 {name}，一步一步来！',
+    '🌟 {name}，相信自己！'
+  ],
+  'stressed-workingNoName': [
+    '🧘 工作压力大，记得放松！',
+    '💪 深呼吸，慢慢来！',
+    '🎵 听首歌缓解下压力！',
+    '☕ 歇一会喝杯茶！',
+    '💫 你很棒，别着急！',
+    '✨ 加油，你可以的！',
+    '🌸 一步一步来！',
+    '🌟 相信自己！'
+  ],
+  
+  // 压力时休息
+  'stressed-rest': [
+    '🧘 {name}，休息日好好放松下！',
+    '🎈 {name}，出去走走散散心！',
+    '🌊 {name}，压力都忘掉吧！',
+    '✨ {name}，享受放松时光！',
+    '🌸 {name}，别想工作的事！',
+    '💫 {name}，今天好好休息！',
+    '🎵 {name}，听首歌放松下！',
+    '🌈 {name}，明天会更好！'
+  ],
+  'stressed-restNoName': [
+    '🧘 休息日好好放松下！',
+    '🎈 出去走走散散心！',
+    '🌊 压力都忘掉吧！',
+    '✨ 享受放松时光！',
+    '🌸 别想工作的事！',
+    '💫 今天好好休息！',
+    '🎵 听首歌放松下！',
+    '🌈 明天会更好！'
+  ],
+  
+  // 生病时上班
+  'sick-working': [
+    '💊 {name}，生病了还在工作，辛苦了！',
+    '😷 {name}，记得吃药好好休息！',
+    '💪 {name}，身体最重要！',
+    '☕ {name}，多喝热水！',
+    '✨ {name}，快点好起来！',
+    '🌸 {name}，注意身体！',
+    '❤️ {name}，好好照顾自己！',
+    '🌟 {name}，加油！'
+  ],
+  'sick-workingNoName': [
+    '💊 生病了还在工作，辛苦了！',
+    '😷 记得吃药好好休息！',
+    '💪 身体最重要！',
+    '☕ 多喝热水！',
+    '✨ 快点好起来！',
+    '🌸 注意身体！',
+    '❤️ 好好照顾自己！',
+    '🌟 加油！'
+  ],
+  
+  // 生病时休息
+  'sick-rest': [
+    '💊 {name}，好好养病，早日康复！',
+    '😷 {name}，好好休息多喝水！',
+    '🛌 {name}，好好睡一觉！',
+    '🍜 {name}，吃点热乎的！',
+    '❤️ {name}，好好照顾自己！',
+    '✨ {name}，快点好起来！',
+    '🌸 {name}，早日康复！',
+    '🌈 {name}，好好休息！'
+  ],
+  'sick-restNoName': [
+    '💊 好好养病，早日康复！',
+    '😷 好好休息多喝水！',
+    '🛌 好好睡一觉！',
+    '🍜 吃点热乎的！',
+    '❤️ 好好照顾自己！',
+    '✨ 快点好起来！',
+    '🌸 早日康复！',
+    '🌈 好好休息！'
+  ],
+  
+  // 生气时上班
+  'angry-working': [
+    '😌 {name}，别把坏情绪带到工作中！',
+    '💆 {name}，深吸一口气放松下！',
+    '🌸 {name}，别气坏身体！',
+    '✨ {name}，工作重要，身体更重要！',
+    '💫 {name}，消消气！',
+    '☕ {name}，喝杯茶冷静下！',
+    '🌟 {name}，一切都会好的！',
+    '❤️ {name}，别想太多！'
+  ],
+  'angry-workingNoName': [
+    '😌 别把坏情绪带到工作中！',
+    '💆 深吸一口气放松下！',
+    '🌸 别气坏身体！',
+    '✨ 工作重要，身体更重要！',
+    '💫 消消气！',
+    '☕ 喝杯茶冷静下！',
+    '🌟 一切都会好的！',
+    '❤️ 别想太多！'
+  ],
+  
+  // 生气时休息
+  'angry-rest': [
+    '😌 {name}，休息日别生气！',
+    '🎈 {name}，出去走走散散心！',
+    '🌸 {name}，别气坏身体！',
+    '✨ {name}，开心最重要！',
+    '💫 {name}，换个心情！',
+    '🎵 {name}，听首歌放松下！',
+    '🌟 {name}，享受假期！',
+    '❤️ {name}，别想不开心的事！'
+  ],
+  'angry-restNoName': [
+    '😌 休息日别生气！',
+    '🎈 出去走走散散心！',
+    '🌸 别气坏身体！',
+    '✨ 开心最重要！',
+    '💫 换个心情！',
+    '🎵 听首歌放松下！',
+    '🌟 享受假期！',
+    '❤️ 别想不开心的事！'
+  ],
+  
+  // 难过时上班
+  'sad-working': [
+    '🤗 {name}，上班时也要保持心情哦！',
+    '💝 {name}，你不是一个人！',
+    '✨ {name}，一切都会好的！',
+    '🌸 {name}，加油！',
+    '💫 {name}，别难过！',
+    '🌈 {name}，雨后会有彩虹！',
+    '❤️ {name}，抱抱你！',
+    '🌟 {name}，明天会更好！'
+  ],
+  'sad-workingNoName': [
+    '🤗 上班时也要保持心情哦！',
+    '💝 你不是一个人！',
+    '✨ 一切都会好的！',
+    '🌸 加油！',
+    '💫 别难过！',
+    '🌈 雨后会有彩虹！',
+    '❤️ 抱抱你！',
+    '🌟 明天会更好！'
+  ],
+  
+  // 难过时休息
+  'sad-rest': [
+    '🤗 {name}，好好休息，一切都会好的！',
+    '💝 {name}，你不是一个人！',
+    '🎁 {name}，给自己一个小奖励！',
+    '✨ {name}，明天会更好！',
+    '🌸 {name}，别难过！',
+    '🌈 {name}，雨后会有彩虹！',
+    '💫 {name}，好好放松！',
+    '❤️ {name}，抱抱你！'
+  ],
+  'sad-restNoName': [
+    '🤗 好好休息，一切都会好的！',
+    '💝 你不是一个人！',
+    '🎁 给自己一个小奖励！',
+    '✨ 明天会更好！',
+    '🌸 别难过！',
+    '🌈 雨后会有彩虹！',
+    '💫 好好放松！',
+    '❤️ 抱抱你！'
+  ],
+  
+  // 思考时上班
+  'thinking-working': [
+    '🤔 {name}，工作中思考是好事！',
+    '💡 {name}，灵感马上来！',
+    '✨ {name}，专注工作！',
+    '💪 {name}，加油！',
+    '🌟 {name}，你会找到答案的！',
+    '🎯 {name}，目标明确！',
+    '🌸 {name}，工作顺利！',
+    '💫 {name}，你最棒！'
+  ],
+  'thinking-workingNoName': [
+    '🤔 工作中思考是好事！',
+    '💡 灵感马上来！',
+    '✨ 专注工作！',
+    '💪 加油！',
+    '🌟 你会找到答案的！',
+    '🎯 目标明确！',
+    '🌸 工作顺利！',
+    '💫 你最棒！'
+  ],
+  
+  // 思考时休息
+  'thinking-rest': [
+    '🤔 {name}，休息时可以想想喜欢的事！',
+    '📚 {name}，学习使人进步！',
+    '💡 {name}，灵感随时来！',
+    '✨ {name}，享受思考时光！',
+    '🌟 {name}，想好了就行动！',
+    '🎯 {name}，有什么计划呢？',
+    '🌸 {name}，享受假期！',
+    '💫 {name}，思考人生！'
+  ],
+  'thinking-restNoName': [
+    '🤔 休息时可以想想喜欢的事！',
+    '📚 学习使人进步！',
+    '💡 灵感随时来！',
+    '✨ 享受思考时光！',
+    '🌟 想好了就行动！',
+    '🎯 有什么计划呢？',
+    '🌸 享受假期！',
+    '💫 思考人生！'
+  ],
+  
+  // 动物+上班
+  'animal-working': [
+    '🐾 {name}，像小动物一样活力满满工作！',
+    '🦁 {name}，像狮子一样有干劲！',
+    '🐱 {name}，工作加油！',
+    '✨ {name}，你最棒！',
+    '🌟 {name}，元气满满！',
+    '💪 {name}，加油干！',
+    '🌸 {name}，工作顺利！',
+    '💫 {name}，可爱的一天！'
+  ],
+  'animal-workingNoName': [
+    '🐾 像小动物一样活力满满工作！',
+    '🦁 像狮子一样有干劲！',
+    '🐱 工作加油！',
+    '✨ 你最棒！',
+    '🌟 元气满满！',
+    '💪 加油干！',
+    '🌸 工作顺利！',
+    '💫 可爱的一天！'
+  ],
+  
+  // 动物+休息
+  'animal-rest': [
+    '🐾 {name}，像小动物一样好好休息！',
+    '🐼 {name}，今天是充电日！',
+    '🦄 {name}，魔法假期！',
+    '✨ {name}，好好享受！',
+    '🌟 {name}，开心每一天！',
+    '🐱 {name}，休息日快乐！',
+    '🌸 {name}，享受放松！',
+    '💫 {name}，可爱的假期！'
+  ],
+  'animal-restNoName': [
+    '🐾 像小动物一样好好休息！',
+    '🐼 今天是充电日！',
+    '🦄 魔法假期！',
+    '✨ 好好享受！',
+    '🌟 开心每一天！',
+    '🐱 休息日快乐！',
+    '🌸 享受放松！',
+    '💫 可爱的假期！'
+  ],
+  
+  // 食物+上班
+  'food-working': [
+    '🍔 {name}，工作再忙也要好好吃饭！',
+    '☕ {name}，来杯咖啡提神！',
+    '🍜 {name}，工作辛苦了，吃点好的！',
+    '✨ {name}，加油工作！',
+    '🌟 {name}，美食让生活更美好！',
+    '💪 {name}，加油！',
+    '🌸 {name}，工作顺利！',
+    '💫 {name}，好好吃饭！'
+  ],
+  'food-workingNoName': [
+    '🍔 工作再忙也要好好吃饭！',
+    '☕ 来杯咖啡提神！',
+    '🍜 工作辛苦了，吃点好的！',
+    '✨ 加油工作！',
+    '🌟 美食让生活更美好！',
+    '💪 加油！',
+    '🌸 工作顺利！',
+    '💫 好好吃饭！'
+  ],
+  
+  // 食物+休息
+  'food-rest': [
+    '🍔 {name}，休息日要好好享受美食！',
+    '🍰 {name}，给自己来点甜蜜！',
+    '🍕 {name}，美食假期！',
+    '✨ {name}，享受美食！',
+    '🌟 {name}，开心每一天！',
+    '☕ {name}，喝杯茶放松下！',
+    '🌸 {name}，享受假期！',
+    '💫 {name}，美食让生活更美好！'
+  ],
+  'food-restNoName': [
+    '🍔 休息日要好好享受美食！',
+    '🍰 给自己来点甜蜜！',
+    '🍕 美食假期！',
+    '✨ 享受美食！',
+    '🌟 开心每一天！',
+    '☕ 喝杯茶放松下！',
+    '🌸 享受假期！',
+    '💫 美食让生活更美好！'
+  ],
+  
+  // 活动+上班
+  'activity-working': [
+    '🎵 {name}，工作累了听首歌！',
+    '💪 {name}，活动筋骨再继续！',
+    '🎮 {name}，工作间隙小放松下！',
+    '✨ {name}，加油工作！',
+    '🌟 {name}，劳逸结合！',
+    '🎯 {name}，专注工作！',
+    '🌸 {name}，工作顺利！',
+    '💫 {name}，工作开心！'
+  ],
+  'activity-workingNoName': [
+    '🎵 工作累了听首歌！',
+    '💪 活动筋骨再继续！',
+    '🎮 工作间隙小放松下！',
+    '✨ 加油工作！',
+    '🌟 劳逸结合！',
+    '🎯 专注工作！',
+    '🌸 工作顺利！',
+    '💫 工作开心！'
+  ],
+  
+  // 活动+休息
+  'activity-rest': [
+    '🎵 {name}，休息日做你喜欢的事！',
+    '🎨 {name}，享受艺术！',
+    '🎮 {name}，游戏时光！',
+    '✨ {name}，享受假期！',
+    '🌟 {name}，做你喜欢的事！',
+    '🏃 {name}，生命在于运动！',
+    '🌸 {name}，享受生活！',
+    '💫 {name}，开心每一天！'
+  ],
+  'activity-restNoName': [
+    '🎵 休息日做你喜欢的事！',
+    '🎨 享受艺术！',
+    '🎮 游戏时光！',
+    '✨ 享受假期！',
+    '🌟 做你喜欢的事！',
+    '🏃 生命在于运动！',
+    '🌸 享受生活！',
+    '💫 开心每一天！'
+  ],
+  
+  // 旅行+上班
+  'travel-working': [
+    '✈️ {name}，好好工作，期待旅行！',
+    '🚗 {name}，工作加油，周末去玩！',
+    '🌟 {name}，努力工作，享受生活！',
+    '✨ {name}，加油！',
+    '🌈 {name}，工作顺利！',
+    '🌊 {name}，旅行不远了！',
+    '🌸 {name}，加油工作！',
+    '💫 {name}，今天也要加油！'
+  ],
+  'travel-workingNoName': [
+    '✈️ 好好工作，期待旅行！',
+    '🚗 工作加油，周末去玩！',
+    '🌟 努力工作，享受生活！',
+    '✨ 加油！',
+    '🌈 工作顺利！',
+    '🌊 旅行不远了！',
+    '🌸 加油工作！',
+    '💫 今天也要加油！'
+  ],
+  
+  // 旅行+休息
+  'travel-rest': [
+    '✈️ {name}，休息日去旅行吧！',
+    '🚗 {name}，享受美好旅程！',
+    '🏖️ {name}，享受假期！',
+    '✨ {name}，旅途愉快！',
+    '🌟 {name}，去探索吧！',
+    '🌈 {name}，旅行开心！',
+    '🌸 {name}，享受生活！',
+    '💫 {name}，假期快乐！'
+  ],
+  'travel-restNoName': [
+    '✈️ 休息日去旅行吧！',
+    '🚗 享受美好旅程！',
+    '🏖️ 享受假期！',
+    '✨ 旅途愉快！',
+    '🌟 去探索吧！',
+    '🌈 旅行开心！',
+    '🌸 享受生活！',
+    '💫 假期快乐！'
+  ],
+  
+  // 物品+上班
+  'object-working': [
+    '🏆 {name}，你是最棒的，工作加油！',
+    '🎮 {name}，工作间隙放松下！',
+    '🎵 {name}，工作累了听首歌！',
+    '✨ {name}，加油！',
+    '🌟 {name}，你最棒！',
+    '💪 {name}，努力工作！',
+    '🌸 {name}，工作顺利！',
+    '💫 {name}，专注工作！'
+  ],
+  'object-workingNoName': [
+    '🏆 你是最棒的，工作加油！',
+    '🎮 工作间隙放松下！',
+    '🎵 工作累了听首歌！',
+    '✨ 加油！',
+    '🌟 你最棒！',
+    '💪 努力工作！',
+    '🌸 工作顺利！',
+    '💫 专注工作！'
+  ],
+  
+  // 物品+休息
+  'object-rest': [
+    '🏆 {name}，好好休息，你最棒！',
+    '🎮 {name}，游戏愉快！',
+    '🎵 {name}，听首歌放松下！',
+    '✨ {name}，享受假期！',
+    '🌟 {name}，好好放松！',
+    '🎁 {name}，好好享受！',
+    '🌸 {name}，假期快乐！',
+    '💫 {name}，开心每一天！'
+  ],
+  'object-restNoName': [
+    '🏆 好好休息，你最棒！',
+    '🎮 游戏愉快！',
+    '🎵 听首歌放松下！',
+    '✨ 享受假期！',
+    '🌟 好好放松！',
+    '🎁 好好享受！',
+    '🌸 假期快乐！',
+    '💫 开心每一天！'
   ]
 };
 
@@ -826,6 +1542,61 @@ function getMessageByEmoji(emoji, nickname) {
 }
 
 /**
+ * 判断今天是上班还是休息
+ * @param {Object} scheduleData 排班数据
+ * @param {Date} now 当前时间
+ * @returns {string} 'working' | 'rest'
+ */
+function getTodayStatus(scheduleData, now) {
+  const todayStr = formatDate(now);
+  const todayShift = scheduleData && scheduleData[todayStr];
+  
+  if (todayShift && isWorkingType(todayShift.type)) {
+    return 'working';
+  }
+  return 'rest';
+}
+
+/**
+ * 获取表情+班次混合状态的消息
+ * @param {string} emoji 表情
+ * @param {string} nickname 昵称
+ * @param {string} todayStatus 'working' | 'rest'
+ * @returns {string | null}
+ */
+function getMixedEmojiMessage(emoji, nickname, todayStatus) {
+  const emotionState = getEmotionStateByEmoji(emoji);
+  if (!emotionState) {
+    return null;
+  }
+  
+  const mixedKey = `${emotionState}-${todayStatus}`;
+  const templates = emojiScheduleMixedTemplates[mixedKey];
+  const templatesNoName = emojiScheduleMixedTemplates[`${mixedKey}NoName`];
+  
+  if (!templates || !templatesNoName) {
+    return null;
+  }
+  
+  let messageTemplates;
+  if (nickname && nickname.trim()) {
+    messageTemplates = templates;
+  } else {
+    messageTemplates = templatesNoName;
+  }
+  
+  const randomIndex = Math.floor(Math.random() * messageTemplates.length);
+  let message = messageTemplates[randomIndex];
+  
+  if (nickname && nickname.trim()) {
+    const randomNickname = getRandomNickname(nickname);
+    message = message.replace('{name}', randomNickname);
+  }
+  
+  return message;
+}
+
+/**
  * 获取今日心语
  * @param {string} nickname 昵称
  * @param {Object} scheduleData 排班数据
@@ -834,8 +1605,17 @@ function getMessageByEmoji(emoji, nickname) {
  * @returns {string} 今日心语
  */
 function getDailyMessage(nickname, scheduleData, emoji, now) {
-  // 优先使用表情专属消息
+  const currentNow = now || new Date();
+  const todayStatus = getTodayStatus(scheduleData, currentNow);
+  
+  // 优先使用表情+班次混合状态的消息
   if (emoji) {
+    const mixedMessage = getMixedEmojiMessage(emoji, nickname, todayStatus);
+    if (mixedMessage) {
+      return mixedMessage;
+    }
+    
+    // 如果没有混合状态的消息，尝试表情专属消息
     const emojiMessage = getMessageByEmoji(emoji, nickname);
     if (emojiMessage) {
       return emojiMessage;
@@ -843,7 +1623,6 @@ function getDailyMessage(nickname, scheduleData, emoji, now) {
   }
   
   // 否则使用排班状态消息
-  const currentNow = now || new Date();
   const statusResult = determineStatus(scheduleData, currentNow);
   return getRandomMessage(statusResult.status, nickname, statusResult.timePeriod);
 }

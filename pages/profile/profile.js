@@ -28,6 +28,8 @@ Page({
     todayMessage: '',
     _lastMessage: '',
     _lastTimePeriod: '',
+    _lastEmoji: '',
+    _lastShiftsHash: '',
     exportFileName: '',
     // 完整数据导出相关变量
     exportedFilePath: '',
@@ -169,6 +171,43 @@ Page({
   },
 
   /**
+   * 获取排班数据的简单hash，用于检测班次变化
+   * @param {Object} shifts 排班数据
+   * @returns {string} hash值
+   */
+  _getShiftsHash(shifts) {
+    const today = new Date();
+    const todayStr = this._formatDate(today);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = this._formatDate(yesterday);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = this._formatDate(tomorrow);
+    
+    // 只关心最近三天的班次变化
+    const relevantShifts = {
+      [yesterdayStr]: shifts[yesterdayStr],
+      [todayStr]: shifts[todayStr],
+      [tomorrowStr]: shifts[tomorrowStr]
+    };
+    
+    return JSON.stringify(relevantShifts);
+  },
+
+  /**
+   * 格式化日期为 YYYY-MM-DD
+   * @param {Date} date 日期对象
+   * @returns {string}
+   */
+  _formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  },
+
+  /**
    * 刷新今日心语
    */
   refreshDailyMessage() {
@@ -197,16 +236,25 @@ Page({
     
     // 获取排班数据
     const shifts = wx.getStorageSync('shifts') || {};
+    const currentShiftsHash = this._getShiftsHash(shifts);
     
     // 生成消息（传入表情参数）
     const newMessage = getDailyMessage(nickname, shifts, avatarEmoji, now);
     
-    // 只有当消息变化或时段变化时才更新，避免闪烁
-    if (newMessage !== this.data._lastMessage || currentTimePeriod !== this.data._lastTimePeriod) {
+    // 检查是否需要更新：消息变化、时段变化、头像变化、班次变化
+    const shouldUpdate = 
+      newMessage !== this.data._lastMessage || 
+      currentTimePeriod !== this.data._lastTimePeriod ||
+      avatarEmoji !== this.data._lastEmoji ||
+      currentShiftsHash !== this.data._lastShiftsHash;
+    
+    if (shouldUpdate) {
       this.setData({
         todayMessage: newMessage,
         _lastMessage: newMessage,
-        _lastTimePeriod: currentTimePeriod
+        _lastTimePeriod: currentTimePeriod,
+        _lastEmoji: avatarEmoji,
+        _lastShiftsHash: currentShiftsHash
       });
     }
   },
@@ -497,6 +545,9 @@ Page({
         avatarEmojiEmotion: this.data.emojiEmotion || 'neutral'
       });
     }
+
+    // 头像变化后刷新心语
+    this.refreshDailyMessage();
 
     wx.showToast({
       title: '头像已更新',
