@@ -188,11 +188,18 @@ Page({
       }
     }
     
+    // 获取表情头像
+    let avatarEmoji = '';
+    const avatarType = this.data.avatarType || store.getState('avatarType');
+    if (avatarType === 'emoji') {
+      avatarEmoji = this.data.avatarEmoji || store.getState('avatarEmoji');
+    }
+    
     // 获取排班数据
     const shifts = wx.getStorageSync('shifts') || {};
     
-    // 生成消息
-    const newMessage = getDailyMessage(nickname, shifts, now);
+    // 生成消息（传入表情参数）
+    const newMessage = getDailyMessage(nickname, shifts, avatarEmoji, now);
     
     // 只有当消息变化或时段变化时才更新，避免闪烁
     if (newMessage !== this.data._lastMessage || currentTimePeriod !== this.data._lastTimePeriod) {

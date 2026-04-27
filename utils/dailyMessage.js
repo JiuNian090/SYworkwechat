@@ -5,6 +5,196 @@
  * 根据排班状态和当前时间，生成个性化关怀话语
  */
 
+// 表情状态映射
+const emojiStateMap = {
+  // 疲惫/累状态
+  '😩': 'tired',
+  '😫': 'tired',
+  '😴': 'tired',
+  '😪': 'tired',
+  '🥴': 'tired',
+  '😵': 'tired',
+  
+  // 难过/悲伤状态
+  '😔': 'sad',
+  '😞': 'sad',
+  '🙁': 'sad',
+  '☹️': 'sad',
+  '😢': 'sad',
+  '😭': 'sad',
+  '😟': 'sad',
+  
+  // 压力/焦虑状态
+  '😰': 'stressed',
+  '😣': 'stressed',
+  '😖': 'stressed',
+  '😨': 'stressed',
+  '😱': 'stressed',
+  '😓': 'stressed',
+  '🤯': 'stressed',
+  
+  // 愤怒/生气状态
+  '😤': 'angry',
+  '😠': 'angry',
+  '😡': 'angry',
+  '🤬': 'angry',
+  
+  // 生病状态
+  '🤒': 'sick',
+  '🤕': 'sick',
+  '🤢': 'sick',
+  '🤮': 'sick',
+  '🤧': 'sick',
+  '😷': 'sick',
+  
+  // 开心/积极状态
+  '😊': 'happy',
+  '😃': 'happy',
+  '😄': 'happy',
+  '😁': 'happy',
+  '😆': 'happy',
+  '🤣': 'happy',
+  '😂': 'happy',
+  '😉': 'happy',
+  '😍': 'happy',
+  '🥰': 'happy',
+  '😘': 'happy',
+  '😋': 'happy',
+  '🤪': 'happy',
+  '😎': 'happy',
+  '🤩': 'happy',
+  '🥳': 'happy',
+  '🤗': 'happy'
+};
+
+// 表情专属话语库
+const emojiMessageTemplates = {
+  tired: [
+    '💪 {name}，辛苦了！累了就休息一下吧。',
+    '😴 {name}，休息是为了更好地出发。',
+    '☕ {name}，泡杯热茶，放松一下。',
+    '🛋️ {name}，好好休息，明天会更好。',
+    '🌸 {name}，别太累了，身体最重要。',
+    '🌙 {name}，早点休息，晚安。',
+    '💤 {name}，辛苦了，睡个好觉。',
+    '✨ {name}，你已经很棒了，歇会儿吧。'
+  ],
+  sad: [
+    '🤗 {name}，别难过，一切都会好的。',
+    '💝 {name}，你不是一个人，有我在呢。',
+    '🌈 {name}，雨后会有彩虹的。',
+    '❤️ {name}，抱抱你，都会过去的。',
+    '🌻 {name}，明天会更好的。',
+    '🎁 {name}，给自己一个小奖励吧。',
+    '🌤️ {name}，乌云会散去的。',
+    '💐 {name}，你值得被温柔对待。'
+  ],
+  stressed: [
+    '🧘 {name}，深呼吸，放轻松。',
+    '🌊 {name}，慢慢来，不着急。',
+    '🎈 {name}，压力大就出去走走吧。',
+    '🍀 {name}，你可以的，相信自己。',
+    '🎶 {name}，听首歌放松一下。',
+    '🌳 {name}，给自己留一点空间。',
+    '💎 {name}，你很强大，没问题的。',
+    '🌺 {name}，别急，一步步来。'
+  ],
+  angry: [
+    '😌 {name}，消消气，别气坏身体。',
+    '🍃 {name}，深呼吸，冷静一下。',
+    '🧊 {name}，喝杯水，放轻松。',
+    '🌿 {name}，换个心情，没什么大不了。',
+    '🌸 {name}，生气伤身体，不值得。',
+    '💆 {name}，放松一下，别想太多。',
+    '🌻 {name}，一切都会好起来的。',
+    '🍀 {name}，好运会来的。'
+  ],
+  sick: [
+    '💊 {name}，好好养病，早日康复。',
+    '😷 {name}，好好休息，多喝水。',
+    '🏥 {name}，注意身体，快点好起来。',
+    '❤️ {name}，好好照顾自己哦。',
+    '🍜 {name}，吃点热乎的，暖暖身子。',
+    '🛌 {name}，好好休息，很快就好。',
+    '🌈 {name}，病好了想做什么呀？',
+    '🌸 {name}，快点好起来呀。'
+  ],
+  happy: [
+    '🎉 {name}，今天也要开心哦！',
+    '🌟 {name}，你的笑容真好看！',
+    '🌈 {name}，开心的一天开始啦！',
+    '🎁 {name}，希望你每天都这么开心！',
+    '🌸 {name}，你开心我也开心！',
+    '✨ {name}，继续保持好心情！',
+    '🎈 {name}，开心每一天！',
+    '🌺 {name}，心情棒棒哒！'
+  ]
+};
+
+// 表情专属无昵称话语库
+const emojiMessageTemplatesNoName = {
+  tired: [
+    '💪 辛苦了！累了就休息一下吧。',
+    '😴 休息是为了更好地出发。',
+    '☕ 泡杯热茶，放松一下。',
+    '🛋️ 好好休息，明天会更好。',
+    '🌸 别太累了，身体最重要。',
+    '🌙 早点休息，晚安。',
+    '💤 辛苦了，睡个好觉。',
+    '✨ 你已经很棒了，歇会儿吧。'
+  ],
+  sad: [
+    '🤗 别难过，一切都会好的。',
+    '💝 你不是一个人，有我在呢。',
+    '🌈 雨后会有彩虹的。',
+    '❤️ 抱抱你，都会过去的。',
+    '🌻 明天会更好的。',
+    '🎁 给自己一个小奖励吧。',
+    '🌤️ 乌云会散去的。',
+    '💐 你值得被温柔对待。'
+  ],
+  stressed: [
+    '🧘 深呼吸，放轻松。',
+    '🌊 慢慢来，不着急。',
+    '🎈 压力大就出去走走吧。',
+    '🍀 你可以的，相信自己。',
+    '🎶 听首歌放松一下。',
+    '🌳 给自己留一点空间。',
+    '💎 你很强大，没问题的。',
+    '🌺 别急，一步步来。'
+  ],
+  angry: [
+    '😌 消消气，别气坏身体。',
+    '🍃 深呼吸，冷静一下。',
+    '🧊 喝杯水，放轻松。',
+    '🌿 换个心情，没什么大不了。',
+    '🌸 生气伤身体，不值得。',
+    '💆 放松一下，别想太多。',
+    '🌻 一切都会好起来的。',
+    '🍀 好运会来的。'
+  ],
+  sick: [
+    '💊 好好养病，早日康复。',
+    '😷 好好休息，多喝水。',
+    '🏥 注意身体，快点好起来。',
+    '❤️ 好好照顾自己哦。',
+    '🍜 吃点热乎的，暖暖身子。',
+    '🛌 好好休息，很快就好。',
+    '🌈 病好了想做什么呀？',
+    '🌸 快点好起来呀。'
+  ],
+  happy: [
+    '🎉 今天也要开心哦！',
+    '🌟 你的笑容真好看！',
+    '🌈 开心的一天开始啦！',
+    '🎁 希望你每天都这么开心！',
+    '🌸 你开心我也开心！',
+    '✨ 继续保持好心情！',
+    '🎈 开心每一天！',
+    '🌺 心情棒棒哒！'
+  ]
+};
+
 /**
  * 格式化日期为 YYYY-MM-DD
  * @param {Date} date 日期对象
@@ -596,13 +786,63 @@ function getRandomMessage(status, nickname, timePeriod) {
 }
 
 /**
+ * 根据表情获取状态
+ * @param {string} emoji 表情
+ * @returns {string|null} 状态
+ */
+function getEmotionStateByEmoji(emoji) {
+  if (!emoji) return null;
+  return emojiStateMap[emoji] || null;
+}
+
+/**
+ * 根据表情获取专属消息
+ * @param {string} emoji 表情
+ * @param {string} nickname 昵称
+ * @returns {string|null} 消息
+ */
+function getMessageByEmoji(emoji, nickname) {
+  const state = getEmotionStateByEmoji(emoji);
+  if (!state) return null;
+  
+  let templates;
+  if (nickname && nickname.trim()) {
+    templates = emojiMessageTemplates[state];
+  } else {
+    templates = emojiMessageTemplatesNoName[state];
+  }
+  
+  if (!templates || templates.length === 0) return null;
+  
+  const randomIndex = Math.floor(Math.random() * templates.length);
+  let message = templates[randomIndex];
+  
+  if (nickname && nickname.trim()) {
+    const randomNickname = getRandomNickname(nickname);
+    message = message.replace('{name}', randomNickname);
+  }
+  
+  return message;
+}
+
+/**
  * 获取今日心语
  * @param {string} nickname 昵称
  * @param {Object} scheduleData 排班数据
+ * @param {string} [emoji] 表情头像（可选）
  * @param {Date} [now] 当前时间（可选，用于测试）
  * @returns {string} 今日心语
  */
-function getDailyMessage(nickname, scheduleData, now) {
+function getDailyMessage(nickname, scheduleData, emoji, now) {
+  // 优先使用表情专属消息
+  if (emoji) {
+    const emojiMessage = getMessageByEmoji(emoji, nickname);
+    if (emojiMessage) {
+      return emojiMessage;
+    }
+  }
+  
+  // 否则使用排班状态消息
   const currentNow = now || new Date();
   const statusResult = determineStatus(scheduleData, currentNow);
   return getRandomMessage(statusResult.status, nickname, statusResult.timePeriod);
