@@ -93,6 +93,7 @@ Page({
     cachedCloudStatus: null,
     lastLocalUpdate: 0,
     backupStatus: null,
+    lastSyncHash: '',
     // 表情相关数据
     emojiCategories: emojiManager.getCategories(),
     currentEmojiCategory: 'face', // 当前选中的表情分类
@@ -170,6 +171,11 @@ Page({
       console.error('加载自动恢复勾选状态失败:', e);
     }
 
+    let lastSyncHash = '';
+    try {
+      lastSyncHash = wx.getStorageSync('lastSyncHash') || '';
+    } catch (e) {}
+
     this.setData({
       username: avatarInfo.username,
       avatarText: avatarInfo.avatarText,
@@ -184,6 +190,7 @@ Page({
       changelog: changelog,
       savedAccounts: savedAccounts,
       autoRestoreMap: autoRestoreMap,
+      lastSyncHash: lastSyncHash,
       backupStatus: cloudLoggedIn
         ? { type: 'checking', label: STATUS_TEXT.CHECKING }
         : { type: 'unbacked', label: STATUS_TEXT.NOT_LOGGED_IN }
@@ -1818,6 +1825,9 @@ Page({
           const result = await cloudManager.backup();
 
           if (result.success) {
+            const syncHash = this.computeLocalHash();
+            wx.setStorageSync('lastSyncHash', syncHash);
+            this.setData({ lastSyncHash: syncHash });
             store.setState({ lastBackupTime: Date.now() }, ['lastBackupTime']);
             this.updateLocalUpdateTime();
             this.checkBackupStatus(true);
@@ -1856,7 +1866,10 @@ Page({
           const result = await cloudManager.restore();
 
           if (result.success) {
-            store.setState({ lastRestoreTime: Date.now() }, ['lastRestoreTime']);
+            const syncHash = this.computeLocalHash();
+            wx.setStorageSync('lastSyncHash', syncHash);
+            this.setData({ lastSyncHash: syncHash });
+            store.setState({ lastBackupTime: Date.now(), lastRestoreTime: Date.now() }, ['lastBackupTime', 'lastRestoreTime']);
             this.updateLocalUpdateTime();
             this.checkBackupStatus(true);
           }
@@ -1936,21 +1949,14 @@ Page({
     this.setData({ lastLocalUpdate: latestTime || Date.now() });
   },
 
-  // 格式化备份时间：当天显示 HH:mm，非当天显示 MM-DD HH:mm
+  // 格式化备份时间：统一显示 MM-DD HH:mm
   formatBackupTime(isoString) {
     if (!isoString) return '';
     const date = new Date(isoString);
-    const now = new Date();
-    const isToday = date.getFullYear() === now.getFullYear() &&
-      date.getMonth() === now.getMonth() &&
-      date.getDate() === now.getDate();
-    const hh = date.getHours().toString().padStart(2, '0');
-    const mm = date.getMinutes().toString().padStart(2, '0');
-    if (isToday) {
-      return hh + ':' + mm;
-    }
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
+    const hh = date.getHours().toString().padStart(2, '0');
+    const mm = date.getMinutes().toString().padStart(2, '0');
     return month + '-' + day + ' ' + hh + ':' + mm;
   },
 
@@ -1963,29 +1969,31 @@ Page({
       return;
     }
     const localHash = this.computeLocalHash();
-    if (localHash === cache.hash) {
+    const effectiveHash = cache.hash || this.data.lastSyncHash || '';
+    const timeStr = cache.time ? this.formatBackupTime(cache.time) : '';
+    if (effectiveHash && localHash === effectiveHash) {
       this.setData({
         backupStatus: {
           type: 'synced',
-          label: STATUS_TEXT.SYNCED + ' ' + this.formatBackupTime(cache.time)
+          label: STATUS_TEXT.SYNCED + (timeStr ? ' ' + timeStr : '')
         }
       });
       return;
     }
     const { lastLocalUpdate } = this.data;
     const backupTime = cache.time ? new Date(cache.time).getTime() : 0;
-    if (lastLocalUpdate > backupTime || !cache.time) {
+    if (!cache.time || (backupTime && lastLocalUpdate > backupTime)) {
       this.setData({
         backupStatus: {
           type: 'local_newer',
-          label: STATUS_TEXT.LOCAL_NEWER + ' ' + this.formatBackupTime(cache.time)
+          label: STATUS_TEXT.LOCAL_NEWER + (timeStr ? ' ' + timeStr : '')
         }
       });
     } else {
       this.setData({
         backupStatus: {
           type: 'cloud_newer',
-          label: STATUS_TEXT.CLOUD_NEWER + ' ' + this.formatBackupTime(cache.time)
+          label: STATUS_TEXT.CLOUD_NEWER + (timeStr ? ' ' + timeStr : '')
         }
       });
     }
@@ -2019,11 +2027,12 @@ Page({
         const cloudManager = this.data.cloudManager;
         const info = await cloudManager.getLatestBackupInfo();
         if (info.success) {
-          const localHash = this.computeLocalHash();
+          const cloudTime = info.backupTime || store.getState('lastBackupTime') || null;
+          const cloudHash = info.backupHash || this.data.lastSyncHash || null;
           const newCache = {
             status: info.hasBackup ? 'has_backup' : 'no_backup',
-            time: info.backupTime,
-            hash: info.backupHash
+            time: cloudTime,
+            hash: cloudHash
           };
           this.setData({
             lastCloudCheckTime: now,
