@@ -90,30 +90,40 @@ page {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 32rpx;
-  height: 32rpx;
+  width: 26rpx;
+  height: 26rpx;
   background: var(--primary-color);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2rpx solid #ffffff;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 8rpx rgba(52, 211, 153, 0.6);
+  animation: breathing 2s ease-in-out infinite;
 }
 
 .header-avatar-edit.positive {
   background: #9C27B0;
-  box-shadow: 0 0 12rpx rgba(156, 39, 176, 0.8);
+  box-shadow: 0 0 8rpx rgba(156, 39, 176, 0.6);
 }
 
 .header-avatar-edit.neutral {
   background: #2196F3;
-  box-shadow: 0 0 12rpx rgba(33, 150, 243, 0.8);
+  box-shadow: 0 0 8rpx rgba(33, 150, 243, 0.6);
 }
 
 .header-avatar-edit.negative {
   background: #F44336;
-  box-shadow: 0 0 12rpx rgba(244, 67, 54, 0.8);
+  box-shadow: 0 0 8rpx rgba(244, 67, 54, 0.6);
+}
+
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
 }
 
 .header-edit-icon {
