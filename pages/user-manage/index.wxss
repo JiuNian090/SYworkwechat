@@ -230,6 +230,38 @@ page {
   line-height: 1;
 }
 
+.action-list {
+  margin: 20rpx 24rpx;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.action-item:last-child {
+  border-bottom: none;
+}
+
+.logout-item .info-label {
+  color: #ef4444;
+}
+
+.warn-label {
+  color: #d46b08 !important;
+}
+
+.danger-label {
+  color: #ef4444 !important;
+}
+
+.switch-icon {
+  background: linear-gradient(135deg, #ede9fe, #f5f3ff);
+}
+
+.logout-icon {
+  background: linear-gradient(135deg, #fee2e2, #fef2f2);
+}
+
 .form-card {
   margin: 0 24rpx;
   padding: 28rpx;

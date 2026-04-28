@@ -66,6 +66,42 @@
           </view>
         </view>
       </view>
+
+      <!-- 操作列表 -->
+      <view class="action-list">
+        <view class="user-info-item action-item" bindtap="showSwitchAccountPage">
+          <view class="info-item-left">
+            <view class="info-icon-wrapper switch-icon">
+              <text class="info-icon">🔄</text>
+            </view>
+            <text class="info-label">切换账号</text>
+          </view>
+          <view class="info-value-row">
+            <text class="arrow-icon">›</text>
+          </view>
+        </view>
+        <view class="user-info-item action-item" bindtap="switchUserPage" data-page="deleteAccount">
+          <view class="info-item-left">
+            <view class="info-icon-wrapper delete-icon">
+              <text class="info-icon">🗑️</text>
+            </view>
+            <text class="info-label warn-label">删除账户</text>
+          </view>
+          <view class="info-value-row">
+            <text class="arrow-icon">›</text>
+          </view>
+        </view>
+        <view class="user-info-item action-item logout-item" bindtap="confirmLogout">
+          <view class="info-item-left">
+            <view class="info-icon-wrapper logout-icon">
+              <text class="info-icon">🚪</text>
+            </view>
+            <text class="info-label danger-label">退出登录</text>
+          </view>
+          <view class="info-value-row">
+          </view>
+        </view>
+      </view>
     </view>
   </view>
   
@@ -232,14 +268,7 @@
 </scroll-view>
 
 <!-- 底部按钮区域 -->
-<view class="btn-area">
-  <!-- 主页面 -->
-  <view wx:if="{{currentUserPage === 'main'}}">
-    <button class="modal-btn btn-delete-account" bindtap="switchUserPage" data-page="deleteAccount">删除账户</button>
-    <button class="modal-btn btn-primary" bindtap="showSwitchAccountPage">切换账号</button>
-    <button class="modal-btn btn-danger" bindtap="confirmLogout">退出登录</button>
-  </view>
-  
+<view class="btn-area" wx:if="{{currentUserPage !== 'main'}}">
   <!-- 修改昵称页面 -->
   <view wx:if="{{currentUserPage === 'updateNickname'}}">
     <button class="modal-btn btn-cancel" bindtap="goBackToUserManagement">取消</button>
@@ -277,4 +306,4 @@
   </view>
 </view>
 
-<view class="btn-area-placeholder"></view>
+<view class="btn-area-placeholder" wx:if="{{currentUserPage !== 'main'}}"></view>
