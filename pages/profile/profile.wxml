@@ -28,8 +28,11 @@
       <text class="daily-message-icon">💌</text>
       <view class="daily-message-content">
         <view class="daily-message-title">
-          <view class="daily-message-title-dot"></view>
-          <text>今日心语</text>
+          <view class="daily-message-title-left">
+            <view class="daily-message-title-dot"></view>
+            <text>今日心语</text>
+          </view>
+          <text class="daily-message-refresh" bindtap="onRefreshDailyMessage">🔄</text>
         </view>
         <text class="daily-message-text">{{todayMessage}}</text>
       </view>

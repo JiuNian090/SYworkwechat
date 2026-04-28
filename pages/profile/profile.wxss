@@ -50,10 +50,13 @@ page {
 }
 
 .daily-message-title {
-  font-size: 24rpx;
-  color: #34d399;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 12rpx;
+}
+
+.daily-message-title-left {
   display: flex;
   align-items: center;
   gap: 8rpx;
@@ -68,14 +71,19 @@ page {
   box-shadow: 0 0 8rpx rgba(52, 211, 153, 0.6);
 }
 
-.daily-message-title {
-  font-size: 24rpx;
-  color: #34d399;
-  font-weight: 500;
-  margin-bottom: 12rpx;
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
+.daily-message-refresh {
+  font-size: 26rpx;
+  line-height: 1;
+  padding: 6rpx;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  opacity: 0.6;
+}
+
+.daily-message-refresh:active {
+  transform: rotate(180deg) scale(1.2);
+  opacity: 1;
+  background: rgba(52, 211, 153, 0.1);
 }
 
 @keyframes dotBreath {

@@ -188,8 +188,9 @@ Page({
 
   /**
    * 刷新今日心语
+   * @param {boolean} force 是否强制刷新（忽略缓存对比）
    */
-  refreshDailyMessage() {
+  refreshDailyMessage(force) {
     const now = new Date();
     const currentHour = now.getHours();
     const currentTimePeriod = this._getTimePeriod(currentHour);
@@ -221,7 +222,7 @@ Page({
     const newMessage = getDailyMessage(nickname, shifts, avatarEmoji, now);
     
     // 检查是否需要更新：消息变化、时段变化、头像变化、班次变化
-    const shouldUpdate = 
+    const shouldUpdate = force || 
       newMessage !== this.data._lastMessage || 
       currentTimePeriod !== this.data._lastTimePeriod ||
       avatarEmoji !== this.data._lastEmoji ||
@@ -236,6 +237,11 @@ Page({
         _lastShiftsHash: currentShiftsHash
       });
     }
+  },
+
+  // 手动刷新今日心语
+  onRefreshDailyMessage() {
+    this.refreshDailyMessage(true);
   },
 
   initPageData() {
