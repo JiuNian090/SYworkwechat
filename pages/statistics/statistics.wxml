@@ -319,17 +319,22 @@
       </view>
     </view>
     <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false" catchtap="preventBubble">
-      <view class="input-group">
-        <text class="input-label">CSV文件名</text>
-        <input 
-          type="text" 
-          value="{{tempFilename}}" 
-          bindinput="onFilenameInput"
-          placeholder="请输入文件名"
-          class="modal-input"
-          cursor-spacing="30"
-        />
-        <text class="input-hint">将保存为 {{tempFilename || defaultFilenameHint}}.csv</text>
+      <view class="form-card">
+        <view class="form-group">
+          <view class="form-label-row">
+            <text class="form-label">CSV文件名</text>
+            <text class="form-label-ext">.csv</text>
+          </view>
+          <input 
+            type="text" 
+            value="{{tempFilename}}" 
+            bindinput="onFilenameInput"
+            placeholder="请输入文件名"
+            class="form-input"
+            cursor-spacing="30"
+          />
+          <text class="form-hint">将保存为 <text class="form-hint-highlight">{{tempFilename || defaultFilenameHint}}.csv</text></text>
+        </view>
       </view>
     </scroll-view>
     <view class="modal-footer">
@@ -345,7 +350,7 @@
   <view class="modal-container show">
     <view class="modal-header">
       <view class="modal-title-wrapper">
-        <text class="modal-title-icon">⚙️</text>
+        <text class="modal-title-icon">⏱️</text>
         <text class="modal-title">设置标准工时</text>
       </view>
       <view class="modal-close" bindtap="hideCustomHoursModal">
@@ -353,17 +358,25 @@
       </view>
     </view>
     <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false" catchtap="preventBubble">
-      <view class="input-group">
-        <text class="input-label">每周标准工时（小时）</text>
-        <input 
-          type="digit" 
-          value="{{tempCustomHours}}" 
-          bindinput="onCustomHoursInput"
-          placeholder="请输入标准工时"
-          class="modal-input"
-          cursor-spacing="30"
-        />
-        <text class="input-hint">默认值为 35 小时/周</text>
+      <view class="form-card">
+        <view class="form-group">
+          <view class="form-label-row">
+            <text class="form-label">每周标准工时</text>
+            <text class="form-label-ext">小时/周</text>
+          </view>
+          <view class="input-suffix-wrap">
+            <input 
+              type="digit" 
+              value="{{tempCustomHours}}" 
+              bindinput="onCustomHoursInput"
+              placeholder="请输入"
+              class="form-input input-suffix"
+              cursor-spacing="30"
+            />
+            <text class="input-suffix-label">小时</text>
+          </view>
+          <text class="form-hint">默认值为 <text class="form-hint-highlight">35</text> 小时/周</text>
+        </view>
       </view>
     </scroll-view>
     <view class="modal-footer">

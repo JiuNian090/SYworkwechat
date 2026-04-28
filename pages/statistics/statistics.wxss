@@ -891,6 +891,7 @@ page {
 
 .input-group {
   margin-bottom: 20rpx;
+  padding: 0 24rpx;
 }
 
 .input-label {
@@ -924,6 +925,92 @@ page {
   font-size: 24rpx;
   color: var(--text-tertiary);
   margin-top: 12rpx;
+}
+
+/* 表单卡片 */
+.form-card {
+  margin: 8rpx 24rpx;
+  background: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.form-group {
+  padding: 28rpx 28rpx 24rpx;
+}
+
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.form-label-ext {
+  font-size: 22rpx;
+  color: var(--text-tertiary);
+  background: var(--bg-color);
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  border: 2rpx solid #e8e8e8;
+  border-radius: 14rpx;
+  font-size: 30rpx;
+  color: var(--text-primary);
+  background: #f8f9fa;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: var(--primary-color);
+  background: #ffffff;
+  box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
+}
+
+.input-suffix-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-suffix {
+  padding-right: 100rpx;
+}
+
+.input-suffix-label {
+  position: absolute;
+  right: 24rpx;
+  font-size: 28rpx;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 24rpx;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+.form-hint-highlight {
+  color: var(--primary-dark);
+  font-weight: 600;
 }
 
 .modal-footer {

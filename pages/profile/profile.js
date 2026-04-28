@@ -38,6 +38,7 @@ Page({
     exportedTemplateFileName: '',
     exportSuccess: false,
     exportFail: false,
+    fileExt: 'json',
     loading: false,
     username: '', // 用户名
     avatarText: '用', // 头像文字
@@ -509,22 +510,17 @@ Page({
         .map(type => type.name)
         .join('+');
 
-      const currentTime = new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      }).replace(/[\/\s:]/g, '-');
-
-      defaultFileNameHint = `${username}+${dataTypeNames}+${currentTime}`;
+      defaultFileNameHint = `${username}+${dataTypeNames}+${currentDate}`;
     }
 
+    // 判断导出格式：含图片→.zip，否则→.json
+    const includeImages = selectedDataTypes.includes('scheduleImages');
+    const fileExt = includeImages ? 'zip' : 'json';
+
     this.setData({
-      tempFileName: defaultFileNameHint,
+      tempFileName: '',
       defaultFileNameHint: defaultFileNameHint,
+      fileExt: fileExt,
       showFileNameModal: true
     });
   },

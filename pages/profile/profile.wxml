@@ -307,14 +307,17 @@
       </view>
     </view>
     <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false">
-      <view class="checkbox-list">
-        <view class="checkbox-item" wx:for="{{dataTypes}}" wx:key="id" bindtap="onDataTypeSelect" data-typeid="{{item.id}}">
-          <view class="checkbox-wrapper">
-            <view class="checkbox {{item.checked ? 'checked' : ''}}">
-              <text class="check-icon" wx:if="{{item.checked}}">✓</text>
+      <view class="select-card-list">
+        <view class="select-card-item {{item.checked ? 'checked' : ''}}" wx:for="{{dataTypes}}" wx:key="id" bindtap="onDataTypeSelect" data-typeid="{{item.id}}">
+          <view class="select-card-left">
+            <view class="select-checkbox {{item.checked ? 'checked' : ''}}">
+              <text class="select-check-icon" wx:if="{{item.checked}}">✓</text>
             </view>
+            <text class="select-card-label">{{item.name}}</text>
           </view>
-          <text class="checkbox-label">{{item.name}}</text>
+          <view class="select-card-arrow {{item.checked ? 'checked' : ''}}">
+            <text class="select-arrow-icon">›</text>
+          </view>
         </view>
       </view>
     </scroll-view>
@@ -337,8 +340,15 @@
       </view>
     </view>
     <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false">
-      <view class="input-wrapper">
-        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput" maxlength="50" cursor-spacing="30"></input>
+      <view class="form-card">
+        <view class="form-group">
+          <view class="form-label-row">
+            <text class="form-label">导出文件名</text>
+            <text class="form-label-ext">.{{fileExt || 'json'}}</text>
+          </view>
+          <input class="form-input" placeholder="请输入自定义名称" value="{{tempFileName}}" bindinput="onTempFileNameInput" maxlength="50" cursor-spacing="30"></input>
+          <text class="form-hint">将保存为 <text class="form-hint-highlight">{{tempFileName || defaultFileNameHint}}.{{fileExt || 'json'}}</text></text>
+        </view>
       </view>
     </scroll-view>
     <view class="modal-footer">
