@@ -1527,8 +1527,7 @@ function getRandomNickname(nickname) {
   const trimmedNickname = nickname.trim();
   const options = [
     `亲爱的${trimmedNickname}`,
-    `${trimmedNickname.charAt(trimmedNickname.length - 1)}宝`,
-    `${trimmedNickname}宝贝`
+    `${trimmedNickname.charAt(trimmedNickname.length - 1)}宝`
   ];
   
   const randomIndex = Math.floor(Math.random() * options.length);

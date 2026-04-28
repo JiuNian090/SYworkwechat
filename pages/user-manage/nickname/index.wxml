@@ -1,0 +1,12 @@
+<view class="page-container">
+  <view class="form-card">
+    <view class="form-group">
+      <text class="form-label">新昵称</text>
+      <input class="form-input" placeholder="请输入新昵称" value="{{newNickname}}" bindinput="onNicknameInput" maxlength="20" />
+    </view>
+  </view>
+  <view class="btn-area">
+    <button class="modal-btn btn-cancel" bindtap="goBack">取消</button>
+    <button class="modal-btn btn-confirm" bindtap="confirmUpdateNickname">确定</button>
+  </view>
+</view>

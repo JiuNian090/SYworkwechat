@@ -1,0 +1,19 @@
+<view class="page-container">
+  <view class="warning-card">
+    <view class="warning-icon-wrapper">
+      <text class="warning-icon">⚠️</text>
+    </view>
+    <text class="warning-title">危险操作</text>
+    <text class="warning-content">删除账户将同时删除所有云端备份数据，此操作不可恢复！</text>
+  </view>
+  <view class="form-card">
+    <view class="form-group">
+      <text class="form-label">请输入密码确认</text>
+      <input class="form-input" type="password" placeholder="请输入密码" value="{{deleteAccountPassword}}" bindinput="onDeleteAccountPasswordInput" />
+    </view>
+  </view>
+  <view class="btn-area">
+    <button class="modal-btn btn-cancel" bindtap="goBack">取消</button>
+    <button class="modal-btn btn-delete-confirm" bindtap="confirmDeleteAccount">确认删除</button>
+  </view>
+</view>

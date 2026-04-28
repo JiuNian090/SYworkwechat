@@ -1,0 +1,31 @@
+<view class="page-container">
+  <view class="login-form">
+    <view class="form-card">
+      <view class="form-group">
+        <text class="form-label">账号</text>
+        <input class="form-input" placeholder="请输入账号" value="{{cloudAccountInput}}" bindinput="onCloudAccountInput"></input>
+      </view>
+      <view class="form-group">
+        <text class="form-label">密码</text>
+        <view class="password-wrapper">
+          <input class="form-input password-input" placeholder="请输入密码" value="{{cloudPasswordInput}}" bindinput="onCloudPasswordInput" password="{{!showCloudPassword}}"></input>
+          <view class="password-toggle" bindtap="toggleCloudPasswordVisibility">
+            <text class="toggle-text">{{showCloudPassword ? '隐藏' : '显示'}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="form-group remember-password">
+        <view class="checkbox-wrapper" bindtap="toggleRememberPassword">
+          <view class="checkbox {{rememberPassword ? 'checked' : ''}}">
+            <text class="checkbox-icon" wx:if="{{rememberPassword}}">✓</text>
+          </view>
+          <text class="checkbox-label">记住密码</text>
+        </view>
+      </view>
+    </view>
+    <view class="btn-area">
+      <button class="modal-btn btn-cancel" bindtap="goBack">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="loginToCloud">登录</button>
+    </view>
+  </view>
+</view>
