@@ -953,7 +953,7 @@ function isWorkingType(type) {
   if (!type) {
     return false;
   }
-  const nonWorkingTypes = ['休息', '休假', 'SD'];
+  const nonWorkingTypes = ['休息', '休假', 'SD', '休息日'];
   return !nonWorkingTypes.includes(type.trim());
 }
 
@@ -1078,6 +1078,29 @@ function determineStatus(shifts, now) {
   }
   
   const currentHour = now.getHours();
+  const yesterdayShift = shifts && shifts[yesterdayStr];
+  
+  // 优先级 0.5: 昨天凌晨夜班延续到今天（如排班4号夜班1:30-8:30，实际覆盖5号凌晨1:30-8:30）
+  if (!activeShift && yesterdayShift && isNightShift(yesterdayShift)) {
+    const ysStartRaw = toAbsolute(yesterdayStr, yesterdayShift.startTime);
+    let ysEndRaw = toAbsolute(yesterdayStr, yesterdayShift.endTime);
+    if (ysStartRaw && ysEndRaw && ysEndRaw > ysStartRaw) {
+      const startHour = ysStartRaw.getHours();
+      if (startHour >= 0 && startHour < 6) {
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+          ysStartRaw.getHours(), ysStartRaw.getMinutes());
+        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+          ysEndRaw.getHours(), ysEndRaw.getMinutes());
+        if (now >= todayStart && now < todayEnd) {
+          return {
+            status: 'workingNightShiftLate',
+            shift: yesterdayShift,
+            timePeriod: getTimePeriod(currentHour)
+          };
+        }
+      }
+    }
+  }
   
   // 优先级 1: 正在上夜班（凌晨 0-6 点）
   if (activeShift && isNightShift(activeShift) && currentHour >= 0 && currentHour < 6) {
@@ -1089,7 +1112,6 @@ function determineStatus(shifts, now) {
   }
   
   // 优先级 2: 夜班刚结束（昨天夜班，现在在 0-12 点之间，距离结束不足 2 小时）
-  const yesterdayShift = shifts && shifts[yesterdayStr];
   if (yesterdayShift && isWorkingType(yesterdayShift.type) && isNightShift(yesterdayShift)) {
     const yesterdayStartTime = toAbsolute(yesterdayStr, yesterdayShift.startTime);
     let yesterdayEndTime = toAbsolute(yesterdayStr, yesterdayShift.endTime);
@@ -1148,6 +1170,23 @@ function determineStatus(shifts, now) {
   
   // 检查今天是否有工作排班
   const todayHasWork = shifts && shifts[todayStr] && isWorkingType(shifts[todayStr].type);
+  
+  // 优先级 5.5: 等待上班（今天有排班但还没到上班时间）
+  if (!activeShift && todayHasWork) {
+    const todayShift = shifts[todayStr];
+    if (todayShift && isWorkingType(todayShift.type)) {
+      const shiftStart = toAbsolute(todayStr, todayShift.startTime);
+      if (shiftStart && now < shiftStart) {
+        const hoursUntilStart = (shiftStart - now) / (1000 * 60 * 60);
+        const statusKey = hoursUntilStart <= 3 ? 'waitingForShiftSoon' : 'waitingForShift';
+        return {
+          status: statusKey,
+          shift: todayShift,
+          timePeriod: getTimePeriod(currentHour)
+        };
+      }
+    }
+  }
   
   // 优先级 6: 下夜班休息（今天无工作，昨天有夜班）
   if (!todayHasWork && yesterdayShift && isWorkingType(yesterdayShift.type) && isNightShift(yesterdayShift)) {
@@ -1263,6 +1302,26 @@ const messageTemplates = {
     '🌿 {name}，轻松的工作，愉快的心情。',
     '🌿 {name}，今天很顺利呢。'
   ],
+  waitingForShift: [
+    '⏰ {name}，今天有班次，记得准时到岗哦。',
+    '⏰ {name}，做好准备，上班时间还没到，先休息一下吧。',
+    '☕ {name}，开工前喝杯咖啡，养足精神。',
+    '📋 {name}，今天的工作在等着你，准备好了吗？',
+    '🌤️ {name}，上班前的时间，做点自己喜欢的事吧。',
+    '💪 {name}，蓄势待发，今天好好干！',
+    '🎯 {name}，目标明确，等会儿加油！',
+    '🌟 {name}，今天的班次已就绪，养精蓄锐吧。'
+  ],
+  waitingForShiftSoon: [
+    '🚀 {name}，马上要上班了，准备好了吗？',
+    '💪 {name}，快到点了，打起精神来！',
+    '⏰ {name}，马上就要开工了，加油！',
+    '☕ {name}，最后喝口水，准备投入工作！',
+    '🔥 {name}，倒计时开始，准备战斗！',
+    '🎯 {name}，马上就要开始了，调整好状态！',
+    '✨ {name}，准备出发，今天又是充实的一天！',
+    '💫 {name}，马上到岗，加油加油！'
+  ],
   restAfterNightShiftMorning: [
     '🛌 {name}，下夜班辛苦了，拉好窗帘深度补觉。',
     '🛌 {name}，辛苦了一夜，好好睡一觉。',
@@ -1372,6 +1431,26 @@ const messageTemplates = {
     '🌿 工作不累，也要注意休息。',
     '🌿 轻松的工作，愉快的心情。',
     '🌿 今天很顺利呢。'
+  ],
+  waitingForShiftNoName: [
+    '⏰ 今天有班次，记得准时到岗哦。',
+    '⏰ 做好准备，上班时间还没到，先休息一下吧。',
+    '☕ 开工前喝杯咖啡，养足精神。',
+    '📋 今天的工作在等着你，准备好了吗？',
+    '🌤️ 上班前的时间，做点自己喜欢的事吧。',
+    '💪 蓄势待发，今天好好干！',
+    '🎯 目标明确，等会儿加油！',
+    '🌟 今天的班次已就绪，养精蓄锐吧。'
+  ],
+  waitingForShiftSoonNoName: [
+    '🚀 马上要上班了，准备好了吗？',
+    '💪 快到点了，打起精神来！',
+    '⏰ 马上就要开工了，加油！',
+    '☕ 最后喝口水，准备投入工作！',
+    '🔥 倒计时开始，准备战斗！',
+    '🎯 马上就要开始了，调整好状态！',
+    '✨ 准备出发，今天又是充实的一天！',
+    '💫 马上到岗，加油加油！'
   ],
   restAfterNightShiftMorningNoName: [
     '🛌 下夜班辛苦了，拉好窗帘深度补觉。',
