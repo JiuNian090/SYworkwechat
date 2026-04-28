@@ -938,40 +938,45 @@ Page({
 
   // 云开发登录/注册弹窗相关方法
   showCloudLoginOrRegisterModal() {
-    console.log('showCloudLoginOrRegisterModal 被调用');
-    console.log('cloudLoggedIn:', this.data.cloudLoggedIn);
-
-    // 根据当前是否已登录，选择显示用户管理或登录/注册弹窗
     if (this.data.cloudLoggedIn) {
-      console.log('已登录，显示用户管理弹窗');
-      // 已登录：显示用户管理弹窗
-      this.setData({
-        showUserManagementModal: true
-      });
+      const pages = getCurrentPages();
+      if (pages.length >= 10) {
+        wx.redirectTo({
+          url: '/pages/user-manage/index',
+          fail: () => {
+            this.setData({ showUserManagementModal: true });
+          }
+        });
+      } else {
+        wx.navigateTo({
+          url: '/pages/user-manage/index',
+          fail: () => {
+            this.setData({ showUserManagementModal: true });
+          }
+        });
+      }
       return;
     }
 
-    console.log('未登录，显示选择弹窗');
-    // 未登录：显示选择弹窗
     wx.showActionSheet({
       itemList: ['登录已有账号', '注册新账号'],
       success: (res) => {
-        console.log('用户选择:', res.tapIndex);
         if (res.tapIndex === 0) {
-          console.log('显示切换账号弹窗');
           this.showSwitchAccountModal();
         } else if (res.tapIndex === 1) {
-          console.log('显示注册弹窗');
           this.showCloudRegisterModal();
         }
       },
       fail: (err) => {
-        // 用户取消操作是正常行为，不视为错误
         if (err.errMsg !== 'showActionSheet:fail cancel') {
           console.error('showActionSheet 失败:', err);
         }
       }
     });
+  },
+
+  refreshUserInfo() {
+    this.initPageData();
   },
 
   showCloudLoginModal() {

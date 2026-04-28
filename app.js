@@ -289,5 +289,17 @@ App({
       title: 'SYwork排班管理系统',
       query: ''
     };
+  },
+
+  onPageNotFound(res) {
+    if (res.path.indexOf('pages/user-manage/index') !== -1) {
+      wx.switchTab({
+        url: '/pages/profile/profile'
+      });
+    } else {
+      wx.switchTab({
+        url: '/pages/plan/plan'
+      });
+    }
   }
 });
