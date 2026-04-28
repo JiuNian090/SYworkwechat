@@ -1,6 +1,3 @@
 {
-  "navigationBarTitleText": "SYwork",
-  "usingComponents": {
-    "emoji-picker": "../../components/emoji-picker/emoji-picker"
-  }
+  "navigationBarTitleText": "SYwork"
 }

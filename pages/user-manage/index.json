@@ -1,6 +1,3 @@
 {
-  "navigationBarTitleText": "用户管理",
-  "usingComponents": {
-    "emoji-picker": "../../components/emoji-picker/emoji-picker"
-  }
+  "navigationBarTitleText": "用户管理"
 }
