@@ -1,9 +1,23 @@
 <view class="page-container">
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">←</text>
+    </view>
+    <view class="header-title">
+      <text class="title-icon">{{mode === 'register' ? '📝' : '🔑'}}</text>
+      <text class="title-text">{{mode === 'register' ? '注册' : '登录'}}</text>
+    </view>
+    <view class="header-right"></view>
+  </view>
   <view class="login-form">
     <view class="form-card">
       <view class="form-group">
         <text class="form-label">账号</text>
         <input class="form-input" placeholder="请输入账号" value="{{cloudAccountInput}}" bindinput="onCloudAccountInput"></input>
+      </view>
+      <view class="form-group" wx:if="{{mode === 'register'}}">
+        <text class="form-label">昵称（可选）</text>
+        <input class="form-input" placeholder="请输入昵称" value="{{cloudNicknameInput}}" bindinput="onCloudNicknameInput"></input>
       </view>
       <view class="form-group">
         <text class="form-label">密码</text>
@@ -14,7 +28,16 @@
           </view>
         </view>
       </view>
-      <view class="form-group remember-password">
+      <view class="form-group" wx:if="{{mode === 'register'}}">
+        <text class="form-label">确认密码</text>
+        <view class="password-wrapper">
+          <input class="form-input password-input" placeholder="请再次输入密码" value="{{cloudConfirmPassword}}" bindinput="onCloudConfirmPasswordInput" password="{{!showCloudPassword}}"></input>
+          <view class="password-toggle" bindtap="toggleCloudPasswordVisibility">
+            <text class="toggle-text">{{showCloudPassword ? '隐藏' : '显示'}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="form-group remember-password" wx:if="{{mode === 'login'}}">
         <view class="checkbox-wrapper" bindtap="toggleRememberPassword">
           <view class="checkbox {{rememberPassword ? 'checked' : ''}}">
             <text class="checkbox-icon" wx:if="{{rememberPassword}}">✓</text>
@@ -25,7 +48,7 @@
     </view>
     <view class="btn-area">
       <button class="modal-btn btn-cancel" bindtap="goBack">取消</button>
-      <button class="modal-btn btn-confirm" bindtap="loginToCloud">登录</button>
+      <button class="modal-btn btn-confirm" bindtap="handleSubmit">{{mode === 'register' ? '注册' : '登录'}}</button>
     </view>
   </view>
 </view>

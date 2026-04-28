@@ -9,15 +9,21 @@ Page({
   data: {
     cloudAccountInput: '',
     cloudPasswordInput: '',
+    cloudConfirmPassword: '',
+    cloudNicknameInput: '',
     showCloudPassword: false,
     rememberPassword: false,
+    mode: 'login',
     cloudManager: null,
     avatarManager: null
   },
 
-  onLoad() {
+  onLoad(options) {
     this.cloudManager = new CloudManager();
     this.avatarManager = new AvatarManager();
+    if (options && options.mode === 'register') {
+      this.setData({ mode: 'register' });
+    }
   },
 
   onCloudAccountInput(e) {
@@ -26,6 +32,14 @@ Page({
 
   onCloudPasswordInput(e) {
     this.setData({ cloudPasswordInput: e.detail.value });
+  },
+
+  onCloudConfirmPasswordInput(e) {
+    this.setData({ cloudConfirmPassword: e.detail.value });
+  },
+
+  onCloudNicknameInput(e) {
+    this.setData({ cloudNicknameInput: e.detail.value });
   },
 
   toggleCloudPasswordVisibility() {
@@ -80,6 +94,15 @@ Page({
       }
     } catch (e) {
       console.error('更新 savedAccounts 头像失败:', e);
+    }
+  },
+
+  async handleSubmit() {
+    const { mode } = this.data;
+    if (mode === 'register') {
+      await this.registerToCloud();
+    } else {
+      await this.loginToCloud();
     }
   },
 
@@ -140,6 +163,71 @@ Page({
     } catch (e) {
       wx.hideLoading();
       wx.showToast({ title: '登录失败', icon: 'none' });
+    }
+  },
+
+  async registerToCloud() {
+    const { cloudAccountInput, cloudPasswordInput, cloudConfirmPassword, cloudNicknameInput } = this.data;
+
+    if (!cloudAccountInput || !cloudPasswordInput || !cloudConfirmPassword) {
+      wx.showToast({ title: '请填写完整信息', icon: 'none' });
+      return;
+    }
+
+    if (cloudPasswordInput !== cloudConfirmPassword) {
+      wx.showToast({ title: '两次密码不一致', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '注册中...' });
+
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'userLogin',
+        data: {
+          action: 'register',
+          account: cloudAccountInput,
+          password: cloudPasswordInput,
+          nickname: cloudNicknameInput || ''
+        }
+      });
+
+      wx.hideLoading();
+
+      if (result.result.success) {
+        const cloudUserInfo = {
+          userId: result.result.data.userId,
+          account: cloudAccountInput,
+          nickname: result.result.data.nickname || cloudAccountInput,
+          avatarType: result.result.data.avatarType || 'emoji',
+          avatarEmoji: result.result.data.avatarEmoji || '😊',
+          avatarText: result.result.data.avatarText || ''
+        };
+        const displayUsername = result.result.data.nickname || cloudAccountInput;
+        const avatarType = result.result.data.avatarType || 'emoji';
+        const avatarEmoji = result.result.data.avatarEmoji || '😊';
+
+        const emojiText = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiText(avatarEmoji) || '' : '';
+        const emojiEmotion = avatarType === 'emoji' && avatarEmoji ? emojiManager.getEmojiEmotion(avatarEmoji) || 'neutral' : '';
+
+        store.setState({
+          username: displayUsername,
+          avatarType,
+          avatarEmoji,
+          cloudAccount: cloudAccountInput,
+          cloudLoggedIn: true,
+          cloudUserId: result.result.data.userId,
+          cloudUserInfo
+        }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
+
+        wx.showToast({ title: '注册成功', icon: 'success', duration: 1000 });
+        wx.navigateBack({ delta: 2 });
+      } else {
+        wx.showToast({ title: result.result.errMsg || '注册失败', icon: 'none' });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: '注册失败', icon: 'none' });
     }
   },
 
