@@ -1001,23 +1001,16 @@ Page({
   },
 
   confirmLogout() {
-    wx.showActionSheet({
-      itemList: ['退出登录'],
-      itemColor: '#ef4444',
+    wx.showModal({
+      title: '提示',
+      content: '确定要退出当前账号吗？',
+      cancelText: '取消',
+      confirmText: '退出登录',
+      confirmColor: '#ef4444',
       success: (res) => {
-        if (res.tapIndex === 0) {
-          wx.showModal({
-            title: '确认退出',
-            content: '确定要退出当前账号吗？',
-            confirmText: '退出',
-            confirmColor: '#ef4444',
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                this.logoutFromCloud();
-                wx.navigateBack();
-              }
-            }
-          });
+        if (res.confirm) {
+          this.logoutFromCloud();
+          wx.navigateBack();
         }
       }
     });
