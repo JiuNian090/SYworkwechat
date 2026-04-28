@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "选择头像",
-  "usingComponents": {
-    "emoji-picker": "../../../components/emoji-picker/emoji-picker"
-  }
-}

@@ -5,13 +5,7 @@
     "pages/schedule/schedule",
     "pages/statistics/statistics",
     "pages/profile/profile",
-    "pages/user-manage/index",
-    "pages/user-manage/nickname/index",
-    "pages/user-manage/password/index",
-    "pages/user-manage/avatar/index",
-    "pages/user-manage/delete-account/index",
-    "pages/user-manage/switch-account/index",
-    "pages/user-manage/login/index"
+    "pages/user-manage/index"
   ],
   "subpackages": [
     {
