@@ -1277,6 +1277,42 @@ page {
   box-shadow: 0 4rpx 12rpx rgba(52, 211, 153, 0.3);
 }
 
+/* ========== 弹窗内表单卡片样式 ========== */
+.modal-container .form-card {
+  margin: 8rpx 24rpx;
+  padding: 28rpx;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.modal-container .form-card .form-group {
+  padding: 0;
+  margin-bottom: 28rpx;
+}
+
+.modal-container .form-card .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.modal-container .form-card .form-input {
+  height: 84rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  color: var(--text-primary);
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  border: 2rpx solid #f0f0f0;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.modal-container .form-card .form-input:focus {
+  background: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
+}
+
 /* ========== 输入框样式 ========== */
 .input-wrapper {
   background: #f8f9fa;

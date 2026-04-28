@@ -7,7 +7,7 @@ const DataExportManager = require('../../utils/dataExportManager.js');
 const DataImportManager = require('../../utils/dataImportManager.js');
 const DataClearManager = require('../../utils/dataClearManager.js');
 const { store } = require('../../utils/store.js');
-const { encryptPassword, decryptPassword, isOldFormat, calculateHash } = require('../../utils/encrypt.js');
+const { encryptPassword, decryptPassword, isOldFormat, calculateHash, hashPassword } = require('../../utils/encrypt.js');
 const { getDailyMessage } = require('../../utils/dailyMessage.js');
 
 const STATUS_TEXT = {
@@ -65,6 +65,7 @@ Page({
     cloudAccount: '',
     // 云备份登录/注册弹窗
     showCloudRegisterModal: false,
+    showCloudLoginModal: false,
     cloudAccountInput: '',
     cloudPasswordInput: '',
     cloudConfirmPassword: '',
@@ -316,7 +317,7 @@ Page({
       cloudManager: this.cloudManager,
       cloudLoggedIn: cloudLoggedIn,
       cloudAccount: cloudAccount,
-      cloudUserInfo: cloudUserInfo,
+      cloudUserInfo: cloudUserInfo || null,
       changelog: changelog,
       savedAccounts: savedAccounts,
       autoRestoreMap: autoRestoreMap,
@@ -810,7 +811,7 @@ Page({
       itemList: ['登录已有账号', '注册新账号'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          this.showSwitchAccountModal();
+          this.showCloudLoginModal();
         } else if (res.tapIndex === 1) {
           this.showCloudRegisterModal();
         }
@@ -828,13 +829,27 @@ Page({
   },
 
   showCloudLoginModal() {
-    wx.navigateTo({ url: '/pages/user-manage/login/index' });
+    this.setData({
+      showCloudLoginModal: true,
+      cloudAccountInput: '',
+      cloudPasswordInput: '',
+      rememberPassword: false
+    });
   },
 
-  hideCloudLoginModal() {},
+  hideCloudLoginModal() {
+    this.setData({ showCloudLoginModal: false });
+  },
 
   showCloudRegisterModal() {
-    wx.navigateTo({ url: '/pages/user-manage/login/index?mode=register' });
+    this.setData({
+      showCloudRegisterModal: true,
+      cloudAccountInput: '',
+      cloudPasswordInput: '',
+      cloudConfirmPassword: '',
+      cloudNicknameInput: '',
+      showCloudPassword: false
+    });
   },
 
   hideCloudRegisterModal() {
@@ -842,6 +857,96 @@ Page({
       showCloudRegisterModal: false,
       cloudNicknameInput: ''
     });
+  },
+
+  async onCloudLogin() {
+    const { cloudAccountInput, cloudPasswordInput, rememberPassword } = this.data;
+    if (!cloudAccountInput) {
+      wx.showToast({ title: '请输入账号', icon: 'none' });
+      return;
+    }
+    if (!cloudPasswordInput) {
+      wx.showToast({ title: '请输入密码', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '登录中...' });
+    try {
+      const result = await this.cloudManager.login(cloudAccountInput, cloudPasswordInput);
+      wx.hideLoading();
+
+      if (result.success) {
+        this.handleLoginSuccess(cloudAccountInput, result);
+        if (rememberPassword) {
+          this.saveAccount(cloudAccountInput, cloudPasswordInput);
+        }
+        this.setData({ showCloudLoginModal: false });
+        wx.showToast({ title: '登录成功', icon: 'success', duration: 1000 });
+      } else {
+        wx.showToast({ title: result.errMsg || '登录失败', icon: 'none' });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: '登录失败', icon: 'none' });
+    }
+  },
+
+  async registerToCloud() {
+    const { cloudAccountInput, cloudPasswordInput, cloudConfirmPassword, cloudNicknameInput } = this.data;
+    if (!cloudAccountInput) {
+      wx.showToast({ title: '请输入账号', icon: 'none' });
+      return;
+    }
+    if (!cloudPasswordInput) {
+      wx.showToast({ title: '请输入密码', icon: 'none' });
+      return;
+    }
+    if (cloudPasswordInput !== cloudConfirmPassword) {
+      wx.showToast({ title: '两次密码输入不一致', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '注册中...' });
+    try {
+      const result = await this.cloudManager.register(cloudAccountInput, cloudPasswordInput, cloudNicknameInput || '');
+      wx.hideLoading();
+
+      if (result.success) {
+        this.handleLoginSuccess(cloudAccountInput, result);
+        this.setData({ showCloudRegisterModal: false });
+        wx.showToast({ title: '注册成功', icon: 'success', duration: 1000 });
+      } else {
+        wx.showToast({ title: result.errMsg || '注册失败', icon: 'none' });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({ title: '注册失败', icon: 'none' });
+    }
+  },
+
+  handleLoginSuccess(account, result) {
+    const cloudUserInfo = {
+      userId: result.data.userId,
+      account: account,
+      nickname: result.data.nickname || account,
+      avatarType: result.data.avatarType || 'emoji',
+      avatarEmoji: result.data.avatarEmoji || '😊',
+      avatarText: result.data.avatarText || ''
+    };
+    const displayUsername = result.data.nickname || account;
+
+    store.setState({
+      username: displayUsername,
+      avatarType: cloudUserInfo.avatarType,
+      avatarEmoji: cloudUserInfo.avatarEmoji,
+      cloudAccount: account,
+      cloudLoggedIn: true,
+      cloudUserId: result.data.userId,
+      cloudUserInfo
+    }, ['username', 'avatarType', 'avatarEmoji', 'cloudAccount', 'cloudLoggedIn', 'cloudUserId', 'cloudUserInfo']);
+
+    this.userId = result.data.userId;
+    this.initPageData();
   },
 
   onCloudAccountInput(e) {
