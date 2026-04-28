@@ -13,7 +13,6 @@
             <text class="status-text">在线</text>
           </view>
         </view>
-        <text class="header-arrow">›</text>
       </view>
       <view class="user-info-list">
         <view class="user-info-item">
