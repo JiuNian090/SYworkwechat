@@ -1166,7 +1166,7 @@ Page({
 
   // 根据工时获取热力图颜色（由浅到深）
   getHeatmapColor(hours) {
-    if (hours <= 0) return '#ebedf0';
+    if (hours <= 0) return '#e3e3e3';
     if (hours <= 6) return '#c6e48b';
     if (hours <= 7) return '#7bc96f';
     if (hours <= 8) return '#5aad4a';

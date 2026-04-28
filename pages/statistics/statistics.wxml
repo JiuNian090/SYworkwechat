@@ -182,7 +182,8 @@
         <text class="card-title">工时热力图</text>
         <text class="card-subtitle">{{statistics.totalDays}} 天</text>
       </view>
-      <view class="heatmap-container" style="gap: {{heatmapGapRpx}}rpx;">
+      <view class="heatmap-blur-card">
+        <view class="heatmap-container" style="gap: {{heatmapGapRpx}}rpx;">
           <view wx:if="{{heatmapColumnsPerRow === 7}}" class="heatmap-header" style="gap: {{heatmapGapRpx}}rpx;">
             <text wx:for="{{heatmapWeekLabels}}" wx:key="index" class="heatmap-header-label" style="width: {{heatmapCellSizeRpx}}rpx;">{{item}}</text>
           </view>
@@ -205,15 +206,16 @@
             </view>
           </view>
         </view>
-      <view class="heatmap-legend">
-        <text class="legend-label">0</text>
-        <view class="legend-item" style="background-color: #ebedf0;"></view>
-        <view class="legend-item" style="background-color: #c6e48b;"></view>
-        <view class="legend-item" style="background-color: #7bc96f;"></view>
-        <view class="legend-item" style="background-color: #5aad4a;"></view>
-        <view class="legend-item" style="background-color: #3d8b37;"></view>
-        <view class="legend-item" style="background-color: #2d6a2b;"></view>
-        <text class="legend-label">≥9h</text>
+        <view class="heatmap-legend">
+          <text class="legend-label">0</text>
+          <view class="legend-item" style="background-color: #e3e3e3;"></view>
+          <view class="legend-item" style="background-color: #c6e48b;"></view>
+          <view class="legend-item" style="background-color: #7bc96f;"></view>
+          <view class="legend-item" style="background-color: #5aad4a;"></view>
+          <view class="legend-item" style="background-color: #3d8b37;"></view>
+          <view class="legend-item" style="background-color: #2d6a2b;"></view>
+          <text class="legend-label">≥9h</text>
+        </view>
       </view>
     </view>
 
