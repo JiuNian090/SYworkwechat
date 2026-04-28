@@ -18,9 +18,15 @@ function deriveKey() {
 function encryptPassword(password) {
   if (!password) return '';
   try {
-    const key = deriveKey();
-    const encrypted = CryptoJS.AES.encrypt(password, key);
-    return encrypted.toString();
+    const keyHex = deriveKey();
+    const key = CryptoJS.enc.Hex.parse(keyHex);
+    const iv = CryptoJS.enc.Hex.parse(keyHex.slice(0, 32));
+    const encrypted = CryptoJS.AES.encrypt(password, key, {
+      iv: iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7
+    });
+    return '01' + encrypted.toString();
   } catch (e) {
     console.error('密码加密失败:', e);
     return '';
@@ -36,10 +42,21 @@ function decryptPassword(encryptedStr) {
 
 function decryptAES(encryptedStr) {
   try {
+    if (encryptedStr.startsWith('01')) {
+      const keyHex = deriveKey();
+      const key = CryptoJS.enc.Hex.parse(keyHex);
+      const iv = CryptoJS.enc.Hex.parse(keyHex.slice(0, 32));
+      const ct = encryptedStr.slice(2);
+      const decrypted = CryptoJS.AES.decrypt(ct, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+      });
+      return decrypted.toString(CryptoJS.enc.Utf8);
+    }
     const key = deriveKey();
     const decrypted = CryptoJS.AES.decrypt(encryptedStr, key);
-    const result = decrypted.toString(CryptoJS.enc.Utf8);
-    return result || '';
+    return decrypted.toString(CryptoJS.enc.Utf8) || '';
   } catch (e) {
     return '';
   }
@@ -138,6 +155,7 @@ function verifyPassword(password, hash) {
 
 function isOldFormat(encryptedStr) {
   if (!encryptedStr) return false;
+  if (encryptedStr.startsWith('01')) return false;
   return !encryptedStr.startsWith('U2FsdGVkX1');
 }
 
