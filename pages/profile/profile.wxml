@@ -384,40 +384,38 @@
   </view>
 
   
-  <!-- 声明详情弹窗 -->
+  <!-- 声明详情 WeUI 半屏弹窗 -->
   <view class="modal-mask {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}" bindtap="hidePolicyModal"></view>
-  <view class="modal-container policy-detail-modal {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}">
-    <view class="modal-header policy-modal-header">
-      <view class="policy-header-icon-wrapper" style="background: linear-gradient(135deg, {{policyColor}}15 0%, {{policyColor}}25 100%); border-color: {{policyColor}}30;">
-        <text style="color: {{policyColor}};">{{policyIcon}}</text>
+  <view class="weui-half-modal {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}">
+    <view class="weui-half-header">
+      <view class="weui-half-title">
+        <text class="weui-half-title-icon">{{policyIcon}}</text>
+        <text class="weui-half-title-text" style="color: {{policyColor}};">{{policyTitle}}</text>
       </view>
-      <text class="modal-title" style="color: {{policyColor}};">{{policyTitle}}</text>
-      <view class="modal-close" bindtap="hidePolicyModal">
-        <text class="close-icon" style="color: {{policyColor}};">✕</text>
+      <view class="weui-half-close" bindtap="hidePolicyModal">
+        <text class="weui-half-close-icon">✕</text>
       </view>
     </view>
-    <view class="modal-body">
-      <scroll-view class="policy-detail-scroll" scroll-y enhanced show-scrollbar="false">
-        <view class="policy-detail-content">
-          <view class="policy-section" wx:for="{{policySections}}" wx:key="heading">
-            <view class="policy-section-header">
-              <view class="policy-section-icon" style="background: linear-gradient(135deg, {{policyColor}}15 0%, {{policyColor}}25 100%); border-color: {{policyColor}}30;">
-                <text style="color: {{policyColor}};">{{item.icon}}</text>
-              </view>
-              <text class="policy-section-title" style="color: {{policyColor}};">{{item.heading}}</text>
+    <scroll-view class="weui-half-body" scroll-y enhanced show-scrollbar="false">
+      <view class="weui-half-content">
+        <view class="policy-section" wx:for="{{policySections}}" wx:key="heading">
+          <view class="policy-section-header">
+            <view class="policy-section-icon" style="background: linear-gradient(135deg, {{policyColor}}15 0%, {{policyColor}}25 100%); border-color: {{policyColor}}30;">
+              <text style="color: {{policyColor}};">{{item.icon}}</text>
             </view>
-            <view class="policy-section-body">
-              <view class="policy-item" wx:for="{{item.items}}" wx:for-item="subItem" wx:key="*this">
-                <view class="policy-item-dot" style="background: {{policyColor}};"></view>
-                <text class="policy-item-text">{{subItem}}</text>
-              </view>
+            <text class="policy-section-title" style="color: {{policyColor}};">{{item.heading}}</text>
+          </view>
+          <view class="policy-section-body">
+            <view class="policy-detail-item" wx:for="{{item.items}}" wx:for-item="subItem" wx:key="*this">
+              <view class="policy-item-dot" style="background: {{policyColor}};"></view>
+              <text class="policy-item-text">{{subItem}}</text>
             </view>
           </view>
         </view>
-      </scroll-view>
-    </view>
-    <view class="modal-footer">
-      <button class="modal-btn btn-confirm" style="background: linear-gradient(135deg, {{policyColor}} 0%, {{policyColor}}dd 100%);" bindtap="hidePolicyModal">我知道了</button>
+      </view>
+    </scroll-view>
+    <view class="weui-half-footer">
+      <button class="weui-half-btn" style="background: linear-gradient(135deg, {{policyColor}} 0%, {{policyColor}}dd 100%);" bindtap="hidePolicyModal">我知道了</button>
     </view>
   </view>
 
