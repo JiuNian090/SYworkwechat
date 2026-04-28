@@ -307,62 +307,68 @@
 
 <!-- 文件名设置模态框 -->
 <block wx:if="{{showFilenameModal}}">
-  <view class="modal-mask show" bindtap="hideFilenameModal">
-    <view class="modal-content show" catchtap="preventBubble">
-      <view class="modal-header">
+  <view class="modal-mask show" bindtap="hideFilenameModal"></view>
+  <view class="modal-container show">
+    <view class="modal-header">
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">📄</text>
         <text class="modal-title">设置文件名</text>
-        <view class="modal-close" bindtap="hideFilenameModal">
-          <text class="close-icon">✕</text>
-        </view>
       </view>
-      <view class="modal-body">
-        <view class="input-group">
-          <text class="input-label">CSV文件名</text>
-          <input 
-            type="text" 
-            value="{{tempFilename}}" 
-            bindinput="onFilenameInput"
-            placeholder="请输入文件名"
-            class="modal-input"
-          />
-          <text class="input-hint">将保存为 {{tempFilename || defaultFilenameHint}}.csv</text>
-        </view>
+      <view class="modal-close" bindtap="hideFilenameModal">
+        <text class="close-icon">✕</text>
       </view>
-      <view class="modal-footer">
-        <view class="modal-btn cancel" bindtap="hideFilenameModal">取消</view>
-        <view class="modal-btn confirm" bindtap="confirmExport">确认导出</view>
+    </view>
+    <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false" catchtap="preventBubble">
+      <view class="input-group">
+        <text class="input-label">CSV文件名</text>
+        <input 
+          type="text" 
+          value="{{tempFilename}}" 
+          bindinput="onFilenameInput"
+          placeholder="请输入文件名"
+          class="modal-input"
+          cursor-spacing="30"
+        />
+        <text class="input-hint">将保存为 {{tempFilename || defaultFilenameHint}}.csv</text>
       </view>
+    </scroll-view>
+    <view class="modal-footer">
+      <button class="modal-btn btn-cancel" bindtap="hideFilenameModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="confirmExport">确认导出</button>
     </view>
   </view>
 </block>
 
 <!-- 自定义工时设置模态框 -->
 <block wx:if="{{showHoursModal}}">
-  <view class="modal-mask show" bindtap="hideCustomHoursModal">
-    <view class="modal-content show" catchtap="preventBubble">
-      <view class="modal-header">
+  <view class="modal-mask show" bindtap="hideCustomHoursModal"></view>
+  <view class="modal-container show">
+    <view class="modal-header">
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">⚙️</text>
         <text class="modal-title">设置标准工时</text>
-        <view class="modal-close" bindtap="hideCustomHoursModal">
-          <text class="close-icon">✕</text>
-        </view>
       </view>
-      <view class="modal-body">
-        <view class="input-group">
-          <text class="input-label">每周标准工时（小时）</text>
-          <input 
-            type="digit" 
-            value="{{tempCustomHours}}" 
-            bindinput="onCustomHoursInput"
-            placeholder="请输入标准工时"
-            class="modal-input"
-          />
-          <text class="input-hint">默认值为 35 小时/周</text>
-        </view>
+      <view class="modal-close" bindtap="hideCustomHoursModal">
+        <text class="close-icon">✕</text>
       </view>
-      <view class="modal-footer">
-        <view class="modal-btn cancel" bindtap="hideCustomHoursModal">取消</view>
-        <view class="modal-btn confirm" bindtap="saveCustomHours">保存设置</view>
+    </view>
+    <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false" catchtap="preventBubble">
+      <view class="input-group">
+        <text class="input-label">每周标准工时（小时）</text>
+        <input 
+          type="digit" 
+          value="{{tempCustomHours}}" 
+          bindinput="onCustomHoursInput"
+          placeholder="请输入标准工时"
+          class="modal-input"
+          cursor-spacing="30"
+        />
+        <text class="input-hint">默认值为 35 小时/周</text>
       </view>
+    </scroll-view>
+    <view class="modal-footer">
+      <button class="modal-btn btn-cancel" bindtap="hideCustomHoursModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="saveCustomHours">保存设置</button>
     </view>
   </view>
 </block>

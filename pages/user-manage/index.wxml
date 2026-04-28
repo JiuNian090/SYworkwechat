@@ -129,7 +129,7 @@
       <view class="form-card">
         <view class="form-group">
           <text class="form-label">新昵称</text>
-          <input class="form-input" placeholder="请输入新昵称" value="{{newNickname}}" bindinput="onNicknameInput" maxlength="20" />
+          <input class="form-input" placeholder="请输入新昵称" value="{{newNickname}}" bindinput="onNicknameInput" maxlength="20" cursor-spacing="30" />
         </view>
       </view>
     </view>
@@ -139,15 +139,15 @@
       <view class="form-card">
         <view class="form-group">
           <text class="form-label">原密码</text>
-          <input class="form-input" type="password" placeholder="请输入原密码" value="{{oldPassword}}" bindinput="onOldPasswordInput" />
+          <input class="form-input" type="password" placeholder="请输入原密码" value="{{oldPassword}}" bindinput="onOldPasswordInput" cursor-spacing="30" />
         </view>
         <view class="form-group">
           <text class="form-label">新密码</text>
-          <input class="form-input" type="password" placeholder="请输入新密码（至少 6 位）" value="{{newPassword}}" bindinput="onNewPasswordInput" />
+          <input class="form-input" type="password" placeholder="请输入新密码（至少 6 位）" value="{{newPassword}}" bindinput="onNewPasswordInput" cursor-spacing="30" />
         </view>
         <view class="form-group">
           <text class="form-label">确认新密码</text>
-          <input class="form-input" type="password" placeholder="请再次输入新密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput" />
+          <input class="form-input" type="password" placeholder="请再次输入新密码" value="{{confirmPassword}}" bindinput="onConfirmPasswordInput" cursor-spacing="30" />
         </view>
       </view>
     </view>
@@ -164,7 +164,7 @@
       <view class="form-card">
         <view class="form-group">
           <text class="form-label">请输入密码确认</text>
-          <input class="form-input" type="password" placeholder="请输入密码" value="{{deleteAccountPassword}}" bindinput="onDeleteAccountPasswordInput" />
+          <input class="form-input" type="password" placeholder="请输入密码" value="{{deleteAccountPassword}}" bindinput="onDeleteAccountPasswordInput" cursor-spacing="30" />
         </view>
       </view>
     </view>
@@ -197,7 +197,7 @@
           <view class="text-avatar-content">
             <view class="text-avatar-input-wrap">
               <text class="text-avatar-hint">输入 1~2 个字符作为头像</text>
-              <input class="text-avatar-input" placeholder="例如：乐、用、我" value="{{avatarModeTextInput}}" maxlength="2" bindinput="onAvatarTextInput" bindconfirm="onAvatarTextConfirm" />
+              <input class="text-avatar-input" placeholder="例如：乐、用、我" value="{{avatarModeTextInput}}" maxlength="2" bindinput="onAvatarTextInput" bindconfirm="onAvatarTextConfirm" cursor-spacing="30" />
             </view>
             <view class="text-avatar-preview-box">
               <text class="preview-box-label">预览</text>
@@ -262,12 +262,12 @@
       <view class="form-card">
         <view class="form-group">
           <text class="form-label">账号</text>
-          <input class="form-input" placeholder="请输入账号" value="{{cloudAccountInput}}" bindinput="onCloudAccountInput"></input>
+          <input class="form-input" placeholder="请输入账号" value="{{cloudAccountInput}}" bindinput="onCloudAccountInput" cursor-spacing="30"></input>
         </view>
         <view class="form-group">
           <text class="form-label">密码</text>
           <view class="password-wrapper">
-            <input class="form-input password-input" placeholder="请输入密码" value="{{cloudPasswordInput}}" bindinput="onCloudPasswordInput" password="{{!showCloudPassword}}"></input>
+            <input class="form-input password-input" placeholder="请输入密码" value="{{cloudPasswordInput}}" bindinput="onCloudPasswordInput" password="{{!showCloudPassword}}" cursor-spacing="30"></input>
             <view class="password-toggle" bindtap="toggleCloudPasswordVisibility">
               <text class="toggle-text">{{showCloudPassword ? '隐藏' : '显示'}}</text>
             </view>

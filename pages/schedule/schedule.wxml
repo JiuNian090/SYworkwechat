@@ -268,7 +268,7 @@
   bind:tagtap="showTagInputModal"
 />
 
-<!-- 图片管理弹窗 -->
+<!-- 图片管理弹窗（居中弹窗，方便选图操作） -->
 <block wx:if="{{showAddImageModal}}">
   <view class="modal-mask show" bindtap="hideAddImageModal"></view>
   <view class="modal-content show">
@@ -309,28 +309,32 @@
 <!-- 标签输入弹窗 -->
 <block wx:if="{{showTagInputModal}}">
   <view class="modal-mask show" bindtap="hideTagInputModal"></view>
-  <view class="modal-content show">
+  <view class="modal-container show">
     <view class="modal-header">
-      <text class="modal-title">添加标签</text>
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">🏷️</text>
+        <text class="modal-title">添加标签</text>
+      </view>
       <view class="modal-close" bindtap="hideTagInputModal">
         <text class="close-icon">✕</text>
       </view>
     </view>
-    <view class="modal-body" catchtap="stopPropagation">
-      <view class="input-group">
-        <text class="input-label">标签名称</text>
+    <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false" catchtap="stopPropagation">
+      <view class="modal-section">
+        <text class="section-title">标签名称</text>
         <input 
-          class="modal-input" 
-          placeholder="请输入标签名称" 
-          value="{{currentTag || ''}}" 
-          bindinput="onTagInput"
-          focus="{{true}}"
-        />
+            class="modal-input" 
+            placeholder="请输入标签名称" 
+            value="{{currentTag || ''}}" 
+            bindinput="onTagInput"
+            focus="{{true}}"
+            cursor-spacing="30"
+          />
       </view>
-      <view class="modal-footer">
-        <view class="modal-btn cancel-btn" bindtap="hideTagInputModal">取消</view>
-        <view class="modal-btn confirm-btn" bindtap="confirmTag">确定</view>
-      </view>
+    </scroll-view>
+    <view class="modal-footer">
+      <button class="modal-btn btn-cancel" bindtap="hideTagInputModal">取消</button>
+      <button class="modal-btn btn-confirm" bindtap="confirmTag">确定</button>
     </view>
   </view>
 </block>

@@ -272,17 +272,20 @@
   <view class="modal-mask {{showUsernameModal ? 'show' : ''}}" wx:if="{{showUsernameModal}}" bindtap="hideUsernameModal"></view>
   <view class="modal-container {{showUsernameModal ? 'show' : ''}}" wx:if="{{showUsernameModal}}">
     <view class="modal-header">
-      <text class="modal-title">设置用户名</text>
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">📝</text>
+        <text class="modal-title">设置用户名</text>
+      </view>
       <view class="modal-close" bindtap="hideUsernameModal">
-        <text class="close-icon">×</text>
+        <text class="close-icon">✕</text>
       </view>
     </view>
-    <view class="modal-body">
+    <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false">
       <view class="input-wrapper">
-        <input class="modal-input" placeholder="请输入用户名" value="{{tempUsername}}" bindinput="onTempUsernameInput" maxlength="20"></input>
+        <input class="modal-input" placeholder="请输入用户名" value="{{tempUsername}}" bindinput="onTempUsernameInput" maxlength="20" cursor-spacing="30"></input>
       </view>
       <text class="input-hint">用户名将用于导出文件名</text>
-    </view>
+    </scroll-view>
     <view class="modal-footer">
       <button class="modal-btn btn-cancel" bindtap="hideUsernameModal">取消</button>
       <button class="modal-btn btn-confirm" bindtap="confirmUsername">确定</button>
@@ -295,12 +298,15 @@
   <view class="modal-mask {{showDataTypeModal ? 'show' : ''}}" wx:if="{{showDataTypeModal}}" bindtap="hideDataTypeModal"></view>
   <view class="modal-container {{showDataTypeModal ? 'show' : ''}}" wx:if="{{showDataTypeModal}}">
     <view class="modal-header">
-      <text class="modal-title">选择导出数据</text>
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">📊</text>
+        <text class="modal-title">选择导出数据</text>
+      </view>
       <view class="modal-close" bindtap="hideDataTypeModal">
-        <text class="close-icon">×</text>
+        <text class="close-icon">✕</text>
       </view>
     </view>
-    <view class="modal-body">
+    <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false">
       <view class="checkbox-list">
         <view class="checkbox-item" wx:for="{{dataTypes}}" wx:key="id" bindtap="onDataTypeSelect" data-typeid="{{item.id}}">
           <view class="checkbox-wrapper">
@@ -311,7 +317,7 @@
           <text class="checkbox-label">{{item.name}}</text>
         </view>
       </view>
-    </view>
+    </scroll-view>
     <view class="modal-footer">
       <button class="modal-btn btn-cancel" bindtap="hideDataTypeModal">取消</button>
       <button class="modal-btn btn-confirm" bindtap="confirmDataTypeSelect">确定</button>
@@ -322,16 +328,19 @@
   <view class="modal-mask {{showFileNameModal ? 'show' : ''}}" wx:if="{{showFileNameModal}}" bindtap="hideFileNameModal"></view>
   <view class="modal-container {{showFileNameModal ? 'show' : ''}}" wx:if="{{showFileNameModal}}">
     <view class="modal-header">
-      <text class="modal-title">设置文件名</text>
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">📄</text>
+        <text class="modal-title">设置文件名</text>
+      </view>
       <view class="modal-close" bindtap="hideFileNameModal">
-        <text class="close-icon">×</text>
+        <text class="close-icon">✕</text>
       </view>
     </view>
-    <view class="modal-body">
+    <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false">
       <view class="input-wrapper">
-        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput" maxlength="50"></input>
+        <input class="modal-input" placeholder="{{defaultFileNameHint}}" value="{{tempFileName}}" bindinput="onTempFileNameInput" maxlength="50" cursor-spacing="30"></input>
       </view>
-    </view>
+    </scroll-view>
     <view class="modal-footer">
       <button class="modal-btn btn-cancel" bindtap="hideFileNameModal">取消</button>
       <button class="modal-btn btn-confirm" bindtap="confirmExport">确定导出</button>
@@ -344,24 +353,27 @@
   <view class="modal-mask {{showCloudRegisterModal ? 'show' : ''}}" wx:if="{{showCloudRegisterModal}}" bindtap="hideCloudRegisterModal"></view>
   <view class="modal-container {{showCloudRegisterModal ? 'show' : ''}}" wx:if="{{showCloudRegisterModal}}">
     <view class="modal-header">
-      <text class="modal-title">注册</text>
+      <view class="modal-title-wrapper">
+        <text class="modal-title-icon">📝</text>
+        <text class="modal-title">注册</text>
+      </view>
       <view class="modal-close" bindtap="hideCloudRegisterModal">
-        <text class="close-icon">×</text>
+        <text class="close-icon">✕</text>
       </view>
     </view>
-    <view class="modal-body">
+    <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false">
       <view class="form-group">
         <text class="form-label">账号</text>
-        <input class="form-input" placeholder="请输入账号" value="{{cloudAccountInput}}" bindinput="onCloudAccountInput"></input>
+        <input class="form-input" placeholder="请输入账号" value="{{cloudAccountInput}}" bindinput="onCloudAccountInput" cursor-spacing="30"></input>
       </view>
       <view class="form-group">
         <text class="form-label">昵称（可选）</text>
-        <input class="form-input" placeholder="请输入昵称" value="{{cloudNicknameInput}}" bindinput="onCloudNicknameInput"></input>
+        <input class="form-input" placeholder="请输入昵称" value="{{cloudNicknameInput}}" bindinput="onCloudNicknameInput" cursor-spacing="30"></input>
       </view>
       <view class="form-group">
         <text class="form-label">密码</text>
         <view class="password-wrapper">
-          <input class="form-input password-input" placeholder="请输入密码" value="{{cloudPasswordInput}}" bindinput="onCloudPasswordInput" password="{{!showCloudPassword}}"></input>
+          <input class="form-input password-input" placeholder="请输入密码" value="{{cloudPasswordInput}}" bindinput="onCloudPasswordInput" password="{{!showCloudPassword}}" cursor-spacing="30"></input>
           <view class="password-toggle" bindtap="toggleCloudPasswordVisibility">
             <text class="toggle-text">{{showCloudPassword ? '隐藏' : '显示'}}</text>
           </view>
@@ -370,13 +382,13 @@
       <view class="form-group">
         <text class="form-label">确认密码</text>
         <view class="password-wrapper">
-          <input class="form-input password-input" placeholder="请再次输入密码" value="{{cloudConfirmPassword}}" bindinput="onCloudConfirmPasswordInput" password="{{!showCloudPassword}}"></input>
+          <input class="form-input password-input" placeholder="请再次输入密码" value="{{cloudConfirmPassword}}" bindinput="onCloudConfirmPasswordInput" password="{{!showCloudPassword}}" cursor-spacing="30"></input>
           <view class="password-toggle" bindtap="toggleCloudPasswordVisibility">
             <text class="toggle-text">{{showCloudPassword ? '隐藏' : '显示'}}</text>
           </view>
         </view>
       </view>
-    </view>
+    </scroll-view>
     <view class="modal-footer">
       <button class="modal-btn btn-cancel" bindtap="hideCloudRegisterModal">取消</button>
       <button class="modal-btn btn-confirm" bindtap="registerToCloud">注册</button>
