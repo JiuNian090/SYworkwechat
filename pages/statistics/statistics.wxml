@@ -224,10 +224,11 @@
         <text class="card-title">累计工时</text>
         <text class="card-subtitle">全部历史</text>
       </view>
-      <view class="cumulative-main">
+      <view class="cumulative-body">
         <text class="cumulative-number">{{cumulativeTotalHours}}</text>
         <text class="cumulative-unit">小时</text>
       </view>
+      <view class="cumulative-divider"></view>
       <view class="cumulative-info">
         <view class="cumulative-info-item">
           <text class="info-label">数据跨度</text>

@@ -276,29 +276,44 @@ page {
   margin-bottom: 30rpx;
 }
 
-.cumulative-main {
+.cumulative-body {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  margin: 10rpx 0 24rpx;
+  padding: 16rpx 0 12rpx;
 }
 
 .cumulative-number {
-  font-size: 76rpx;
-  font-weight: 800;
-  color: var(--primary-color);
+  font-size: 88rpx;
+  font-weight: 900;
   line-height: 1;
   letter-spacing: -2rpx;
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .cumulative-unit {
   font-size: 28rpx;
   color: var(--text-tertiary);
-  margin-left: 8rpx;
+  margin-left: 10rpx;
+}
+
+.cumulative-divider {
+  height: 2rpx;
+  margin: 0 20rpx 20rpx;
+  background: repeating-linear-gradient(
+    90deg,
+    #d1fae5 0rpx,
+    #d1fae5 8rpx,
+    transparent 8rpx,
+    transparent 16rpx
+  );
 }
 
 .cumulative-info {
-  background: var(--bg-color);
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
   border-radius: 16rpx;
   padding: 20rpx;
 }
