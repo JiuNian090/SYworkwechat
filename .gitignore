@@ -53,3 +53,7 @@ utils/env.js
 project.config.json
 project.private.config.json
 miniprogram_npm/
+
+# Cavemem project memory
+.caveman/
+cavemem-mcp.log
