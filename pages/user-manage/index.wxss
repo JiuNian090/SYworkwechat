@@ -242,24 +242,40 @@ page {
   border-bottom: none;
 }
 
-.logout-item .info-label {
+.logout-section {
+  margin: 32rpx 24rpx;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.logout-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28rpx;
+  transition: background-color 0.2s ease;
+}
+
+.logout-item:active {
+  background-color: #fef2f2;
+}
+
+.logout-label {
+  font-size: 30rpx;
   color: #ef4444;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1;
 }
 
 .warn-label {
   color: #d46b08 !important;
 }
 
-.danger-label {
-  color: #ef4444 !important;
-}
-
 .switch-icon {
   background: linear-gradient(135deg, #ede9fe, #f5f3ff);
-}
-
-.logout-icon {
-  background: linear-gradient(135deg, #fee2e2, #fef2f2);
 }
 
 .form-card {

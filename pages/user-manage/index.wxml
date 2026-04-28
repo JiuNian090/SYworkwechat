@@ -1,7 +1,7 @@
 <scroll-view class="container" scroll-y enhanced show-scrollbar="false">
   <view class="user-page-main">
     <view class="user-info-section">
-      <view class="user-info-header" bindtap="showModal" data-page="avatar" hover-class="none">
+      <view class="user-info-header">
         <view class="user-avatar">
           <text class="user-avatar-text" wx:if="{{avatarType === 'text'}}">{{avatarText}}</text>
           <text class="user-avatar-emoji" wx:else>{{avatarEmoji || '😊'}}</text>
@@ -88,15 +88,10 @@
             <text class="arrow-icon">›</text>
           </view>
         </view>
-        <view class="user-info-item action-item logout-item" bindtap="confirmLogout">
-          <view class="info-item-left">
-            <view class="info-icon-wrapper logout-icon">
-              <text class="info-icon">🚪</text>
-            </view>
-            <text class="info-label danger-label">退出登录</text>
-          </view>
-          <view class="info-value-row">
-          </view>
+      </view>
+      <view class="logout-section">
+        <view class="user-info-item logout-item" bindtap="confirmLogout">
+          <text class="logout-label">退出登录</text>
         </view>
       </view>
     </view>
