@@ -7,13 +7,6 @@
 - ⚡ 优化：全面优化代码质量，移除未使用的变量和函数
 - 🏗️ 重构：重构核心功能，提升系统稳定性和可维护性
 - ✨ 优化：项目结构系统性优化，提升可维护性与可扩展性
-  - 删除重复文件 changelog.js（与 changelog.ts 完全重复）
-  - 合并重复函数 formatDate、getWeekOfMonth、compareVersion、calculateHash 到各自归属模块
-  - 重命名 util.ts → color.ts，语义更准确
-  - 迁移第三方库 jszip.min.js 到独立 vendor/ 目录
-  - 迁移配置模板 env.js.example 到项目根目录
-  - 拆分 dailyMessage.ts 数据层到 dailyMessageData.ts，逻辑与数据分离
-  - 移除全部 @ts-nocheck，补充完整类型定义，54 个类型错误全部修复
 
 ## v3.10.2 (2026-05-02)
 - 📊 优化：班次明细列表改为表格布局，新增班次名称显示
