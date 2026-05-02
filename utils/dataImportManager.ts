@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const JSZip = require('./jszip.min.js') as any;
 

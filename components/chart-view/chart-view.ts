@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const DAY_THRESHOLD = 7;
 

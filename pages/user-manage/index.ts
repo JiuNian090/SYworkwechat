@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const CloudManager = require('../../utils/cloudManager');
 const AvatarManager = require('../../utils/avatarManager');

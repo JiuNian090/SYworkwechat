@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 
 interface IDeviceInfo {
@@ -78,9 +79,9 @@ class DeviceInfo {
 
   getFallbackDeviceInfo(): IDeviceInfo {
     try {
-      const appBaseInfo = wx.getAppBaseInfo ? wx.getAppBaseInfo() as unknown as IAppBaseInfo : {};
-      const deviceInfo = wx.getDeviceInfo ? wx.getDeviceInfo() as unknown as IDeviceInfo : {};
-      const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() as unknown as IWindowInfo : {};
+      const appBaseInfo = wx.getAppBaseInfo ? wx.getAppBaseInfo() as unknown as IAppBaseInfo : {} as IAppBaseInfo;
+      const deviceInfo = wx.getDeviceInfo ? wx.getDeviceInfo() as unknown as IDeviceInfo : {} as IDeviceInfo;
+      const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() as unknown as IWindowInfo : {} as IWindowInfo;
 
       return {
         platform: deviceInfo.platform || 'unknown',

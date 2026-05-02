@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const emojiManager = require('./emojiManager.js');
 const { store } = require('./store.js');

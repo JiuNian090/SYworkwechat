@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/util');
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation');

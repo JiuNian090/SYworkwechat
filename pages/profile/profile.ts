@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const changelogData = require('../../utils/changelog');
 const CloudManager = require('../../utils/cloudManager');

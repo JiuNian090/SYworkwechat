@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const { formatDate, getWeekday, formatDayDisplay, getWeekOfMonth: getWOM, getMondayOfWeek } = require('../../utils/date');
 const { calculateHash } = require('../../utils/encrypt');

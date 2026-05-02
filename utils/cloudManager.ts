@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use strict';
 const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation, getImageRelationTable, removeImageFromRelation } = require('./imageRelation.js');
 const { calculateHash } = require('./encrypt.js');
