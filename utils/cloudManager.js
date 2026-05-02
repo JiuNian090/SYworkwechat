@@ -1328,11 +1328,12 @@ class CloudManager {
       });
 
       if (result.result && result.result.success) {
+        const data = result.result.data || {};
         return {
           success: true,
           hasBackup: !!result.result.hasBackup,
-          backupTime: result.result.backupTime || null,
-          backupHash: result.result.backupHash || null
+          backupTime: data.backupTime || null,
+          backupHash: data.backupHash || null
         };
       }
       return {

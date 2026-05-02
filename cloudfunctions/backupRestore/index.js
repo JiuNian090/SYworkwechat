@@ -790,14 +790,20 @@ exports.main = async (event, context) => {
       // 获取备份系统版本号
       const backupSystemVersion = dataBackup.backupSystemVersion || imageBackup.backupSystemVersion || 'v1.0.0';
 
+      const shiftTemplates = dataBackup.shiftTemplates || [];
+      const shifts = dataBackup.shifts || {};
+      const combined = JSON.stringify(shiftTemplates) + JSON.stringify(shifts);
+      const backupHash = calculateHash(combined);
+
       return {
         success: true,
         hasBackup: true,
         data: {
           backupTime: dataBackup.backupTime || imageBackup.backupTime || new Date(),
           imageCount: (imageBackup.images || []).length,
-          shiftCount: Object.keys(dataBackup.shifts || {}).length,
-          backupSystemVersion: backupSystemVersion
+          shiftCount: Object.keys(shifts).length,
+          backupSystemVersion: backupSystemVersion,
+          backupHash: backupHash
         }
       };
     }
