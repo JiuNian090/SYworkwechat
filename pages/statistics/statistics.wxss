@@ -16,7 +16,23 @@ page {
   --success-color: #34d399;
   --warning-color: #fbbf24;
   --error-color: #f87171;
-  
+
+  /* 标签系统色值（统一管理） */
+  --tag-radius: 10rpx;
+  --tag-font: 22rpx;
+  --tag-padding-x: 16rpx;
+  --tag-padding-y: 5rpx;
+
+  --tag-date-bg: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  --tag-date-text: #2e7d32;
+  --tag-date-weekday: #66bb6a;
+
+  --tag-shift-bg: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  --tag-shift-text: #1565c0;
+
+  --tag-hours-bg: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  --tag-hours-text: #e65100;
+
   background-color: var(--bg-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
 }
@@ -715,7 +731,7 @@ page {
   color: #ffffff;
 }
 
-/* 班次明细列表 */
+/* 班次明细列表 - 表格布局 */
 .list-card {
   margin-bottom: 40rpx;
 }
@@ -725,75 +741,145 @@ page {
   overflow-y: auto;
 }
 
-.schedule-item {
+.schedule-table {
   display: flex;
-  align-items: center;
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid var(--border-color);
-  transition: background 0.2s ease;
+  flex-direction: column;
 }
 
-.schedule-item:last-child {
+.schedule-thead {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 16rpx;
+  background: var(--bg-color);
+  border-radius: 12rpx;
+  margin-bottom: 8rpx;
+  flex-shrink: 0;
+}
+
+.th {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-align: center;
+  letter-spacing: 0.5rpx;
+}
+
+.schedule-tr {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 16rpx;
+  border-bottom: 1rpx solid var(--border-color);
+  transition: background 0.15s ease;
+}
+
+.schedule-tr:last-child {
   border-bottom: none;
 }
 
-.schedule-item:active {
+.schedule-tr:active {
   background: rgba(0, 0, 0, 0.02);
 }
 
-.schedule-date {
-  width: 120rpx;
+.td {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
 }
 
-.date-day {
-  display: block;
-  font-size: 28rpx;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4rpx;
-}
+/* 列宽分配 — 4列等分整行 */
+.col-date { width: auto; flex: 1; min-width: 0; }
+.col-shift { width: auto; flex: 1; min-width: 0; }
+.col-type { width: auto; flex: 1; min-width: 0; }
+.col-hours { width: auto; flex: 1; min-width: 0; }
 
-.date-weekday {
-  display: block;
-  font-size: 22rpx;
-  color: var(--text-tertiary);
-}
-
-.schedule-type {
-  flex: 1;
-  display: flex;
+/* 通用标签基底 — 所有标签共用 */
+.tag-base {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  border-radius: var(--tag-radius);
+  white-space: nowrap;
 }
 
-.type-tag {
-  padding: 8rpx 24rpx;
-  border-radius: 24rpx;
-  font-size: 26rpx;
+/* 日期标签 */
+.tag-date {
+  flex-direction: row;
+  gap: 6rpx;
+  padding: 5rpx 14rpx;
+  background: var(--tag-date-bg);
+  min-width: 76rpx;
+}
+
+.td-day {
+  display: block;
+  font-size: var(--tag-font);
+  font-weight: 700;
+  color: var(--tag-date-text);
+  line-height: 1.35;
+}
+
+.td-weekday {
+  display: block;
+  font-size: 18rpx;
+  color: var(--tag-date-weekday);
   font-weight: 500;
+}
+
+/* 班次标签 */
+.tag-shift {
+  padding: var(--tag-padding-y) var(--tag-padding-x);
+  background: var(--tag-shift-bg);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shift-name {
+  font-size: var(--tag-font);
+  font-weight: 600;
+  color: var(--tag-shift-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 类型标签 — 渐变 + 投影，高识别度 */
+.type-tag {
+  padding: var(--tag-padding-y) 20rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 0.5rpx;
 }
 
 .type-tag.day {
-  background: linear-gradient(145deg, #ffeedd 0%, #ffd4a8 100%);
-  color: #d97706;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(251, 191, 36, 0.35);
 }
 
 .type-tag.night {
-  background: linear-gradient(145deg, #9ca3af 0%, #6b7280 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(99, 102, 241, 0.35);
 }
 
 .type-tag.off {
-  background: linear-gradient(145deg, #f3e8ff 0%, #e9d5ff 100%);
-  color: #9333ea;
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(167, 139, 250, 0.3);
 }
 
-.schedule-time {
-  width: 120rpx;
-  text-align: right;
-  font-size: 26rpx;
-  color: var(--text-secondary);
-  font-weight: 500;
+/* 工时标签 */
+.tag-hours {
+  padding: var(--tag-padding-y) 16rpx;
+  background: var(--tag-hours-bg);
+}
+
+.hours-val {
+  font-size: var(--tag-font);
+  color: var(--tag-hours-text);
+  font-weight: 700;
 }
 
 /* 空状态 */

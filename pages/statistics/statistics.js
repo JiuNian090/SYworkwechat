@@ -454,6 +454,7 @@ Page({
             day: this.formatDayDisplay(dateStr),
             weekday: this.getWeekday(dateStr),
             shiftType: shiftType,
+            shiftName: shiftData.name || '',
             workHours: shiftData.workHours || '--:--'
           });
         } else {
@@ -462,6 +463,7 @@ Page({
             day: this.formatDayDisplay(dateStr),
             weekday: this.getWeekday(dateStr),
             shiftType: '休息日',
+            shiftName: '',
             workHours: '--:--'
           });
           offDays++;
@@ -599,7 +601,7 @@ Page({
       const scrollTop = this._pendingScrollTop;
       const itemH = this._itemHeightPx || 55;
       const startIndex = Math.max(0, Math.floor(scrollTop / itemH) - this._visibleBuffer);
-      if (Math.abs(startIndex - this._lastRenderStart) < 3) return;
+      if (Math.abs(startIndex - this._lastRenderStart) < 1) return;
       this._lastRenderStart = startIndex;
       const slice = this._computeVisibleSlice(scrollTop);
       this.setData({

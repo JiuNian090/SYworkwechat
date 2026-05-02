@@ -267,19 +267,36 @@
       bindscroll="onScheduleScroll"
       wx:if="{{visibleSchedules.length > 0}}"
     >
-      <view style="padding-top: {{listTopPadding}}px; padding-bottom: {{listBottomPadding}}px;">
-        <view class="schedule-item" wx:for="{{visibleSchedules}}" wx:key="date">
-          <view class="schedule-date">
-            <text class="date-day">{{item.day}}</text>
-            <text class="date-weekday">{{item.weekday}}</text>
-          </view>
-          <view class="schedule-type">
-            <view class="type-tag {{item.shiftType === '白天班' ? 'day' : item.shiftType === '跨夜班' ? 'night' : 'off'}}">
-              {{item.shiftType}}
+      <view class="schedule-table">
+        <view class="schedule-thead">
+          <view class="th col-date">日期</view>
+          <view class="th col-shift">班次</view>
+          <view class="th col-type">类型</view>
+          <view class="th col-hours">工时</view>
+        </view>
+        <view style="padding-top: {{listTopPadding}}px; padding-bottom: {{listBottomPadding}}px;">
+          <view class="schedule-tr" wx:for="{{visibleSchedules}}" wx:key="date">
+            <view class="td col-date">
+              <view class="tag-base tag-date">
+                <text class="td-day">{{item.day}}</text>
+                <text class="td-weekday">{{item.weekday}}</text>
+              </view>
             </view>
-          </view>
-          <view class="schedule-time">
-            <text>{{item.workHours || '--:--'}}</text>
+            <view class="td col-shift">
+              <view class="tag-base tag-shift" wx:if="{{item.shiftName}}">
+                <text class="shift-name">{{item.shiftName}}</text>
+              </view>
+            </view>
+            <view class="td col-type">
+              <view class="tag-base type-tag {{item.shiftType === '白天班' ? 'day' : item.shiftType === '跨夜班' ? 'night' : 'off'}}">
+                {{item.shiftType}}
+              </view>
+            </view>
+            <view class="td col-hours">
+              <view class="tag-base tag-hours">
+                <text class="hours-val">{{item.workHours || '--:--'}}</text>
+              </view>
+            </view>
           </view>
         </view>
       </view>
