@@ -125,9 +125,19 @@ const commonRules = {
   'no-process-exit': 'off'
 };
 
+const tsRules = {
+  '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
+  '@typescript-eslint/no-explicit-any': 'off',
+  '@typescript-eslint/explicit-function-return-type': 'off',
+  '@typescript-eslint/no-require-imports': 'off',
+  '@typescript-eslint/no-var-requires': 'off',
+  '@typescript-eslint/no-non-null-assertion': 'off',
+  '@typescript-eslint/ban-ts-comment': 'off'
+};
+
 module.exports = [
   {
-    ignores: ['**/node_modules/**', '**/miniprogram_npm/**', '**/utils/jszip.min.js', '**/.trae/**']
+    ignores: ['**/node_modules/**', '**/miniprogram_npm/**', '**/utils/jszip.min.js', '**/.trae/**', '**/miniprogram_dist/**']
   },
   {
     files: ['**/*.js'],
@@ -140,6 +150,34 @@ module.exports = [
       }
     },
     rules: commonRules
+  },
+  {
+    files: ['**/*.ts'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      sourceType: 'script',
+      globals: {
+        ...nodeGlobals,
+        ...wechatGlobals
+      },
+      parser: require('@typescript-eslint/parser'),
+      parserOptions: {
+        project: './tsconfig.json',
+        ecmaFeatures: {
+          impliedStrict: true
+        }
+      }
+    },
+    plugins: {
+      '@typescript-eslint': require('@typescript-eslint/eslint-plugin')
+    },
+    rules: {
+      ...commonRules,
+      ...tsRules,
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+      'no-redeclare': 'off'
+    }
   },
   {
     files: ['cloudfunctions/**/*.js'],

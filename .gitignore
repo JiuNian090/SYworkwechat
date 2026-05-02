@@ -56,6 +56,8 @@ miniprogram_npm/
 
 # Build artifacts (auto-generated)
 utils/versionInfo.js
+miniprogram_dist/
+*.tsbuildinfo
 
 # Cloud functions dependencies (install on deploy)
 cloudfunctions/**/node_modules/

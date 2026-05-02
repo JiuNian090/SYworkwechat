@@ -1,15 +1,42 @@
 'use strict';
-// pages/plan/plan.js
-const { calculateHash } = require('../../utils/encrypt.js');
-const { store } = require('../../utils/store.js');
+const { calculateHash } = require('../../utils/encrypt');
+const { store } = require('../../utils/store');
+
+interface NewTemplate {
+  name: string;
+  startTime: string;
+  endTime: string;
+  hours: number;
+  minutes: number;
+  hoursIndex: number;
+  minutesIndex: number;
+  workHours: number;
+  typeIndex?: number;
+  type?: string;
+  color: string;
+}
+
+interface EditTemplate {
+  name: string;
+  startTime: string;
+  endTime: string;
+  hours: number;
+  minutes: number;
+  hoursIndex: number;
+  minutesIndex: number;
+  workHours: number;
+  typeIndex: number;
+  color: string;
+}
+
 Page({
   data: {
-    shiftTemplates: [],
+    shiftTemplates: [] as unknown[],
     showAddTemplate: false,
     showEditTemplate: false,
     editIndex: -1,
-    hoursRange: Array.from({length: 25}, (_, i) => i), // 0-24小时
-    minutesRange: Array.from({length: 13}, (_, i) => i * 5), // 0-60分钟，5分钟间隔
+    hoursRange: Array.from({length: 25}, (_, i) => i) as number[],
+    minutesRange: Array.from({length: 13}, (_, i) => i * 5) as number[],
     newTemplate: {
       name: '',
       startTime: '09:00',
@@ -19,9 +46,9 @@ Page({
       hoursIndex: 8,
       minutesIndex: 0,
       workHours: 8.0,
-      type: '白天班',
+      typeIndex: 0,
       color: '#07c160'
-    },
+    } as NewTemplate,
     editTemplate: {
       name: '',
       startTime: '09:00',
@@ -33,9 +60,9 @@ Page({
       workHours: 8.0,
       typeIndex: 0,
       color: '#07c160'
-    },
-    shiftTypes: ['白天班', '跨夜班', '休息日'],
-    presetColors: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#722ed1', '#13c2c2'],
+    } as EditTemplate,
+    shiftTypes: ['白天班', '跨夜班', '休息日'] as string[],
+    presetColors: ['#07c160', '#faad14', '#1890ff', '#ff4d4f', '#722ed1', '#13c2c2'] as string[],
     colorNames: {
       '#07c160': '翠绿',
       '#faad14': '暖橙',
@@ -46,13 +73,12 @@ Page({
     }
   },
 
-  onLoad() {
+  onLoad(): void {
     this.loadShiftTemplates();
   },
 
-  onShow() {
-    // 页面显示时只在数据发生变化时重新加载班次模板
-    const templates = store.getState('shiftTemplates') || [];
+  onShow(): void {
+    const templates = store.getState('shiftTemplates') as unknown[] || [];
     if (calculateHash(JSON.stringify(templates)) !== calculateHash(JSON.stringify(this.data.shiftTemplates))) {
       this.setData({
         shiftTemplates: templates
@@ -60,9 +86,9 @@ Page({
     }
   },
 
-  loadShiftTemplates() {
+  loadShiftTemplates(): void {
     try {
-      const templates = store.getState('shiftTemplates') || [];
+      const templates = store.getState('shiftTemplates') as unknown[] || [];
       this.setData({
         shiftTemplates: templates
       });
@@ -71,7 +97,7 @@ Page({
     }
   },
 
-  showAddTemplateModal() {
+  showAddTemplateModal(): void {
     this.setData({
       showAddTemplate: true,
       newTemplate: {
@@ -89,32 +115,32 @@ Page({
     });
   },
 
-  hideAddTemplateModal() {
+  hideAddTemplateModal(): void {
     this.setData({
       showAddTemplate: false
     });
   },
 
-  onTemplateInput(e) {
-    const field = e.currentTarget.dataset.field;
+  onTemplateInput(e: WechatMiniprogram.Input): void {
+    const field = (e.currentTarget.dataset as { field: string }).field;
     const value = e.detail.value;
     this.setData({
       [`newTemplate.${field}`]: value
-    });
+    } as Record<string, unknown>);
   },
 
-  onEditTemplateInput(e) {
-    const field = e.currentTarget.dataset.field;
+  onEditTemplateInput(e: WechatMiniprogram.Input): void {
+    const field = (e.currentTarget.dataset as { field: string }).field;
     const value = e.detail.value;
     this.setData({
       [`editTemplate.${field}`]: value
-    });
+    } as Record<string, unknown>);
   },
 
-  onHoursChange(e) {
-    const hoursIndex = e.detail.value;
-    const hours = this.data.hoursRange[hoursIndex];
-    const minutes = this.data.newTemplate.minutes || 0;
+  onHoursChange(e: WechatMiniprogram.PickerChange): void {
+    const hoursIndex = parseInt(e.detail.value as string);
+    const hours = (this.data.hoursRange as number[])[hoursIndex];
+    const minutes = (this.data.newTemplate as NewTemplate).minutes || 0;
     const workHours = hours + (minutes / 60);
     this.setData({
       'newTemplate.hoursIndex': hoursIndex,
@@ -123,10 +149,10 @@ Page({
     });
   },
 
-  onEditHoursChange(e) {
-    const hoursIndex = e.detail.value;
-    const hours = this.data.hoursRange[hoursIndex];
-    const minutes = this.data.editTemplate.minutes || 0;
+  onEditHoursChange(e: WechatMiniprogram.PickerChange): void {
+    const hoursIndex = parseInt(e.detail.value as string);
+    const hours = (this.data.hoursRange as number[])[hoursIndex];
+    const minutes = (this.data.editTemplate as EditTemplate).minutes || 0;
     const workHours = hours + (minutes / 60);
     this.setData({
       'editTemplate.hoursIndex': hoursIndex,
@@ -135,10 +161,10 @@ Page({
     });
   },
 
-  onMinutesChange(e) {
-    const minutesIndex = e.detail.value;
-    const minutes = this.data.minutesRange[minutesIndex];
-    const hours = this.data.newTemplate.hours || 0;
+  onMinutesChange(e: WechatMiniprogram.PickerChange): void {
+    const minutesIndex = parseInt(e.detail.value as string);
+    const minutes = (this.data.minutesRange as number[])[minutesIndex];
+    const hours = (this.data.newTemplate as NewTemplate).hours || 0;
     const workHours = hours + (minutes / 60);
     this.setData({
       'newTemplate.minutesIndex': minutesIndex,
@@ -147,10 +173,10 @@ Page({
     });
   },
 
-  onEditMinutesChange(e) {
-    const minutesIndex = e.detail.value;
-    const minutes = this.data.minutesRange[minutesIndex];
-    const hours = this.data.editTemplate.hours || 0;
+  onEditMinutesChange(e: WechatMiniprogram.PickerChange): void {
+    const minutesIndex = parseInt(e.detail.value as string);
+    const minutes = (this.data.minutesRange as number[])[minutesIndex];
+    const hours = (this.data.editTemplate as EditTemplate).hours || 0;
     const workHours = hours + (minutes / 60);
     this.setData({
       'editTemplate.minutesIndex': minutesIndex,
@@ -159,22 +185,20 @@ Page({
     });
   },
 
-
-
-  onTypeChange(e) {
+  onTypeChange(e: WechatMiniprogram.PickerChange): void {
     this.setData({
-      'newTemplate.typeIndex': e.detail.value
+      'newTemplate.typeIndex': parseInt(e.detail.value as string)
     });
   },
 
-  onEditTypeChange(e) {
+  onEditTypeChange(e: WechatMiniprogram.PickerChange): void {
     this.setData({
-      'editTemplate.typeIndex': e.detail.value
+      'editTemplate.typeIndex': parseInt(e.detail.value as string)
     });
   },
 
-  saveTemplate() {
-    const { newTemplate, shiftTemplates } = this.data;
+  saveTemplate(): void {
+    const { newTemplate, shiftTemplates } = this.data as { newTemplate: NewTemplate; shiftTemplates: unknown[] };
 
     if (!newTemplate.name) {
       wx.showToast({
@@ -184,10 +208,8 @@ Page({
       return;
     }
 
-    // 确保工时计算正确
     const workHours = (newTemplate.hours || 0) + ((newTemplate.minutes || 0) / 60);
-    // 获取班次类型
-    const type = this.data.shiftTypes[newTemplate.typeIndex] || '白天班';
+    const type = (this.data.shiftTypes as string[])[newTemplate.typeIndex ?? 0] || '白天班';
     const templateToSave = {
       ...newTemplate,
       type: type,
@@ -202,12 +224,12 @@ Page({
         showAddTemplate: false
       });
 
-      // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
-        if (pages[i].route === 'pages/schedule/schedule') {
-          if (pages[i].onShiftTemplatesUpdate) {
-            pages[i].onShiftTemplatesUpdate(templates);
+        if ((pages[i] as Record<string, unknown>).route === 'pages/schedule/schedule') {
+          const schedulePage = pages[i] as Record<string, unknown>;
+          if (typeof schedulePage.onShiftTemplatesUpdate === 'function') {
+            schedulePage.onShiftTemplatesUpdate(templates);
           }
           break;
         }
@@ -226,7 +248,7 @@ Page({
     }
   },
 
-  saveTemplates() {
+  saveTemplates(): void {
     try {
       store.setState({ shiftTemplates: this.data.shiftTemplates }, ['shiftTemplates']);
       wx.showToast({
@@ -234,12 +256,12 @@ Page({
         icon: 'success'
       });
 
-      // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
-        if (pages[i].route === 'pages/schedule/schedule') {
-          if (pages[i].onShiftTemplatesUpdate) {
-            pages[i].onShiftTemplatesUpdate(this.data.shiftTemplates);
+        if ((pages[i] as Record<string, unknown>).route === 'pages/schedule/schedule') {
+          const schedulePage = pages[i] as Record<string, unknown>;
+          if (typeof schedulePage.onShiftTemplatesUpdate === 'function') {
+            schedulePage.onShiftTemplatesUpdate(this.data.shiftTemplates);
           }
           break;
         }
@@ -253,20 +275,15 @@ Page({
     }
   },
 
-  showEditTemplateModal(e) {
-    const index = e.currentTarget.dataset.index;
-    const tpl = this.data.shiftTemplates[index];
+  showEditTemplateModal(e: WechatMiniprogram.TouchEvent): void {
+    const index = (e.currentTarget.dataset as { index: number }).index;
+    const tpl = (this.data.shiftTemplates as Record<string, unknown>[])[index];
 
-    // 确保模板包含hours和minutes字段
-    const hours = tpl.hours || Math.floor(tpl.workHours || 0);
-    const minutes = tpl.minutes || Math.round(((tpl.workHours || 0) - Math.floor(tpl.workHours || 0)) * 60);
-
-    // 计算小时和分钟的索引
+    const hours = (tpl.hours as number) || Math.floor((tpl.workHours as number) || 0);
+    const minutes = (tpl.minutes as number) || Math.round(((tpl.workHours as number) || 0) - Math.floor((tpl.workHours as number) || 0)) * 60;
     const hoursIndex = hours;
-    const minutesIndex = minutes / 5; // 因为分钟是5分钟间隔
-
-    // 查找班次类型索引
-    const typeIndex = this.data.shiftTypes.indexOf(tpl.type);
+    const minutesIndex = minutes / 5;
+    const typeIndex = (this.data.shiftTypes as string[]).indexOf(tpl.type as string);
 
     const templateWithTime = {
       ...tpl,
@@ -284,21 +301,19 @@ Page({
     });
   },
 
-  hideEditTemplateModal() {
+  hideEditTemplateModal(): void {
     this.setData({ showEditTemplate: false, editIndex: -1 });
   },
 
-  saveEditTemplate() {
-    const { editTemplate, shiftTemplates, editIndex } = this.data;
+  saveEditTemplate(): void {
+    const { editTemplate, shiftTemplates, editIndex } = this.data as { editTemplate: EditTemplate; shiftTemplates: unknown[]; editIndex: number };
     if (!editTemplate.name) {
       wx.showToast({ title: '请输入班次名称', icon: 'none' });
       return;
     }
 
-    // 确保工时计算正确
     const workHours = (editTemplate.hours || 0) + ((editTemplate.minutes || 0) / 60);
-    // 获取班次类型
-    const type = this.data.shiftTypes[editTemplate.typeIndex] || '白天班';
+    const type = (this.data.shiftTypes as string[])[editTemplate.typeIndex] || '白天班';
     const templateToSave = {
       ...editTemplate,
       type: type,
@@ -315,12 +330,12 @@ Page({
         editIndex: -1
       });
 
-      // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
-        if (pages[i].route === 'pages/schedule/schedule') {
-          if (pages[i].onShiftTemplatesUpdate) {
-            pages[i].onShiftTemplatesUpdate(templates);
+        if ((pages[i] as Record<string, unknown>).route === 'pages/schedule/schedule') {
+          const schedulePage = pages[i] as Record<string, unknown>;
+          if (typeof schedulePage.onShiftTemplatesUpdate === 'function') {
+            schedulePage.onShiftTemplatesUpdate(templates);
           }
           break;
         }
@@ -332,10 +347,9 @@ Page({
     }
   },
 
-  deleteTemplate(e) {
-    const index = e.currentTarget.dataset.index;
-    const templateToDelete = this.data.shiftTemplates[index];
-    const templates = this.data.shiftTemplates.filter((_, i) => i !== index);
+  deleteTemplate(e: WechatMiniprogram.TouchEvent): void {
+    const index = (e.currentTarget.dataset as { index: number }).index;
+    const templates = (this.data.shiftTemplates as unknown[]).filter((_, i) => i !== index);
 
     try {
       store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
@@ -343,12 +357,12 @@ Page({
         shiftTemplates: templates
       });
 
-      // 通知排班页面模板已更新
       const pages = getCurrentPages();
       for (let i = 0; i < pages.length; i++) {
-        if (pages[i].route === 'pages/schedule/schedule') {
-          if (pages[i].onShiftTemplatesUpdate) {
-            pages[i].onShiftTemplatesUpdate(templates);
+        if ((pages[i] as Record<string, unknown>).route === 'pages/schedule/schedule') {
+          const schedulePage = pages[i] as Record<string, unknown>;
+          if (typeof schedulePage.onShiftTemplatesUpdate === 'function') {
+            schedulePage.onShiftTemplatesUpdate(templates);
           }
           break;
         }
@@ -367,25 +381,25 @@ Page({
     }
   },
 
-  onShareAppMessage() {
+  onShareAppMessage(): Record<string, unknown> {
     return {
       title: 'SYwork排班管理系统 - 计划页面',
       path: '/pages/plan/plan',
-      imageUrl: '' // 可以设置自定义分享图片
+      imageUrl: ''
     };
   },
 
-  onShareTimeline() {
+  onShareTimeline(): Record<string, unknown> {
     return {
       title: 'SYwork排班管理系统 - 计划页面',
       query: '',
-      imageUrl: '' // 可以设置自定义分享图片
+      imageUrl: ''
     };
   },
 
-  onColorChange(e) {
-    const { color } = e.detail;
-    const mode = e.currentTarget.dataset.mode;
+  onColorChange(e: WechatMiniprogram.TouchEvent): void {
+    const { color } = e.detail as { color: string };
+    const mode = (e.currentTarget.dataset as { mode: string }).mode;
     if (mode === 'edit') {
       this.setData({
         'editTemplate.color': color
@@ -397,3 +411,5 @@ Page({
     }
   }
 });
+
+export {};

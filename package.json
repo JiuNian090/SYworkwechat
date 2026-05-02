@@ -6,7 +6,8 @@
   "scripts": {
     "sync-changelog": "node sync_changelog.js",
     "update-version": "node version-manager.js",
-    "build": "node version-manager.js && node sync_changelog.js",
+    "tsc:check": "tsc --noEmit",
+    "build": "tsc --noEmit && node version-manager.js && node sync_changelog.js",
     "dev": "node version-manager.js && node sync_changelog.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
@@ -23,7 +24,13 @@
     "crypto-js": "^4.2.0"
   },
   "devDependencies": {
-    "eslint": "^10.2.1"
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^25.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "eslint": "^10.2.1",
+    "miniprogram-api-typings": "^3.12.3",
+    "typescript": "^5.5.4"
   },
   "browserslist": [
     "last 2 versions",
