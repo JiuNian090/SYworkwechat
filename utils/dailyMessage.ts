@@ -430,12 +430,7 @@ function getDailyMessage(nickname: string, scheduleData: Record<string, ShiftDat
 }
 
 module.exports = {
-  getDailyMessage,
-  toAbsolute,
-  isWorkingType,
-  isNightShift,
-  determineStatus,
-  getRandomNickname
+  getDailyMessage
 };
 
 export {};

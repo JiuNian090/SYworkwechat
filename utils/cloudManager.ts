@@ -4,6 +4,7 @@ const { calculateHash } = require('./encrypt.js');
 const { store } = require('./store.js');
 const { getCalendarWeekOfMonth } = require('./date.js');
 const { compareVersion } = require('./deviceInfo.js');
+const config = require('../config.js');
 
 interface CloudFunctionOptions {
   timeout?: number;
@@ -69,7 +70,7 @@ class CloudManager {
   }
 
   get BACKUP_SYSTEM_VERSION(): string {
-    return 'v2.0.0';
+    return config.backupSystemVersion;
   }
 
   isCloudInitialized(): boolean {
@@ -116,7 +117,7 @@ class CloudManager {
         };
       }
 
-      const result = await this.callCloudFunction('userLogin', {
+      const result = await this.callCloudFunction(config.cloudFunctions.userLogin, {
         action: 'register',
         account: account,
         password: password,
@@ -148,7 +149,7 @@ class CloudManager {
         };
       }
 
-      const result = await this.callCloudFunction('userLogin', {
+      const result = await this.callCloudFunction(config.cloudFunctions.userLogin, {
         action: 'login',
         account: account,
         password: password
@@ -241,7 +242,6 @@ class CloudManager {
 
       if (hasUpdated) {
         wx.setStorageSync(weekKey, updatedImages);
-        console.log(`已更新周 ${weekKey} 的图片名称格式`);
       }
     });
 
@@ -343,18 +343,18 @@ class CloudManager {
       const { images: validImages, imageWeekRelation: validImageWeekRelation } = await getAllValidImages();
 
       try {
-        const infoResult = await this.callCloudFunction('backupRestore', {
+        const infoResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
           action: 'getBackupInfo',
           userId: this.userId
         });
         if (infoResult.result.success && infoResult.result.hasBackup) {
-          await this.callCloudFunction('backupRestore', {
+          await this.callCloudFunction(config.cloudFunctions.backupRestore, {
             action: 'restore',
             userId: this.userId
           });
         }
       } catch (e) {
-        console.log('获取云端备份信息失败，假设是新备份', e);
+        console.warn('获取云端备份信息失败，假设是新备份', e);
       }
 
       const avatarInfo = {
@@ -365,7 +365,7 @@ class CloudManager {
 
       wx.showLoading({ title: '开始备份...' });
 
-      const diffResult = await this.callCloudFunction('backupRestore', {
+      const diffResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
         action: 'getBackupDiff',
         userId: this.userId,
         data: {
@@ -387,10 +387,6 @@ class CloudManager {
       }
 
       const imagesToUpload = diffResult.result.imagesToUpload || [];
-      const imagesToDelete = diffResult.result.imagesToDelete || [];
-
-      console.log('备份 - 需要上传的图片数量:', imagesToUpload.length);
-      console.log('备份 - 需要删除的图片数量:', imagesToDelete.length);
 
       const uploadedImages: Array<Record<string, unknown>> = [];
       let newImageCount = 0;
@@ -422,7 +418,7 @@ class CloudManager {
                 });
                 compressedPath = compressResult.tempFilePath;
               } catch (e) {
-                console.log('图片压缩失败，使用原图', e);
+                console.warn('图片压缩失败，使用原图', e);
               }
 
               const uploadResult = await wx.cloud.uploadFile({
@@ -467,7 +463,7 @@ class CloudManager {
       });
 
       try {
-        const existingImagesResult = await this.callCloudFunction('backupRestore', {
+        const existingImagesResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
           action: 'getExistingImages',
           userId: this.userId
         });
@@ -492,14 +488,13 @@ class CloudManager {
             }
           });
 
-          console.log('备份 - 最终上传图片数量:', uploadedImages.length);
         }
       } catch (e) {
-        console.log('获取云端现有图片失败', e);
+        console.warn('获取云端现有图片失败', e);
       }
 
       wx.showLoading({ title: '完成备份...' });
-      const backupResult = await this.callCloudFunction('backupRestore', {
+      const backupResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
         action: 'completeBackup',
         userId: this.userId,
         data: {
@@ -615,7 +610,7 @@ class CloudManager {
               img.addedTime || new Date().toISOString()
             );
           } catch (e) {
-            console.log('计算本地图片哈希值失败:', e);
+            console.warn('计算本地图片哈希值失败:', e);
             img.hash = '';
           }
         }
@@ -644,10 +639,7 @@ class CloudManager {
       if (localImageMap.has(localKey)) {
         localImage = localImageMap.get(localKey)!;
         if (localImage.hash === imgInfo.hash) {
-          console.log('图片未变化，跳过下载:', imgInfo.remotePath);
           foundExistingImage = true;
-        } else {
-          console.log('哈希值不同，需要更新:', imgInfo.remotePath);
         }
       }
 
@@ -657,7 +649,6 @@ class CloudManager {
           const weekImages = wx.getStorageSync(weekKey) || [];
           for (const img of weekImages) {
             if (img.hash === imgInfo.hash) {
-              console.log('找到哈希值相同的图片，跳过下载:', imgInfo.remotePath);
               foundExistingImage = true;
               break;
             }
@@ -720,7 +711,6 @@ class CloudManager {
           } else {
             const existingImage = weekImages[existingImageIndex];
             if (existingImage.hash === imageHash) {
-              console.log('下载的图片与本地图片哈希值相同，跳过更新:', imgInfo.remotePath);
               shouldUpdate = false;
             }
           }
@@ -861,7 +851,7 @@ class CloudManager {
 
       wx.showLoading({ title: '准备恢复...' });
 
-      const getRelationResult = await this.callCloudFunction('backupRestore', {
+      const getRelationResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
         action: 'getBackupRelation',
         userId: this.userId
       });
@@ -990,9 +980,6 @@ class CloudManager {
         });
       });
 
-      console.log('恢复 - 需要新增的图片数量:', imagesToAdd.length);
-      console.log('恢复 - 需要删除的图片数量:', imagesToDelete.length);
-
       let deletedImageCount = 0;
       for (const imgToDelete of imagesToDelete) {
         const weekImages = wx.getStorageSync(imgToDelete.weekKey) || [];
@@ -1006,7 +993,7 @@ class CloudManager {
 
       const imageCounters = { newImages: 0 };
       if (imagesToAdd.length > 0) {
-        const getImagesResult = await this.callCloudFunction('backupRestore', {
+        const getImagesResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
           action: 'getAllCloudImages',
           userId: this.userId
         });
@@ -1095,7 +1082,7 @@ class CloudManager {
       wx.removeStorageSync('image_relation_table');
       importImageWeekRelation(cloudRelation);
 
-      const restoreResult = await this.callCloudFunction('backupRestore', {
+      const restoreResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
         action: 'restoreOtherData',
         userId: this.userId
       });
@@ -1190,7 +1177,7 @@ class CloudManager {
         };
       }
 
-      const result = await this.callCloudFunction('backupRestore', {
+      const result = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
         action: 'getBackupInfo',
         userId: this.userId
       });
@@ -1214,7 +1201,7 @@ class CloudManager {
         return { success: false, errMsg: '请先登录' };
       }
 
-      const result = await this.callCloudFunction('backupRestore', {
+      const result = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
         action: 'getBackupInfo',
         userId: this.userId
       });

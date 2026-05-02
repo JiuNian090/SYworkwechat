@@ -149,47 +149,6 @@ const store = createStore({
   autoRestoreMap: {}
 });
 
-interface PageConfig {
-  onLoad?: (options: Record<string, string>) => void;
-  onUnload?: () => void;
-  setData?: (data: Record<string, any>) => void;
-  [key: string]: any;
-}
-
-function connectPage<T extends PageConfig>(
-  pageConfig: T,
-  mapStateToData?: (state: StoreState) => Record<string, any>
-): T {
-  const originalOnLoad = pageConfig.onLoad;
-  const originalOnUnload = pageConfig.onUnload;
-  const unsubscribers: (() => void)[] = [];
-
-  pageConfig.onLoad = function (this: T, options: Record<string, string>) {
-    if (mapStateToData) {
-      const dataFromState = mapStateToData(store.getState());
-      if (Object.keys(dataFromState).length > 0) {
-        this.setData!(dataFromState);
-      }
-      const fields = Object.keys(dataFromState);
-      fields.forEach(field => {
-        const unsub = store.subscribe(field, (newVal) => {
-          this.setData!({ [field]: newVal });
-        });
-        unsubscribers.push(unsub);
-      });
-    }
-    if (originalOnLoad) originalOnLoad.call(this, options);
-  };
-
-  pageConfig.onUnload = function (this: T) {
-    unsubscribers.forEach(fn => fn());
-    unsubscribers.length = 0;
-    if (originalOnUnload) originalOnUnload.call(this);
-  };
-
-  return pageConfig;
-}
-
-module.exports = { store, connectPage, STORAGE_KEYS };
+module.exports = { store, STORAGE_KEYS };
 
 export {};

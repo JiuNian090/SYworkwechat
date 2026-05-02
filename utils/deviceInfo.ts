@@ -240,23 +240,10 @@ const deviceInfo = new DeviceInfo();
 module.exports = {
   deviceInfo,
   isHarmonyOS: () => deviceInfo.isHarmonyOS(),
-  isIOS: () => deviceInfo.isIOS(),
-  isAndroid: () => deviceInfo.isAndroid(),
-  isWindows: () => deviceInfo.isWindows(),
-  isDevTools: () => deviceInfo.isDevTools(),
   getPlatformName: () => deviceInfo.getPlatformName(),
   getSDKVersion: () => deviceInfo.getSDKVersion(),
-  getDeviceInfo: () => deviceInfo.getDeviceInfo(),
-  getAppBaseInfo: () => deviceInfo.getAppBaseInfo(),
-  getWindowInfo: () => deviceInfo.getWindowInfo(),
   supportsFeature: (feature: string) => deviceInfo.supportsFeature(feature),
-  supportsAPI: (apiName: string) => deviceInfo.supportsAPI(apiName),
-  compareVersion: (v1: string, v2: string) => deviceInfo.compareVersion(v1, v2),
-  getModel: () => deviceInfo.getModel(),
-  getBrand: () => deviceInfo.getBrand(),
-  getSafeArea: () => deviceInfo.getSafeArea(),
-  getScreenWidth: () => deviceInfo.getScreenWidth(),
-  getScreenHeight: () => deviceInfo.getScreenHeight()
+  compareVersion: (v1: string, v2: string) => deviceInfo.compareVersion(v1, v2)
 };
 
 export {};

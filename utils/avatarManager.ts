@@ -1,6 +1,7 @@
 'use strict';
 const emojiManager = require('./emojiManager.js');
 const { store } = require('./store.js');
+const config = require('../config.js');
 
 interface CloudUserInfo {
   userId: string;
@@ -77,7 +78,7 @@ class AvatarManager {
     try {
       if (cloudUserInfo && cloudUserInfo.userId) {
         const result = await wx.cloud.callFunction({
-          name: 'userLogin',
+          name: config.cloudFunctions.userLogin,
           data: {
             action: 'getUserInfo',
             userId: cloudUserInfo.userId
@@ -132,7 +133,7 @@ class AvatarManager {
     try {
       if (cloudLoggedIn && cloudUserInfo && cloudUserInfo.userId) {
         const result = await wx.cloud.callFunction({
-          name: 'userLogin',
+          name: config.cloudFunctions.userLogin,
           data: {
             action: 'updateAvatar',
             userId: cloudUserInfo.userId,

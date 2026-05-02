@@ -44,13 +44,6 @@ interface GetAllValidImagesResult {
   };
 }
 
-interface ExportRelation {
-  [weekKey: string]: Array<{
-    name: string;
-    path: string;
-  }>;
-}
-
 interface ImportRelation {
   [weekKey: string]: Array<{
     name: string;
@@ -159,52 +152,6 @@ function removeImageFromRelation(weekKey: string, imageId: string): RelationTabl
   return table;
 }
 
-function updateImageInRelation(weekKey: string, imageId: string, updates: Partial<ImageInfo>): RelationTable {
-  const table = getImageRelationTable();
-
-  if (table[weekKey]) {
-    const index = table[weekKey].findIndex(img => img.id === imageId);
-    if (index !== -1) {
-      table[weekKey][index] = {
-        ...table[weekKey][index],
-        ...updates,
-        updatedTime: new Date().toISOString()
-      };
-      saveImageRelationTable(table);
-    }
-  }
-
-  return table;
-}
-
-function moveImageBetweenWeeks(fromWeekKey: string, toWeekKey: string, imageId: string): RelationTable {
-  const table = getImageRelationTable();
-
-  if (table[fromWeekKey]) {
-    const imageIndex = table[fromWeekKey].findIndex(img => img.id === imageId);
-    if (imageIndex !== -1) {
-      const image = table[fromWeekKey][imageIndex];
-
-      table[fromWeekKey].splice(imageIndex, 1);
-      if (table[fromWeekKey].length === 0) {
-        delete table[fromWeekKey];
-      }
-
-      if (!table[toWeekKey]) {
-        table[toWeekKey] = [];
-      }
-      table[toWeekKey].push({
-        ...image,
-        movedTime: new Date().toISOString()
-      });
-
-      saveImageRelationTable(table);
-    }
-  }
-
-  return table;
-}
-
 function validateImageExists(imagePath: string): Promise<boolean> {
   return new Promise((resolve) => {
     const timeoutId = setTimeout(() => {
@@ -241,7 +188,6 @@ async function cleanupInvalidImages(weekKey?: string): Promise<CleanupResult> {
         validImages.push(img);
       } else {
         cleanedCount++;
-        console.log('清理无效图片:', img.name, img.path);
       }
     }
 
@@ -361,20 +307,6 @@ async function getAllValidImages(): Promise<GetAllValidImagesResult> {
   return { images: allValidImages, imageWeekRelation };
 }
 
-function exportImageWeekRelation(): ExportRelation {
-  const table = getImageRelationTable();
-  const relation: ExportRelation = {};
-
-  for (const weekKey of Object.keys(table)) {
-    relation[weekKey] = table[weekKey].map(img => ({
-      name: img.name,
-      path: img.path
-    }));
-  }
-
-  return relation;
-}
-
 function importImageWeekRelation(relation: ImportRelation): RelationTable {
   const table: RelationTable = {};
 
@@ -393,18 +325,11 @@ function importImageWeekRelation(relation: ImportRelation): RelationTable {
 
 module.exports = {
   getImageRelationTable,
-  saveImageRelationTable,
   rebuildRelationFromLocal,
   addImageToRelation,
   removeImageFromRelation,
-  updateImageInRelation,
-  moveImageBetweenWeeks,
-  validateImageExists,
-  cleanupInvalidImages,
   syncRelationWithLocal,
-  getValidImagesForWeek,
   getAllValidImages,
-  exportImageWeekRelation,
   importImageWeekRelation
 };
 

@@ -545,7 +545,7 @@ Page({
             appId: 'wxfdcee92a299bcaf1',
             path: 'tKUOWaEQmgv5gId',
             extraData: { from: 'SYwork排班管理系统' },
-            success: (res) => { console.log('跳转到腾讯公益小程序成功', res); },
+            success: () => {},
             fail: (err) => {
               console.error('跳转到腾讯公益小程序失败', err);
               wx.showToast({ title: '跳转失败，请稍后重试', icon: 'none' });

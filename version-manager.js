@@ -40,15 +40,14 @@ function updateVersion() {
 // 生成版本信息文件
 function generateVersionInfo() {
   const version = updateVersion();
-  const versionInfo = {
-    version: version,
-    buildTime: new Date().toISOString(),
-    commit: process.env.GIT_COMMIT || 'unknown'
-  };
 
   const versionInfoPath = path.join(__dirname, 'utils', 'versionInfo.js');
   const versionInfoContent = `'use strict';\n// 自动生成的版本信息文件
-const versionInfo = ${JSON.stringify(versionInfo, null, 2)};
+const versionInfo = {
+  'version': '${version}',
+  'buildTime': '${new Date().toISOString()}',
+  'commit': '${process.env.GIT_COMMIT || 'unknown'}'
+};
 module.exports = versionInfo;
 `;
 

@@ -1,5 +1,11 @@
 'use strict';
-const env = require('./utils/env');
+
+let env: { CLOUD_ENV?: string; APP_ID?: string } = {};
+try {
+  env = require('./env.js');
+} catch (e) {
+  console.warn('env.js 未找到，请复制 env.js.example 为 env.js 并填入配置');
+}
 
 interface Config {
   cloudEnv: string;
@@ -25,8 +31,8 @@ interface Config {
 }
 
 const config: Config = {
-  cloudEnv: env.CLOUD_ENV,
-  appid: env.APP_ID,
+  cloudEnv: env.CLOUD_ENV || '',
+  appid: env.APP_ID || '',
   appName: 'SYwork',
 
   cloudFunctions: {

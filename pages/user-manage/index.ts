@@ -3,6 +3,7 @@
 const CloudManager = require('../../utils/cloudManager');
 const AvatarManager = require('../../utils/avatarManager');
 const emojiManager = require('../../utils/emojiManager');
+const config = require('../../config.js');
 const { store } = require('../../utils/store');
 const { encryptPassword, decryptPassword, isOldFormat, hashPassword, verifyPassword } = require('../../utils/encrypt');
 
@@ -247,7 +248,7 @@ Page({
 
     try {
       const result = await wx.cloud.callFunction({
-        name: 'userLogin',
+        name: config.cloudFunctions.userLogin,
         data: {
           action: 'updateNickname',
           userId: cloudUserInfo.userId,
@@ -302,7 +303,7 @@ Page({
 
     try {
       const result = await wx.cloud.callFunction({
-        name: 'userLogin',
+        name: config.cloudFunctions.userLogin,
         data: {
           action: 'updatePassword',
           userId: cloudUserInfo.userId,
@@ -349,7 +350,7 @@ Page({
 
           try {
             const result = await wx.cloud.callFunction({
-              name: 'userLogin',
+              name: config.cloudFunctions.userLogin,
               data: {
                 action: 'deleteAccount',
                 userId: cloudUserInfo.userId,

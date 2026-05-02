@@ -161,9 +161,4 @@ export {
   calculateHash
 };
 
-export type EncryptPasswordFn = typeof encryptPassword;
-export type DecryptPasswordFn = typeof decryptPassword;
-export type HashPasswordFn = typeof hashPassword;
-export type VerifyPasswordFn = typeof verifyPassword;
-export type IsOldFormatFn = typeof isOldFormat;
-export type CalculateHashFn = typeof calculateHash;
+export {};
