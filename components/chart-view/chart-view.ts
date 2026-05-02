@@ -56,7 +56,7 @@ Component({
   },
 
   observers: {
-    'chartData.**, chartType, startDate, endDate': function (): void {
+    'chartData, chartType': function (): void {
       this.drawChart();
     }
   },

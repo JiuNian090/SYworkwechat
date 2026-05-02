@@ -499,8 +499,10 @@ Page({
 
       this.setData(newData);
       this.updateChartData();
-      this.drawPieChart();
       this.calculateCumulativeStats();
+      wx.nextTick(() => {
+        this.drawPieChart();
+      });
     } catch (e) {
       console.error('计算统计数据失败', e);
       wx.showToast({
@@ -751,6 +753,7 @@ Page({
 
   onChartInit(e: WechatMiniprogram.TouchEvent): void {
     (this as unknown as Record<string, unknown>)._chartComponent = (e.detail as { component: unknown }).component;
+    this.updateChartData();
   },
 
   changeChartType(e: WechatMiniprogram.TouchEvent): void {
@@ -1057,7 +1060,7 @@ Page({
     const total = statistics.dayShifts + statistics.nightShifts + statistics.offDays;
     if (total === 0) return;
 
-    const query = wx.createSelectorQuery();
+    const query = this.createSelectorQuery();
     query.select('#pieCanvas').fields({ node: true, size: true }).exec(res => {
       const canvas = (res?.[0] as unknown as { node: WechatMiniprogram.Canvas; width: number; height: number })?.node;
       if (!canvas) return;
@@ -1149,9 +1152,6 @@ Page({
     if (shiftsChanged) {
       this.parsePeriodData();
       this.calculateStatistics();
-      this.updateChartData();
-      this.drawPieChart();
-      this.calculateCumulativeStats();
     }
   },
 

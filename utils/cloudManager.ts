@@ -1147,12 +1147,12 @@ class CloudManager {
 
       wx.hideLoading();
 
-      if (actualNewImagesCount > 0 || deletedImageCount > 0) {
+      if (imageCounters.newImages > 0 || deletedImageCount > 0) {
         let message = '恢复成功';
-        if (actualNewImagesCount > 0 && deletedImageCount > 0) {
-          message = `恢复成功（新增${actualNewImagesCount}张，删除${deletedImageCount}张图片）`;
-        } else if (actualNewImagesCount > 0) {
-          message = `恢复成功（新增${actualNewImagesCount}张图片）`;
+        if (imageCounters.newImages > 0 && deletedImageCount > 0) {
+          message = `恢复成功（新增${imageCounters.newImages}张，删除${deletedImageCount}张图片）`;
+        } else if (imageCounters.newImages > 0) {
+          message = `恢复成功（新增${imageCounters.newImages}张图片）`;
         } else if (deletedImageCount > 0) {
           message = `恢复成功（删除${deletedImageCount}张图片）`;
         }
@@ -1171,7 +1171,7 @@ class CloudManager {
 
       return {
         success: true,
-        newImages: actualNewImagesCount,
+        newImages: imageCounters.newImages,
         deletedImages: deletedImageCount
       };
 
