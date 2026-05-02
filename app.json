@@ -1,8 +1,8 @@
 {
   "lazyCodeLoading": "requiredComponents",
   "pages": [
-    "pages/plan/plan",
     "pages/schedule/schedule",
+    "pages/plan/plan",
     "pages/statistics/statistics",
     "pages/profile/profile",
     "pages/user-manage/index"
@@ -40,16 +40,16 @@
     "position": "bottom",
     "list": [
       {
-        "pagePath": "pages/plan/plan",
-        "text": "计划",
-        "iconPath": "images/list-add.png",
-        "selectedIconPath": "images/list-add-1.png"
-      },
-      {
         "pagePath": "pages/schedule/schedule",
         "text": "排班",
         "iconPath": "images/schedule.png",
         "selectedIconPath": "images/schedule-1.png"
+      },
+      {
+        "pagePath": "pages/plan/plan",
+        "text": "计划",
+        "iconPath": "images/list-add.png",
+        "selectedIconPath": "images/list-add-1.png"
       },
       {
         "pagePath": "pages/statistics/statistics",
