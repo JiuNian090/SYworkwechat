@@ -54,6 +54,12 @@ project.config.json
 project.private.config.json
 miniprogram_npm/
 
+# Build artifacts (auto-generated)
+utils/versionInfo.js
+
+# Cloud functions dependencies (install on deploy)
+cloudfunctions/**/node_modules/
+
 # Cavemem project memory
 .caveman/
 cavemem-mcp.log
