@@ -626,7 +626,7 @@ Page({
 
   saveAccount(account: string, password: string): void {
     try {
-      let savedAccounts = store.getState('savedAccounts') as SavedAccount[] || [];
+      const savedAccounts = store.getState('savedAccounts') as SavedAccount[] || [];
       const index = savedAccounts.findIndex(item => item.account === account);
       const passwordHash = hashPassword(password);
 

@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use strict';
-const { formatDate, getWeekday, formatDayDisplay, getWeekOfMonth: getWOM, getMondayOfWeek } = require('../../utils/date');
+const { formatDate, getWeekday, formatDayDisplay } = require('../../utils/date');
 const { calculateHash } = require('../../utils/encrypt');
 const { store } = require('../../utils/store');
 
@@ -563,7 +563,7 @@ Page({
   },
 
   exportToCSV(customFilename: string): void {
-    const { startDate, endDate, shifts, totalHours, standardHours, hourDifferenceWithSign, statistics, customHours } = this.data;
+    const { startDate, endDate, shifts, totalHours, standardHours, hourDifferenceWithSign, statistics } = this.data;
 
     wx.showLoading({
       title: '正在导出...'
@@ -816,7 +816,7 @@ Page({
     const standardData: number[] = [];
     const longLabels: string[] = [];
     const unitLabelMap: Record<string, string> = { day: '按天汇总', week: '按周汇总', month: '按月汇总' };
-    let subtext = unitLabelMap[chartTimeUnit] || '';
+    const subtext = unitLabelMap[chartTimeUnit] || '';
 
     if ((shifts as Record<string, unknown>[]).length === 0) {
       return { labels: [], data: [], standardData: [], yAxisMax: 10, yAxisMin: 0, longLabels: [], subtext: '暂无数据' };
@@ -1043,7 +1043,7 @@ Page({
   },
 
   updateChartData(): void {
-    const { startDate, endDate, chartType } = this.data;
+    const { startDate, endDate } = this.data;
     const chartTimeUnit = this.calculateOptimalChartUnit(startDate, endDate);
     const chartData = this.generateChartData();
     this.setData({
@@ -1213,7 +1213,7 @@ Page({
     const sortedWeeks: Record<string, number[]> = {};
 
     Object.keys(months).forEach(year => {
-      sortedMonths[parseInt(year)] = Array.from(months[parseInt(year)]).sort((a, b) => a - b);
+      sortedMonths[parseInt(year, 10)] = Array.from(months[parseInt(year, 10)]).sort((a, b) => a - b);
     });
 
     Object.keys(weeks).forEach(key => {

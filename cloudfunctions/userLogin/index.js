@@ -22,8 +22,7 @@ function generateSalt() {
 }
 
 exports.main = async (event, context) => {
-  const wxContext = cloud.getWXContext();
-  const { action, account, password, newAccount, newPassword, nickname, userId } = event;
+  const { action, account, password, newPassword, nickname, userId } = event;
 
   try {
     if (action === 'login') {

@@ -342,20 +342,16 @@ class CloudManager {
 
       const { images: validImages, imageWeekRelation: validImageWeekRelation } = await getAllValidImages();
 
-      let existingImages: Array<Record<string, unknown>> = [];
       try {
         const infoResult = await this.callCloudFunction('backupRestore', {
           action: 'getBackupInfo',
           userId: this.userId
         });
         if (infoResult.result.success && infoResult.result.hasBackup) {
-          const restoreResult = await this.callCloudFunction('backupRestore', {
+          await this.callCloudFunction('backupRestore', {
             action: 'restore',
             userId: this.userId
           });
-          if (restoreResult.result.success) {
-            existingImages = restoreResult.result.images || [];
-          }
         }
       } catch (e) {
         console.log('获取云端备份信息失败，假设是新备份', e);
@@ -402,14 +398,13 @@ class CloudManager {
       if (imagesToUpload.length > 0) {
         const maxConcurrentUploads = 5;
         const totalImages = imagesToUpload.length;
-        let currentImage = 0;
 
         for (let i = 0; i < totalImages; i += maxConcurrentUploads) {
           const batch = imagesToUpload.slice(i, i + maxConcurrentUploads);
-          const batchPromises = batch.map(async (imgInfo: ImageUploadInfo) => {
+          const batchPromises = batch.map(async (imgInfo: ImageUploadInfo, batchIndex: number) => {
             try {
-              currentImage++;
-              const progress = Math.round((currentImage / totalImages) * 100);
+              const imgIndex = i + batchIndex + 1;
+              const progress = Math.round((imgIndex / totalImages) * 100);
               wx.showLoading({
                 title: `备份中 ${progress}%`,
                 mask: true
@@ -442,19 +437,24 @@ class CloudManager {
                 imgInfo.image.addedTime!
               );
 
-              uploadedImages.push({
+              return {
                 ...imgInfo,
                 fileID: uploadResult.fileID,
                 hash: imageHash
-              });
-
-              newImageCount++;
+              };
             } catch (e) {
               console.error('上传图片失败', imgInfo.remotePath, e);
+              return null;
             }
           });
 
-          await Promise.all(batchPromises);
+          const batchResults = await Promise.all(batchPromises);
+          for (const result of batchResults) {
+            if (result) {
+              uploadedImages.push(result);
+              newImageCount++;
+            }
+          }
         }
       }
 
@@ -609,8 +609,7 @@ class CloudManager {
     }
 
     const restoredImages: string[] = [];
-    let actualNewImagesCount = 0;
-    let actualUpdatedImagesCount = 0;
+    const counters = { actualNewImages: 0, actualUpdatedImages: 0 };
     const images = (backupData.images || []) as Array<Record<string, unknown>>;
     const restoredWeekKeys = new Set<string>();
     const imageWeekRelation: ImageRelation = {};
@@ -688,19 +687,18 @@ class CloudManager {
 
     const maxConcurrentDownloads = 5;
     const totalImages = imagesToDownload.length;
-    let currentImage = 0;
 
     for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
       const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
-      const batchPromises = batch.map(async (imgInfo: Record<string, unknown>) => {
+      const batchPromises = batch.map(async (imgInfo: Record<string, unknown>, batchIndex: number) => {
         try {
-          currentImage++;
-          const progress = Math.round((currentImage / totalImages) * 100);
+          const imgIndex = i + batchIndex + 1;
+          const progress = Math.round((imgIndex / totalImages) * 100);
           const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
           const localImage = localImageMap.get(localKey);
           const operation = localImage && localImage.hash !== imgInfo.hash ? '更新' : '新增';
           wx.showLoading({
-            title: `恢复中 ${operation}图片 ${currentImage}/${totalImages} (${progress}%)`,
+            title: `恢复中 ${operation}图片 ${imgIndex}/${totalImages} (${progress}%)`,
             mask: true
           });
 
@@ -753,10 +751,10 @@ class CloudManager {
 
             if (existingImageIndex !== -1) {
               weekImages[existingImageIndex] = newImage;
-              actualUpdatedImagesCount++;
+              counters.actualUpdatedImages++;
             } else {
               weekImages.push(newImage);
-              actualNewImagesCount++;
+              counters.actualNewImages++;
             }
 
             wx.setStorageSync(weekKey, weekImages);
@@ -817,20 +815,20 @@ class CloudManager {
 
     wx.hideLoading();
 
-    if (actualNewImagesCount > 0 || actualUpdatedImagesCount > 0 || deletedImageCount > 0) {
+    if (counters.actualNewImages > 0 || counters.actualUpdatedImages > 0 || deletedImageCount > 0) {
       let message = '恢复成功';
-      if (actualNewImagesCount > 0 && actualUpdatedImagesCount > 0 && deletedImageCount > 0) {
-        message = `恢复成功（新增${actualNewImagesCount}张，更新${actualUpdatedImagesCount}张，删除${deletedImageCount}张）`;
-      } else if (actualNewImagesCount > 0 && actualUpdatedImagesCount > 0) {
-        message = `恢复成功（新增${actualNewImagesCount}张，更新${actualUpdatedImagesCount}张）`;
-      } else if (actualNewImagesCount > 0 && deletedImageCount > 0) {
-        message = `恢复成功（新增${actualNewImagesCount}张，删除${deletedImageCount}张）`;
-      } else if (actualUpdatedImagesCount > 0 && deletedImageCount > 0) {
-        message = `恢复成功（更新${actualUpdatedImagesCount}张，删除${deletedImageCount}张）`;
-      } else if (actualNewImagesCount > 0) {
-        message = `恢复成功（新增${actualNewImagesCount}张图片）`;
-      } else if (actualUpdatedImagesCount > 0) {
-        message = `恢复成功（更新${actualUpdatedImagesCount}张图片）`;
+      if (counters.actualNewImages > 0 && counters.actualUpdatedImages > 0 && deletedImageCount > 0) {
+        message = `恢复成功（新增${counters.actualNewImages}张，更新${counters.actualUpdatedImages}张，删除${deletedImageCount}张）`;
+      } else if (counters.actualNewImages > 0 && counters.actualUpdatedImages > 0) {
+        message = `恢复成功（新增${counters.actualNewImages}张，更新${counters.actualUpdatedImages}张）`;
+      } else if (counters.actualNewImages > 0 && deletedImageCount > 0) {
+        message = `恢复成功（新增${counters.actualNewImages}张，删除${deletedImageCount}张）`;
+      } else if (counters.actualUpdatedImages > 0 && deletedImageCount > 0) {
+        message = `恢复成功（更新${counters.actualUpdatedImages}张，删除${deletedImageCount}张）`;
+      } else if (counters.actualNewImages > 0) {
+        message = `恢复成功（新增${counters.actualNewImages}张图片）`;
+      } else if (counters.actualUpdatedImages > 0) {
+        message = `恢复成功（更新${counters.actualUpdatedImages}张图片）`;
       } else if (deletedImageCount > 0) {
         message = `恢复成功（删除${deletedImageCount}张图片）`;
       }
@@ -1021,7 +1019,7 @@ class CloudManager {
         deletedImageCount++;
       }
 
-      let actualNewImagesCount = 0;
+      const imageCounters = { newImages: 0 };
       if (imagesToAdd.length > 0) {
         const getImagesResult = await this.callCloudFunction('backupRestore', {
           action: 'getAllCloudImages',
@@ -1053,14 +1051,13 @@ class CloudManager {
         if (imagesToDownload.length > 0) {
           const maxConcurrentDownloads = 5;
           const totalImages = imagesToDownload.length;
-          let currentImage = 0;
 
           for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
             const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
-            const batchPromises = batch.map(async (imgInfo: Record<string, unknown>) => {
+            const batchPromises = batch.map(async (imgInfo: Record<string, unknown>, batchIndex: number) => {
               try {
-                currentImage++;
-                const progress = Math.round((currentImage / totalImages) * 100);
+                const imgIndex = i + batchIndex + 1;
+                const progress = Math.round((imgIndex / totalImages) * 100);
                 wx.showLoading({
                   title: `恢复中 ${progress}%`,
                   mask: true
@@ -1099,7 +1096,7 @@ class CloudManager {
 
                 addImageToRelation(weekKey, newImage);
 
-                actualNewImagesCount++;
+                imageCounters.newImages++;
               } catch (e) {
                 console.error('下载图片失败', imgInfo.remotePath, e);
               }

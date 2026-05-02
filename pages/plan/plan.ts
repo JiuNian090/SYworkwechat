@@ -138,7 +138,7 @@ Page({
   },
 
   onHoursChange(e: WechatMiniprogram.PickerChange): void {
-    const hoursIndex = parseInt(e.detail.value as string);
+    const hoursIndex = parseInt(e.detail.value as string, 10);
     const hours = (this.data.hoursRange as number[])[hoursIndex];
     const minutes = (this.data.newTemplate as NewTemplate).minutes || 0;
     const workHours = hours + (minutes / 60);
@@ -150,7 +150,7 @@ Page({
   },
 
   onEditHoursChange(e: WechatMiniprogram.PickerChange): void {
-    const hoursIndex = parseInt(e.detail.value as string);
+    const hoursIndex = parseInt(e.detail.value as string, 10);
     const hours = (this.data.hoursRange as number[])[hoursIndex];
     const minutes = (this.data.editTemplate as EditTemplate).minutes || 0;
     const workHours = hours + (minutes / 60);
@@ -162,7 +162,7 @@ Page({
   },
 
   onMinutesChange(e: WechatMiniprogram.PickerChange): void {
-    const minutesIndex = parseInt(e.detail.value as string);
+    const minutesIndex = parseInt(e.detail.value as string, 10);
     const minutes = (this.data.minutesRange as number[])[minutesIndex];
     const hours = (this.data.newTemplate as NewTemplate).hours || 0;
     const workHours = hours + (minutes / 60);
@@ -174,7 +174,7 @@ Page({
   },
 
   onEditMinutesChange(e: WechatMiniprogram.PickerChange): void {
-    const minutesIndex = parseInt(e.detail.value as string);
+    const minutesIndex = parseInt(e.detail.value as string, 10);
     const minutes = (this.data.minutesRange as number[])[minutesIndex];
     const hours = (this.data.editTemplate as EditTemplate).hours || 0;
     const workHours = hours + (minutes / 60);
@@ -187,13 +187,13 @@ Page({
 
   onTypeChange(e: WechatMiniprogram.PickerChange): void {
     this.setData({
-      'newTemplate.typeIndex': parseInt(e.detail.value as string)
+      'newTemplate.typeIndex': parseInt(e.detail.value as string, 10)
     });
   },
 
   onEditTypeChange(e: WechatMiniprogram.PickerChange): void {
     this.setData({
-      'editTemplate.typeIndex': parseInt(e.detail.value as string)
+      'editTemplate.typeIndex': parseInt(e.detail.value as string, 10)
     });
   },
 

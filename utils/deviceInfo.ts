@@ -81,7 +81,6 @@ class DeviceInfo {
     try {
       const appBaseInfo = wx.getAppBaseInfo ? wx.getAppBaseInfo() as unknown as IAppBaseInfo : {} as IAppBaseInfo;
       const deviceInfo = wx.getDeviceInfo ? wx.getDeviceInfo() as unknown as IDeviceInfo : {} as IDeviceInfo;
-      const windowInfo = wx.getWindowInfo ? wx.getWindowInfo() as unknown as IWindowInfo : {} as IWindowInfo;
 
       return {
         platform: deviceInfo.platform || 'unknown',
@@ -108,8 +107,8 @@ class DeviceInfo {
     const len = Math.max(v1Arr.length, v2Arr.length);
 
     for (let i = 0; i < len; i++) {
-      const num1 = parseInt(v1Arr[i]) || 0;
-      const num2 = parseInt(v2Arr[i]) || 0;
+      const num1 = parseInt(v1Arr[i], 10) || 0;
+      const num2 = parseInt(v2Arr[i], 10) || 0;
       if (num1 > num2) {
         return 1;
       } else if (num1 < num2) {

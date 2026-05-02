@@ -1,8 +1,8 @@
 // @ts-nocheck
 'use strict';
-const { lightenColor, colorWithAlpha, getShiftColors } = require('../../utils/util');
+const { lightenColor } = require('../../utils/util');
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation');
-const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth, getWeekday } = require('../../utils/date');
+const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth } = require('../../utils/date');
 const { calculateHash } = require('../../utils/encrypt');
 const { store } = require('../../utils/store');
 
@@ -739,8 +739,9 @@ Page({
     let defaultImageName = baseImageName;
     let counter = 1;
     const { weekImages } = this.data as { weekImages: Record<string, unknown>[] };
+    const imageNames = new Set(weekImages.map((image: Record<string, unknown>) => image.name));
 
-    while (weekImages.some(image => image.name === defaultImageName)) {
+    while (imageNames.has(defaultImageName)) {
       defaultImageName = `${baseImageName}(${counter})`;
       counter++;
     }
@@ -800,8 +801,9 @@ Page({
     let uniqueImageName = finalImageName;
     let counter = 1;
     const baseName = finalImageName.replace(/\(\d+\)$/, '').trim();
+    const uniqueImageNames = new Set(weekImages.map((image: Record<string, unknown>) => image.name));
 
-    while (weekImages.some(image => image.name === uniqueImageName)) {
+    while (uniqueImageNames.has(uniqueImageName)) {
       uniqueImageName = `${baseName}(${counter})`;
       counter++;
     }

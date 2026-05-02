@@ -806,7 +806,6 @@ Page({
     try {
       let savedAccounts = store.getState('savedAccounts') as SavedAccount[] || [];
 
-      const cloudUserInfo = this.data.cloudUserInfo as Record<string, unknown> | null;
       const avatarEmoji = this.data.avatarEmoji;
       const avatarType = this.data.avatarType;
       const avatarText = this.data.avatarText;

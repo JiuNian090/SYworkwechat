@@ -11,34 +11,34 @@ const emojiStateMap: Record<string, string> = {
   // ============== 表情类 ==============
   // 疲惫/累状态
   '😩': 'tired', '😫': 'tired', '😴': 'tired', '😪': 'tired', '🥴': 'tired', '😵': 'tired', '🤯': 'tired',
-  
+
   // 难过/悲伤状态
   '😔': 'sad', '😞': 'sad', '🙁': 'sad', '☹️': 'sad', '😢': 'sad', '😭': 'sad', '😟': 'sad', '😕': 'sad',
-  '�': 'sad', '😶': 'sad', '😑': 'sad', '😬': 'sad', '🙄': 'sad',
-  
+  '😶': 'sad', '😑': 'sad', '😬': 'sad', '🙄': 'sad',
+
   // 压力/焦虑状态
   '😰': 'stressed', '😣': 'stressed', '😖': 'stressed', '😨': 'stressed', '😱': 'stressed',
-  '😓': 'stressed', '😧': 'stressed', '😦': 'stressed', '�': 'stressed', '😮': 'stressed',
+  '😓': 'stressed', '😧': 'stressed', '😦': 'stressed', '😮': 'stressed',
   '😯': 'stressed', '😲': 'stressed',
-  
+
   // 愤怒/生气状态
   '😤': 'angry', '😠': 'angry', '😡': 'angry', '🤬': 'angry',
-  
+
   // 生病状态
   '🤒': 'sick', '🤕': 'sick', '🤢': 'sick', '🤮': 'sick', '🤧': 'sick', '😷': 'sick',
   '🥵': 'sick', '🥶': 'sick',
-  
+
   // 开心/积极状态
   '😊': 'happy', '😃': 'happy', '😄': 'happy', '😁': 'happy', '😆': 'happy', '🤣': 'happy',
   '😂': 'happy', '😉': 'happy', '😍': 'happy', '🥰': 'happy', '😘': 'happy', '😚': 'happy',
   '😋': 'happy', '😛': 'happy', '😝': 'happy', '😜': 'happy', '🤪': 'happy', '😎': 'happy',
-  '🤩': 'happy', '🥳': 'happy', '🤗': 'happy', '🤓': 'happy', '🧐': 'happy', '😏': 'happy',
-  '�': 'happy', '🤑': 'happy', '🤤': 'happy', '😅': 'happy', '🙂': 'happy', '🙃': 'happy',
+  '🤩': 'happy', '🥳': 'happy', '🤗': 'happy', '🤓': 'happy', '😏': 'happy',
+  '🤑': 'happy', '🤤': 'happy', '😅': 'happy', '🙂': 'happy', '🙃': 'happy',
   '😌': 'happy', '🎉': 'happy', '🎊': 'happy', '✨': 'happy',
-  
+
   // 思考/专注状态
   '🤔': 'thinking', '🧐': 'thinking', '🤨': 'thinking', '🤫': 'thinking', '🤐': 'thinking',
-  
+
   // ============== 动物类 ==============
   '🐶': 'animal', '🐱': 'animal', '🐭': 'animal', '🐹': 'animal', '🐰': 'animal', '🦊': 'animal',
   '🐻': 'animal', '🐼': 'animal', '🐨': 'animal', '🐯': 'animal', '🦁': 'animal', '🐮': 'animal',
@@ -51,7 +51,7 @@ const emojiStateMap: Record<string, string> = {
   '🐏': 'animal', '🐑': 'animal', '🐐': 'animal', '🐓': 'animal', '🦃': 'animal', '🦅': 'animal',
   '🦆': 'animal', '🦉': 'animal', '🦤': 'animal', '🪶': 'animal', '🦩': 'animal', '🦚': 'animal',
   '🦜': 'animal', '🐿️': 'animal', '🦔': 'animal', '🐇': 'animal', '🐀': 'animal', '🐁': 'animal',
-  
+
   // ============== 食物类 ==============
   '🍎': 'food', '🍊': 'food', '🍋': 'food', '🍌': 'food', '🍉': 'food', '🍇': 'food', '🍓': 'food',
   '🫐': 'food', '🍈': 'food', '🍒': 'food', '🍑': 'food', '🥭': 'food', '🍍': 'food', '🥥': 'food',
@@ -71,7 +71,7 @@ const emojiStateMap: Record<string, string> = {
   '🍺': 'food', '🍻': 'food', '🥂': 'food', '🥃': 'food', '🫗': 'food', '🥤': 'food', '🧋': 'food',
   '🧃': 'food', '🧉': 'food', '🧊': 'food', '🥢': 'food', '🍽️': 'food', '🍴': 'food', '🥄': 'food',
   '🔪': 'food',
-  
+
   // ============== 活动类 ==============
   '🏃': 'activity', '🚶': 'activity', '🧎': 'activity', '🧍': 'activity', '🏋️': 'activity',
   '🏊': 'activity', '🏄': 'activity', '🚣': 'activity', '🧗': 'activity', '🚵': 'activity',
@@ -82,7 +82,7 @@ const emojiStateMap: Record<string, string> = {
   '🎸': 'activity', '🪕': 'activity', '🎻': 'activity', '🪗': 'activity', '🎯': 'activity',
   '🎱': 'activity', '🎳': 'activity', '🎮': 'activity', '🎰': 'activity', '🎲': 'activity',
   '🧩': 'activity',
-  
+
   // ============== 旅行类 ==============
   '🚗': 'travel', '🚕': 'travel', '🚙': 'travel', '🚌': 'travel', '🚎': 'travel', '🏎️': 'travel',
   '🚓': 'travel', '🚑': 'travel', '🚒': 'travel', '🚐': 'travel', '🚚': 'travel', '🚛': 'travel',
@@ -101,14 +101,14 @@ const emojiStateMap: Record<string, string> = {
   '🌓': 'travel', '🌒': 'travel', '🌑': 'travel', '🌘': 'travel', '🌗': 'travel', '🌖': 'travel',
   '🌕': 'travel', '🌪️': 'travel', '🌫️': 'travel', '🌬️': 'travel', '🌀': 'travel', '🌈': 'travel',
   '🌂': 'travel', '☂️': 'travel', '🌊': 'travel', '💧': 'travel', '💦': 'travel', '☔': 'travel',
-  
+
   // ============== 物品类 ==============
   '🏵️': 'object', '🎗️': 'object', '🎟️': 'object', '🎫': 'object', '🎖️': 'object', '🏆': 'object',
   '🏅': 'object', '🥇': 'object', '🥈': 'object', '🥉': 'object', '⚽': 'object', '⚾': 'object',
   '🥎': 'object', '🏀': 'object', '🏐': 'object', '🏈': 'object', '🏉': 'object', '🎾': 'object',
-  '🥏': 'object', '🎳': 'object', '🏏': 'object', '🏑': 'object', '🏒': 'object', '🥍': 'object',
+  '🥏': 'object', '🏏': 'object', '🏑': 'object', '🏒': 'object', '🥍': 'object',
   '🏓': 'object', '🏸': 'object', '🥊': 'object', '🥋': 'object', '🥅': 'object', '🎣': 'object',
-  '🎽': 'object', '🛷': 'object', '🔮': 'object', '🎮': 'object', '🎵': 'object', '🎶': 'object'
+  '🎽': 'object', '🛷': 'object', '🔮': 'object', '🎵': 'object', '🎶': 'object'
 };
 
 // 表情专属话语库（所有类别）
@@ -184,7 +184,7 @@ const emojiMessageTemplates = {
     '🎯 {name}，想清楚了再行动！',
     '✨ {name}，你会找到答案的！'
   ],
-  
+
   // ============== 动物类 ==============
   animal: [
     '🐾 {name}，可爱的动物们真治愈！',
@@ -196,7 +196,7 @@ const emojiMessageTemplates = {
     '🦄 {name}，充满魔法的一天！',
     '🦁 {name}，今天也要元气满满！'
   ],
-  
+
   // ============== 食物类 ==============
   food: [
     '🍔 {name}，今天也要好好吃饭哦！',
@@ -208,7 +208,7 @@ const emojiMessageTemplates = {
     '🍫 {name}，巧克力让心情变好！',
     '🍹 {name}，享受美食享受生活！'
   ],
-  
+
   // ============== 活动类 ==============
   activity: [
     '🏃 {name}，生命在于运动！',
@@ -220,7 +220,7 @@ const emojiMessageTemplates = {
     '🎭 {name}，生活就是一场表演！',
     '✨ {name}，做自己喜欢的事最开心！'
   ],
-  
+
   // ============== 旅行类 ==============
   travel: [
     '✈️ {name}，期待一场美好的旅行！',
@@ -232,7 +232,7 @@ const emojiMessageTemplates = {
     '🚂 {name}，火车旅行真浪漫！',
     '🎡 {name}，享受生活的美好！'
   ],
-  
+
   // ============== 物品类 ==============
   object: [
     '🏆 {name}，你是最棒的！',
@@ -319,7 +319,7 @@ const emojiMessageTemplatesNoName = {
     '🎯 想清楚了再行动！',
     '✨ 你会找到答案的！'
   ],
-  
+
   // ============== 动物类 ==============
   animal: [
     '🐾 可爱的动物们真治愈！',
@@ -331,7 +331,7 @@ const emojiMessageTemplatesNoName = {
     '🦄 充满魔法的一天！',
     '🦁 今天也要元气满满！'
   ],
-  
+
   // ============== 食物类 ==============
   food: [
     '🍔 今天也要好好吃饭哦！',
@@ -343,7 +343,7 @@ const emojiMessageTemplatesNoName = {
     '🍫 巧克力让心情变好！',
     '🍹 享受美食享受生活！'
   ],
-  
+
   // ============== 活动类 ==============
   activity: [
     '🏃 生命在于运动！',
@@ -355,7 +355,7 @@ const emojiMessageTemplatesNoName = {
     '🎭 生活就是一场表演！',
     '✨ 做自己喜欢的事最开心！'
   ],
-  
+
   // ============== 旅行类 ==============
   travel: [
     '✈️ 期待一场美好的旅行！',
@@ -367,7 +367,7 @@ const emojiMessageTemplatesNoName = {
     '🚂 火车旅行真浪漫！',
     '🎡 享受生活的美好！'
   ],
-  
+
   // ============== 物品类 ==============
   object: [
     '🏆 你是最棒的！',
@@ -404,7 +404,7 @@ const emojiScheduleMixedTemplates = {
     '🌟 加油！胜利在望！',
     '💪 你可以的！'
   ],
-  
+
   // 疲惫时休息
   'tired-rest': [
     '😴 {name}，累了就好好休息吧！',
@@ -426,7 +426,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 好好休息！',
     '🎈 享受放松时光！'
   ],
-  
+
   // 开心时上班
   'happy-working': [
     '🎉 {name}，开心的工作状态很棒！',
@@ -448,7 +448,7 @@ const emojiScheduleMixedTemplates = {
     '🌈 今天会很顺利！',
     '💫 享受工作！'
   ],
-  
+
   // 开心时休息
   'happy-rest': [
     '🎉 {name}，开心的休息日！',
@@ -470,7 +470,7 @@ const emojiScheduleMixedTemplates = {
     '🌈 享受生活！',
     '💫 开心就好！'
   ],
-  
+
   // 压力时上班
   'stressed-working': [
     '🧘 {name}，工作压力大，记得放松！',
@@ -492,7 +492,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 一步一步来！',
     '🌟 相信自己！'
   ],
-  
+
   // 压力时休息
   'stressed-rest': [
     '🧘 {name}，休息日好好放松下！',
@@ -514,7 +514,7 @@ const emojiScheduleMixedTemplates = {
     '🎵 听首歌放松下！',
     '🌈 明天会更好！'
   ],
-  
+
   // 生病时上班
   'sick-working': [
     '💊 {name}，生病了还在工作，辛苦了！',
@@ -536,7 +536,7 @@ const emojiScheduleMixedTemplates = {
     '❤️ 好好照顾自己！',
     '🌟 加油！'
   ],
-  
+
   // 生病时休息
   'sick-rest': [
     '💊 {name}，好好养病，早日康复！',
@@ -558,7 +558,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 早日康复！',
     '🌈 好好休息！'
   ],
-  
+
   // 生气时上班
   'angry-working': [
     '😌 {name}，别把坏情绪带到工作中！',
@@ -580,7 +580,7 @@ const emojiScheduleMixedTemplates = {
     '🌟 一切都会好的！',
     '❤️ 别想太多！'
   ],
-  
+
   // 生气时休息
   'angry-rest': [
     '😌 {name}，休息日别生气！',
@@ -602,7 +602,7 @@ const emojiScheduleMixedTemplates = {
     '🌟 享受假期！',
     '❤️ 别想不开心的事！'
   ],
-  
+
   // 难过时上班
   'sad-working': [
     '🤗 {name}，上班时也要保持心情哦！',
@@ -624,7 +624,7 @@ const emojiScheduleMixedTemplates = {
     '❤️ 抱抱你！',
     '🌟 明天会更好！'
   ],
-  
+
   // 难过时休息
   'sad-rest': [
     '🤗 {name}，好好休息，一切都会好的！',
@@ -646,7 +646,7 @@ const emojiScheduleMixedTemplates = {
     '💫 好好放松！',
     '❤️ 抱抱你！'
   ],
-  
+
   // 思考时上班
   'thinking-working': [
     '🤔 {name}，工作中思考是好事！',
@@ -668,7 +668,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 工作顺利！',
     '💫 你最棒！'
   ],
-  
+
   // 思考时休息
   'thinking-rest': [
     '🤔 {name}，休息时可以想想喜欢的事！',
@@ -690,7 +690,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 享受假期！',
     '💫 思考人生！'
   ],
-  
+
   // 动物+上班
   'animal-working': [
     '🐾 {name}，像小动物一样活力满满工作！',
@@ -712,7 +712,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 工作顺利！',
     '💫 可爱的一天！'
   ],
-  
+
   // 动物+休息
   'animal-rest': [
     '🐾 {name}，像小动物一样好好休息！',
@@ -734,7 +734,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 享受放松！',
     '💫 可爱的假期！'
   ],
-  
+
   // 食物+上班
   'food-working': [
     '🍔 {name}，工作再忙也要好好吃饭！',
@@ -756,7 +756,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 工作顺利！',
     '💫 好好吃饭！'
   ],
-  
+
   // 食物+休息
   'food-rest': [
     '🍔 {name}，休息日要好好享受美食！',
@@ -778,7 +778,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 享受假期！',
     '💫 美食让生活更美好！'
   ],
-  
+
   // 活动+上班
   'activity-working': [
     '🎵 {name}，工作累了听首歌！',
@@ -800,7 +800,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 工作顺利！',
     '💫 工作开心！'
   ],
-  
+
   // 活动+休息
   'activity-rest': [
     '🎵 {name}，休息日做你喜欢的事！',
@@ -822,7 +822,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 享受生活！',
     '💫 开心每一天！'
   ],
-  
+
   // 旅行+上班
   'travel-working': [
     '✈️ {name}，好好工作，期待旅行！',
@@ -844,7 +844,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 加油工作！',
     '💫 今天也要加油！'
   ],
-  
+
   // 旅行+休息
   'travel-rest': [
     '✈️ {name}，休息日去旅行吧！',
@@ -866,7 +866,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 享受生活！',
     '💫 假期快乐！'
   ],
-  
+
   // 物品+上班
   'object-working': [
     '🏆 {name}，你是最棒的，工作加油！',
@@ -888,7 +888,7 @@ const emojiScheduleMixedTemplates = {
     '🌸 工作顺利！',
     '💫 专注工作！'
   ],
-  
+
   // 物品+休息
   'object-rest': [
     '🏆 {name}，好好休息，你最棒！',
@@ -934,14 +934,14 @@ function toAbsolute(dateStr: string, timeStr: string): Date | null {
   if (!dateStr || !timeStr) {
     return null;
   }
-  
+
   const [year, month, day] = dateStr.split('-').map(Number);
   const [hours, minutes] = timeStr.split(':').map(Number);
-  
+
   if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hours) || isNaN(minutes)) {
     return null;
   }
-  
+
   return new Date(year, month - 1, day, hours, minutes, 0, 0);
 }
 
@@ -967,15 +967,15 @@ function isNightShift(shift: Record<string, unknown> | null | undefined): boolea
   if (!shift) {
     return false;
   }
-  
+
   // 检查类型是否包含“夜”
   if (shift.type && shift.type.includes('夜')) {
     return true;
   }
-  
+
   const startTime = shift.startTime;
   const endTime = shift.endTime;
-  
+
   // 检查开始时间是否 >= 22:00
   if (startTime) {
     const [startHour] = startTime.split(':').map(Number);
@@ -983,7 +983,7 @@ function isNightShift(shift: Record<string, unknown> | null | undefined): boolea
       return true;
     }
   }
-  
+
   // 检查结束时间是否 <= 06:00
   if (endTime) {
     const [endHour] = endTime.split(':').map(Number);
@@ -991,7 +991,7 @@ function isNightShift(shift: Record<string, unknown> | null | undefined): boolea
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -1004,20 +1004,20 @@ function calculateShiftDuration(shift: Record<string, unknown> | null | undefine
   if (!shift || !shift.date || !shift.startTime || !shift.endTime) {
     return 0;
   }
-  
+
   const startTime = toAbsolute(shift.date, shift.startTime);
   const endTime = toAbsolute(shift.date, shift.endTime);
-  
+
   if (!startTime || !endTime) {
     return 0;
   }
-  
+
   // 处理跨夜班次
-  let adjustedEndTime = new Date(endTime);
+  const adjustedEndTime = new Date(endTime);
   if (adjustedEndTime < startTime) {
     adjustedEndTime.setDate(adjustedEndTime.getDate() + 1);
   }
-  
+
   const durationMs = adjustedEndTime - startTime;
   return durationMs / (1000 * 60 * 60);
 }
@@ -1036,7 +1036,7 @@ function determineStatus(shifts, now) {
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = formatDate(tomorrow);
-  
+
   // 筛选昨今明三天的排班
   const recentShifts: Array<Record<string, unknown>> = [];
   if (shifts) {
@@ -1050,41 +1050,41 @@ function determineStatus(shifts, now) {
       recentShifts.push({ ...shifts[tomorrowStr], date: tomorrowStr });
     }
   }
-  
+
   // 查找当前正在进行的班次
   let activeShift = null;
   for (const shift of recentShifts) {
     if (!isWorkingType(shift.type)) {
       continue;
     }
-    
+
     const startTime = toAbsolute(shift.date, shift.startTime);
     let endTime = toAbsolute(shift.date, shift.endTime);
-    
+
     if (!startTime || !endTime) {
       continue;
     }
-    
+
     // 处理跨夜班次
     if (endTime < startTime) {
       const nextDay = new Date(shift.date);
       nextDay.setDate(nextDay.getDate() + 1);
       endTime = toAbsolute(formatDate(nextDay), shift.endTime);
     }
-    
+
     if (now >= startTime && now < endTime) {
       activeShift = shift;
       break;
     }
   }
-  
+
   const currentHour = now.getHours();
   const yesterdayShift = shifts && shifts[yesterdayStr];
-  
+
   // 优先级 0.5: 昨天凌晨夜班延续到今天（如排班4号夜班1:30-8:30，实际覆盖5号凌晨1:30-8:30）
   if (!activeShift && yesterdayShift && isNightShift(yesterdayShift)) {
     const ysStartRaw = toAbsolute(yesterdayStr, yesterdayShift.startTime);
-    let ysEndRaw = toAbsolute(yesterdayStr, yesterdayShift.endTime);
+    const ysEndRaw = toAbsolute(yesterdayStr, yesterdayShift.endTime);
     if (ysStartRaw && ysEndRaw && ysEndRaw > ysStartRaw) {
       const startHour = ysStartRaw.getHours();
       if (startHour >= 0 && startHour < 6) {
@@ -1102,7 +1102,7 @@ function determineStatus(shifts, now) {
       }
     }
   }
-  
+
   // 优先级 1: 正在上夜班（凌晨 0-6 点）
   if (activeShift && isNightShift(activeShift) && currentHour >= 0 && currentHour < 6) {
     return {
@@ -1111,24 +1111,24 @@ function determineStatus(shifts, now) {
       timePeriod: getTimePeriod(currentHour)
     };
   }
-  
+
   // 优先级 2: 夜班刚结束（昨天夜班，现在在 0-12 点之间，距离结束不足 2 小时）
   if (yesterdayShift && isWorkingType(yesterdayShift.type) && isNightShift(yesterdayShift)) {
     const yesterdayStartTime = toAbsolute(yesterdayStr, yesterdayShift.startTime);
     let yesterdayEndTime = toAbsolute(yesterdayStr, yesterdayShift.endTime);
-    
+
     if (yesterdayEndTime && yesterdayStartTime && yesterdayEndTime < yesterdayStartTime) {
       const nextDay = new Date(yesterdayStr);
       nextDay.setDate(nextDay.getDate() + 1);
       yesterdayEndTime = toAbsolute(formatDate(nextDay), yesterdayShift.endTime);
     }
-    
+
     if (yesterdayEndTime) {
       const hoursSinceEnd = (now - yesterdayEndTime) / (1000 * 60 * 60);
       const endHour = yesterdayEndTime.getHours();
-      
-      if (currentHour >= 0 && currentHour < 12 && 
-          endHour >= 0 && endHour < 12 && 
+
+      if (currentHour >= 0 && currentHour < 12 &&
+          endHour >= 0 && endHour < 12 &&
           hoursSinceEnd > 0 && hoursSinceEnd < 2 && !activeShift) {
         return {
           status: 'nightShiftJustEnded',
@@ -1138,7 +1138,7 @@ function determineStatus(shifts, now) {
       }
     }
   }
-  
+
   // 优先级 3: 正在上深夜班（22-24 点）
   if (activeShift && currentHour >= 22 && currentHour < 24) {
     return {
@@ -1147,7 +1147,7 @@ function determineStatus(shifts, now) {
       timePeriod: getTimePeriod(currentHour)
     };
   }
-  
+
   // 优先级 4: 上班中（长工时 >= 8 小时）
   if (activeShift) {
     const duration = calculateShiftDuration(activeShift);
@@ -1159,7 +1159,7 @@ function determineStatus(shifts, now) {
       };
     }
   }
-  
+
   // 优先级 5: 上班中（短工时 < 8 小时）
   if (activeShift) {
     return {
@@ -1168,10 +1168,10 @@ function determineStatus(shifts, now) {
       timePeriod: getTimePeriod(currentHour)
     };
   }
-  
+
   // 检查今天是否有工作排班
   const todayHasWork = shifts && shifts[todayStr] && isWorkingType(shifts[todayStr].type);
-  
+
   // 优先级 5.5: 等待上班（今天有排班但还没到上班时间）
   if (!activeShift && todayHasWork) {
     const todayShift = shifts[todayStr];
@@ -1188,7 +1188,7 @@ function determineStatus(shifts, now) {
       }
     }
   }
-  
+
   // 优先级 6: 下夜班休息（今天无工作，昨天有夜班）
   if (!todayHasWork && yesterdayShift && isWorkingType(yesterdayShift.type) && isNightShift(yesterdayShift)) {
     return {
@@ -1197,7 +1197,7 @@ function determineStatus(shifts, now) {
       timePeriod: getTimePeriod(currentHour)
     };
   }
-  
+
   // 优先级 7: 明确休息日（今天无工作，但有休息/休假/SD 记录）
   const todayShift = shifts && shifts[todayStr];
   if (!todayHasWork && todayShift) {
@@ -1211,7 +1211,7 @@ function determineStatus(shifts, now) {
       };
     }
   }
-  
+
   // 优先级 8: 无排班闲暇
   if (!todayHasWork && !todayShift) {
     const tomorrowHasWork = shifts && shifts[tomorrowStr] && isWorkingType(shifts[tomorrowStr].type);
@@ -1220,7 +1220,7 @@ function determineStatus(shifts, now) {
       timePeriod: getTimePeriod(currentHour)
     };
   }
-  
+
   // 优先级 9: 兜底
   return {
     status: 'default',
@@ -1524,13 +1524,13 @@ function getRandomNickname(nickname: string): string {
   if (!nickname || !nickname.trim()) {
     return '';
   }
-  
+
   const trimmedNickname = nickname.trim();
   const options = [
     `亲爱的${trimmedNickname}`,
     `${trimmedNickname.charAt(trimmedNickname.length - 1)}宝`
   ];
-  
+
   const randomIndex = Math.floor(Math.random() * options.length);
   return options[randomIndex];
 }
@@ -1544,7 +1544,7 @@ function getRandomNickname(nickname: string): string {
  */
 function getRandomMessage(status: string, nickname: string, timePeriod: string): string {
   let templateKey = status;
-  
+
   // 处理“下夜班休息”根据时段选择不同的模板
   if (status === 'restAfterNightShift') {
     if (timePeriod === '凌晨' || timePeriod === '清晨' || timePeriod === '上午') {
@@ -1553,7 +1553,7 @@ function getRandomMessage(status: string, nickname: string, timePeriod: string):
       templateKey = 'restAfterNightShiftAfternoon';
     }
   }
-  
+
   // 如果有昵称，使用带昵称的模板
   let templates;
   if (nickname && nickname.trim()) {
@@ -1561,22 +1561,22 @@ function getRandomMessage(status: string, nickname: string, timePeriod: string):
   } else {
     templates = messageTemplates[templateKey + 'NoName'] || messageTemplates[templateKey];
   }
-  
+
   // 如果找不到对应模板，使用默认模板
   if (!templates || templates.length === 0) {
     templates = nickname ? messageTemplates.default : messageTemplates.defaultNoName;
   }
-  
+
   // 随机选择一条
   const randomIndex = Math.floor(Math.random() * templates.length);
   let message = templates[randomIndex];
-  
+
   // 替换昵称占位符（使用随机称呼）
   if (nickname && nickname.trim()) {
     const randomNickname = getRandomNickname(nickname);
     message = message.replace('{name}', randomNickname);
   }
-  
+
   return message;
 }
 
@@ -1599,24 +1599,24 @@ function getEmotionStateByEmoji(emoji: string): string | null {
 function getMessageByEmoji(emoji: string, nickname: string): string | null {
   const state = getEmotionStateByEmoji(emoji);
   if (!state) return null;
-  
+
   let templates;
   if (nickname && nickname.trim()) {
     templates = emojiMessageTemplates[state];
   } else {
     templates = emojiMessageTemplatesNoName[state];
   }
-  
+
   if (!templates || templates.length === 0) return null;
-  
+
   const randomIndex = Math.floor(Math.random() * templates.length);
   let message = templates[randomIndex];
-  
+
   if (nickname && nickname.trim()) {
     const randomNickname = getRandomNickname(nickname);
     message = message.replace('{name}', randomNickname);
   }
-  
+
   return message;
 }
 
@@ -1629,7 +1629,7 @@ function getMessageByEmoji(emoji: string, nickname: string): string | null {
 function getTodayStatus(scheduleData: Record<string, unknown> | null | undefined, now: Date): string {
   const todayStr = formatDate(now);
   const todayShift = scheduleData && scheduleData[todayStr];
-  
+
   if (todayShift && isWorkingType(todayShift.type)) {
     return 'working';
   }
@@ -1648,30 +1648,30 @@ function getMixedEmojiMessage(emoji: string, nickname: string, todayStatus: stri
   if (!emotionState) {
     return null;
   }
-  
+
   const mixedKey = `${emotionState}-${todayStatus}`;
   const templates = emojiScheduleMixedTemplates[mixedKey];
   const templatesNoName = emojiScheduleMixedTemplates[`${mixedKey}NoName`];
-  
+
   if (!templates || !templatesNoName) {
     return null;
   }
-  
+
   let messageTemplates;
   if (nickname && nickname.trim()) {
     messageTemplates = templates;
   } else {
     messageTemplates = templatesNoName;
   }
-  
+
   const randomIndex = Math.floor(Math.random() * messageTemplates.length);
   let message = messageTemplates[randomIndex];
-  
+
   if (nickname && nickname.trim()) {
     const randomNickname = getRandomNickname(nickname);
     message = message.replace('{name}', randomNickname);
   }
-  
+
   return message;
 }
 
@@ -1686,21 +1686,21 @@ function getMixedEmojiMessage(emoji: string, nickname: string, todayStatus: stri
 function getDailyMessage(nickname: string, scheduleData: Record<string, unknown> | null | undefined, emoji?: string, now?: Date): string {
   const currentNow = now || new Date();
   const todayStatus = getTodayStatus(scheduleData, currentNow);
-  
+
   // 优先使用表情+班次混合状态的消息
   if (emoji) {
     const mixedMessage = getMixedEmojiMessage(emoji, nickname, todayStatus);
     if (mixedMessage) {
       return mixedMessage;
     }
-    
+
     // 如果没有混合状态的消息，尝试表情专属消息
     const emojiMessage = getMessageByEmoji(emoji, nickname);
     if (emojiMessage) {
       return emojiMessage;
     }
   }
-  
+
   // 否则使用排班状态消息
   const statusResult = determineStatus(scheduleData, currentNow);
   return getRandomMessage(statusResult.status, nickname, statusResult.timePeriod);

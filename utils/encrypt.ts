@@ -81,25 +81,6 @@ function getDeviceKey(): string {
   return deviceKey;
 }
 
-function base64Encode(str: string): string {
-  try {
-    return wx.arrayBufferToBase64(new Uint8Array(str.split('').map(c => c.charCodeAt(0))));
-  } catch (e) {
-    let result = '';
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-    for (let i = 0; i < str.length; i += 3) {
-      const a = str.charCodeAt(i);
-      const b = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
-      const c = i + 2 < str.length ? str.charCodeAt(i + 2) : 0;
-      result += chars[a >> 2];
-      result += chars[((a & 3) << 4) | (b >> 4)];
-      result += i + 1 < str.length ? chars[((b & 15) << 2) | (c >> 6)] : '=';
-      result += i + 2 < str.length ? chars[c & 63] : '=';
-    }
-    return result;
-  }
-}
-
 function base64Decode(str: string): string {
   try {
     const base64Str = str.replace(/-/g, '+').replace(/_/g, '/');

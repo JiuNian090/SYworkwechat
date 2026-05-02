@@ -87,14 +87,6 @@ function compareVersions(version1, version2) {
   return 0;
 }
 
-// 获取某个日期是当月的第几周
-function getWeekOfMonth(date) {
-  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-  const dayOfWeek = firstDay.getDay();
-  const adjustedDate = date.getDate() + dayOfWeek;
-  return Math.ceil(adjustedDate / 7);
-}
-
 // 删除云端多余的图片文件
 async function deleteExtraCloudImages(userId, existingImages, newImages) {
   try {
@@ -188,7 +180,6 @@ async function initCollections() {
 }
 
 exports.main = async (event, context) => {
-  const wxContext = cloud.getWXContext();
   const { action, userId, data } = event;
 
   try {
@@ -206,7 +197,7 @@ exports.main = async (event, context) => {
 
     if (action === 'getBackupDiff') {
       // 第一步：分析备份差异，返回需要新增的图片清单
-      const { imageWeekRelation, version = 'v1.0.0' } = data;
+      const { imageWeekRelation } = data;
 
       console.log('getBackupDiff - 本地关联表:', imageWeekRelation);
 
@@ -262,7 +253,6 @@ exports.main = async (event, context) => {
             const weekDate = new Date(weekDateStr);
             const year = weekDate.getFullYear();
             const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-            const week = getWeekOfMonth(weekDate);
             const yearMonth = `${year}-${month}`;
 
             // 使用时间戳生成稳定的 remotePath
@@ -307,7 +297,7 @@ exports.main = async (event, context) => {
 
     if (action === 'completeBackup') {
       // 第三步：完成备份，覆盖云端关联表
-      const { shiftTemplates, shifts, images, imageWeekRelation, avatarInfo, backupIndex, version = 'v1.0.0' } = data;
+      const { shiftTemplates, shifts, images, imageWeekRelation, backupIndex, version = 'v1.0.0' } = data;
 
       let totalChanges = false;
       let deletedImageCount = 0;

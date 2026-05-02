@@ -126,7 +126,7 @@ const commonRules = {
 };
 
 const tsRules = {
-  '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
+  '@typescript-eslint/no-unused-vars': ['warn', { args: 'none', caughtErrors: 'none' }],
   '@typescript-eslint/no-explicit-any': 'off',
   '@typescript-eslint/explicit-function-return-type': 'off',
   '@typescript-eslint/no-require-imports': 'off',

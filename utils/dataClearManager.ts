@@ -42,8 +42,8 @@ class DataClearManager {
 
             // 清除登录信息相关存储
             const loginKeys = [
-              'cloudInitialized', 'cloudUserId', 'cloudAccount', 'cloudUserInfo', 
-              'cloudLoggedIn', 'username', 'avatarType', 'avatarEmoji', 
+              'cloudInitialized', 'cloudUserId', 'cloudAccount', 'cloudUserInfo',
+              'cloudLoggedIn', 'username', 'avatarType', 'avatarEmoji',
               'savedAccounts', 'autoRestoreMap', 'lastBackupTime', 'lastRestoreTime'
             ];
             loginKeys.forEach(key => {
