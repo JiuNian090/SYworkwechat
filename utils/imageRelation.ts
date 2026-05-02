@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 const { getCalendarWeekOfMonth } = require('./date.js');
 const { calculateHash } = require('./encrypt.js');
@@ -88,7 +87,7 @@ function rebuildRelationFromLocal(): RelationTable {
   weekImageKeys.forEach(weekKey => {
     const weekImages = wx.getStorageSync(weekKey) || [];
     if (weekImages.length > 0) {
-      table[weekKey] = weekImages.map(img => ({
+      table[weekKey] = weekImages.map((img: Record<string, unknown>) => ({
         id: img.id,
         name: img.name,
         path: img.path,
@@ -262,7 +261,7 @@ function syncRelationWithLocal(weekKey?: string): RelationTable {
 
   if (weekKey) {
     const localImages = wx.getStorageSync(weekKey) || [];
-    table[weekKey] = localImages.map(img => ({
+    table[weekKey] = localImages.map((img: Record<string, unknown>) => ({
       id: img.id,
       name: img.name,
       path: img.path,
@@ -285,7 +284,7 @@ function syncRelationWithLocal(weekKey?: string): RelationTable {
     weekImageKeys.forEach(key => {
       const localImages = wx.getStorageSync(key) || [];
       if (localImages.length > 0) {
-        table[key] = localImages.map(img => ({
+        table[key] = localImages.map((img: Record<string, unknown>) => ({
           id: img.id,
           name: img.name,
           path: img.path,

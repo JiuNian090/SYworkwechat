@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 const JSZip = require('../vendor/jszip.min.js') as any;
 const { calculateHash } = require('./encrypt.js') as { calculateHash: (data: string) => string };
@@ -149,9 +148,9 @@ class DataExportManager {
         };
       }
 
-      const isDataEmpty: boolean = Object.keys(data).length === 0 ||
-        (Object.keys(data).length === 1 && data.shiftTemplates && (data.shiftTemplates as unknown[]).length === 0) ||
-        (Object.keys(data).length === 1 && data.shifts && Object.keys(data.shifts).length === 0);
+      const isDataEmpty: boolean = (Object.keys(data).length === 0 ||
+        (Object.keys(data).length === 1 && data.shiftTemplates !== undefined && (data.shiftTemplates as unknown[]).length === 0) ||
+        (Object.keys(data).length === 1 && data.shifts !== undefined && Object.keys(data.shifts).length === 0)) as boolean;
 
       if (isDataEmpty) {
         wx.hideLoading();
@@ -342,7 +341,7 @@ class DataExportManager {
               let imageHash: string | undefined = image.hash;
               if (!imageHash) {
                 try {
-                  const fileInfo = fs.getFileInfoSync({ filePath: image.path });
+                  const fileInfo = (fs as unknown as Record<string, Function>).getFileInfoSync({ filePath: image.path }) as WechatMiniprogram.GetFileInfoSuccessCallbackResult;
                   imageHash = calculateHash(`${image.addedTime || Date.now()}_${key}_${imageName}_${fileInfo.size}`);
                 } catch (e) {
                   imageHash = calculateHash(`${Date.now()}_${key}_${imageName}`);

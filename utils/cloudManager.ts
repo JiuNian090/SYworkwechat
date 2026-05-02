@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation, getImageRelationTable, removeImageFromRelation } = require('./imageRelation.js');
 const { calculateHash } = require('./encrypt.js');
@@ -56,6 +55,10 @@ interface CloudFuncResult {
   deletedImageCount?: number;
   imageWeekRelation?: ImageRelation;
   backupSystemVersion?: string;
+  uploadedImages?: number;
+  restoredImages?: number;
+  newImages?: number;
+  deletedImages?: number;
 }
 
 class CloudManager {
@@ -90,7 +93,7 @@ class CloudManager {
           timeoutPromise
         ]);
 
-        return result;
+        return { result: result.result as CloudFuncResult };
       } catch (e) {
         retries++;
         if (retries >= maxRetries) {
@@ -100,6 +103,8 @@ class CloudManager {
         await new Promise(resolve => setTimeout(resolve, retryDelay));
       }
     }
+
+    throw new Error('云函数调用失败：超过最大重试次数');
   }
 
   async register(account: string, password: string, nickname: string): Promise<CloudFuncResult> {
@@ -303,7 +308,7 @@ class CloudManager {
       fileSystemManager.getFileInfo({
         filePath: imagePath,
         success: (res) => {
-          const hashInput = `${addedTime}_${weekKey}_${imageName}_${res.mtime}_${res.size}`;
+          const hashInput = `${addedTime}_${weekKey}_${imageName}_${(res as unknown as Record<string, unknown>).mtime || ''}_${res.size}`;
           const hash = calculateHash(hashInput);
           resolve(hash);
         },

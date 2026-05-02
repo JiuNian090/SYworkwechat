@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 const { STORAGE_KEYS } = require('./storage');
 
@@ -34,7 +33,7 @@ function loadFromStorage(): Record<string, any> {
   const state: Record<string, any> = {};
   for (const [key, storageKey] of Object.entries(STORAGE_KEYS)) {
     try {
-      const value = wx.getStorageSync(storageKey);
+      const value = wx.getStorageSync(storageKey as string);
       if (value !== '') state[key] = value;
     } catch (e) {}
   }

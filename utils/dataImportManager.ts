@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 const JSZip = require('../vendor/jszip.min.js') as any;
 const { calculateHash } = require('./encrypt.js') as { calculateHash: (data: string) => string };
@@ -317,13 +316,7 @@ class DataImportManager {
                     if (file.dir) {
                       const subFolder = folder.folder(relativePath);
                       if (subFolder) {
-                        processImageFolder(subFolder as unknown as {
-                          forEach: (callback: (relativePath: string, file: {
-                            dir: boolean;
-                            async: (type: string) => Promise<ArrayBuffer>;
-                          }) => void) => void;
-                          folder: (relativePath: string) => unknown;
-                        }, `${basePath}${relativePath}/`);
+                        processImageFolder(subFolder as any, `${basePath}${relativePath}/`);
                       }
                     } else {
                       const fullRelativePath: string = basePath ? `${basePath}${relativePath}` : relativePath;
@@ -357,7 +350,7 @@ class DataImportManager {
                                     let newImageHash: string | undefined = weekImages[matchingImageIndex].hash;
                                     if (!newImageHash) {
                                       try {
-                                        const fileInfo: WechatMiniprogram.GetFileInfoSuccessCallbackResult = fs.getFileInfoSync({ filePath: tempPath });
+                                        const fileInfo: WechatMiniprogram.GetFileInfoSuccessCallbackResult = (fs as unknown as Record<string, Function>).getFileInfoSync({ filePath: tempPath });
                                         const addedTime: string | number = weekImages[matchingImageIndex].addedTime || Date.now();
                                         const imageName: string = weekImages[matchingImageIndex].name;
 
@@ -403,7 +396,7 @@ class DataImportManager {
 
                                 let imageHash: string = '0';
                                 try {
-                                  const fileInfo: WechatMiniprogram.GetFileInfoSuccessCallbackResult = fs.getFileInfoSync({ filePath: tempPath });
+                                  const fileInfo: WechatMiniprogram.GetFileInfoSuccessCallbackResult = (fs as unknown as Record<string, Function>).getFileInfoSync({ filePath: tempPath });
                                   imageHash = calculateHash(`${Date.now()}_${weekImageKey}_${fileNameParts.slice(-1)[0].replace('.jpg', '')}_${fileInfo.size}`);
                                 } catch (e) {
                                   console.error('获取文件信息失败', e);

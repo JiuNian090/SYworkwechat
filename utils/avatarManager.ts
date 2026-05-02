@@ -1,7 +1,22 @@
-// @ts-nocheck
 'use strict';
 const emojiManager = require('./emojiManager.js');
 const { store } = require('./store.js');
+
+interface CloudUserInfo {
+  userId: string;
+  avatarType?: string;
+  avatarEmoji?: string;
+  avatarText?: string;
+  nickname?: string;
+  [key: string]: unknown;
+}
+
+interface StoreState {
+  avatarType?: string;
+  avatarEmoji?: string;
+  avatarText?: string;
+  [key: string]: unknown;
+}
 
 interface EmojiManager {
   getEmojiText(emoji: string): string;
@@ -61,7 +76,7 @@ class AvatarManager {
   async getLatestAvatarFromCloud(cloudUserInfo: CloudUserInfo | null): Promise<CloudAvatarResult | null> {
     try {
       if (cloudUserInfo && cloudUserInfo.userId) {
-        const result: WxCloudCallFunctionResult = await wx.cloud.callFunction({
+        const result = await wx.cloud.callFunction({
           name: 'userLogin',
           data: {
             action: 'getUserInfo',
@@ -69,7 +84,7 @@ class AvatarManager {
           }
         });
 
-        const res = result.result as CloudFunctionResult;
+        const res = result.result as unknown as CloudFunctionResult;
         if (res.success && res.data) {
           const userData = res.data;
           if (userData.avatarType || userData.avatarEmoji) {
@@ -116,7 +131,7 @@ class AvatarManager {
   async syncAvatarToCloud(avatarType: string, avatarEmoji: string, avatarText: string, cloudLoggedIn: boolean, cloudUserInfo: CloudUserInfo | null): Promise<CloudUserInfo | null> {
     try {
       if (cloudLoggedIn && cloudUserInfo && cloudUserInfo.userId) {
-        const result: WxCloudCallFunctionResult = await wx.cloud.callFunction({
+        const result = await wx.cloud.callFunction({
           name: 'userLogin',
           data: {
             action: 'updateAvatar',
@@ -127,7 +142,7 @@ class AvatarManager {
           }
         });
 
-        const res = result.result as CloudFunctionResult;
+        const res = result.result as unknown as CloudFunctionResult;
         if (res.success) {
           const updatedUserInfo: CloudUserInfo = {
             ...cloudUserInfo,

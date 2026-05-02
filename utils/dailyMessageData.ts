@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 
 const emojiStateMap: Record<string, string> = {

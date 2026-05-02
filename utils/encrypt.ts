@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 import CryptoJS from 'crypto-js';
 
@@ -9,7 +8,7 @@ function deriveKey(): string {
     deviceInfo.model,
     deviceInfo.platform,
     deviceInfo.system,
-    (appBaseInfo as Record<string, string>).SDKVersion,
+    (appBaseInfo as unknown as Record<string, string>).SDKVersion,
     appBaseInfo.version,
     appBaseInfo.language
   ].join('|');
@@ -67,8 +66,7 @@ function getDeviceKey(): string {
   let deviceKey = wx.getStorageSync('_device_key');
   if (!deviceKey) {
     const deviceInfo = wx.getDeviceInfo();
-    const appBaseInfo = wx.getAppBaseInfo();
-    const seed = deviceInfo.model + appBaseInfo.system + appBaseInfo.platform + Math.random().toString(36);
+    const seed = deviceInfo.model + (deviceInfo as unknown as Record<string, string>).system + (deviceInfo as unknown as Record<string, string>).platform + Math.random().toString(36);
     let hash = 0;
     for (let i = 0; i < seed.length; i++) {
       const char = seed.charCodeAt(i);

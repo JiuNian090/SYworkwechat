@@ -1,7 +1,20 @@
-// @ts-nocheck
 'use strict';
 const { formatDate } = require('./date.js');
 const { emojiStateMap, emojiMessageTemplates, emojiMessageTemplatesNoName, emojiScheduleMixedTemplates, messageTemplates } = require('./dailyMessageData.js');
+
+interface ShiftData {
+  type?: string;
+  startTime?: string;
+  endTime?: string;
+  date?: string;
+  [key: string]: unknown;
+}
+
+interface StatusResult {
+  status: string;
+  shift?: ShiftData | null;
+  timePeriod: string;
+}
 
 function toAbsolute(dateStr: string, timeStr: string): Date | null {
   if (!dateStr || !timeStr) {
@@ -26,7 +39,7 @@ function isWorkingType(type: string): boolean {
   return !nonWorkingTypes.includes(type.trim());
 }
 
-function isNightShift(shift: Record<string, unknown> | null | undefined): boolean {
+function isNightShift(shift: ShiftData | null | undefined): boolean {
   if (!shift) {
     return false;
   }
@@ -55,7 +68,7 @@ function isNightShift(shift: Record<string, unknown> | null | undefined): boolea
   return false;
 }
 
-function calculateShiftDuration(shift: Record<string, unknown> | null | undefined): number {
+function calculateShiftDuration(shift: ShiftData | null | undefined): number {
   if (!shift || !shift.date || !shift.startTime || !shift.endTime) {
     return 0;
   }
@@ -72,11 +85,11 @@ function calculateShiftDuration(shift: Record<string, unknown> | null | undefine
     adjustedEndTime.setDate(adjustedEndTime.getDate() + 1);
   }
 
-  const durationMs = adjustedEndTime - startTime;
+  const durationMs = adjustedEndTime.getTime() - startTime.getTime();
   return durationMs / (1000 * 60 * 60);
 }
 
-function determineStatus(shifts, now) {
+function determineStatus(shifts: Record<string, ShiftData> | null | undefined, now: Date): StatusResult {
   const todayStr = formatDate(now);
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
@@ -85,7 +98,7 @@ function determineStatus(shifts, now) {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = formatDate(tomorrow);
 
-  const recentShifts: Array<Record<string, unknown>> = [];
+  const recentShifts: Array<ShiftData> = [];
   if (shifts) {
     if (shifts[yesterdayStr]) {
       recentShifts.push({ ...shifts[yesterdayStr], date: yesterdayStr });
@@ -100,24 +113,24 @@ function determineStatus(shifts, now) {
 
   let activeShift = null;
   for (const shift of recentShifts) {
-    if (!isWorkingType(shift.type)) {
+    if (!isWorkingType(shift.type || '')) {
       continue;
     }
 
-    const startTime = toAbsolute(shift.date, shift.startTime);
-    let endTime = toAbsolute(shift.date, shift.endTime);
+    const startTime = toAbsolute(shift.date || '', shift.startTime || '');
+    let endTime = toAbsolute(shift.date || '', shift.endTime || '');
 
     if (!startTime || !endTime) {
       continue;
     }
 
     if (endTime < startTime) {
-      const nextDay = new Date(shift.date);
+      const nextDay = new Date(shift.date || '');
       nextDay.setDate(nextDay.getDate() + 1);
-      endTime = toAbsolute(formatDate(nextDay), shift.endTime);
+      endTime = toAbsolute(formatDate(nextDay), shift.endTime || '');
     }
 
-    if (now >= startTime && now < endTime) {
+    if (now >= startTime && endTime && now < endTime) {
       activeShift = shift;
       break;
     }
@@ -127,8 +140,8 @@ function determineStatus(shifts, now) {
   const yesterdayShift = shifts && shifts[yesterdayStr];
 
   if (!activeShift && yesterdayShift && isNightShift(yesterdayShift)) {
-    const ysStartRaw = toAbsolute(yesterdayStr, yesterdayShift.startTime);
-    const ysEndRaw = toAbsolute(yesterdayStr, yesterdayShift.endTime);
+    const ysStartRaw = toAbsolute(yesterdayStr, yesterdayShift.startTime || '');
+    const ysEndRaw = toAbsolute(yesterdayStr, yesterdayShift.endTime || '');
     if (ysStartRaw && ysEndRaw && ysEndRaw > ysStartRaw) {
       const startHour = ysStartRaw.getHours();
       if (startHour >= 0 && startHour < 6) {
@@ -155,18 +168,18 @@ function determineStatus(shifts, now) {
     };
   }
 
-  if (yesterdayShift && isWorkingType(yesterdayShift.type) && isNightShift(yesterdayShift)) {
-    const yesterdayStartTime = toAbsolute(yesterdayStr, yesterdayShift.startTime);
-    let yesterdayEndTime = toAbsolute(yesterdayStr, yesterdayShift.endTime);
+  if (yesterdayShift && isWorkingType(yesterdayShift.type || '') && isNightShift(yesterdayShift)) {
+    const yesterdayStartTime = toAbsolute(yesterdayStr, yesterdayShift.startTime || '');
+    let yesterdayEndTime = toAbsolute(yesterdayStr, yesterdayShift.endTime || '');
 
     if (yesterdayEndTime && yesterdayStartTime && yesterdayEndTime < yesterdayStartTime) {
       const nextDay = new Date(yesterdayStr);
       nextDay.setDate(nextDay.getDate() + 1);
-      yesterdayEndTime = toAbsolute(formatDate(nextDay), yesterdayShift.endTime);
+      yesterdayEndTime = toAbsolute(formatDate(nextDay), yesterdayShift.endTime || '');
     }
 
     if (yesterdayEndTime) {
-      const hoursSinceEnd = (now - yesterdayEndTime) / (1000 * 60 * 60);
+      const hoursSinceEnd = (now.getTime() - yesterdayEndTime.getTime()) / (1000 * 60 * 60);
       const endHour = yesterdayEndTime.getHours();
 
       if (currentHour >= 0 && currentHour < 12 &&
@@ -208,14 +221,14 @@ function determineStatus(shifts, now) {
     };
   }
 
-  const todayHasWork = shifts && shifts[todayStr] && isWorkingType(shifts[todayStr].type);
+  const todayHasWork = shifts && shifts[todayStr] && isWorkingType(shifts[todayStr].type || '');
 
   if (!activeShift && todayHasWork) {
-    const todayShift = shifts[todayStr];
-    if (todayShift && isWorkingType(todayShift.type)) {
-      const shiftStart = toAbsolute(todayStr, todayShift.startTime);
+    const todayShift = shifts![todayStr];
+    if (todayShift && isWorkingType(todayShift.type || '')) {
+      const shiftStart = toAbsolute(todayStr, todayShift.startTime || '');
       if (shiftStart && now < shiftStart) {
-        const hoursUntilStart = (shiftStart - now) / (1000 * 60 * 60);
+        const hoursUntilStart = (shiftStart.getTime() - now.getTime()) / (1000 * 60 * 60);
         const statusKey = hoursUntilStart <= 3 ? 'waitingForShiftSoon' : 'waitingForShift';
         return {
           status: statusKey,
@@ -226,7 +239,7 @@ function determineStatus(shifts, now) {
     }
   }
 
-  if (!todayHasWork && yesterdayShift && isWorkingType(yesterdayShift.type) && isNightShift(yesterdayShift)) {
+  if (!todayHasWork && yesterdayShift && isWorkingType(yesterdayShift.type || '') && isNightShift(yesterdayShift)) {
     return {
       status: 'restAfterNightShift',
       shift: yesterdayShift,
@@ -234,11 +247,11 @@ function determineStatus(shifts, now) {
     };
   }
 
-  const todayShift = shifts && shifts[todayStr];
+  const todayShift = shifts?.[todayStr];
   if (!todayHasWork && todayShift) {
     const type = todayShift.type;
     if (type && (type.includes('休息') || type.includes('休假') || type === 'SD')) {
-      const tomorrowHasWork = shifts && shifts[tomorrowStr] && isWorkingType(shifts[tomorrowStr].type);
+      const tomorrowHasWork = shifts && shifts[tomorrowStr] && isWorkingType(shifts[tomorrowStr].type || '');
       return {
         status: tomorrowHasWork ? 'restDayWithWorkTomorrow' : 'longVacation',
         shift: todayShift,
@@ -248,7 +261,7 @@ function determineStatus(shifts, now) {
   }
 
   if (!todayHasWork && !todayShift) {
-    const tomorrowHasWork = shifts && shifts[tomorrowStr] && isWorkingType(shifts[tomorrowStr].type);
+    const tomorrowHasWork = shifts && shifts[tomorrowStr] && isWorkingType(shifts[tomorrowStr].type || '');
     return {
       status: tomorrowHasWork ? 'freeDayWithWorkTomorrow' : 'longVacation',
       timePeriod: getTimePeriod(currentHour)
@@ -261,7 +274,7 @@ function determineStatus(shifts, now) {
   };
 }
 
-function getTimePeriod(hour) {
+function getTimePeriod(hour: number): string {
   if (hour >= 0 && hour < 6) {
     return '凌晨';
   } else if (hour >= 6 && hour < 8) {
@@ -354,11 +367,11 @@ function getMessageByEmoji(emoji: string, nickname: string): string | null {
   return message;
 }
 
-function getTodayStatus(scheduleData: Record<string, unknown> | null | undefined, now: Date): string {
+function getTodayStatus(scheduleData: Record<string, ShiftData> | null | undefined, now: Date): string {
   const todayStr = formatDate(now);
   const todayShift = scheduleData && scheduleData[todayStr];
 
-  if (todayShift && isWorkingType(todayShift.type)) {
+  if (todayShift && isWorkingType(todayShift.type || '')) {
     return 'working';
   }
   return 'rest';
@@ -396,7 +409,7 @@ function getMixedEmojiMessage(emoji: string, nickname: string, todayStatus: stri
   return message;
 }
 
-function getDailyMessage(nickname: string, scheduleData: Record<string, unknown> | null | undefined, emoji?: string, now?: Date): string {
+function getDailyMessage(nickname: string, scheduleData: Record<string, ShiftData> | null | undefined, emoji?: string, now?: Date): string {
   const currentNow = now || new Date();
   const todayStatus = getTodayStatus(scheduleData, currentNow);
 
