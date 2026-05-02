@@ -102,8 +102,8 @@ class DeviceInfo {
   }
 
   compareVersion(v1: string, v2: string): number {
-    const v1Arr = v1.split('.');
-    const v2Arr = v2.split('.');
+    const v1Arr = v1.replace('v', '').split('.');
+    const v2Arr = v2.replace('v', '').split('.');
     const len = Math.max(v1Arr.length, v2Arr.length);
 
     for (let i = 0; i < len; i++) {

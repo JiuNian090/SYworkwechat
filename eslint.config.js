@@ -137,7 +137,7 @@ const tsRules = {
 
 module.exports = [
   {
-    ignores: ['**/node_modules/**', '**/miniprogram_npm/**', '**/utils/jszip.min.js', '**/.trae/**', '**/miniprogram_dist/**']
+    ignores: ['**/node_modules/**', '**/miniprogram_npm/**', '**/vendor/**', '**/.trae/**', '**/miniprogram_dist/**']
   },
   {
     files: ['**/*.js'],

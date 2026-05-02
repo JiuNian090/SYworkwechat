@@ -1,6 +1,7 @@
 // @ts-nocheck
 'use strict';
-const JSZip = require('./jszip.min.js') as any;
+const JSZip = require('../vendor/jszip.min.js') as any;
+const { calculateHash } = require('./encrypt.js') as { calculateHash: (data: string) => string };
 
 type ImportCallback = (success: boolean) => void;
 
@@ -360,28 +361,10 @@ class DataImportManager {
                                         const addedTime: string | number = weekImages[matchingImageIndex].addedTime || Date.now();
                                         const imageName: string = weekImages[matchingImageIndex].name;
 
-                                        newImageHash = (() => {
-                                          let hash = 0;
-                                          const data: string = `${addedTime}_${weekKey}_${imageName}_${fileInfo.size}`;
-                                          for (let i = 0; i < data.length; i++) {
-                                            const char: number = data.charCodeAt(i);
-                                            hash = ((hash << 5) - hash) + char;
-                                            hash = hash & hash;
-                                          }
-                                          return hash.toString(16);
-                                        })();
+                                        newImageHash = calculateHash(`${addedTime}_${weekKey}_${imageName}_${fileInfo.size}`);
                                       } catch (e) {
                                         console.error('获取文件信息失败', e);
-                                        newImageHash = (() => {
-                                          let hash = 0;
-                                          const data: string = `${Date.now()}_${weekKey}_${weekImages[matchingImageIndex].name}`;
-                                          for (let i = 0; i < data.length; i++) {
-                                            const char: number = data.charCodeAt(i);
-                                            hash = ((hash << 5) - hash) + char;
-                                            hash = hash & hash;
-                                          }
-                                          return hash.toString(16);
-                                        })();
+                                        newImageHash = calculateHash(`${Date.now()}_${weekKey}_${weekImages[matchingImageIndex].name}`);
                                       }
                                     }
 
@@ -421,16 +404,7 @@ class DataImportManager {
                                 let imageHash: string = '0';
                                 try {
                                   const fileInfo: WechatMiniprogram.GetFileInfoSuccessCallbackResult = fs.getFileInfoSync({ filePath: tempPath });
-                                  imageHash = (() => {
-                                    let hash = 0;
-                                    const data: string = `${Date.now()}_${weekImageKey}_${fileNameParts.slice(-1)[0].replace('.jpg', '')}_${fileInfo.size}`;
-                                    for (let i = 0; i < data.length; i++) {
-                                      const char: number = data.charCodeAt(i);
-                                      hash = ((hash << 5) - hash) + char;
-                                      hash = hash & hash;
-                                    }
-                                    return hash.toString(16);
-                                  })();
+                                  imageHash = calculateHash(`${Date.now()}_${weekImageKey}_${fileNameParts.slice(-1)[0].replace('.jpg', '')}_${fileInfo.size}`);
                                 } catch (e) {
                                   console.error('获取文件信息失败', e);
                                 }

@@ -3,6 +3,8 @@
 const { getAllValidImages, addImageToRelation, syncRelationWithLocal, importImageWeekRelation, getImageRelationTable, removeImageFromRelation } = require('./imageRelation.js');
 const { calculateHash } = require('./encrypt.js');
 const { store } = require('./store.js');
+const { getCalendarWeekOfMonth } = require('./date.js');
+const { compareVersion } = require('./deviceInfo.js');
 
 interface CloudFunctionOptions {
   timeout?: number;
@@ -219,7 +221,7 @@ class CloudManager {
           const weekDate = new Date(weekDateStr);
           const year = weekDate.getFullYear();
           const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-          const week = this.getWeekOfMonth(weekDate);
+          const week = getCalendarWeekOfMonth(weekDate);
 
           const newName = `${year}-${month}-${week}`;
 
@@ -263,7 +265,7 @@ class CloudManager {
           const weekDate = new Date(weekDateStr);
           const year = weekDate.getFullYear();
           const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-          const week = this.getWeekOfMonth(weekDate);
+          const week = getCalendarWeekOfMonth(weekDate);
 
           const yearMonth = `${year}-${month}`;
           const imageName = image.name || `${year}-${month}-${week}`;
@@ -282,13 +284,6 @@ class CloudManager {
     });
 
     return { images, imageWeekRelation };
-  }
-
-  getWeekOfMonth(date: Date): number {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const dayOfWeek = firstDay.getDay();
-    const adjustedDate = date.getDate() + dayOfWeek;
-    return Math.ceil(adjustedDate / 7);
   }
 
   validateImageExists(imagePath: string): Promise<boolean> {
@@ -564,21 +559,6 @@ class CloudManager {
         errMsg: (e as Error).message
       };
     }
-  }
-
-  compareVersions(version1: string, version2: string): number {
-    const v1 = version1.replace('v', '').split('.').map(Number);
-    const v2 = version2.replace('v', '').split('.').map(Number);
-
-    for (let i = 0; i < Math.max(v1.length, v2.length); i++) {
-      const num1 = v1[i] || 0;
-      const num2 = v2[i] || 0;
-
-      if (num1 > num2) return 1;
-      if (num1 < num2) return -1;
-    }
-
-    return 0;
   }
 
   async performRestore(backupData: Record<string, unknown>): Promise<CloudFuncResult> {
@@ -894,7 +874,7 @@ class CloudManager {
       const backupVersion = getRelationResult.result.backupSystemVersion || 'v1.0.0';
 
       const localVersion = this.BACKUP_SYSTEM_VERSION;
-      const versionComparison = this.compareVersions(localVersion, backupVersion);
+      const versionComparison = compareVersion(localVersion, backupVersion);
 
       if (versionComparison < 0) {
         wx.hideLoading();

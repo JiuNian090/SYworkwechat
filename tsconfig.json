@@ -27,6 +27,7 @@
     "node_modules",
     "cloudfunctions",
     "miniprogram_dist",
-    "utils/jszip.min.js"
+    "utils/jszip.min.js",
+    "vendor"
   ]
 }

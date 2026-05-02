@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use strict';
-const { lightenColor } = require('../../utils/util');
+const { lightenColor } = require('../../utils/color');
 const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = require('../../utils/imageRelation');
 const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth } = require('../../utils/date');
 const { calculateHash } = require('../../utils/encrypt');

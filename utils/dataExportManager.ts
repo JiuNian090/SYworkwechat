@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use strict';
-const JSZip = require('./jszip.min.js') as any;
+const JSZip = require('../vendor/jszip.min.js') as any;
 const { calculateHash } = require('./encrypt.js') as { calculateHash: (data: string) => string };
 
 interface DataTypeInfo {

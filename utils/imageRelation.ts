@@ -1,5 +1,7 @@
 // @ts-nocheck
 'use strict';
+const { getCalendarWeekOfMonth } = require('./date.js');
+const { calculateHash } = require('./encrypt.js');
 
 interface ImageInfo {
   id: string;
@@ -108,7 +110,7 @@ function addImageToRelation(weekKey: string, image: ImageInfo): RelationTable {
 
   const exists = table[weekKey].some(img => img.id === image.id);
   if (!exists) {
-    const hash = calculateImageHash(image);
+    const hash = calculateHash(`${image.addedTime || new Date().toISOString()}_${image.name || ''}_${image.path || ''}_${image.size || 0}`);
 
     table[weekKey].push({
       id: image.id,
@@ -126,7 +128,7 @@ function addImageToRelation(weekKey: string, image: ImageInfo): RelationTable {
                         existingImage.path !== image.path;
 
       if (hasChanged) {
-        const hash = calculateImageHash(image);
+        const hash = calculateHash(`${image.addedTime || new Date().toISOString()}_${image.name || ''}_${image.path || ''}_${image.size || 0}`);
 
         table[weekKey][index] = {
           ...existingImage,
@@ -140,18 +142,6 @@ function addImageToRelation(weekKey: string, image: ImageInfo): RelationTable {
   }
 
   return table;
-}
-
-function calculateImageHash(image: { addedTime?: string; name?: string; path?: string; size?: number }): string {
-  const hashInput = `${image.addedTime || new Date().toISOString()}_${image.name || ''}_${image.path || ''}_${image.size || 0}`;
-
-  let hash = 0;
-  for (let i = 0; i < hashInput.length; i++) {
-    const char = hashInput.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return hash.toString(16);
 }
 
 function removeImageFromRelation(weekKey: string, imageId: string): RelationTable {
@@ -349,7 +339,7 @@ async function getAllValidImages(): Promise<GetAllValidImagesResult> {
         const weekDate = new Date(weekDateStr);
         const year = weekDate.getFullYear();
         const month = String(weekDate.getMonth() + 1).padStart(2, '0');
-        const week = getWeekOfMonth(weekDate);
+        const week = getCalendarWeekOfMonth(weekDate);
 
         const yearMonth = `${year}-${month}`;
         const imageName = img.name || `${year}-${month}-${week}`;
@@ -370,13 +360,6 @@ async function getAllValidImages(): Promise<GetAllValidImagesResult> {
   }
 
   return { images: allValidImages, imageWeekRelation };
-}
-
-function getWeekOfMonth(date: Date): number {
-  const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-  const dayOfWeek = firstDay.getDay();
-  const adjustedDate = date.getDate() + dayOfWeek;
-  return Math.ceil(adjustedDate / 7);
 }
 
 function exportImageWeekRelation(): ExportRelation {
@@ -422,7 +405,6 @@ module.exports = {
   syncRelationWithLocal,
   getValidImagesForWeek,
   getAllValidImages,
-  getWeekOfMonth,
   exportImageWeekRelation,
   importImageWeekRelation
 };
