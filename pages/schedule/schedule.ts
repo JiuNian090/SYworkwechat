@@ -94,6 +94,13 @@ Page({
       schedulePage.generateMonthDates();
       schedulePage.loadWeekImages();
     });
+    this._storeUnsubImport = store.subscribe('_importComplete', function () {
+      schedulePage.loadShiftTemplates();
+      schedulePage.loadShifts();
+      schedulePage.generateWeekDates();
+      schedulePage.generateMonthDates();
+      schedulePage.loadWeekImages();
+    });
     this._storeUnsubAvatar = store.subscribe('avatarType', function () {
       const data: Record<string, unknown> = {};
       const storedEmoji = wx.getStorageSync('avatarEmoji') || '';

@@ -19,6 +19,7 @@ export interface StoreState {
   lastBackupTime?: string;
   lastRestoreTime?: string;
   _lastDataRestore?: number;
+  _importComplete?: number;
 }
 
 export interface StoreAPI {

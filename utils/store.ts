@@ -16,6 +16,8 @@ interface StoreState {
   chartType: string;
   savedAccounts: any[];
   autoRestoreMap: Record<string, any>;
+  _lastDataRestore?: number;
+  _importComplete?: number;
 }
 
 interface StoreAPI {

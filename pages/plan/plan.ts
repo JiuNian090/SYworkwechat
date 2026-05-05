@@ -75,6 +75,10 @@ Page({
 
   onLoad(): void {
     this.loadShiftTemplates();
+    const planPage = this;
+    this._storeUnsubImport = store.subscribe('_importComplete', function () {
+      planPage.loadShiftTemplates();
+    });
   },
 
   onShow(): void {

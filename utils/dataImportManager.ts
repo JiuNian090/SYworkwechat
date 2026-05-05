@@ -1,6 +1,7 @@
 'use strict';
 const JSZip = require('../vendor/jszip.min.js') as any;
 const { calculateHash } = require('./encrypt.js') as { calculateHash: (data: string) => string };
+const { store } = require('./store');
 
 type ImportCallback = (success: boolean) => void;
 
@@ -485,43 +486,8 @@ class DataImportManager {
     });
 
     setTimeout(() => {
-      const pages = getCurrentPages();
-      for (let i = 0; i < pages.length; i++) {
-        const page = pages[i];
-        if (page.route === 'pages/plan/plan') {
-          if (page.loadShiftTemplates) {
-            page.loadShiftTemplates();
-          }
-        } else if (page.route === 'pages/schedule/schedule') {
-          if (page.loadShifts) {
-            page.loadShifts();
-          }
-          if (page.loadShiftTemplates) {
-            page.loadShiftTemplates();
-          }
-          if (page.generateWeekDates) {
-            page.generateWeekDates();
-          }
-          if (page.generateMonthDates) {
-            page.generateMonthDates();
-          }
-          if (page.loadWeekImages) {
-            page.loadWeekImages();
-          }
-        } else if (page.route === 'pages/statistics/statistics') {
-          if (page.calculateStatistics) {
-            page.calculateStatistics();
-          }
-        }
-      }
-
-      const currentPage = getCurrentPages()[getCurrentPages().length - 1];
-      if (currentPage.loadUserData && typeof currentPage.loadUserData === 'function') {
-        currentPage.loadUserData();
-      }
-
+      store.setState({ _importComplete: Date.now() });
       wx.hideLoading();
-
       if (callback) callback(true);
     }, 500);
   }

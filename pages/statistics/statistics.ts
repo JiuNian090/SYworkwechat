@@ -749,6 +749,10 @@ Page({
       statsPage.parsePeriodData();
       statsPage.calculateStatistics();
     });
+    this._storeUnsubImport = store.subscribe('_importComplete', function () {
+      statsPage.parsePeriodData();
+      statsPage.calculateStatistics();
+    });
   },
 
   onChartInit(e: WechatMiniprogram.TouchEvent): void {
