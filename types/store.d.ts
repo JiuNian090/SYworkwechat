@@ -31,6 +31,9 @@ export interface StoreAPI {
   };
   setState: (updates: Partial<StoreState>, persistKeys?: string[]) => void;
   removeState: (keys: string[], persistKeys?: string[]) => void;
-  subscribe: (key: string | null, callback: (newVal: unknown, prevVal: unknown) => void) => () => void;
+  subscribe: {
+    (key: string, callback: (newVal: any, prevVal: any) => void): () => void;
+    (key: null, callback: (newVal: StoreState, prevVal: StoreState) => void): () => void;
+  };
   persistToStorage: (storageMap: Record<string, string>) => void;
 }

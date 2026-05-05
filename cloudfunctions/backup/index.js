@@ -155,7 +155,7 @@ exports.main = async (event, context) => {
 
   try {
     await initCollections();
-    
+
     const userValid = await validateUser(userId);
     if (!userValid.valid) {
       return { success: false, errMsg: userValid.errMsg };

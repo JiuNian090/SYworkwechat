@@ -1,4 +1,6 @@
 'use strict';
+import type { StoreState } from '../types/store';
+
 const emojiManager = require('./emojiManager.js');
 const { store } = require('./store.js');
 const config = require('../config.js');
@@ -9,13 +11,6 @@ interface CloudUserInfo {
   avatarEmoji?: string;
   avatarText?: string;
   nickname?: string;
-  [key: string]: unknown;
-}
-
-interface StoreState {
-  avatarType?: string;
-  avatarEmoji?: string;
-  avatarText?: string;
   [key: string]: unknown;
 }
 

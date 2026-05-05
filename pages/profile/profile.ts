@@ -1072,6 +1072,19 @@ Page({
     if (!shouldFetch && lastLocalUpdate > lastCloudCheckTime) { shouldFetch = true; }
     if (!shouldFetch && (now - lastCloudCheckTime > CACHE_TTL)) { shouldFetch = true; }
     if (shouldFetch) {
+      // 本地哈希缓存短路：本地数据自上次同步未变化，跳过云端请求
+      if (!forceRefresh) {
+        const localHash = this.computeLocalHash();
+        if (this.data.lastSyncHash && localHash === this.data.lastSyncHash) {
+          this.setData({ lastCloudCheckTime: now });
+          if (cachedCloudStatus) {
+            this.updateBackupStatusUI(cachedCloudStatus as Record<string, unknown>);
+          } else {
+            this.setData({ backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED } });
+          }
+          return;
+        }
+      }
       try {
         const cloudManager = this.data.cloudManager as { getLatestBackupInfo(): Promise<Record<string, unknown>> };
         const info = await cloudManager.getLatestBackupInfo();

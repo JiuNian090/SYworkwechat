@@ -1,35 +1,7 @@
 'use strict';
+import type { StoreState, StoreAPI } from '../types/store';
+
 const { STORAGE_KEYS } = require('./storage');
-
-interface StoreState {
-  cloudInitialized: boolean;
-  cloudUserId: string;
-  cloudAccount: string;
-  cloudUserInfo: any;
-  username: string;
-  avatarType: string;
-  avatarEmoji: string;
-  shifts: Record<string, any>;
-  shiftTemplates: any[];
-  customWeeklyHours: number;
-  customHours: number;
-  chartType: string;
-  savedAccounts: any[];
-  autoRestoreMap: Record<string, any>;
-  _lastDataRestore?: number;
-  _importComplete?: number;
-}
-
-interface StoreAPI {
-  getState(): StoreState;
-  getState(keys: string): any;
-  getState(keys: string[]): Partial<StoreState>;
-  setState(updates: Partial<StoreState>, persistKeys?: string[]): void;
-  removeState(keys: string[], persistKeys?: string[]): void;
-  subscribe(key: string, callback: (newVal: any, prevVal: any) => void): () => void;
-  subscribe(key: null, callback: (newVal: StoreState, prevVal: StoreState) => void): () => void;
-  persistToStorage(storageMap: Record<string, string>): void;
-}
 
 function loadFromStorage(): Record<string, any> {
   const state: Record<string, any> = {};
