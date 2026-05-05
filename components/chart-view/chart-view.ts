@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use strict';
 const DAY_THRESHOLD = 7;
 
@@ -75,21 +74,13 @@ Component({
 
   methods: {
     setOption(option: ChartOption): void {
-      if (option.chartData) {
-        this.setData({ chartData: option.chartData });
-      }
-      if (option.chartType) {
-        this.setData({ chartType: option.chartType });
-      }
-      if (option.startDate) {
-        this.setData({ startDate: option.startDate });
-      }
-      if (option.endDate) {
-        this.setData({ endDate: option.endDate });
-      }
-      if (option.chartTimeUnit) {
-        this.setData({ chartTimeUnit: option.chartTimeUnit });
-      }
+      const patch: Record<string, unknown> = {};
+      if (option.chartData) patch.chartData = option.chartData;
+      if (option.chartType) patch.chartType = option.chartType;
+      if (option.startDate) patch.startDate = option.startDate;
+      if (option.endDate) patch.endDate = option.endDate;
+      if (option.chartTimeUnit) patch.chartTimeUnit = option.chartTimeUnit;
+      if (Object.keys(patch).length) this.setData(patch);
     },
 
     drawChart(): void {
@@ -109,6 +100,7 @@ Component({
         if (!res || !res[0]) return;
 
         const canvas = res[0].node;
+        // @ts-ignore - Canvas 2D context type not recognized in WeChat environment
         const ctx = canvas.getContext('2d');
         const dpr = wx.getWindowInfo().pixelRatio;
         canvas.width = canvasWidth * dpr;
