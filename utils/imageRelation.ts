@@ -17,11 +17,6 @@ interface RelationTable {
   [weekKey: string]: ImageInfo[];
 }
 
-interface CleanupResult {
-  cleanedCount: number;
-  table: RelationTable;
-}
-
 interface ImageWeekEntry {
   name: string;
   path: string;
@@ -173,35 +168,6 @@ function validateImageExists(imagePath: string): Promise<boolean> {
   });
 }
 
-async function cleanupInvalidImages(weekKey?: string): Promise<CleanupResult> {
-  const table = getImageRelationTable();
-  const keysToCheck = weekKey ? [weekKey] : Object.keys(table);
-  let cleanedCount = 0;
-
-  for (const key of keysToCheck) {
-    if (!table[key]) continue;
-
-    const validImages: ImageInfo[] = [];
-    for (const img of table[key]) {
-      const exists = await validateImageExists(img.path);
-      if (exists) {
-        validImages.push(img);
-      } else {
-        cleanedCount++;
-      }
-    }
-
-    if (validImages.length === 0) {
-      delete table[key];
-    } else {
-      table[key] = validImages;
-    }
-  }
-
-  saveImageRelationTable(table);
-  return { cleanedCount, table };
-}
-
 function syncRelationWithLocal(weekKey?: string): RelationTable {
   const table = getImageRelationTable();
 
@@ -244,21 +210,6 @@ function syncRelationWithLocal(weekKey?: string): RelationTable {
 
   saveImageRelationTable(table);
   return table;
-}
-
-async function getValidImagesForWeek(weekKey: string): Promise<ImageInfo[]> {
-  const table = getImageRelationTable();
-  const images = table[weekKey] || [];
-  const validImages: ImageInfo[] = [];
-
-  for (const img of images) {
-    const exists = await validateImageExists(img.path);
-    if (exists) {
-      validImages.push(img);
-    }
-  }
-
-  return validImages;
 }
 
 async function getAllValidImages(): Promise<GetAllValidImagesResult> {

@@ -1,6 +1,6 @@
 # SYwork 项目规则
 
-> 更新于 2026-05-05 | 项目版本 v4.0.0 (TypeScript) | 云函数已拆分为 backup / restore / cleanup
+> 更新于 2026-05-06 | 项目版本 v4.0.0 | 云函数已拆分 | 图片缓存已实现
 
 ## 1. 项目框架
 - **框架**：微信小程序原生开发框架（TypeScript）
@@ -31,9 +31,10 @@ SYworkwechat/
 │   └── shift-selector/      # 班次选择器
 │
 ├── subpkg-common/           # 分包（非核心功能）
-├── utils/                   # 核心工具层（16 个 .ts 文件）
+├── utils/                   # 核心工具层（17 个 .ts 文件）
 │   ├── store.ts             # 自研发布订阅 Store（内存 + Storage 双写）
 │   ├── cloudManager.ts      # 云同步封装（哈希比对 + 增量同步）
+│   ├── photoCache.ts        # 图片 LRU 缓存（USER_DATA_PATH + 50MB 上限）
 │   ├── dataExportManager.ts # 数据导出（ZIP 格式）
 │   ├── dataImportManager.ts # 数据导入
 │   └── ...                  # 日期、加密、存储、头像等其他工具

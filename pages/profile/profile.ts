@@ -1057,66 +1057,73 @@ Page({
     }
   },
 
+  useCachedStatus(fallback?: BackupStatus): void {
+    const { cachedCloudStatus } = this.data;
+    if (cachedCloudStatus) {
+      this.updateBackupStatusUI(cachedCloudStatus as Record<string, unknown>);
+    } else if (fallback) {
+      this.setData({ backupStatus: fallback });
+    }
+  },
+
+  handleFetchSuccess(info: Record<string, unknown>): void {
+    const now = Date.now();
+    const cloudTime = (info.backupTime as string) || store.getState('lastBackupTime') || null;
+    const cloudHash = (info.backupHash as string) || this.data.lastSyncHash || null;
+    const newCache = {
+      status: info.hasBackup ? 'has_backup' : 'no_backup',
+      time: cloudTime,
+      hash: cloudHash
+    };
+    this.setData({ lastCloudCheckTime: now, cachedCloudStatus: newCache });
+    this.updateBackupStatusUI(newCache);
+  },
+
+  tryLocalHashShortCircuit(): boolean {
+    const localHash = this.computeLocalHash();
+    if (this.data.lastSyncHash && localHash === this.data.lastSyncHash) {
+      this.setData({ lastCloudCheckTime: Date.now() });
+      this.useCachedStatus({ type: 'synced', label: STATUS_TEXT.SYNCED });
+      return true;
+    }
+    return false;
+  },
+
+  shouldRefreshCache(forceRefresh: boolean): boolean {
+    const { lastCloudCheckTime, lastLocalUpdate } = this.data;
+    const now = Date.now();
+    if (forceRefresh) return true;
+    if (lastLocalUpdate > lastCloudCheckTime) return true;
+    if (now - lastCloudCheckTime > CACHE_TTL) return true;
+    return false;
+  },
+
   async checkBackupStatus(forceRefresh: boolean): Promise<void> {
-    const { cloudLoggedIn } = this.data;
-    if (!cloudLoggedIn) {
+    if (!this.data.cloudLoggedIn) {
       this.setData({ backupStatus: { type: 'unbacked', label: STATUS_TEXT.NOT_LOGGED_IN } });
       return;
     }
     if (forceRefresh) {
       this.setData({ backupStatus: { type: 'checking', label: STATUS_TEXT.CHECKING } });
     }
-    const now = Date.now();
-    const { lastCloudCheckTime, cachedCloudStatus, lastLocalUpdate } = this.data;
-    let shouldFetch = !!forceRefresh;
-    if (!shouldFetch && lastLocalUpdate > lastCloudCheckTime) { shouldFetch = true; }
-    if (!shouldFetch && (now - lastCloudCheckTime > CACHE_TTL)) { shouldFetch = true; }
-    if (shouldFetch) {
-      // 本地哈希缓存短路：本地数据自上次同步未变化，跳过云端请求
-      if (!forceRefresh) {
-        const localHash = this.computeLocalHash();
-        if (this.data.lastSyncHash && localHash === this.data.lastSyncHash) {
-          this.setData({ lastCloudCheckTime: now });
-          if (cachedCloudStatus) {
-            this.updateBackupStatusUI(cachedCloudStatus as Record<string, unknown>);
-          } else {
-            this.setData({ backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED } });
-          }
-          return;
-        }
-      }
-      try {
-        const cloudManager = this.data.cloudManager as { getLatestBackupInfo(): Promise<Record<string, unknown>> };
-        const info = await cloudManager.getLatestBackupInfo();
-        if (info.success) {
-          const cloudTime = (info.backupTime as string) || store.getState('lastBackupTime') || null;
-          const cloudHash = (info.backupHash as string) || this.data.lastSyncHash || null;
-          const newCache = {
-            status: info.hasBackup ? 'has_backup' : 'no_backup',
-            time: cloudTime,
-            hash: cloudHash
-          };
-          this.setData({ lastCloudCheckTime: now, cachedCloudStatus: newCache });
-          this.updateBackupStatusUI(newCache);
-        } else {
-          if (cachedCloudStatus) {
-            this.updateBackupStatusUI(cachedCloudStatus as Record<string, unknown>);
-          } else {
-            this.setData({ backupStatus: { type: 'unbacked', label: STATUS_TEXT.UNBACKED } });
-          }
-        }
-      } catch (e) {
-        console.error('检查备份状态失败', e);
-        if (cachedCloudStatus) {
-          this.updateBackupStatusUI(cachedCloudStatus as Record<string, unknown>);
-        }
-      }
-    } else {
-      if (cachedCloudStatus) {
-        this.updateBackupStatusUI(cachedCloudStatus as Record<string, unknown>);
+    if (!this.shouldRefreshCache(forceRefresh)) {
+      this.useCachedStatus({ type: 'checking', label: STATUS_TEXT.CHECKING });
+      return;
+    }
+    if (!forceRefresh && this.tryLocalHashShortCircuit()) {
+      return;
+    }
+    try {
+      const cloudManager = this.data.cloudManager as { getLatestBackupInfo(): Promise<Record<string, unknown>> };
+      const info = await cloudManager.getLatestBackupInfo();
+      if (info.success) {
+        this.handleFetchSuccess(info);
       } else {
-        this.setData({ backupStatus: { type: 'checking', label: STATUS_TEXT.CHECKING } });
+        this.useCachedStatus({ type: 'unbacked', label: STATUS_TEXT.UNBACKED });
       }
+    } catch (e) {
+      console.error('检查备份状态失败', e);
+      this.useCachedStatus();
     }
   },
 
