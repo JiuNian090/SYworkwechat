@@ -17,7 +17,8 @@ const STORAGE_KEYS: Record<string, string> = {
   savedAccounts: 'savedAccounts',
   autoRestoreMap: 'autoRestoreMap',
   lastBackupTime: 'lastBackupTime',
-  lastRestoreTime: 'lastRestoreTime'
+  lastRestoreTime: 'lastRestoreTime',
+  _lastDataModified: '_lastDataModified'
 };
 
 function get(key: string): any {

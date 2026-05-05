@@ -892,10 +892,25 @@ Page({
           if (result.success) {
             const syncHash = this.computeLocalHash();
             wx.setStorageSync('lastSyncHash', syncHash);
-            this.setData({ lastSyncHash: syncHash });
-            store.setState({ lastBackupTime: Date.now() }, ['lastBackupTime']);
+            const now = Date.now();
+            store.setState({ _lastDataModified: now, lastBackupTime: now }, ['_lastDataModified', 'lastBackupTime']);
             this.updateLocalUpdateTime();
-            this.checkBackupStatus(true);
+
+            // 直接缓存为 SYNCED，不依赖云端查询
+            const syncTimeStr = this.formatBackupTime(new Date(now).toISOString());
+            this.setData({
+              lastSyncHash: syncHash,
+              lastCloudCheckTime: now,
+              cachedCloudStatus: {
+                status: 'has_backup',
+                time: new Date(now).toISOString(),
+                hash: syncHash
+              },
+              backupStatus: {
+                type: 'synced',
+                label: STATUS_TEXT.SYNCED + ' ' + syncTimeStr
+              }
+            });
           }
         } catch (e) {
           console.error('备份失败', e);
@@ -924,10 +939,25 @@ Page({
           if (result.success) {
             const syncHash = this.computeLocalHash();
             wx.setStorageSync('lastSyncHash', syncHash);
-            this.setData({ lastSyncHash: syncHash });
-            store.setState({ lastBackupTime: Date.now(), lastRestoreTime: Date.now() }, ['lastBackupTime', 'lastRestoreTime']);
+            const now = Date.now();
+            store.setState({ _lastDataModified: now, lastBackupTime: now, lastRestoreTime: now }, ['_lastDataModified', 'lastBackupTime', 'lastRestoreTime']);
             this.updateLocalUpdateTime();
-            this.checkBackupStatus(true);
+
+            // 直接缓存为 SYNCED，不依赖云端查询
+            const syncTimeStr = this.formatBackupTime(new Date(now).toISOString());
+            this.setData({
+              lastSyncHash: syncHash,
+              lastCloudCheckTime: now,
+              cachedCloudStatus: {
+                status: 'has_backup',
+                time: new Date(now).toISOString(),
+                hash: syncHash
+              },
+              backupStatus: {
+                type: 'synced',
+                label: STATUS_TEXT.SYNCED + ' ' + syncTimeStr
+              }
+            });
           }
         } catch (e) {
           console.error('恢复失败', e);
@@ -975,21 +1005,9 @@ Page({
   },
 
   updateLocalUpdateTime(): void {
-    let latestTime = 0;
-    const shifts = wx.getStorageSync('shifts') || {};
-    Object.keys(shifts).forEach(dateKey => {
-      const ts = new Date(dateKey).getTime();
-      if (!isNaN(ts) && ts > latestTime) { latestTime = ts; }
-    });
-    const shiftTemplates = wx.getStorageSync('shiftTemplates') || [];
-    shiftTemplates.forEach((tpl: Record<string, unknown>) => {
-      if (tpl.updatedTime) {
-        const ts = new Date(tpl.updatedTime as string).getTime();
-        if (!isNaN(ts) && ts > latestTime) { latestTime = ts; }
-      }
-    });
+    let latestTime = store.getState('_lastDataModified') as number || 0;
     const lastBackupTime = store.getState('lastBackupTime') as number || 0;
-    if (lastBackupTime > latestTime) { latestTime = lastBackupTime; }
+    if (lastBackupTime > latestTime) latestTime = lastBackupTime;
     this.setData({ lastLocalUpdate: latestTime || Date.now() });
   },
 
@@ -1009,23 +1027,32 @@ Page({
       return;
     }
     const localHash = this.computeLocalHash();
-    const effectiveHash = (cache.hash as string) || this.data.lastSyncHash || '';
-    const timeStr = cache.time ? this.formatBackupTime(cache.time as string) : '';
+    const effectiveHash = (cache.hash as string) || '';
+    const { lastLocalUpdate } = this.data;
+    const backupTime = cache.time ? new Date(cache.time as string).getTime() : 0;
+
     if (effectiveHash && localHash === effectiveHash) {
+      // 数据一致 → 已同步，显示较新的时间
+      const syncTime = Math.max(backupTime, lastLocalUpdate);
+      const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
-        backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED + (timeStr ? ' ' + timeStr : '') }
+        backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED + (syncTimeStr ? ' ' + syncTimeStr : '') }
       });
       return;
     }
-    const { lastLocalUpdate } = this.data;
-    const backupTime = cache.time ? new Date(cache.time as string).getTime() : 0;
+
+    const localTimeStr = lastLocalUpdate ? this.formatBackupTime(new Date(lastLocalUpdate).toISOString()) : '';
+    const cloudTimeStr = cache.time ? this.formatBackupTime(cache.time as string) : '';
+
     if (!cache.time || (backupTime && lastLocalUpdate > backupTime)) {
+      // 本地更新 → 显示本地时间
       this.setData({
-        backupStatus: { type: 'local_newer', label: STATUS_TEXT.LOCAL_NEWER + (timeStr ? ' ' + timeStr : '') }
+        backupStatus: { type: 'local_newer', label: STATUS_TEXT.LOCAL_NEWER + (localTimeStr ? ' ' + localTimeStr : '') }
       });
     } else {
+      // 云端更新 → 显示云端时间
       this.setData({
-        backupStatus: { type: 'cloud_newer', label: STATUS_TEXT.CLOUD_NEWER + (timeStr ? ' ' + timeStr : '') }
+        backupStatus: { type: 'cloud_newer', label: STATUS_TEXT.CLOUD_NEWER + (cloudTimeStr ? ' ' + cloudTimeStr : '') }
       });
     }
   },

@@ -16,8 +16,9 @@ export interface StoreState {
   chartType: string;
   savedAccounts: string[];
   autoRestoreMap: Record<string, boolean>;
-  lastBackupTime?: string;
-  lastRestoreTime?: string;
+  lastBackupTime?: number;
+  lastRestoreTime?: number;
+  _lastDataModified?: number;
   _lastDataRestore?: number;
   _importComplete?: number;
 }

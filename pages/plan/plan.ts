@@ -223,6 +223,7 @@ Page({
     const templates = [...shiftTemplates, templateToSave];
     try {
       store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
+      store.setState({ _lastDataModified: Date.now() }, ['_lastDataModified']);
       this.setData({
         shiftTemplates: templates,
         showAddTemplate: false
@@ -255,6 +256,7 @@ Page({
   saveTemplates(): void {
     try {
       store.setState({ shiftTemplates: this.data.shiftTemplates }, ['shiftTemplates']);
+      store.setState({ _lastDataModified: Date.now() }, ['_lastDataModified']);
       wx.showToast({
         title: '保存成功',
         icon: 'success'
@@ -328,6 +330,7 @@ Page({
     templates[editIndex] = templateToSave;
     try {
       store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
+      store.setState({ _lastDataModified: Date.now() }, ['_lastDataModified']);
       this.setData({
         shiftTemplates: templates,
         showEditTemplate: false,
@@ -357,6 +360,7 @@ Page({
 
     try {
       store.setState({ shiftTemplates: templates }, ['shiftTemplates']);
+      store.setState({ _lastDataModified: Date.now() }, ['_lastDataModified']);
       this.setData({
         shiftTemplates: templates
       });

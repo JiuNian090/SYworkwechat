@@ -196,6 +196,7 @@ Page({
     if (shiftsChanged) {
       try {
         store.setState({ shifts: updatedShifts }, ['shifts']);
+        store.setState({ _lastDataModified: Date.now() }, ['_lastDataModified']);
         dataToUpdate.shifts = updatedShifts;
       } catch (e) {
         console.error('更新排班数据失败', e);
@@ -642,6 +643,7 @@ Page({
 
     try {
       store.setState({ shifts: newShifts }, ['shifts']);
+      store.setState({ _lastDataModified: Date.now() }, ['_lastDataModified']);
       this.setData({
         shifts: newShifts
       });
@@ -951,7 +953,8 @@ Page({
     delete newShifts[date];
 
     try {
-      wx.setStorageSync('shifts', newShifts);
+      store.setState({ shifts: newShifts }, ['shifts']);
+      store.setState({ _lastDataModified: Date.now() }, ['_lastDataModified']);
       this.setData({
         shifts: newShifts,
         selectedShift: null,
