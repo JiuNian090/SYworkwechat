@@ -65,3 +65,9 @@ cloudfunctions/**/node_modules/
 # Cavemem project memory
 .caveman/
 cavemem-mcp.log
+
+# HeartBeat 架构参考文档（与 .trae/ 同步维护）
+HeartBeat/
+
+# Trae 项目规则文件
+.trae/rules/project_rules.md
