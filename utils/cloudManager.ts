@@ -1039,81 +1039,42 @@ class CloudManager {
 
         const allCloudImages = getImagesResult.result.images || [];
 
-        const imagesToDownload = allCloudImages.filter((img: Record<string, unknown>) => {
+        // 构建云端 fileID 索引
+        const cloudFileIDMap = new Map<string, string>();
+        allCloudImages.forEach((img: Record<string, unknown>) => {
           const key = `${img.weekKey}_${img.imageName || img.name}`;
-          return imagesToAdd.some(addImg => {
-            const addKey = `${addImg.weekKey}_${addImg.name}`;
-            return key === addKey;
-          });
+          if (img.fileID) cloudFileIDMap.set(key, img.fileID as string);
         });
 
-        // 截断超过单批次上限的图片
-        if (imagesToDownload.length > this.MAX_IMAGES_PER_BATCH) {
-          const totalImages = imagesToDownload.length;
-          console.warn(`恢复需要下载 ${totalImages} 张图片，超过单次上限 ${this.MAX_IMAGES_PER_BATCH}，仅处理前 ${this.MAX_IMAGES_PER_BATCH} 张`);
-          wx.showToast({
-            title: `图片较多（${totalImages}张），本次仅下载前 ${this.MAX_IMAGES_PER_BATCH} 张，其余请再次恢复`,
-            icon: 'none',
-            duration: 3000
-          });
-          imagesToDownload.length = this.MAX_IMAGES_PER_BATCH;
-        }
+        // 只写入元数据 + fileID，图片文件按需加载
+        if (imagesToAdd.length > 0) {
+          for (const addImg of imagesToAdd) {
+            const lookupKey = `${addImg.weekKey}_${addImg.name}`;
+            const fileID = cloudFileIDMap.get(lookupKey) || '';
 
-        if (imagesToDownload.length > 0) {
-          const maxConcurrentDownloads = 5;
-          const totalImages = imagesToDownload.length;
+            const weekKey = addImg.weekKey;
+            const weekImages = wx.getStorageSync(weekKey) || [];
 
-          for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
-            const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
-            const batchPromises = batch.map(async (imgInfo: Record<string, unknown>, batchIndex: number) => {
-              try {
-                const imgIndex = i + batchIndex + 1;
-                const progress = Math.round((imgIndex / totalImages) * 100);
-                wx.showLoading({
-                  title: `恢复中 ${progress}%`,
-                  mask: true
-                });
+            // 查重
+            const exists = weekImages.some((img: WeekImage) => img.name === addImg.name);
+            if (exists) continue;
 
-                const downloadResult = await wx.cloud.downloadFile({
-                  fileID: imgInfo.fileID as string
-                });
+            const newImage: WeekImage & { fileID?: string } = {
+              id: `${weekKey}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+              name: addImg.name,
+              path: '',  // 无本地缓存，由 photoCache 按需加载
+              addedTime: new Date().toISOString(),
+              hash: addImg.hash,
+              fileID: fileID
+            };
 
-                const weekKey = imgInfo.weekKey as string;
-                const weekImages = wx.getStorageSync(weekKey) || [];
+            weekImages.push(newImage);
+            wx.setStorageSync(weekKey, weekImages);
 
-                const nameCountMap = new Map<string, number>();
-                weekImages.forEach((img: WeekImage) => {
-                  const baseName = img.name.replace(/\(\d+\)$/, '').trim();
-                  nameCountMap.set(baseName, (nameCountMap.get(baseName) || 0) + 1);
-                });
+            // 更新关联表（path 为空字符串，仅用于占位）
+            addImageToRelation(weekKey, newImage);
 
-                let finalImageName = (imgInfo.imageName || imgInfo.name) as string;
-                const baseName = finalImageName.replace(/\(\d+\)$/, '').trim();
-                if (nameCountMap.has(baseName)) {
-                  const count = nameCountMap.get(baseName)! + 1;
-                  finalImageName = `${baseName}(${count})`;
-                }
-
-                const newImage: WeekImage = {
-                  id: `${weekKey}_${Date.now()}`,
-                  name: finalImageName,
-                  path: downloadResult.tempFilePath,
-                  addedTime: new Date().toISOString(),
-                  hash: imgInfo.hash as string
-                };
-
-                weekImages.push(newImage);
-                wx.setStorageSync(weekKey, weekImages);
-
-                addImageToRelation(weekKey, newImage);
-
-                imageCounters.newImages++;
-              } catch (e) {
-                console.error('下载图片失败', imgInfo.remotePath, e);
-              }
-            });
-
-            await Promise.all(batchPromises);
+            imageCounters.newImages++;
           }
         }
       }

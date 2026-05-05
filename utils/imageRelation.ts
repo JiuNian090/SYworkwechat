@@ -264,14 +264,23 @@ async function getValidImagesForWeek(weekKey: string): Promise<ImageInfo[]> {
 async function getAllValidImages(): Promise<GetAllValidImagesResult> {
   syncRelationWithLocal();
 
-  await cleanupInvalidImages();
-
   const table = getImageRelationTable();
   const allValidImages: ValidImageEntry[] = [];
   const imageWeekRelation: { [weekKey: string]: ImageWeekEntry[] } = {};
 
   for (const weekKey of Object.keys(table)) {
-    const validImages = await getValidImagesForWeek(weekKey);
+    const weekImages = table[weekKey] || [];
+    // 只排除明确不存在的文件，保留 path 为空但有 fileID 的元数据回源图片
+    const validImages: ImageInfo[] = [];
+    for (const img of weekImages) {
+      if (!img.path) {
+        // 元数据回源图片，path 为空，跳过文件存在性检查
+        validImages.push(img);
+      } else {
+        const exists = await validateImageExists(img.path);
+        if (exists) validImages.push(img);
+      }
+    }
     if (validImages.length > 0) {
       imageWeekRelation[weekKey] = validImages.map(img => ({
         name: img.name,

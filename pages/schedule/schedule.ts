@@ -5,6 +5,8 @@ const { addImageToRelation, removeImageFromRelation, syncRelationWithLocal } = r
 const { formatDate, formatMonthTitle, getWeekOfMonth, getMondayOfWeek, isCurrentWeek: isCurWeek, isCurrentMonth: isCurMonth } = require('../../utils/date');
 const { calculateHash } = require('../../utils/encrypt');
 const { store } = require('../../utils/store');
+const photoCache = require('../../utils/photoCache');
+const fs = wx.getFileSystemManager();
 
 interface WeekDayData {
   date: string;
@@ -823,10 +825,18 @@ Page({
       counter++;
     }
 
+    // 将选取的图片保存到 USER_DATA_PATH，避免临时文件被系统清理
+    let persistentPath = selectedImagePath;
+    try {
+      persistentPath = fs.saveFileSync(selectedImagePath);
+    } catch (e) {
+      console.warn('保存图片到持久目录失败，使用临时路径', e);
+    }
+
     const newImage = {
       id: imageId,
       name: uniqueImageName,
-      path: selectedImagePath,
+      path: persistentPath,
       addedTime: new Date().toISOString(),
       hash: ''
     };
@@ -850,14 +860,49 @@ Page({
     });
   },
 
-  viewImage(e: WechatMiniprogram.TouchEvent): void {
+  async viewImage(e: WechatMiniprogram.TouchEvent): Promise<void> {
     const index = (e.currentTarget.dataset as { index: number }).index;
-    const { weekImages } = this.data as { weekImages: Array<{ path: string }> };
+    const { weekImages } = this.data as { weekImages: Array<{ path: string; fileID?: string; hash?: string }> };
     const image = weekImages[index];
 
+    let imagePath = image.path;
+
+    // 无本地路径但有 fileID：从云端下载
+    if (!imagePath && image.fileID) {
+      wx.showLoading({ title: '加载中...', mask: true });
+      try {
+        imagePath = await photoCache.ensureImage(
+          image.fileID,
+          () => wx.cloud.downloadFile({ fileID: image.fileID }).then(r => r.tempFilePath),
+          image.hash || '',
+          this.getWeekKey(),
+          image.name || ''
+        );
+        // 更新本地存储的路径
+        const weekKey = this.getWeekKey();
+        const storageKey = `week_images_${weekKey}`;
+        const storedImages = wx.getStorageSync(storageKey) || [];
+        const target = storedImages.find((img: Record<string, unknown>) => img.fileID === image.fileID);
+        if (target && !target.path) {
+          target.path = imagePath;
+          wx.setStorageSync(storageKey, storedImages);
+        }
+        wx.hideLoading();
+      } catch (e) {
+        wx.hideLoading();
+        wx.showToast({ title: '图片加载失败', icon: 'none' });
+        return;
+      }
+    }
+
+    if (!imagePath) {
+      wx.showToast({ title: '图片不可用', icon: 'none' });
+      return;
+    }
+
     wx.previewImage({
-      urls: [image.path],
-      current: image.path
+      urls: [imagePath],
+      current: imagePath
     });
   },
 
@@ -909,6 +954,7 @@ Page({
     const weekImages = wx.getStorageSync(storageKey) || [];
 
     let hasOldFormat = false;
+    let hasCacheUpdate = false;
     const updatedImages = weekImages.map((image: Record<string, unknown>) => {
       if (image.name && typeof image.name === 'string' && (image.name.includes('年') || image.name.includes('月') || image.name.includes('第') || image.name.includes('周'))) {
         hasOldFormat = true;
@@ -929,10 +975,20 @@ Page({
           console.error('解析旧格式图片名称失败', e);
         }
       }
+
+      // 无本地路径但有 fileID：尝试从缓存读取
+      if (!image.path && image.fileID) {
+        const cachedPath = photoCache.getFromCache(image.fileID);
+        if (cachedPath) {
+          image.path = cachedPath;
+          hasCacheUpdate = true;
+        }
+      }
+
       return image;
     });
 
-    if (hasOldFormat) {
+    if (hasOldFormat || hasCacheUpdate) {
       wx.setStorageSync(storageKey, updatedImages);
     }
 
