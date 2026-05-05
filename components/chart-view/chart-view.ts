@@ -1,4 +1,5 @@
 'use strict';
+type CanvasContext = WechatMiniprogram.CanvasRenderingContext.CanvasRenderingContext2D;
 const DAY_THRESHOLD = 7;
 
 interface ChartDataItem {
@@ -317,7 +318,7 @@ Component({
       });
     },
 
-    drawLineChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin): void {
+    drawLineChart(ctx: CanvasContext, chartData: ChartDataItem, plotLeft: number, plotTop: number, plotHeight: number, extraPadding: number, adjustedXStep: number, yScale: number, yAxisMin: number): void {
       const dataPlotWidth = adjustedXStep * (chartData.labels.length - 1);
       const plotBottom = plotTop + plotHeight;
 
@@ -402,7 +403,7 @@ Component({
       }
     },
 
-    drawArea(ctx, points, plotTop, plotBottom): void {
+    drawArea(ctx: CanvasContext, points: Point[], plotTop: number, plotBottom: number): void {
       if (points.length < 2) return;
 
       ctx.save();
@@ -421,7 +422,7 @@ Component({
       ctx.restore();
     },
 
-    drawBarChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, yAxisMin): void {
+    drawBarChart(ctx: CanvasContext, chartData: ChartDataItem, plotLeft: number, plotTop: number, plotHeight: number, extraPadding: number, adjustedXStep: number, yScale: number, yAxisMin: number): void {
       const barWidth = Math.min(36, adjustedXStep * 0.55);
       const dataPlotWidth = adjustedXStep * (chartData.labels.length - 1);
       const plotBottom = plotTop + plotHeight;
