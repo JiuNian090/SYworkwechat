@@ -343,12 +343,12 @@ class CloudManager {
       const { images: validImages, imageWeekRelation: validImageWeekRelation } = await getAllValidImages();
 
       try {
-        const infoResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+        const infoResult = await this.callCloudFunction(config.cloudFunctions.backup, {
           action: 'getBackupInfo',
           userId: this.userId
         });
         if (infoResult.result.success && infoResult.result.hasBackup) {
-          await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+          await this.callCloudFunction(config.cloudFunctions.restore, {
             action: 'restore',
             userId: this.userId
           });
@@ -365,7 +365,7 @@ class CloudManager {
 
       wx.showLoading({ title: '开始备份...' });
 
-      const diffResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+      const diffResult = await this.callCloudFunction(config.cloudFunctions.backup, {
         action: 'getBackupDiff',
         userId: this.userId,
         data: {
@@ -463,7 +463,7 @@ class CloudManager {
       });
 
       try {
-        const existingImagesResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+        const existingImagesResult = await this.callCloudFunction(config.cloudFunctions.backup, {
           action: 'getExistingImages',
           userId: this.userId
         });
@@ -494,7 +494,7 @@ class CloudManager {
       }
 
       wx.showLoading({ title: '完成备份...' });
-      const backupResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+      const backupResult = await this.callCloudFunction(config.cloudFunctions.backup, {
         action: 'completeBackup',
         userId: this.userId,
         data: {
@@ -851,7 +851,7 @@ class CloudManager {
 
       wx.showLoading({ title: '准备恢复...' });
 
-      const getRelationResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+      const getRelationResult = await this.callCloudFunction(config.cloudFunctions.restore, {
         action: 'getBackupRelation',
         userId: this.userId
       });
@@ -993,7 +993,7 @@ class CloudManager {
 
       const imageCounters = { newImages: 0 };
       if (imagesToAdd.length > 0) {
-        const getImagesResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+        const getImagesResult = await this.callCloudFunction(config.cloudFunctions.restore, {
           action: 'getAllCloudImages',
           userId: this.userId
         });
@@ -1082,7 +1082,7 @@ class CloudManager {
       wx.removeStorageSync('image_relation_table');
       importImageWeekRelation(cloudRelation);
 
-      const restoreResult = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+      const restoreResult = await this.callCloudFunction(config.cloudFunctions.restore, {
         action: 'restoreOtherData',
         userId: this.userId
       });
@@ -1177,7 +1177,7 @@ class CloudManager {
         };
       }
 
-      const result = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+      const result = await this.callCloudFunction(config.cloudFunctions.backup, {
         action: 'getBackupInfo',
         userId: this.userId
       });
@@ -1201,7 +1201,7 @@ class CloudManager {
         return { success: false, errMsg: '请先登录' };
       }
 
-      const result = await this.callCloudFunction(config.cloudFunctions.backupRestore, {
+      const result = await this.callCloudFunction(config.cloudFunctions.backup, {
         action: 'getBackupInfo',
         userId: this.userId
       });

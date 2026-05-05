@@ -13,7 +13,9 @@ interface Config {
   appName: string;
   cloudFunctions: {
     userLogin: string;
-    backupRestore: string;
+    backup: string;
+    restore: string;
+    cleanup: string;
   };
   collections: {
     users: string;
@@ -37,7 +39,9 @@ const config: Config = {
 
   cloudFunctions: {
     userLogin: 'userLogin',
-    backupRestore: 'backupRestore'
+    backup: 'backup',
+    restore: 'restore',
+    cleanup: 'cleanup'
   },
 
   collections: {

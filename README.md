@@ -138,7 +138,10 @@ SYwork/
 ├── utils/                  # 工具函数（TypeScript）
 ├── types/                  # 自定义类型声明（.d.ts）
 ├── cloudfunctions/         # 云函数
-│   ├── backupRestore/      # 备份恢复
+│   ├── backup/             # 数据备份
+│   ├── restore/            # 数据恢复
+│   ├── cleanup/            # 数据清理
+│   ├── backupRestore/      # [待移除] 旧版备份恢复
 │   └── userLogin/          # 用户登录
 ├── vendor/                 # 第三方库（如 jszip.min.js）
 ├── i18n/                   # 国际化配置
