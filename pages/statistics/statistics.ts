@@ -755,6 +755,11 @@ Page({
     });
   },
 
+  onUnload(): void {
+    if (this._storeUnsub) this._storeUnsub();
+    if (this._storeUnsubImport) this._storeUnsubImport();
+  },
+
   onChartInit(e: WechatMiniprogram.TouchEvent): void {
     (this as unknown as Record<string, unknown>)._chartComponent = (e.detail as { component: unknown }).component;
     this.updateChartData();

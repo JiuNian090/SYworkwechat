@@ -1,6 +1,6 @@
 # SYwork 项目规则
 
-> 更新于 2026-05-05 | 项目版本 v4.0.0 (TypeScript)
+> 更新于 2026-05-05 | 项目版本 v4.0.0 (TypeScript) | 云函数已拆分为 backup / restore / cleanup
 
 ## 1. 项目框架
 - **框架**：微信小程序原生开发框架（TypeScript）
@@ -38,8 +38,10 @@ SYworkwechat/
 │   ├── dataImportManager.ts # 数据导入
 │   └── ...                  # 日期、加密、存储、头像等其他工具
 ├── types/                   # TypeScript 类型定义（10 个 .d.ts 文件）
-├── cloudfunctions/          # 云函数（2 个，保持 JS）
-│   ├── backupRestore/       # 云备份/恢复
+├── cloudfunctions/          # 云函数（4 个，保持 JS）
+│   ├── backup/              # 数据备份
+│   ├── restore/             # 数据恢复
+│   ├── cleanup/             # 数据清理
 │   └── userLogin/           # 用户登录
 ├── HeartBeat/               # 架构参考文档（与 .trae/ 同步维护）
 ├── config/                  # ESLint 配置
@@ -104,8 +106,8 @@ npm run tsc:check  # TypeScript 编译检查
 
 ## 10. 备份系统版本规则
 - **前端位置**：`config.ts` 的 `backupSystemVersion` 字段
-- **云函数位置**：`cloudfunctions/backupRestore/index.js` 中 `BACKUP_SYSTEM_VERSION`
-- **必须保持两个版本号一致**
+- **云函数位置**：`cloudfunctions/backup/index.js`、`restore/index.js`、`cleanup/index.js` 中 `BACKUP_SYSTEM_VERSION`
+- **必须保持所有版本号一致**
 - **恢复逻辑**：本地 >= 备份 → 正常恢复 | 本地 < 备份 → 提示更新 | 本地 > 云端 → 强制更新云端
 
 ## 11. 云数据库集合

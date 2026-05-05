@@ -113,6 +113,12 @@ Page({
     });
   },
 
+  onUnload(): void {
+    if (this._storeUnsubRestore) this._storeUnsubRestore();
+    if (this._storeUnsubImport) this._storeUnsubImport();
+    if (this._storeUnsubAvatar) this._storeUnsubAvatar();
+  },
+
   onShow(): void {
     const customWeeklyHours = wx.getStorageSync('customWeeklyHours') || 35;
     const avatarType = wx.getStorageSync('avatarType') || 'text';

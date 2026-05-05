@@ -81,6 +81,10 @@ Page({
     });
   },
 
+  onUnload(): void {
+    if (this._storeUnsubImport) this._storeUnsubImport();
+  },
+
   onShow(): void {
     const templates = store.getState('shiftTemplates') as unknown[] || [];
     if (calculateHash(JSON.stringify(templates)) !== calculateHash(JSON.stringify(this.data.shiftTemplates))) {
