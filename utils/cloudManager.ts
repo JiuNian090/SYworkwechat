@@ -69,6 +69,9 @@ class CloudManager {
     this.userId = null;
   }
 
+  /** 单次备份/恢复操作最多处理的图片数，超出的需用户再次操作 */
+  readonly MAX_IMAGES_PER_BATCH = 20;
+
   get BACKUP_SYSTEM_VERSION(): string {
     return config.backupSystemVersion;
   }
@@ -386,7 +389,19 @@ class CloudManager {
         };
       }
 
-      const imagesToUpload = diffResult.result.imagesToUpload || [];
+      let imagesToUpload = diffResult.result.imagesToUpload || [];
+
+      // 截断超过单批次上限的图片，避免云函数超时/负载过大
+      const totalImageCount = imagesToUpload.length;
+      if (totalImageCount > this.MAX_IMAGES_PER_BATCH) {
+        console.warn(`备份图片数 ${totalImageCount} 超过单次上限 ${this.MAX_IMAGES_PER_BATCH}，仅处理前 ${this.MAX_IMAGES_PER_BATCH} 张，剩余请再次备份`);
+        wx.showToast({
+          title: `图片较多（${totalImageCount}张），本次仅备份前 ${this.MAX_IMAGES_PER_BATCH} 张，其余请再次备份`,
+          icon: 'none',
+          duration: 3000
+        });
+        imagesToUpload = imagesToUpload.slice(0, this.MAX_IMAGES_PER_BATCH);
+      }
 
       const uploadedImages: Array<Record<string, unknown>> = [];
       let newImageCount = 0;
@@ -659,6 +674,18 @@ class CloudManager {
       if (!foundExistingImage) {
         imagesToDownload.push(imgInfo);
       }
+    }
+
+    // 截断超过单批次上限的图片
+    if (imagesToDownload.length > this.MAX_IMAGES_PER_BATCH) {
+      const totalImages = imagesToDownload.length;
+      console.warn(`恢复需要下载 ${totalImages} 张图片，超过单次上限 ${this.MAX_IMAGES_PER_BATCH}，仅处理前 ${this.MAX_IMAGES_PER_BATCH} 张`);
+      wx.showToast({
+        title: `图片较多（${totalImages}张），本次仅下载前 ${this.MAX_IMAGES_PER_BATCH} 张，其余请再次恢复`,
+        icon: 'none',
+        duration: 3000
+      });
+      imagesToDownload.length = this.MAX_IMAGES_PER_BATCH;
     }
 
     const maxConcurrentDownloads = 5;
@@ -1019,6 +1046,18 @@ class CloudManager {
             return key === addKey;
           });
         });
+
+        // 截断超过单批次上限的图片
+        if (imagesToDownload.length > this.MAX_IMAGES_PER_BATCH) {
+          const totalImages = imagesToDownload.length;
+          console.warn(`恢复需要下载 ${totalImages} 张图片，超过单次上限 ${this.MAX_IMAGES_PER_BATCH}，仅处理前 ${this.MAX_IMAGES_PER_BATCH} 张`);
+          wx.showToast({
+            title: `图片较多（${totalImages}张），本次仅下载前 ${this.MAX_IMAGES_PER_BATCH} 张，其余请再次恢复`,
+            icon: 'none',
+            duration: 3000
+          });
+          imagesToDownload.length = this.MAX_IMAGES_PER_BATCH;
+        }
 
         if (imagesToDownload.length > 0) {
           const maxConcurrentDownloads = 5;
