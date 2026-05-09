@@ -27,7 +27,7 @@ interface ChartOption {
 type ChartTimeUnit = 'day' | 'week' | 'month';
 
 function getChartColors() {
-  const theme = wx.getSystemInfoSync().theme;
+  const theme = wx.getAppBaseInfo().theme;
   const isDark = theme === 'dark';
   if (isDark) {
     return {

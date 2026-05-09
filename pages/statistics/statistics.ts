@@ -1047,7 +1047,7 @@ Page({
   },
 
   _isDarkMode(): boolean {
-    try { return wx.getSystemInfoSync().theme === 'dark'; } catch (e) { return false; }
+    try { return wx.getAppBaseInfo().theme === 'dark'; } catch (e) { return false; }
   },
 
   _getPlaceholderColor(): string {
@@ -1095,7 +1095,7 @@ Page({
     const total = statistics.dayShifts + statistics.nightShifts + statistics.offDays;
     if (total === 0) return;
 
-    const isDark = wx.getSystemInfoSync().theme === 'dark';
+    const isDark = wx.getAppBaseInfo().theme === 'dark';
     const pieColors = isDark
       ? { day: '#D4A830', night: '#5A8ABF', off: '#9A7ABF', stroke: '#262626' }
       : { day: '#FCD34D', night: '#93C5FD', off: '#D8B4FE', stroke: '#ffffff' };

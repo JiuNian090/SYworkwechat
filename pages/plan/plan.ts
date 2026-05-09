@@ -100,7 +100,7 @@ Page({
 
   _getBgAlpha(): string {
     try {
-      const theme = wx.getSystemInfoSync().theme;
+      const theme = wx.getAppBaseInfo().theme;
       return theme === 'dark' ? '50' : '20';
     } catch (e) { return '20'; }
   },
