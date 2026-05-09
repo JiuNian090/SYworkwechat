@@ -383,7 +383,7 @@ Component({
 
       if (points.length < 2) return;
 
-      this.drawArea(ctx, points, plotTop, plotBottom);
+      this.drawArea(ctx, points, plotTop, plotBottom, colors);
 
       ctx.save();
       ctx.shadowColor = 'rgba(52,211,153,0.15)';
