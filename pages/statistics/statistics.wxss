@@ -1654,4 +1654,16 @@ page {
   .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
 
   .chart-type-option.active { background: #3a9a7a; box-shadow: 0 2rpx 8rpx rgba(58, 154, 122, 0.3); }
+
+  .modal-container { background: #262626; }
+  .modal-header { border-bottom-color: #333333; }
+  .modal-close:active { background: #333333; }
+  .close-icon { color: #737373; }
+  .form-card { background: #262626; }
+  .form-input { background: #1a1a1a; border-color: #444444; color: #e5e5e5; }
+  .form-input:focus { background: #222222; border-color: var(--primary-color); box-shadow: 0 0 0 4rpx rgba(58, 154, 122, 0.15); }
+
+  .modal-footer { background: #262626; border-top-color: #333333; }
+  .btn-cancel { background: #333333; color: #a3a3a3; }
+  .btn-confirm { box-shadow: 0 4rpx 12rpx rgba(45, 122, 90, 0.3); }
 }

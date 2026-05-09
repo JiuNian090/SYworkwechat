@@ -1622,7 +1622,8 @@ page {
 
   .day-item { background: #2a2a2a; }
   .day-left { background: #2a2a2a; }
-  .day-item.today .day-left { background: var(--primary-color); }
+  .day-item.today { box-shadow: 0 4rpx 16rpx rgba(45, 122, 90, 0.25); }
+  .day-item.today .day-left { background: var(--primary-color) !important; }
 
   .modal-container { background: #262626; }
   .modal-footer { background: #262626; border-top-color: #333333; }
