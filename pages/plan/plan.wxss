@@ -201,17 +201,17 @@
   border: 1rpx solid #f0f0f0;
 }
 
+.template-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
 
 
 .template-item:hover {
   box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.1);
   transform: translateY(-4rpx);
-}
-
-.template-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
 }
 
 .template-left {
@@ -881,6 +881,19 @@
   }
 
   .empty-tip-row { background: #2a2a2a; }
+
+  .template-item { background: #2a2a2a; border-color: #333333; }
+  .template-item .template-name { opacity: 0.8; }
+  .template-item .template-type { opacity: 0.75; }
+  .template-item .work-hours, .template-item .time-range { color: #a3a3a3; }
+
+  .btn-primary { background: #2d7a5a; }
+  .btn-primary:active { background: #1a5a3a; }
+  .main-color { color: #4dd4a0; }
+  .add-template-btn { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%) !important; }
+  .edit-btn { background-color: #1a3a4a !important; color: #5ab0e0 !important; border-color: #2a6a8a !important; }
+  .delete-btn { background-color: #3a1a1a !important; color: #e06060 !important; border-color: #5a2a2a !important; }
+  .btn-confirm { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); box-shadow: 0 4rpx 12rpx rgba(45, 122, 90, 0.3); }
   .btn-cancel { background: #333333; color: #a3a3a3; }
   .modal-footer { background: #262626; border-top-color: #333333; }
   .modal-header { border-bottom-color: #333333; }

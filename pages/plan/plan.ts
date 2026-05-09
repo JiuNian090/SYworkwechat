@@ -79,6 +79,10 @@ Page({
     this._storeUnsubImport = store.subscribe('_importComplete', function () {
       planPage.loadShiftTemplates();
     });
+    // 监听系统主题变化，更新卡片背景
+    try {
+      wx.onThemeChange(function () { planPage.loadShiftTemplates(); });
+    } catch (e) { /* 基础库不支持时忽略 */ }
   },
 
   onUnload(): void {
@@ -89,16 +93,31 @@ Page({
     const templates = store.getState('shiftTemplates') as unknown[] || [];
     if (calculateHash(JSON.stringify(templates)) !== calculateHash(JSON.stringify(this.data.shiftTemplates))) {
       this.setData({
-        shiftTemplates: templates
+        shiftTemplates: this._addBgStyle(templates)
       });
     }
+  },
+
+  _getBgAlpha(): string {
+    try {
+      const theme = wx.getSystemInfoSync().theme;
+      return theme === 'dark' ? '50' : '20';
+    } catch (e) { return '20'; }
+  },
+
+  _addBgStyle(templates: unknown[]): unknown[] {
+    const alpha = this._getBgAlpha();
+    return templates.map((t) => {
+      const item = t as Record<string, unknown>;
+      return { ...item, bgStyle: `background-color: ${item.color}${alpha}` };
+    });
   },
 
   loadShiftTemplates(): void {
     try {
       const templates = store.getState('shiftTemplates') as unknown[] || [];
       this.setData({
-        shiftTemplates: templates
+        shiftTemplates: this._addBgStyle(templates)
       });
     } catch (e) {
       console.error('读取班次模板失败', e);

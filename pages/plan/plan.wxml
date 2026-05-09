@@ -19,7 +19,7 @@
       </view>
     </view>
     <view class="template-list">
-      <view class="template-item" wx:for="{{shiftTemplates}}" wx:key="index" style="background-color:{{item.color}}20">
+      <view class="template-item" wx:for="{{shiftTemplates}}" wx:key="index" style="{{item.bgStyle}}">
         <view class="template-content">
           <view class="template-left">
             <view class="template-header">
