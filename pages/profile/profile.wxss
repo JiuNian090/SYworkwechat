@@ -1119,7 +1119,7 @@ page {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 32rpx 32rpx 0 0;
   z-index: 999;
   transform: translateY(100%);
@@ -1139,7 +1139,7 @@ page {
   align-items: center;
   justify-content: space-between;
   padding: 28rpx 32rpx;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid var(--border-color);
   flex-shrink: 0;
 }
 
@@ -1172,13 +1172,13 @@ page {
 }
 
 .modal-close:active {
-  background: #f5f5f5;
+  background: var(--bg-color);
   transform: scale(0.9);
 }
 
 .close-icon {
   font-size: 32rpx;
-  color: #999;
+  color: var(--text-tertiary);
   font-weight: 300;
 }
 
@@ -1331,7 +1331,7 @@ page {
 /* 表单卡片 */
 .form-card {
   margin: 8rpx 24rpx;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: 20rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
   overflow: hidden;
@@ -2618,7 +2618,7 @@ page {
 .form-card {
   margin: 0 24rpx;
   padding: 28rpx;
-  background: #ffffff;
+  background: var(--card-bg);
   border-radius: var(--radius-lg);
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
@@ -3129,10 +3129,7 @@ page {
   .weui-btn_default { background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%); color: #a3a3a3; }
   .weui-btn_default:active { background: linear-gradient(135deg, #2a2a2a 0%, #222222 100%); }
 
-  .modal-container { background: #262626; }
 
-
-  .form-card { background: #262626; }
   .modal-container .form-card .form-input { background: #1a1a1a; border-color: #444444; color: #e5e5e5; }
   .modal-container .form-card .form-input:focus { background: #222222; border-color: var(--primary-color); box-shadow: 0 0 0 4rpx rgba(58, 154, 122, 0.15); }
   .input-wrapper { background: #1a1a1a; border-color: #444444; }

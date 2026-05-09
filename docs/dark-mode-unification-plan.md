@@ -185,7 +185,19 @@ const alpha = theme === 'dark' ? '50' : '20';
 | Step 1：集中变量到 app.wxss | ✅ | 创建 `app.wxss`，整合 5 个页面的 17 个变量（含标签系统变量），清空各页面重复定义共 ~85 行 |
 | Step 2：组件 styleIsolation | ✅ | chart-view / color-picker / shift-selector 三个组件均已添加 `"styleIsolation": "apply-shared"` |
 | Step 4：组件替换硬编码 | ✅ | color-picker: 替换 9 处，移除 4 条无效暗色覆盖；shift-selector: 替换 11 处，移除 12 条无效暗色覆盖 |
-| 编译验证 | ✅ | `tsc --noEmit` + `eslint` 均通过 |
+| Step 4（续）：页面级替换 | ✅ | 5 个页面共替换 ~30 处关键硬编码 → 变量，同步清理暗色块共移除 ~20 条冗余规则 |
+| Step 3：wxml 清理 | ⏭️ | 扫描结果多为假阳性（wrapper 承载布局），跳过 |
+| 编译验证（最终） | ✅ | `tsc --noEmit` + `eslint` 均通过 |
+
+### 页面级替换详情
+
+| 页面 | 主体替换 | 暗色块移除 |
+|------|----------|-----------|
+| schedule | modal-container/header/footer、close-icon、shift-name/tag/time、btn-cancel、picker-shift、stat-row | modal-container、modal-footer、modal-header、modal-content、shift-name、shift-tag-text、shift-time、btn-cancel 颜色 |
+| plan | modal-container/header/footer、close-icon、template-item、header、title、section-title、label、btn-cancel/confirm、empty-tip | modal-container、modal-footer、modal-header、label、work-hours-display、btn-cancel 颜色 |
+| profile | modal-container/header/footer、close-icon、form-card (×2) | modal-container、form-card |
+| statistics | modal-container/footer、close-icon、form-card、btn-cancel | modal-container、modal-header、close-icon、form-card、modal-footer、btn-cancel 颜色 |
+| user-manage | modal-container/footer、form-card、btn-cancel | modal-container、modal-header、modal-footer、form-card、btn-cancel 颜色 |
 
 ### 关键设计决策
 
@@ -197,8 +209,9 @@ const alpha = theme === 'dark' ? '50' : '20';
 
 ### 待后续处理
 
-- **Step 3**：清理多余 wxml 结构（plan/profile 页面有大量空 view 节点，建议利用组件重构时一并处理）
-- **Step 4（续）**：页面级硬编码颜色替换（page-header 渐变、弹窗容器、badge/tag 等）。这部分的替换需要逐个验证视觉一致性，建议分页面渐进式替换。
+- **page-header 渐变替换**：各页面的 header 使用 `linear-gradient(#34d399, #10b981)` 等主色渐变，暗色块中用 `linear-gradient(#2d7a5a, #1a5a3a)` 覆盖。可用 `var(--primary-color)` / `var(--primary-dark)` 替代渐变值，但需验证视觉一致性。
+- **badge/tag/图标渐变**：data-icon、cloud-icon 等装饰性背景渐变使用了亮色/暗色独立配色，需逐个评估替换风险。
+- **Step 3（wxml 清理）**：plan/profile 页面确实存在一定量的无样式 wrapper view，可在页面重构时一并处理。
 - **Step 5**：编码规范已在本文档中，新增页面/组件时需遵循变量引用规则。
 
 ### 改造前后对比
@@ -209,4 +222,6 @@ const alpha = theme === 'dark' ? '50' : '20';
 | 变量定义行数 | ~85 行（分散） | ~60 行（集中） |
 | 暗色变量重定义 | 7 个文件（5 页 + 2 组件） | 1 个 app.wxss |
 | 组件变量继承 | 无（独立隔离） | apply-shared 自动继承 |
+| 硬编码颜色替换 | 80+ 处硬编码 | ~50 处已替换为变量 |
+| 暗色块冗余规则 | ~45 条 | ~25 条（移除 ~20 条） |
 | 新增页面暗色工作量 | 需手动添加 @media 块 | 自动生效 |
