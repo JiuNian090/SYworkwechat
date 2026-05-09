@@ -628,18 +628,33 @@ page {
 
 /* 添加图片按钮 */
 .add-image-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 24rpx;
+  gap: 6rpx;
+  padding: 8rpx 20rpx;
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-  border-radius: 12rpx;
+  border-radius: 30rpx;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 12rpx;
 }
 
 .add-image-btn:active {
-  transform: translateY(2rpx);
+  transform: scale(0.94);
   box-shadow: 0 4rpx 12rpx rgba(7, 193, 96, 0.3);
+}
+
+.add-image-btn .btn-icon {
+  font-size: 24rpx;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.add-image-btn .btn-text {
+  font-size: 24rpx;
+  color: #ffffff;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .add-image-btn .btn-icon {

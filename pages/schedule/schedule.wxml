@@ -122,6 +122,10 @@
         <view class="card-icon">🖼️</view>
         <text class="card-title">本周排班图片</text>
         <text class="card-subtitle">{{weekImages.length}} 张</text>
+        <view class="add-image-btn" bindtap="onAddImageBtnTap">
+          <text class="btn-icon">+</text>
+          <text class="btn-text">添加</text>
+        </view>
       </view>
       
       <view class="images-content">
@@ -141,11 +145,6 @@
         <view class="empty-state" wx:else>
           <text class="empty-icon">🖼️</text>
           <text class="empty-text">暂无排班图片</text>
-        </view>
-        
-        <view class="add-image-btn" bindtap="onAddImageBtnTap">
-          <text class="btn-icon">+</text>
-          <text class="btn-text">添加图片</text>
         </view>
       </view>
       
