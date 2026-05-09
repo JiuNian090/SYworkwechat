@@ -905,9 +905,16 @@
   .modal-header { border-bottom-color: #333333; }
   .modal-container { background: #262626; }
   .work-hours-display { background: #2a2a2a; }
+  .work-hours-text { color: #a3a3a3; }
+  .work-hours-value { color: var(--primary-color); }
   .time-pair-col .picker-time { background: #1a1a1a; }
-  .picker { background: #1a1a1a; }
-  .input { background: #1a1a1a; color: #e5e5e5; }
+  .picker { background: #1a1a1a; border-color: #444444; }
+  .picker:active { border-color: var(--primary-color); background: #222222; }
+  .picker-text { color: #e5e5e5; }
+  .picker-arrow { color: #666666; }
+  .label { color: #e5e5e5; }
+  .input { background: #1a1a1a; border-color: #444444; color: #e5e5e5; }
+  .input:focus { border-color: var(--primary-color); background: #222222; box-shadow: 0 0 0 4rpx rgba(58, 154, 122, 0.15); }
   .input-placeholder { color: #737373; }
 }
 
