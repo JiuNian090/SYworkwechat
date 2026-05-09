@@ -399,23 +399,23 @@
   <view class="bottom-nav">
     <view class="nav-tabs">
       <view class="nav-tab {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
-        <text class="nav-tab-icon">📖</text>
+        <image class="nav-tab-icon" src="/images/book.png"></image>
         <text class="nav-tab-label">使用方法</text>
       </view>
       <view class="nav-tab {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
-        <text class="nav-tab-icon">📈</text>
+        <image class="nav-tab-icon" src="/images/status.png"></image>
         <text class="nav-tab-label">统计报表</text>
       </view>
       <view class="nav-tab {{activeSection === 'cloud' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-cloud">
-        <text class="nav-tab-icon">☁️</text>
+        <image class="nav-tab-icon" src="/images/cloud.png"></image>
         <text class="nav-tab-label">云备份</text>
       </view>
       <view class="nav-tab {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
-        <text class="nav-tab-icon">📊</text>
+        <image class="nav-tab-icon" src="/images/analytic.png"></image>
         <text class="nav-tab-label">数据管理</text>
       </view>
       <view class="nav-tab {{activeSection === 'profile' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-profile">
-        <text class="nav-tab-icon">👤</text>
+        <image class="nav-tab-icon" src="/images/me.png"></image>
         <text class="nav-tab-label">个人中心</text>
       </view>
     </view>
