@@ -1646,4 +1646,6 @@ page {
     --tag-hours-bg: linear-gradient(135deg, #2a2a1a 0%, #3a2a1a 100%);
     --tag-hours-text: #d08030;
   }
+
+  .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
 }

@@ -3404,6 +3404,8 @@ page {
     --shadow-hover: 0 4rpx 20rpx rgba(0, 0, 0, 0.4);
   }
 
+  .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
+
   .profile-card {
     background: linear-gradient(135deg, #262626 0%, #1f2a22 100%);
   }
