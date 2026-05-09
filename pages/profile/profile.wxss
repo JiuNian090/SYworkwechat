@@ -3451,4 +3451,42 @@ page {
   .cloud-icon { background: linear-gradient(135deg, #1a1a2a 0%, #1a1a2a 100%); }
   .about-icon { background: linear-gradient(135deg, #2a2a1a 0%, #2a2a1a 100%); }
   .changelog-icon { background: linear-gradient(135deg, #1a2a1a 0%, #1a2a1a 100%); }
+
+  .daily-message-card {
+    background: linear-gradient(135deg, #262626 0%, #1f2a22 100%);
+    border-color: rgba(58, 154, 122, 0.15);
+    box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.3);
+  }
+  .daily-message-text { color: var(--text-secondary); }
+  .daily-message-title-left text { color: var(--text-secondary); }
+  .weui-cell__version-tag { color: var(--text-secondary); }
+  .weui-cell__date { color: var(--text-tertiary); }
+  .weui-cell__text { color: var(--text-secondary); }
+
+  .daily-message-refresh:active { background: rgba(58, 154, 122, 0.15); }
+
+  .weui-panel { background-color: #262626; }
+  .weui-cells { background-color: #262626; }
+  .weui-cells:before, .weui-cells:after { background-color: #333333; color: #333333; }
+  .weui-cell:before { border-top-color: #333333; }
+  .weui-cell:active { background-color: #333333; }
+  .weui-cell_active { background-color: #2a2a2a; }
+  .weui-cells__title { color: #737373; }
+  .weui-cells__title-text { color: #737373; }
+
+  .policy-icon { background: none !important; }
+  .policy-icon-wrapper { background: none; border: none; box-shadow: none; }
+  .policy-item {
+    background: linear-gradient(135deg, #262626 0%, #1f2a22 100%);
+    border-color: rgba(58, 154, 122, 0.15);
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+  }
+  .policy-item:active {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a2a1a 100%);
+    box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.3);
+  }
+  .policy-item::before { background: linear-gradient(180deg, #3a9a7a, #2a7a5a); }
+  .policy-title { color: #e5e5e5; }
+  .policy-desc { color: #a3a3a3; }
+  .policy-arrow .arrow-icon { color: #555555; }
 }
