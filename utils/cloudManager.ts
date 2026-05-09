@@ -558,6 +558,25 @@ class CloudManager {
           }
         }
 
+        // 将 fileID 回写到本地 week_images_* 存储，供删除时清理 LRU 索引
+        for (const img of uploadedImages) {
+          if (img && img.fileID && img.weekKey && img.imageName) {
+            const storageKey = img.weekKey as string;
+            const weekImages: Record<string, unknown>[] = wx.getStorageSync(storageKey) || [];
+            let hasUpdate = false;
+            const updatedWeekImages = weekImages.map((wi: Record<string, unknown>) => {
+              if (wi.name === img.imageName && !wi.fileID) {
+                hasUpdate = true;
+                return { ...wi, fileID: img.fileID };
+              }
+              return wi;
+            });
+            if (hasUpdate) {
+              wx.setStorageSync(storageKey, updatedWeekImages);
+            }
+          }
+        }
+
         wx.showToast({
           title: message,
           icon: 'success'
@@ -589,290 +608,6 @@ class CloudManager {
         errMsg: (e as Error).message
       };
     }
-  }
-
-  async performRestore(backupData: Record<string, unknown>): Promise<CloudFuncResult> {
-    wx.removeStorageSync('shifts');
-    wx.removeStorageSync('shiftTemplates');
-    wx.removeStorageSync('statData');
-    wx.removeStorageSync('statLastModified');
-    wx.removeStorageSync('standardHours');
-    wx.removeStorageSync('imagesLastModified');
-
-    if (backupData.shiftTemplates) {
-      wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
-    }
-    if (backupData.shifts) {
-      wx.setStorageSync('shifts', backupData.shifts);
-    }
-    if (backupData.avatarInfo) {
-      const avatarInfo = backupData.avatarInfo as Record<string, string>;
-      if (avatarInfo.avatarType) {
-        wx.setStorageSync('avatarType', avatarInfo.avatarType);
-      }
-      if (avatarInfo.avatarEmoji) {
-        wx.setStorageSync('avatarEmoji', avatarInfo.avatarEmoji);
-      }
-      if (avatarInfo.username) {
-        wx.setStorageSync('username', avatarInfo.username);
-      }
-    }
-
-    const restoredImages: string[] = [];
-    const counters = { actualNewImages: 0, actualUpdatedImages: 0 };
-    const images = (backupData.images || []) as Array<Record<string, unknown>>;
-    const restoredWeekKeys = new Set<string>();
-    const imageWeekRelation: ImageRelation = {};
-
-    const localImageMap = new Map<string, WeekImage>();
-    const storageInfo = wx.getStorageInfoSync();
-    const weekKeys = storageInfo.keys.filter(key => key.startsWith('week_images_'));
-
-    for (const weekKey of weekKeys) {
-      const localImages = wx.getStorageSync(weekKey) || [];
-      for (const img of localImages) {
-        if (!img.hash) {
-          try {
-            img.hash = await this.calculateImageHash(
-              img.path,
-              weekKey,
-              img.name,
-              img.addedTime || new Date().toISOString()
-            );
-          } catch (e) {
-            console.warn('计算本地图片哈希值失败:', e);
-            img.hash = '';
-          }
-        }
-        const key = `${weekKey}_${img.name}`;
-        localImageMap.set(key, img);
-      }
-    }
-
-    const imagesToDownload: Array<Record<string, unknown>> = [];
-    const weekNameCountMap = new Map<string, Map<string, number>>();
-
-    images.forEach((imgInfo: Record<string, unknown>) => {
-      if (!weekNameCountMap.has(imgInfo.weekKey as string)) {
-        weekNameCountMap.set(imgInfo.weekKey as string, new Map<string, number>());
-      }
-      const nameMap = weekNameCountMap.get(imgInfo.weekKey as string)!;
-      const baseName = (imgInfo.imageName as string || '').replace(/\(\d+\)$/, '').trim();
-      nameMap.set(baseName, (nameMap.get(baseName) || 0) + 1);
-    });
-
-    for (const imgInfo of images) {
-      let foundExistingImage = false;
-      let localImage: WeekImage | null = null;
-
-      const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
-      if (localImageMap.has(localKey)) {
-        localImage = localImageMap.get(localKey)!;
-        if (localImage.hash === imgInfo.hash) {
-          foundExistingImage = true;
-        }
-      }
-
-      if (!foundExistingImage) {
-        const weekKey = imgInfo.weekKey as string;
-        if (weekKeys.includes(weekKey)) {
-          const weekImages = wx.getStorageSync(weekKey) || [];
-          for (const img of weekImages) {
-            if (img.hash === imgInfo.hash) {
-              foundExistingImage = true;
-              break;
-            }
-          }
-        }
-      }
-
-      if (!foundExistingImage) {
-        imagesToDownload.push(imgInfo);
-      }
-    }
-
-    // 截断超过单批次上限的图片
-    if (imagesToDownload.length > this.MAX_IMAGES_PER_BATCH) {
-      const totalImages = imagesToDownload.length;
-      console.warn(`恢复需要下载 ${totalImages} 张图片，超过单次上限 ${this.MAX_IMAGES_PER_BATCH}，仅处理前 ${this.MAX_IMAGES_PER_BATCH} 张`);
-      wx.showToast({
-        title: `图片较多（${totalImages}张），本次仅下载前 ${this.MAX_IMAGES_PER_BATCH} 张，其余请再次恢复`,
-        icon: 'none',
-        duration: 3000
-      });
-      imagesToDownload.length = this.MAX_IMAGES_PER_BATCH;
-    }
-
-    const maxConcurrentDownloads = 5;
-    const totalImages = imagesToDownload.length;
-
-    for (let i = 0; i < totalImages; i += maxConcurrentDownloads) {
-      const batch = imagesToDownload.slice(i, i + maxConcurrentDownloads);
-      const batchPromises = batch.map(async (imgInfo: Record<string, unknown>, batchIndex: number) => {
-        try {
-          const imgIndex = i + batchIndex + 1;
-          const progress = Math.round((imgIndex / totalImages) * 100);
-          const localKey = `${imgInfo.weekKey}_${imgInfo.imageName}`;
-          const localImage = localImageMap.get(localKey);
-          const operation = localImage && localImage.hash !== imgInfo.hash ? '更新' : '新增';
-          wx.showLoading({
-            title: `恢复中 ${operation}图片 ${imgIndex}/${totalImages} (${progress}%)`,
-            mask: true
-          });
-
-          const downloadResult = await wx.cloud.downloadFile({
-            fileID: imgInfo.fileID as string
-          });
-
-          const imageHash = await this.calculateImageHash(
-            downloadResult.tempFilePath,
-            imgInfo.weekKey as string,
-            imgInfo.imageName as string,
-            (imgInfo.addedTime as string) || new Date().toISOString()
-          );
-
-          const weekKey = imgInfo.weekKey as string;
-          const weekImages = wx.getStorageSync(weekKey) || [];
-
-          const existingImageIndex = weekImages.findIndex((img: WeekImage) => img.name === imgInfo.imageName);
-          let finalImageName = imgInfo.imageName as string;
-          let shouldUpdate = true;
-
-          if (existingImageIndex === -1) {
-            const nameCountMap = new Map<string, number>();
-            weekImages.forEach((img: WeekImage) => {
-              const baseName = img.name.replace(/\(\d+\)$/, '').trim();
-              nameCountMap.set(baseName, (nameCountMap.get(baseName) || 0) + 1);
-            });
-
-            const baseName = (imgInfo.imageName as string).replace(/\(\d+\)$/, '').trim();
-            if (nameCountMap.has(baseName)) {
-              const count = nameCountMap.get(baseName)! + 1;
-              finalImageName = `${baseName}(${count})`;
-            }
-          } else {
-            const existingImage = weekImages[existingImageIndex];
-            if (existingImage.hash === imageHash) {
-              shouldUpdate = false;
-            }
-          }
-
-          if (shouldUpdate) {
-            const newImage: WeekImage = {
-              id: `${weekKey}_${Date.now()}`,
-              name: finalImageName,
-              path: downloadResult.tempFilePath,
-              addedTime: new Date().toISOString(),
-              hash: imageHash
-            };
-
-            if (existingImageIndex !== -1) {
-              weekImages[existingImageIndex] = newImage;
-              counters.actualUpdatedImages++;
-            } else {
-              weekImages.push(newImage);
-              counters.actualNewImages++;
-            }
-
-            wx.setStorageSync(weekKey, weekImages);
-
-            addImageToRelation(weekKey, newImage);
-            restoredWeekKeys.add(weekKey);
-
-            if (!imageWeekRelation[weekKey]) {
-              imageWeekRelation[weekKey] = [];
-            }
-            imageWeekRelation[weekKey].push({
-              name: newImage.name,
-              path: newImage.path,
-              hash: imageHash
-            });
-
-            restoredImages.push(imgInfo.remotePath as string);
-          }
-        } catch (e) {
-          console.error('恢复图片失败', imgInfo.remotePath, e);
-        }
-      });
-
-      await Promise.all(batchPromises);
-    }
-
-    wx.removeStorageSync('image_relation_table');
-    if (Object.keys(imageWeekRelation).length > 0) {
-      importImageWeekRelation(imageWeekRelation);
-    }
-
-    restoredWeekKeys.forEach(weekKey => {
-      syncRelationWithLocal(weekKey);
-    });
-
-    const cloudImageMap = new Map<string, Record<string, unknown>>();
-    images.forEach((imgInfo: Record<string, unknown>) => {
-      const key = `${imgInfo.weekKey}_${imgInfo.imageName}`;
-      cloudImageMap.set(key, imgInfo);
-    });
-
-    let deletedImageCount = 0;
-    weekKeys.forEach(weekKey => {
-      let weekImages = wx.getStorageSync(weekKey) || [];
-      const originalLength = weekImages.length;
-
-      weekImages = weekImages.filter((img: WeekImage) => {
-        const key = `${weekKey}_${img.name}`;
-        return cloudImageMap.has(key);
-      });
-
-      if (weekImages.length < originalLength) {
-        deletedImageCount += (originalLength - weekImages.length);
-        wx.setStorageSync(weekKey, weekImages);
-        syncRelationWithLocal(weekKey);
-      }
-    });
-
-    wx.hideLoading();
-
-    if (counters.actualNewImages > 0 || counters.actualUpdatedImages > 0 || deletedImageCount > 0) {
-      let message = '恢复成功';
-      if (counters.actualNewImages > 0 && counters.actualUpdatedImages > 0 && deletedImageCount > 0) {
-        message = `恢复成功（新增${counters.actualNewImages}张，更新${counters.actualUpdatedImages}张，删除${deletedImageCount}张）`;
-      } else if (counters.actualNewImages > 0 && counters.actualUpdatedImages > 0) {
-        message = `恢复成功（新增${counters.actualNewImages}张，更新${counters.actualUpdatedImages}张）`;
-      } else if (counters.actualNewImages > 0 && deletedImageCount > 0) {
-        message = `恢复成功（新增${counters.actualNewImages}张，删除${deletedImageCount}张）`;
-      } else if (counters.actualUpdatedImages > 0 && deletedImageCount > 0) {
-        message = `恢复成功（更新${counters.actualUpdatedImages}张，删除${deletedImageCount}张）`;
-      } else if (counters.actualNewImages > 0) {
-        message = `恢复成功（新增${counters.actualNewImages}张图片）`;
-      } else if (counters.actualUpdatedImages > 0) {
-        message = `恢复成功（更新${counters.actualUpdatedImages}张图片）`;
-      } else if (deletedImageCount > 0) {
-        message = `恢复成功（删除${deletedImageCount}张图片）`;
-      }
-      wx.showToast({
-        title: message,
-        icon: 'success'
-      });
-    } else if (images.length > 0) {
-      wx.showToast({
-        title: '恢复成功（图片无变化）',
-        icon: 'success'
-      });
-    } else {
-      wx.showToast({
-        title: '恢复成功（无图片数据）',
-        icon: 'success'
-      });
-    }
-
-    setTimeout(() => {
-      store.setState({ _lastDataRestore: Date.now() });
-    }, 500);
-
-    return {
-      success: true,
-      restoredImages: restoredImages.length
-    };
   }
 
   async restore(): Promise<CloudFuncResult> {

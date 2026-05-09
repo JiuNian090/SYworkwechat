@@ -1,5 +1,6 @@
 'use strict';
 const { store, STORAGE_KEYS } = require('./store');
+const photoCache = require('./photoCache');
 
 type ClearCallback = (success: boolean) => void;
 
@@ -39,6 +40,8 @@ class DataClearManager {
                 wx.removeStorageSync(key);
               }
             });
+            wx.removeStorageSync('image_relation_table');
+            photoCache.clearCache();
 
             // 清除登录信息相关存储
             const loginKeys = [
