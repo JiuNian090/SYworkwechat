@@ -931,6 +931,20 @@ Page({
 
           wx.setStorageSync('imagesLastModified', Date.now());
 
+          // 删除本地文件
+          try {
+            if (imageToDelete.path) {
+              fs.unlinkSync(imageToDelete.path);
+            }
+          } catch (e) {
+            // 文件可能已被 LRU 淘汰或路径无效
+          }
+
+          // 如果已上传云端，清理 LRU 缓存索引
+          if (imageToDelete.fileID) {
+            photoCache.removeFromCache(imageToDelete.fileID);
+          }
+
           wx.showToast({
             title: '图片删除成功',
             icon: 'success'

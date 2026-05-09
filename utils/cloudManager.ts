@@ -5,6 +5,7 @@ const { store } = require('./store.js');
 const { getCalendarWeekOfMonth } = require('./date.js');
 const { compareVersion } = require('./deviceInfo.js');
 const config = require('../config.js');
+const photoCache = require('./photoCache.js');
 
 interface CloudFunctionOptions {
   timeout?: number;
@@ -541,6 +542,20 @@ class CloudManager {
           }
         } else {
           message = '备份成功（无变化）';
+        }
+
+        // 将新上传的图片注册到 LRU 缓存索引
+        for (const img of uploadedImages) {
+          const imageObj = img.image as Record<string, unknown>;
+          if (img && img.fileID && imageObj && imageObj.path) {
+            photoCache.registerExistingFile(
+              img.fileID as string,
+              imageObj.path as string,
+              (img.hash as string) || '',
+              img.weekKey as string,
+              img.imageName as string
+            );
+          }
         }
 
         wx.showToast({

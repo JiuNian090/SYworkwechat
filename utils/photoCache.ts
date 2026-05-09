@@ -113,6 +113,48 @@ function saveToCache(
   }
 }
 
+/** 将已有本地文件注册到 LRU 缓存索引，不搬文件
+ *  用于 backup 后将裸存图片纳入 LRU 管理 */
+function registerExistingFile(
+  fileID: string,
+  localPath: string,
+  hash: string,
+  weekKey: string,
+  imageName: string
+): void {
+  // 验证文件存在
+  let size = 0;
+  try {
+    const stat = fs.statSync(localPath) as WechatMiniprogram.Stats;
+    size = stat.size;
+  } catch (e) {
+    console.warn('registerExistingFile: 文件不存在，跳过注册', localPath);
+    return;
+  }
+
+  const index = getIndex();
+
+  // 移除旧条目（同 fileID 或同路径）
+  const filtered = index.filter(e => e.fileID !== fileID && e.localPath !== localPath);
+
+  filtered.push({
+    fileID,
+    localPath,
+    size,
+    lastAccess: Date.now(),
+    hash,
+    weekKey,
+    imageName
+  });
+
+  saveIndex(filtered);
+
+  // 注册后检查触发 LRU 淘汰
+  evictIfNeeded();
+
+  console.log(`图片已注册到 LRU 缓存: ${imageName} (${(size / 1024).toFixed(1)}KB)`);
+}
+
 /** 确保图片可用：缓存命中直接返回，未命中则从云端下载后缓存 */
 async function ensureImage(
   fileID: string,
@@ -198,6 +240,7 @@ function getCacheStats(): { count: number; totalSize: number; maxSize: number } 
 module.exports = {
   getFromCache,
   saveToCache,
+  registerExistingFile,
   ensureImage,
   removeFromCache,
   clearCache,
