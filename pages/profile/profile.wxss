@@ -3099,13 +3099,13 @@ page {
 
 .agreement-link {
   font-size: 24rpx;
-  color: #9ca3af;
+  color: #3b82f6;
   text-decoration: underline;
   line-height: 1.5;
 }
 
 .agreement-link:active {
-  color: #6b7280;
+  color: #2563eb;
 }
 
 /* ========== DarkMode ========== */
@@ -3198,9 +3198,9 @@ page {
   .weui-cells__title-text { color: #737373; }
 
   .agreement-link {
-    color: #737373;
+    color: #60a5fa;
   }
   .agreement-link:active {
-    color: #555555;
+    color: #93c5fd;
   }
 }
