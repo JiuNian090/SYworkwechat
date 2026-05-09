@@ -1,6 +1,6 @@
 # SYwork 微信小程序 Code Wiki
 
-> 文档版本：v4.0.2 | 更新日期：2026-05-09
+> 文档版本：v4.1.0 | 更新日期：2026-05-10
 
 ---
 
@@ -15,6 +15,8 @@ SYwork 是一款基于微信小程序的工时记录与排班管理系统，主�
 - **数据统计**：工时统计图表（折线图、柱状图、饼图），CSV 数据导出
 - **云同步**：微信云开发支持，数据备份与恢复
 - **多账户**：支持本地多账户切换与云账户登录
+- **深色模式**：自动跟随系统主题切换，支持浅色/深色主题
+- **主题色**：统一绿色系主题，使用 CSS 变量管理
 
 ### 1.2 技术栈
 
@@ -494,7 +496,7 @@ interface ChartViewProps {
 | `login` | 用户登录 |
 | `getUserInfo` | 获取用户信息 |
 
-### 7.2 backup 数据备份
+### 8.2 backup 数据备份
 
 **文件位置**：`cloudfunctions/backup/index.js`
 
@@ -507,7 +509,7 @@ interface ChartViewProps {
 | `getExistingImages` | 获取已存在的图片列表 |
 | `completeBackup` | 完成备份 |
 
-### 7.3 restore 数据恢复
+### 8.3 restore 数据恢复
 
 **文件位置**：`cloudfunctions/restore/index.js`
 
@@ -520,7 +522,7 @@ interface ChartViewProps {
 | `restoreOtherData` | 恢复其他数据 |
 | `restore` | 执行恢复 |
 
-### 7.4 cleanup 数据清理
+### 8.4 cleanup 数据清理
 
 **文件位置**：`cloudfunctions/cleanup/index.js`
 
@@ -528,9 +530,9 @@ interface ChartViewProps {
 
 ---
 
-## 八、数据模型
+## 九、数据模型
 
-### 8.1 ShiftTemplate 班次模板
+### 9.1 ShiftTemplate 班次模板
 
 ```typescript
 interface ShiftTemplate {
@@ -544,7 +546,7 @@ interface ShiftTemplate {
 }
 ```
 
-### 8.2 Shift 排班数据
+### 9.2 Shift 排班数据
 
 ```typescript
 interface Shift extends ShiftTemplate {
@@ -552,7 +554,7 @@ interface Shift extends ShiftTemplate {
 }
 ```
 
-### 8.3 Image 图片数据
+### 9.3 Image 图片数据
 
 ```typescript
 interface WeekImage {
@@ -565,7 +567,7 @@ interface WeekImage {
 }
 ```
 
-### 8.4 CloudBackup 云端备份
+### 9.4 CloudBackup 云端备份
 
 ```typescript
 interface CloudBackup {
@@ -583,9 +585,9 @@ interface CloudBackup {
 
 ---
 
-## 九、配置说明
+## 十、配置说明
 
-### 9.1 环境配置
+### 10.1 环境配置
 
 复制 `env.js.example` 为 `env.js` 并填写：
 
@@ -610,7 +612,7 @@ module.exports = {
 | `backupSystemVersion` | 备份系统版本（需与云函数保持一致） |
 | `defaults` | 默认配置（周工时、头像等） |
 
-### 9.3 构建命令
+### 10.3 构建命令
 
 ```bash
 npm run build      # TypeScript 检查 + 版本同步 + changelog 同步
@@ -622,9 +624,9 @@ npm run tsc:check  # TypeScript 编译检查
 
 ---
 
-## 十、开发规范
+## 十一、开发规范
 
-### 10.1 命名规范
+### 11.1 命名规范
 
 | 类别 | 规范 | 示例 |
 |------|------|------|
@@ -634,14 +636,14 @@ npm run tsc:check  # TypeScript 编译检查
 | 接口 | PascalCase，无 I 前缀 | `interface ShiftTemplate` |
 | 文件 | 小写+连字符 | `chart-view.ts` |
 
-### 10.2 类型安全
+### 11.2 类型安全
 
 - 优先使用 `interface` 而非 `type`（对象类型）
 - 使用 union type 替代 enum
 - 避免 `any`，使用 `unknown` 配合类型守卫
 - 微信 API 的回调风格用 Promise 包装
 
-### 10.3 错误处理
+### 11.3 错误处理
 
 - 所有 `wx.cloud.callFunction` 调用必须有 `catch`
 - Storage 操作使用 `try-catch` 包裹
@@ -649,21 +651,21 @@ npm run tsc:check  # TypeScript 编译检查
 
 ---
 
-## 十一、常见问题
+## 十二、常见问题
 
-### 11.1 云函数修改后需要重新上传
+### 12.1 云函数修改后需要重新上传
 
 云函数位于 `cloudfunctions/` 目录，使用 JavaScript。修改后需在微信开发者工具中右键上传部署。
 
-### 11.2 备份版本号不一致
+### 12.2 备份版本号不一致
 
 `config.ts` 的 `backupSystemVersion` 必须与云函数中的 `BACKUP_SYSTEM_VERSION` 保持一致。
 
-### 11.3 图片恢复失败
+### 12.3 图片恢复失败
 
 恢复流程改为懒加载模式：只写入元数据（包含 fileID），实际图片在查看时才从云端下载。
 
-### 11.4 多账户数据隔离
+### 12.4 多账户数据隔离
 
 本地账户通过 Storage key 隔离，云账户通过 `cloudUserId` 隔离。
 
