@@ -1638,6 +1638,8 @@ page {
     --text-tertiary: #737373;
     --border-color: #333333;
     --shadow-color: rgba(0, 0, 0, 0.4);
+    --primary-color: #3a9a7a;
+    --success-color: #3a9a7a;
     --tag-date-bg: linear-gradient(135deg, #1a3a1a 0%, #1a4a1a 100%);
     --tag-date-text: #66bb6a;
     --tag-date-weekday: #4a9a5a;
@@ -1648,4 +1650,6 @@ page {
   }
 
   .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
+
+  .chart-type-option.active { background: #3a9a7a; box-shadow: 0 2rpx 8rpx rgba(58, 154, 122, 0.3); }
 }

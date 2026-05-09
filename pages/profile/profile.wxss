@@ -3409,4 +3409,9 @@ page {
   .profile-card {
     background: linear-gradient(135deg, #262626 0%, #1f2a22 100%);
   }
+
+  .weui-cell__icon_latest { background-color: #3a9a7a; box-shadow: 0 0 0 6rpx rgba(58, 154, 122, 0.3); }
+  .weui-badge { background-color: #3a9a7a; }
+  .weui-badge_dot { background-color: #3a9a7a; }
+  .backup-card-btn { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
 }
