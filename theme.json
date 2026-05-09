@@ -1,0 +1,38 @@
+{
+  "light": {
+    "navBgColor": "#ffffff",
+    "navTxtStyle": "black",
+    "bgColor": "#ffffff",
+    "bgTxtStyle": "light",
+    "tabFontColor": "#000000",
+    "tabSelectedColor": "#07C160",
+    "tabBgColor": "#ffffff",
+    "tabBorderStyle": "black",
+    "iconPath1": "images/list-add.png",
+    "selectedIconPath1": "images/list-add-1.png",
+    "iconPath2": "images/schedule.png",
+    "selectedIconPath2": "images/schedule-1.png",
+    "iconPath3": "images/status.png",
+    "selectedIconPath3": "images/status-1.png",
+    "iconPath4": "images/me.png",
+    "selectedIconPath4": "images/me-1.png"
+  },
+  "dark": {
+    "navBgColor": "#1f1f1f",
+    "navTxtStyle": "white",
+    "bgColor": "#1a1a1a",
+    "bgTxtStyle": "dark",
+    "tabFontColor": "#737373",
+    "tabSelectedColor": "#34d399",
+    "tabBgColor": "#262626",
+    "tabBorderStyle": "white",
+    "iconPath1": "images/list-add.png",
+    "selectedIconPath1": "images/list-add-1.png",
+    "iconPath2": "images/schedule.png",
+    "selectedIconPath2": "images/schedule-1.png",
+    "iconPath3": "images/status.png",
+    "selectedIconPath3": "images/status-1.png",
+    "iconPath4": "images/me.png",
+    "selectedIconPath4": "images/me-1.png"
+  }
+}

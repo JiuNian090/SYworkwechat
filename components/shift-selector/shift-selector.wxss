@@ -183,3 +183,22 @@
   color: #999999;
   margin-left: 40rpx;
 }
+
+/* ========== DarkMode ========== */
+@media (prefers-color-scheme: dark) {
+  .weui-sheet { background: #262626; }
+  .weui-sheet__hd { background: #2a2a2a; border-bottom-color: #333333; }
+  .weui-sheet__bd { background: #262626; }
+  .weui-cells { background-color: #262626; }
+  .weui-cell:before { border-top-color: #333333; }
+  .weui-cell:active { background-color: #333333; }
+  .weui-cell__ft { color: #737373; }
+  .weui-cell_checked { background-color: #1a2a1a; }
+  .weui-sheet__title { color: #e5e5e5; }
+  .shift-name { color: #e5e5e5; }
+  .shift-time { color: #737373; }
+  .tag-input-section { background: #262626; border-bottom-color: #333333; }
+  .tag-input-wrapper { background: #1a1a1a; }
+  .tag-input-label { color: #a3a3a3; }
+  .tag-input { color: #e5e5e5; }
+}

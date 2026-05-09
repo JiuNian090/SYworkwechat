@@ -1604,4 +1604,55 @@ page {
   }
 }
 
+/* ========== DarkMode ========== */
+@media (prefers-color-scheme: dark) {
+  page {
+    --bg-color: #1a1a1a;
+    --card-bg: #262626;
+    --text-primary: #e5e5e5;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #737373;
+    --border-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+  }
 
+  .day-item { background: #2a2a2a; }
+  .day-left { background: #2a2a2a; }
+  .day-item.today .day-left { background: var(--primary-color); }
+
+  .modal-container { background: #262626; }
+  .modal-footer { background: #262626; border-top-color: #333333; }
+  .modal-header { border-bottom-color: #333333; }
+  .modal-content { background: #262626; }
+
+  .modal-input { background: #1a1a1a; color: #e5e5e5; }
+  .modal-input:focus { background: #1a1a1a; }
+
+  .btn-cancel { background: #333333; color: #a3a3a3; }
+  .btn-confirm.disabled { background: #333333; color: #666666; }
+
+  .calendar-day.today { background: #1a3a2a; }
+  .nav-btn:active { background: #333333; }
+  .image-item:active { background: #333333; }
+
+  .upload-placeholder:active { background: #333333; }
+  .picker-shift { background: #1a1a1a; }
+
+  .action-item.add {
+    background: linear-gradient(145deg, #1a2a3a 0%, #1a2a2a 100%);
+    border-color: rgba(96, 165, 250, 0.3);
+  }
+  .action-item.delete {
+    background: linear-gradient(145deg, #3a1a1a 0%, #2a1a1a 100%);
+    border-color: rgba(255, 77, 79, 0.3);
+  }
+  .action-item:active { background: #333333; }
+
+  .shift-name { color: #e5e5e5; }
+  .shift-tag-text { color: #e5e5e5; }
+  .shift-time { color: #e5e5e5; }
+
+  .stat-row.secondary { background: #2a2a2a; }
+
+  .day-number { color: #e5e5e5; }
+}

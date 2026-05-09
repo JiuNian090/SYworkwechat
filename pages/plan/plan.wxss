@@ -868,3 +868,27 @@
   }
 }
 
+/* ========== DarkMode ========== */
+@media (prefers-color-scheme: dark) {
+  .plan-page {
+    --bg-color: #1a1a1a;
+    --card-bg: #262626;
+    --text-primary: #e5e5e5;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #737373;
+    --border-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .empty-tip-row { background: #2a2a2a; }
+  .btn-cancel { background: #333333; color: #a3a3a3; }
+  .modal-footer { background: #262626; border-top-color: #333333; }
+  .modal-header { border-bottom-color: #333333; }
+  .modal-container { background: #262626; }
+  .work-hours-display { background: #2a2a2a; }
+  .time-pair-col .picker-time { background: #1a1a1a; }
+  .picker { background: #1a1a1a; }
+  .input { background: #1a1a1a; color: #e5e5e5; }
+  .input-placeholder { color: #737373; }
+}
+

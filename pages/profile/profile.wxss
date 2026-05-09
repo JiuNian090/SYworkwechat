@@ -3390,3 +3390,21 @@ page {
     background: rgba(0, 0, 0, 0.4);
   }
 }
+
+/* ========== DarkMode ========== */
+@media (prefers-color-scheme: dark) {
+  page {
+    --bg-color: #1a1a1a;
+    --card-bg: #262626;
+    --text-primary: #e5e5e5;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #737373;
+    --border-color: #333333;
+    --shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 4rpx 20rpx rgba(0, 0, 0, 0.4);
+  }
+
+  .profile-card {
+    background: linear-gradient(135deg, #262626 0%, #1f2a22 100%);
+  }
+}

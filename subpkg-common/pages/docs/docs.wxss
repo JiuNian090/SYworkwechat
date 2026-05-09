@@ -531,3 +531,19 @@ page {
 .section:nth-child(2) { animation-delay: 0.1s; }
 .section:nth-child(3) { animation-delay: 0.15s; }
 .section:nth-child(4) { animation-delay: 0.2s; }
+
+/* ========== DarkMode ========== */
+@media (prefers-color-scheme: dark) {
+  page {
+    --title-color: #e5e5e5;
+    --text-color: #a3a3a3;
+    --text-secondary: #737373;
+    --bg-color: #1a1a1a;
+    --card-bg: #262626;
+    --border-color: #333333;
+    --shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 8rpx 24rpx rgba(0, 0, 0, 0.4);
+    --tip-bg: #2a2a1a;
+    --warning-bg: #2a1a1a;
+  }
+}

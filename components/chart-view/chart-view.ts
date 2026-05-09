@@ -26,6 +26,41 @@ interface ChartOption {
 
 type ChartTimeUnit = 'day' | 'week' | 'month';
 
+function getChartColors() {
+  const theme = wx.getSystemInfoSync().theme;
+  const isDark = theme === 'dark';
+  if (isDark) {
+    return {
+      plotBg: '#1f1f1f', gridLine: '#333333', gridLineLight: '#2a2a2a',
+      axisBorder: '#444444', axisLabel: '#9ca3af', axisUnit: '#737373',
+      titleBg: 'rgba(255,255,255,0.05)',
+      titleText: '#e5e5e5', legendText: '#a3a3a3', dataLabel: '#a3a3a3',
+      chartLine: '#34d399', chartLine2: '#10b981',
+      chartGrad1: '#34d399', chartGrad2: '#6ee7b7', chartGrad3: '#2a8a6a',
+      areaGrad1: 'rgba(52,211,153,0.15)', areaGrad2: 'rgba(52,211,153,0.02)',
+      pointOuter: '#34d399', pointInner: '#e5e5e5',
+      standardLine: '#3b82f6',
+      shadowColor: 'rgba(52,211,153,0.2)', shadowColor2: 'rgba(52,211,153,0.35)',
+      emptyText: '#737373',
+      barShadow: 'rgba(52,211,153,0.15)'
+    };
+  }
+  return {
+    plotBg: '#fafbfc', gridLine: '#e5e7eb', gridLineLight: '#e5e7eb',
+    axisBorder: '#d1d5db', axisLabel: '#6b7280', axisUnit: '#9ca3af',
+    titleBg: 'rgba(31,41,55,0.04)',
+    titleText: '#1f2937', legendText: '#374151', dataLabel: '#374151',
+    chartLine: '#34d399', chartLine2: '#10b981',
+    chartGrad1: '#34d399', chartGrad2: '#6ee7b7', chartGrad3: '#a7f3d0',
+    areaGrad1: 'rgba(52,211,153,0.12)', areaGrad2: 'rgba(52,211,153,0.02)',
+    pointOuter: '#34d399', pointInner: '#fff',
+    standardLine: '#3b82f6',
+    shadowColor: 'rgba(52,211,153,0.15)', shadowColor2: 'rgba(52,211,153,0.3)',
+    emptyText: '#9ca3af',
+    barShadow: 'rgba(52,211,153,0.12)'
+  };
+}
+
 Component({
   properties: {
     chartData: {
@@ -70,6 +105,21 @@ Component({
     ready(): void {
       this.triggerEvent('chartinit', { component: this });
       this.drawChart();
+      // 监听系统主题变化，自动重绘
+      try {
+        const self = this;
+        const cb = function () { self.drawChart(); };
+        (self as unknown as Record<string, WechatMiniprogram.OnThemeChangeCallback>)._onThemeChange = cb as unknown as WechatMiniprogram.OnThemeChangeCallback;
+        wx.onThemeChange(cb as unknown as WechatMiniprogram.OnThemeChangeCallback);
+      } catch (e) { /* 基础库不支持时忽略 */ }
+    },
+    detached(): void {
+      try {
+        const self = this as unknown as Record<string, unknown>;
+        if (typeof self._onThemeChange === 'function') {
+          wx.offThemeChange(self._onThemeChange as WechatMiniprogram.OffThemeChangeCallback);
+        }
+      } catch (e) { /* 忽略 */ }
     }
   },
 
@@ -109,10 +159,12 @@ Component({
         ctx.scale(dpr, dpr);
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+        const colors = getChartColors();
+
         if (!chartData || !chartData.labels || chartData.labels.length === 0) {
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#9ca3af';
+          ctx.fillStyle = colors.emptyText;
           ctx.font = '14px -apple-system, sans-serif';
           ctx.fillText(chartData?.subtext || '暂无数据', canvasWidth / 2, canvasHeight / 2);
           return;
@@ -130,7 +182,7 @@ Component({
         const unitLabelMap: Record<string, string> = { day: '小时/天', week: '小时/周', month: '小时/月' };
         const yAxisUnit = unitLabelMap[chartTimeUnit] || '小时';
 
-        ctx.fillStyle = '#fafbfc';
+        ctx.fillStyle = colors.plotBg;
         ctx.fillRect(plotLeft, plotTop, plotWidth, plotHeight);
 
         const yRange = chartData.yAxisMax - chartData.yAxisMin;
@@ -139,7 +191,7 @@ Component({
         const yStepPx = plotHeight / ySteps;
 
         ctx.setLineDash([4, 6]);
-        ctx.strokeStyle = '#e5e7eb';
+        ctx.strokeStyle = colors.gridLine;
         ctx.lineWidth = 0.8;
         for (let i = 0; i <= ySteps; i++) {
           const y = plotTop + yStepPx * i;
@@ -158,7 +210,7 @@ Component({
 
         if (chartTimeUnit === 'day' && chartData.labels.length <= DAY_THRESHOLD) {
           ctx.setLineDash([2, 4]);
-          ctx.strokeStyle = '#e5e7eb';
+          ctx.strokeStyle = colors.gridLineLight;
           ctx.lineWidth = 0.5;
           for (let i = 0; i < chartData.labels.length; i++) {
             const x = plotLeft + extraPadding + (chartData.labels.length > 1
@@ -171,7 +223,7 @@ Component({
           ctx.setLineDash([]);
         }
 
-        ctx.strokeStyle = '#d1d5db';
+        ctx.strokeStyle = colors.axisBorder;
         ctx.lineWidth = 1.2;
         ctx.beginPath();
         ctx.moveTo(plotLeft, plotTop);
@@ -181,7 +233,7 @@ Component({
 
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#6b7280';
+        ctx.fillStyle = colors.axisLabel;
         ctx.font = '11px -apple-system, sans-serif';
         for (let i = 0; i <= ySteps; i++) {
           const y = plotTop + yStepPx * i;
@@ -191,15 +243,15 @@ Component({
 
         ctx.textAlign = 'left';
         ctx.textBaseline = 'bottom';
-        ctx.fillStyle = '#9ca3af';
+        ctx.fillStyle = colors.axisUnit;
         ctx.font = '10px -apple-system, sans-serif';
         ctx.fillText(yAxisUnit, plotLeft + 6, plotTop - 6);
 
         if (chartData.data.length > 0) {
           if (chartType === 'line') {
-            this.drawLineChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, chartData.yAxisMin);
+            this.drawLineChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, chartData.yAxisMin, colors);
           } else if (chartType === 'bar') {
-            this.drawBarChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, chartData.yAxisMin);
+            this.drawBarChart(ctx, chartData, plotLeft, plotTop, plotHeight, extraPadding, adjustedXStep, yScale, chartData.yAxisMin, colors);
           }
         }
 
@@ -208,7 +260,7 @@ Component({
           const tiltAngle = -Math.PI / 4;
           ctx.textAlign = 'right';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#6b7280';
+          ctx.fillStyle = colors.axisLabel;
           ctx.font = '11px -apple-system, sans-serif';
           for (let i = 0; i < chartData.labels.length; i++) {
             const x = plotLeft + extraPadding + (chartData.labels.length > 1 ? adjustedXStep * i : dataPlotWidth / 2);
@@ -223,7 +275,7 @@ Component({
           const labelFontSize = useLabelSkip ? 9 : 11;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
-          ctx.fillStyle = '#6b7280';
+          ctx.fillStyle = colors.axisLabel;
           ctx.font = `${labelFontSize}px -apple-system, sans-serif`;
           for (let i = 0; i < chartData.labels.length; i++) {
             if (useLabelSkip && i % 2 !== 0 && i !== chartData.labels.length - 1) continue;
@@ -246,26 +298,26 @@ Component({
 
         if (isBar) {
           const gradient = ctx.createLinearGradient(legendStartX, legendY - 6, legendStartX, legendY + 6);
-          gradient.addColorStop(0, '#34d399');
-          gradient.addColorStop(1, '#6ee7b7');
+          gradient.addColorStop(0, colors.chartGrad1);
+          gradient.addColorStop(1, colors.chartGrad2);
           ctx.fillStyle = gradient;
           ctx.fillRect(legendStartX, legendY - 6, legendIconW - 10, 12);
-          ctx.strokeStyle = '#10b981';
+          ctx.strokeStyle = colors.chartLine2;
           ctx.lineWidth = 0.8;
           ctx.strokeRect(legendStartX, legendY - 6, legendIconW - 10, 12);
         } else {
-          ctx.strokeStyle = '#34d399';
+          ctx.strokeStyle = colors.chartLine;
           ctx.lineWidth = 2.5;
           ctx.lineCap = 'round';
           ctx.beginPath();
           ctx.moveTo(legendStartX, legendY);
           ctx.lineTo(legendStartX + legendIconW, legendY);
           ctx.stroke();
-          ctx.fillStyle = '#34d399';
+          ctx.fillStyle = colors.chartLine;
           ctx.beginPath();
           ctx.arc(legendStartX + legendIconW / 2, legendY, 3.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.fillStyle = '#fff';
+          ctx.fillStyle = colors.pointInner;
           ctx.beginPath();
           ctx.arc(legendStartX + legendIconW / 2, legendY, 1.8, 0, Math.PI * 2);
           ctx.fill();
@@ -273,11 +325,11 @@ Component({
 
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#374151';
+        ctx.fillStyle = colors.legendText;
         ctx.fillText(actualLabel, legendStartX + (isBar ? 20 : legendIconW + 6), legendY);
         legendStartX += (isBar ? 14 : legendIconW) + actualLabelW + 6 + legendGap;
 
-        ctx.strokeStyle = '#3b82f6';
+        ctx.strokeStyle = colors.standardLine;
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 3]);
         ctx.beginPath();
@@ -285,18 +337,18 @@ Component({
         ctx.lineTo(legendStartX + legendIconW, legendY);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = '#3b82f6';
+        ctx.fillStyle = colors.standardLine;
         ctx.beginPath();
         ctx.arc(legendStartX + legendIconW / 2, legendY, 3, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = '#374151';
+        ctx.fillStyle = colors.legendText;
         ctx.fillText(standardLabel, legendStartX + legendIconW + 6, legendY);
 
         const titleText = `${startDate} ~ ${endDate}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        ctx.fillStyle = 'rgba(31,41,55,0.04)';
+        ctx.fillStyle = colors.titleBg;
         const titleBarW = 220;
         const titleBarH = 30;
         const titleBarX = canvasWidth / 2 - titleBarW / 2;
@@ -313,12 +365,12 @@ Component({
         ctx.fill();
 
         ctx.font = 'bold 14px -apple-system, sans-serif';
-        ctx.fillStyle = '#1f2937';
+        ctx.fillStyle = colors.titleText;
         ctx.fillText(titleText, canvasWidth / 2, 8);
       });
     },
 
-    drawLineChart(ctx: CanvasContext, chartData: ChartDataItem, plotLeft: number, plotTop: number, plotHeight: number, extraPadding: number, adjustedXStep: number, yScale: number, yAxisMin: number): void {
+    drawLineChart(ctx: CanvasContext, chartData: ChartDataItem, plotLeft: number, plotTop: number, plotHeight: number, extraPadding: number, adjustedXStep: number, yScale: number, yAxisMin: number, colors: Record<string, string>): void {
       const dataPlotWidth = adjustedXStep * (chartData.labels.length - 1);
       const plotBottom = plotTop + plotHeight;
 
@@ -387,7 +439,7 @@ Component({
       if (chartData.standardData && chartData.standardData.length > 0) {
         ctx.save();
         ctx.setLineDash([5, 4]);
-        ctx.strokeStyle = '#3b82f6';
+        ctx.strokeStyle = colors.standardLine;
         ctx.lineWidth = 1.5;
         ctx.lineJoin = 'round';
         ctx.beginPath();
@@ -403,14 +455,14 @@ Component({
       }
     },
 
-    drawArea(ctx: CanvasContext, points: Point[], plotTop: number, plotBottom: number): void {
+    drawArea(ctx: CanvasContext, points: Point[], plotTop: number, plotBottom: number, colors: Record<string, string>): void {
       if (points.length < 2) return;
 
       ctx.save();
       ctx.beginPath();
       const gradient = ctx.createLinearGradient(0, plotTop, 0, plotBottom);
-      gradient.addColorStop(0, 'rgba(52,211,153,0.12)');
-      gradient.addColorStop(1, 'rgba(52,211,153,0.02)');
+      gradient.addColorStop(0, colors.areaGrad1);
+      gradient.addColorStop(1, colors.areaGrad2);
       ctx.fillStyle = gradient;
       ctx.moveTo(points[0].x, plotBottom);
       for (let i = 0; i < points.length; i++) {
@@ -422,7 +474,7 @@ Component({
       ctx.restore();
     },
 
-    drawBarChart(ctx: CanvasContext, chartData: ChartDataItem, plotLeft: number, plotTop: number, plotHeight: number, extraPadding: number, adjustedXStep: number, yScale: number, yAxisMin: number): void {
+    drawBarChart(ctx: CanvasContext, chartData: ChartDataItem, plotLeft: number, plotTop: number, plotHeight: number, extraPadding: number, adjustedXStep: number, yScale: number, yAxisMin: number, colors: Record<string, string>): void {
       const barWidth = Math.min(36, adjustedXStep * 0.55);
       const dataPlotWidth = adjustedXStep * (chartData.labels.length - 1);
       const plotBottom = plotTop + plotHeight;
@@ -430,7 +482,7 @@ Component({
       if (chartData.standardData && chartData.standardData.length > 0) {
         ctx.save();
         ctx.setLineDash([5, 4]);
-        ctx.strokeStyle = '#3b82f6';
+        ctx.strokeStyle = colors.standardLine;
         ctx.lineWidth = 1.5;
         ctx.lineJoin = 'round';
         ctx.beginPath();
@@ -453,12 +505,12 @@ Component({
         const y = plotBottom - barHeight;
 
         ctx.save();
-        ctx.shadowColor = 'rgba(52,211,153,0.12)';
+        ctx.shadowColor = colors.barShadow;
         ctx.shadowBlur = 6;
         const gradient = ctx.createLinearGradient(x, y, x, plotBottom);
-        gradient.addColorStop(0, '#34d399');
-        gradient.addColorStop(0.7, '#6ee7b7');
-        gradient.addColorStop(1, '#a7f3d0');
+        gradient.addColorStop(0, colors.chartGrad1);
+        gradient.addColorStop(0.7, colors.chartGrad2);
+        gradient.addColorStop(1, colors.chartGrad3);
         ctx.fillStyle = gradient;
 
         const radius = 5;
@@ -478,7 +530,7 @@ Component({
           ctx.save();
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
-          ctx.fillStyle = '#374151';
+          ctx.fillStyle = colors.dataLabel;
           ctx.font = '10px -apple-system, sans-serif';
           ctx.fillText(value.toFixed(1), centerX, y - 6);
           ctx.restore();

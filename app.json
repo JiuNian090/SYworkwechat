@@ -1,4 +1,6 @@
 {
+  "darkmode": true,
+  "themeLocation": "theme.json",
   "lazyCodeLoading": "requiredComponents",
   "pages": [
     "pages/schedule/schedule",
@@ -27,41 +29,41 @@
     }
   },
   "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#fff",
+    "backgroundTextStyle": "@bgTxtStyle",
+    "navigationBarBackgroundColor": "@navBgColor",
     "navigationBarTitleText": "SYwork",
-    "navigationBarTextStyle": "black"
+    "navigationBarTextStyle": "@navTxtStyle"
   },
   "tabBar": {
-    "color": "#000000",
-    "selectedColor": "#07C160",
-    "borderStyle": "black",
-    "backgroundColor": "#ffffff",
+    "color": "@tabFontColor",
+    "selectedColor": "@tabSelectedColor",
+    "borderStyle": "@tabBorderStyle",
+    "backgroundColor": "@tabBgColor",
     "position": "bottom",
     "list": [
       {
         "pagePath": "pages/plan/plan",
         "text": "计划",
-        "iconPath": "images/list-add.png",
-        "selectedIconPath": "images/list-add-1.png"
+        "iconPath": "@iconPath1",
+        "selectedIconPath": "@selectedIconPath1"
       },
       {
         "pagePath": "pages/schedule/schedule",
         "text": "排班",
-        "iconPath": "images/schedule.png",
-        "selectedIconPath": "images/schedule-1.png"
+        "iconPath": "@iconPath2",
+        "selectedIconPath": "@selectedIconPath2"
       },
       {
         "pagePath": "pages/statistics/statistics",
         "text": "统计",
-        "iconPath": "images/status.png",
-        "selectedIconPath": "images/status-1.png"
+        "iconPath": "@iconPath3",
+        "selectedIconPath": "@selectedIconPath3"
       },
       {
         "pagePath": "pages/profile/profile",
         "text": "我的",
-        "iconPath": "images/me.png",
-        "selectedIconPath": "images/me-1.png"
+        "iconPath": "@iconPath4",
+        "selectedIconPath": "@selectedIconPath4"
       }
     ]
   }
