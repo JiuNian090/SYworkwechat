@@ -80,6 +80,8 @@ Page({
     chartTimeUnit: 'day' as string,
     chartType: 'line' as string,
     chartData: { labels: [], data: [], standardData: [], yAxisMin: 0, yAxisMax: 10, subtext: '' } as ChartDataSet,
+    pieColors: { day: '#FCD34D', night: '#93C5FD', off: '#D8B4FE', stroke: '#ffffff' },
+    heatmapLegendColors: ['#e3e3e3', '#c6e48b', '#7bc96f', '#5aad4a', '#3d8b37', '#2d6a2b'],
     weekPickerRange: [] as string[][],
     weekPickerValue: [0, 0, 0] as number[],
     monthPickerRange: [] as string[][],
@@ -1054,7 +1056,7 @@ Page({
 
   getHeatmapColor(hours: number): string {
     if (this._isDarkMode()) {
-      if (hours <= 0) return '#2a2a2a';
+      if (hours <= 0) return '#3a3a3a';
       if (hours <= 6) return '#1a3a1a';
       if (hours <= 7) return '#1a4a1a';
       if (hours <= 8) return '#2a5a2a';
@@ -1093,6 +1095,17 @@ Page({
     const total = statistics.dayShifts + statistics.nightShifts + statistics.offDays;
     if (total === 0) return;
 
+    const isDark = wx.getSystemInfoSync().theme === 'dark';
+    const pieColors = isDark
+      ? { day: '#D4A830', night: '#5A8ABF', off: '#9A7ABF', stroke: '#262626' }
+      : { day: '#FCD34D', night: '#93C5FD', off: '#D8B4FE', stroke: '#ffffff' };
+
+    const heatmapLegendColors = isDark
+      ? ['#3a3a3a', '#1a3a1a', '#1a4a1a', '#2a5a2a', '#3a6a3a', '#4a7a4a']
+      : ['#e3e3e3', '#c6e48b', '#7bc96f', '#5aad4a', '#3d8b37', '#2d6a2b'];
+
+    this.setData({ pieColors, heatmapLegendColors });
+
     const query = this.createSelectorQuery();
     query.select('#pieCanvas').fields({ node: true, size: true }).exec(res => {
       const canvas = (res?.[0] as unknown as { node: WechatMiniprogram.Canvas; width: number; height: number })?.node;
@@ -1110,9 +1123,9 @@ Page({
       const radius = Math.min(centerX, centerY) - 10;
 
       const pieData = [
-        { label: '白天班', value: statistics.dayShifts, color: '#FCD34D' },
-        { label: '跨夜班', value: statistics.nightShifts, color: '#93C5FD' },
-        { label: '休息日', value: statistics.offDays, color: '#D8B4FE' }
+        { label: '白天班', value: statistics.dayShifts, color: pieColors.day },
+        { label: '跨夜班', value: statistics.nightShifts, color: pieColors.night },
+        { label: '休息日', value: statistics.offDays, color: pieColors.off }
       ];
 
       const validData = pieData.filter(d => d.value > 0);
@@ -1133,7 +1146,7 @@ Page({
         ctx.fillStyle = d.color;
         ctx.fill();
 
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = pieColors.stroke;
         ctx.lineWidth = 2;
         ctx.stroke();
 

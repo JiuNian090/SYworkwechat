@@ -160,15 +160,15 @@
       </view>
       <view class="pie-legend">
         <view class="pie-legend-item">
-          <view class="legend-dot" style="background-color: #FCD34D;"></view>
+          <view class="legend-dot" style="background-color: {{pieColors.day || '#FCD34D'}};"></view>
           <text class="legend-label">白天班 {{statistics.dayShifts}} 天</text>
         </view>
         <view class="pie-legend-item">
-          <view class="legend-dot" style="background-color: #93C5FD;"></view>
+          <view class="legend-dot" style="background-color: {{pieColors.night || '#93C5FD'}};"></view>
           <text class="legend-label">跨夜班 {{statistics.nightShifts}} 天</text>
         </view>
         <view class="pie-legend-item">
-          <view class="legend-dot" style="background-color: #D8B4FE;"></view>
+          <view class="legend-dot" style="background-color: {{pieColors.off || '#D8B4FE'}};"></view>
           <text class="legend-label">休息日 {{statistics.offDays}} 天</text>
         </view>
       </view>
@@ -207,12 +207,12 @@
         </view>
         <view class="heatmap-legend">
           <text class="legend-label">0</text>
-          <view class="legend-item" style="background-color: #e3e3e3;"></view>
-          <view class="legend-item" style="background-color: #c6e48b;"></view>
-          <view class="legend-item" style="background-color: #7bc96f;"></view>
-          <view class="legend-item" style="background-color: #5aad4a;"></view>
-          <view class="legend-item" style="background-color: #3d8b37;"></view>
-          <view class="legend-item" style="background-color: #2d6a2b;"></view>
+          <view class="legend-item" style="background-color: {{heatmapLegendColors[0] || '#e3e3e3'}};"></view>
+          <view class="legend-item" style="background-color: {{heatmapLegendColors[1] || '#c6e48b'}};"></view>
+          <view class="legend-item" style="background-color: {{heatmapLegendColors[2] || '#7bc96f'}};"></view>
+          <view class="legend-item" style="background-color: {{heatmapLegendColors[3] || '#5aad4a'}};"></view>
+          <view class="legend-item" style="background-color: {{heatmapLegendColors[4] || '#3d8b37'}};"></view>
+          <view class="legend-item" style="background-color: {{heatmapLegendColors[5] || '#2d6a2b'}};"></view>
           <text class="legend-label">≥9h</text>
         </view>
       </view>
