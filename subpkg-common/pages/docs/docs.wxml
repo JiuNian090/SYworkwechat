@@ -34,7 +34,7 @@
                 - 精确设置工时（小时+分钟）
                 - 点击保存，排班就可以使用这个模板
               </text>
-              <view class="guide-tip">
+              <view class="guide-tip info-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">不同班次可以设置不同颜色，便于快速区分；工时支持精确到分钟设置</text>
               </view>
@@ -53,7 +53,7 @@
                 - 可添加自定义标签标记特殊排班
                 - 点击确定完成排班
               </text>
-              <view class="guide-tip">
+              <view class="guide-tip info-tip">
                 <text class="tip-icon">💡</text>
                 <text class="tip-text">修改排班：点击已有排班可快速替换；删除排班：长按日期可删除；周/月视图顶部会显示工时统计进度条</text>
               </view>

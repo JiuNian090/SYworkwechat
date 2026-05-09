@@ -8,10 +8,23 @@ page {
   --title-color: #1a1a1a;
   --text-color: #4a4a4a;
   --text-secondary: #8c8c8c;
-  --tip-bg: #fff8e6;
-  --tip-color: #f59e0b;
-  --warning-bg: #fef2f2;
-  --warning-color: #f87171;
+  /* 提示样式 */
+  --tip-bg: rgba(24, 119, 242, 0.08);
+  --tip-border: rgba(24, 119, 242, 0.15);
+  --tip-text: #1877f2;
+  --info-bg: rgba(52, 211, 153, 0.1);
+  --info-border: rgba(52, 211, 153, 0.2);
+  --info-text: #10b981;
+  --warning-bg: rgba(245, 158, 11, 0.08);
+  --warning-border: rgba(245, 158, 11, 0.15);
+  --warning-text: #d97706;
+  --danger-bg: rgba(239, 68, 68, 0.08);
+  --danger-border: rgba(239, 68, 68, 0.15);
+  --danger-text: #dc2626;
+  /* 代码样式 */
+  --code-bg: rgba(0, 0, 0, 0.05);
+  --code-text: #374151;
+  
   --bg-color: #f7f8fa;
   --card-bg: #ffffff;
   --border-color: #f0f0f0;
@@ -261,33 +274,66 @@ page {
 .guide-tip {
   display: flex;
   align-items: flex-start;
-  gap: 8rpx;
-  margin-top: 12rpx;
-  padding: 16rpx;
-  background: var(--tip-bg);
-  border-radius: var(--radius-sm);
-  border-left: 4rpx solid var(--tip-color);
+  gap: 16rpx;
+  margin-top: 16rpx;
+  padding: 20rpx 24rpx;
+  background: var(--info-bg);
+  border-radius: 24rpx;
+  border: 2rpx solid var(--info-border);
+}
+
+.guide-tip.info-tip {
+  background: var(--info-bg);
+  border-color: var(--info-border);
 }
 
 .guide-tip.warning-tip {
   background: var(--warning-bg);
-  border-left-color: var(--warning-color);
+  border-color: var(--warning-border);
+}
+
+.guide-tip.danger-tip {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
 }
 
 .tip-icon {
-  font-size: 24rpx;
+  font-size: 36rpx;
   flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2rpx;
 }
 
 .tip-text {
-  font-size: 24rpx;
-  color: var(--tip-color);
-  line-height: 1.5;
+  font-size: 26rpx;
+  color: var(--text-color);
+  line-height: 1.6;
   flex: 1;
 }
 
+.info-tip .tip-text {
+  color: var(--info-text);
+}
+
 .warning-tip .tip-text {
-  color: var(--warning-color);
+  color: var(--warning-text);
+}
+
+.danger-tip .tip-text {
+  color: var(--danger-text);
+}
+
+/* 内联代码样式 */
+.tip-code {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  margin: 0 6rpx;
+  background: var(--code-bg);
+  border-radius: 8rpx;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  font-size: 24rpx;
+  color: var(--code-text);
+  font-weight: 500;
 }
 
 /* ========== 步骤进度条 ========== */
@@ -525,11 +571,24 @@ page {
     --border-color: #333333;
     --shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.3);
     --shadow-hover: 0 8rpx 24rpx rgba(0, 0, 0, 0.4);
-    --tip-bg: #2a2a1a;
-    --warning-bg: #2a1a1a;
     --primary-color: #3a9a7a;
     --primary-light: #4a9a7a;
     --primary-dark: #1a5a3a;
+    /* 深色模式下的提示样式 */
+    --tip-bg: rgba(24, 119, 242, 0.15);
+    --tip-border: rgba(24, 119, 242, 0.25);
+    --tip-text: #3b82f6;
+    --info-bg: rgba(52, 211, 153, 0.15);
+    --info-border: rgba(52, 211, 153, 0.25);
+    --info-text: #34d399;
+    --warning-bg: rgba(245, 158, 11, 0.15);
+    --warning-border: rgba(245, 158, 11, 0.25);
+    --warning-text: #fbbf24;
+    --danger-bg: rgba(239, 68, 68, 0.15);
+    --danger-border: rgba(239, 68, 68, 0.25);
+    --danger-text: #f87171;
+    --code-bg: rgba(255, 255, 255, 0.1);
+    --code-text: #e5e7eb;
   }
 
   .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
