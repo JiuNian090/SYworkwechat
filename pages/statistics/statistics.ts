@@ -753,6 +753,14 @@ Page({
       statsPage.parsePeriodData();
       statsPage.calculateStatistics();
     });
+
+    // 监听系统主题变化，刷新热力图颜色
+    try {
+      wx.onThemeChange(function () {
+        statsPage.parsePeriodData();
+        statsPage.calculateStatistics();
+      });
+    } catch (e) { /* 基础库不支持时忽略 */ }
   },
 
   onUnload(): void {
@@ -1002,7 +1010,7 @@ Page({
       firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
       for (let i = 0; i < firstDayOfWeek; i++) {
-        currentRow.push({ isPlaceholder: true, color: '#f0f0f0' });
+        currentRow.push({ isPlaceholder: true, color: this._getPlaceholderColor() });
       }
 
       cellItems.forEach(cell => {
@@ -1015,7 +1023,7 @@ Page({
 
       if (currentRow.length > 0) {
         while (currentRow.length < columnsPerRow) {
-          currentRow.push({ isPlaceholder: true, color: '#f0f0f0' });
+          currentRow.push({ isPlaceholder: true, color: this._getPlaceholderColor() });
         }
         rows.push(currentRow);
       }
@@ -1036,7 +1044,23 @@ Page({
     return { weeks: rows, cellSizeRpx, gapRpx, columnsPerRow };
   },
 
+  _isDarkMode(): boolean {
+    try { return wx.getSystemInfoSync().theme === 'dark'; } catch (e) { return false; }
+  },
+
+  _getPlaceholderColor(): string {
+    return this._isDarkMode() ? '#1a1a1a' : '#f0f0f0';
+  },
+
   getHeatmapColor(hours: number): string {
+    if (this._isDarkMode()) {
+      if (hours <= 0) return '#2a2a2a';
+      if (hours <= 6) return '#1a3a1a';
+      if (hours <= 7) return '#1a4a1a';
+      if (hours <= 8) return '#2a5a2a';
+      if (hours < 9) return '#3a6a3a';
+      return '#4a7a4a';
+    }
     if (hours <= 0) return '#e3e3e3';
     if (hours <= 6) return '#c6e48b';
     if (hours <= 7) return '#7bc96f';

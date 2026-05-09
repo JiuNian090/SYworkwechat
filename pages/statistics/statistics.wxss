@@ -1666,4 +1666,22 @@ page {
   .modal-footer { background: #262626; border-top-color: #333333; }
   .btn-cancel { background: #333333; color: #a3a3a3; }
   .btn-confirm { box-shadow: 0 4rpx 12rpx rgba(45, 122, 90, 0.3); }
+
+  .heatmap-blur-card {
+    background: rgba(30, 30, 30, 0.8);
+    border-color: rgba(50, 50, 50, 0.6);
+  }
+  .heatmap-cell-blur { background-color: #1a1a1a !important; }
+
+  .cumulative-info {
+    background: linear-gradient(135deg, #1a2a1a 0%, #1a2a1a 100%);
+  }
+  .cumulative-number {
+    background: linear-gradient(135deg, #3a9a7a 0%, #2a7a5a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .cumulative-divider {
+    background: repeating-linear-gradient(90deg, #2a4a3a 0rpx, #2a4a3a 8rpx, transparent 8rpx, transparent 16rpx);
+  }
 }
