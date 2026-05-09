@@ -20,6 +20,10 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+temp_compile_check/
+
+# WeChat dev tools artifacts
+miniapp/
 
 # Build outputs
 dist/
