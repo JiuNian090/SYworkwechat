@@ -1,7 +1,6 @@
 <view class="container">
   <!-- 页面标题区 -->
   <view class="page-header">
-    <view class="header-bg"></view>
     <view class="header-content">
       <text class="header-title">📊 统计概览</text>
       <text class="header-subtitle">班次与工时统计分析</text>

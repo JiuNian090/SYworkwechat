@@ -2,7 +2,6 @@
 <view class="container plan-page">
   <!-- 页面标题区 -->
   <view class="page-header">
-    <view class="header-bg"></view>
     <view class="header-content">
       <text class="header-title">📋计划管理</text>
       <text class="header-subtitle">管理您的班次模板</text>

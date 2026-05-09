@@ -2,7 +2,6 @@
 <view class="container">
   <!-- 页面标题区 -->
   <view class="page-header">
-    <view class="header-bg"></view>
     <view class="header-content">
       <text class="header-title">📅 排班管理</text>
       <text class="header-subtitle">查看和管理您的排班信息</text>

@@ -2,7 +2,6 @@
 <view class="container">
   <!-- 页面标题区 -->
   <view class="page-header">
-    <view class="header-bg"></view>
     <view class="header-content">
       <view class="header-user-info">
         <view class="header-avatar-wrapper" bindtap="showCloudLoginOrRegisterModal">
