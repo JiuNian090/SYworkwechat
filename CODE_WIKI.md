@@ -1,6 +1,6 @@
 # SYwork 微信小程序 Code Wiki
 
-> 文档版本：v4.1.0 | 更新日期：2026-05-10
+> 文档版本：v4.1.1 | 更新日期：2026-05-10
 
 ---
 
@@ -431,9 +431,115 @@ interface ChartViewProps {
 
 ---
 
-## 六、工具函数
+## 六、主题系统
 
-### 6.1 Date 日期工具
+### 6.1 深色模式支持
+
+**文件位置**：`app.json` + `app.wxss` + 各页面 `.wxss`
+
+**配置**：
+
+```json
+{
+  "window": {
+    "darkmode": true,
+    "themeLocation": "theme.json"
+  }
+}
+```
+
+**主题配置文件**：`theme.json`
+
+```json
+{
+  "light": {
+    "navigationBarBackgroundColor": "#07c160",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f5f5f5"
+  },
+  "dark": {
+    "navigationBarBackgroundColor": "#06ad56",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#1a1a1a"
+  }
+}
+```
+
+### 6.2 CSS 主题变量集中管理
+
+**文件位置**：`app.wxss`（全局统一管理）
+
+**使用方式**：
+
+```css
+/* 浅色主题 - 全局定义在app.wxss */
+page {
+  --primary-color: #07c160;
+  --primary-light: #e8f7ef;
+  --primary-dark: #06ad56;
+  --success-color: #07c160;
+  --card-bg: #ffffff;
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --background-color: #f5f5f5;
+}
+
+/* 深色主题 - 全局定义在app.wxss */
+@media (prefers-color-scheme: dark) {
+  page {
+    --primary-color: #06ad56;
+    --primary-light: #1a3a2a;
+    --primary-dark: #05984c;
+    --success-color: #06ad56;
+    --card-bg: #2c2c2c;
+    --text-color: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --background-color: #1a1a1a;
+  }
+}
+```
+
+**组件配置**：
+- 组件需在 `.json` 配置文件中设置 `styleIsolation: "apply-shared"` 以继承全局变量
+- 示例：
+```json
+{
+  "styleIsolation": "apply-shared"
+}
+```
+
+**组件适配**：
+- `ChartView` 组件会根据当前主题自动调整图表颜色
+- 所有页面使用 CSS 变量定义颜色，而非硬编码
+- 热力图、饼图等图表组件都支持深色主题
+- 统计页面支持主题色动态切换
+
+### 6.3 主题检测
+
+**在页面中使用**：
+
+```typescript
+Page({
+  onLoad() {
+    const appBaseInfo = wx.getAppBaseInfo();
+    const isDarkMode = appBaseInfo.theme === 'dark';
+    // 根据主题调整样式或数据
+  },
+  
+  onThemeChange(res) {
+    const newTheme = res.theme;
+    // 主题切换回调
+  }
+});
+```
+
+**注意**：推荐使用 `wx.getAppBaseInfo()` 替代 `wx.getSystemInfoSync()` 获取主题信息，性能更好且更准确。
+
+---
+
+## 七、工具函数
+
+### 7.1 Date 日期工具
 
 **文件位置**：`utils/date.ts`
 
@@ -449,7 +555,7 @@ interface ChartViewProps {
 | `isCurrentWeek(date)` | 判断是否在当前周 |
 | `isCurrentMonth(date)` | 判断是否在当前月 |
 
-### 6.2 Encrypt 加密工具
+### 7.2 Encrypt 加密工具
 
 **文件位置**：`utils/encrypt.ts`
 
@@ -463,7 +569,7 @@ interface ChartViewProps {
 | `verifyPassword(password, hash)` | 验证密码 |
 | `calculateHash(data)` | 计算数据哈希（djb2） |
 
-### 6.3 Storage 存储管理
+### 7.3 Storage 存储管理
 
 **文件位置**：`utils/storage.ts`
 
@@ -482,9 +588,9 @@ interface ChartViewProps {
 
 ---
 
-## 七、云函数
+## 八、云函数
 
-### 7.1 userLogin 用户登录
+### 8.1 userLogin 用户登录
 
 **文件位置**：`cloudfunctions/userLogin/index.js`
 
