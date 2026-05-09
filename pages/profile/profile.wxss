@@ -3436,4 +3436,19 @@ page {
   .weui-btn_primary:active { background: linear-gradient(135deg, #1a5a3a 0%, #0a4a2a 100%); }
   .weui-btn_default { background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%); color: #a3a3a3; }
   .weui-btn_default:active { background: linear-gradient(135deg, #2a2a2a 0%, #222222 100%); }
+
+  .modal-container { background: #262626; }
+  .weui-half-modal { background: #262626; }
+  .weui-half-header { border-bottom-color: #333333; }
+
+  .form-card { background: #262626; }
+  .modal-container .form-card .form-input { background: #1a1a1a; border-color: #444444; color: #e5e5e5; }
+  .modal-container .form-card .form-input:focus { background: #222222; border-color: var(--primary-color); box-shadow: 0 0 0 4rpx rgba(58, 154, 122, 0.15); }
+  .input-wrapper { background: #1a1a1a; border-color: #444444; }
+  .input-wrapper:focus-within { background: #222222; border-color: var(--primary-color); box-shadow: 0 0 0 4rpx rgba(58, 154, 122, 0.15); }
+
+  .data-icon { background: linear-gradient(135deg, #1a2a3a 0%, #1a2a2a 100%); }
+  .cloud-icon { background: linear-gradient(135deg, #1a1a2a 0%, #1a1a2a 100%); }
+  .about-icon { background: linear-gradient(135deg, #2a2a1a 0%, #2a2a1a 100%); }
+  .changelog-icon { background: linear-gradient(135deg, #1a2a1a 0%, #1a2a1a 100%); }
 }

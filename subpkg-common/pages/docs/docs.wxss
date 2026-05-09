@@ -545,5 +545,10 @@ page {
     --shadow-hover: 0 8rpx 24rpx rgba(0, 0, 0, 0.4);
     --tip-bg: #2a2a1a;
     --warning-bg: #2a1a1a;
+    --primary-color: #3a9a7a;
+    --primary-light: #4a9a7a;
+    --primary-dark: #1a5a3a;
   }
+
+  .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
 }
