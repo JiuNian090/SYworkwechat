@@ -1,55 +1,47 @@
 <view class="container">
   <view class="content">
     <text class="title">用户服务及使用协议</text>
-    <text class="update-date">更新日期：2026年5月</text>
     
     <view class="section">
-      <text class="section-title">一、协议说明</text>
+      <text class="section-title">协议说明</text>
       <text class="text">欢迎使用 SYworkwechat（以下简称"本小程序"）。本协议是您与本小程序开发者之间关于使用本小程序服务所订立的协议。请您仔细阅读本协议的全部内容，使用本小程序即表示您同意本协议的全部条款。</text>
     </view>
 
     <view class="section">
-      <text class="section-title">二、服务内容</text>
+      <text class="section-title">服务内容</text>
       <text class="text">本小程序提供班次管理、排班管理、工时统计、数据备份等公益免费服务。本小程序为个人公益项目，完全免费、无广告，功能正在逐步完善中。</text>
     </view>
 
     <view class="section">
-      <text class="section-title">三、数据存储与安全</text>
-      <text class="text">1. 本小程序默认将所有数据存储在您的微信小程序本地存储中，不会主动上传至任何第三方服务器。</text>
-      <text class="text">2. 云备份功能为可选功能，您可以选择是否使用。使用云备份功能时，数据将存储在腾讯云微信云开发服务中，并采用加密存储。</text>
-      <text class="text">3. 您的数据属于您个人，开发者不会查看、使用或分享您的数据。</text>
-      <text class="text">4. 请妥善保管您的云备份账号和密码，避免数据泄露。建议您定期备份重要数据，以防数据丢失。</text>
-      <text class="text">5. 因不可抗力、设备故障等原因造成的数据丢失，开发者不承担责任。</text>
+      <text class="section-title">数据存储与安全</text>
+      <text class="text">本小程序默认将所有数据存储在您的微信小程序本地存储中，不会主动上传至任何第三方服务器。</text>
+      <text class="text">云备份功能为可选功能，您可以选择是否使用。使用云备份功能时，数据将存储在腾讯云微信云开发服务中，并采用加密存储。</text>
+      <text class="text">您的数据属于您个人，开发者不会查看、使用或分享您的数据。请妥善保管您的云备份账号和密码，避免数据泄露。建议您定期备份重要数据，以防数据丢失。因不可抗力、设备故障等原因造成的数据丢失，开发者不承担责任。</text>
     </view>
 
     <view class="section">
-      <text class="section-title">四、信息收集与隐私</text>
-      <text class="text">1. 本小程序仅收集您主动填写的信息，包括用户名、排班数据等。</text>
-      <text class="text">2. 本小程序不会收集您的微信个人信息、通讯录、地理位置等敏感信息。</text>
-      <text class="text">3. 您可以随时编辑或删除您的个人信息。</text>
-      <text class="text">4. 您提供的信息仅用于小程序的功能运行，不会用于其他目的。</text>
-      <text class="text">5. 本小程序不会将您的信息出售、出租或分享给任何第三方。</text>
+      <text class="section-title">信息收集与隐私</text>
+      <text class="text">本小程序仅收集您主动填写的信息，包括用户名、排班数据等。本小程序不会收集您的微信个人信息、通讯录、地理位置等敏感信息。您可以随时编辑或删除您的个人信息。</text>
+      <text class="text">您提供的信息仅用于小程序的功能运行，不会用于其他目的。本小程序不会将您的信息出售、出租或分享给任何第三方。</text>
     </view>
 
     <view class="section">
-      <text class="section-title">五、用户行为规范</text>
-      <text class="text">1. 您对自己输入和使用的数据负全部责任。</text>
-      <text class="text">2. 您不应使用本小程序存储敏感或重要信息。</text>
-      <text class="text">3. 使用本小程序时请遵守相关法律法规。</text>
+      <text class="section-title">用户行为规范</text>
+      <text class="text">您对自己输入和使用的数据负全部责任。您不应使用本小程序存储敏感或重要信息。使用本小程序时请遵守相关法律法规。</text>
     </view>
 
     <view class="section">
-      <text class="section-title">六、免责声明</text>
-      <text class="text">1. 本小程序为免费公益项目，尽力提供准确、稳定的功能，但不保证功能的绝对可用性。</text>
-      <text class="text">2. 因网络问题、系统升级等原因导致的服务中断，开发者不承担责任。</text>
-      <text class="text">3. 因数据丢失、泄露造成的损失，开发者不承担赔偿责任。</text>
-      <text class="text">4. 使用本小程序即表示您同意本协议的全部内容。</text>
-      <text class="text">5. 本协议的解释权归开发者所有。如有争议，应通过友好协商解决。</text>
+      <text class="section-title">免责声明</text>
+      <text class="text">本小程序为免费公益项目，尽力提供准确、稳定的功能，但不保证功能的绝对可用性。</text>
+      <text class="text">因网络问题、系统升级等原因导致的服务中断，开发者不承担责任。因数据丢失、泄露造成的损失，开发者不承担赔偿责任。</text>
+      <text class="text">使用本小程序即表示您同意本协议的全部内容。本协议的解释权归开发者所有。如有争议，应通过友好协商解决。</text>
     </view>
 
     <view class="section">
-      <text class="section-title">七、协议变更</text>
+      <text class="section-title">协议变更</text>
       <text class="text">本协议可能会不时更新。协议更新后，将在小程序中公示。继续使用本小程序即表示您同意更新后的协议内容。</text>
     </view>
+    
+    <text class="update-date">更新日期：2026年5月</text>
   </view>
 </view>
