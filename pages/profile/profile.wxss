@@ -1,25 +1,8 @@
 /* pages/profile/profile.wxss */
 
-/* ========== CSS变量定义 ========== */
 page {
-  --primary-color: #34d399;
-  --primary-dark: #10b981;
   --primary-light: #d1fae5;
-  --danger-color: #f87171;
-  --warning-color: #fbbf24;
-  --info-color: #60a5fa;
-  --bg-color: #f5f5f5;
-  --card-bg: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
-  --border-color: #e8e8e8;
-  --shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
-  --shadow-hover: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
-  --radius-sm: 8rpx;
-  --radius-md: 16rpx;
-  --radius-lg: 24rpx;
-  
+
   background-color: var(--bg-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
@@ -3110,21 +3093,6 @@ page {
 
 /* ========== DarkMode ========== */
 @media (prefers-color-scheme: dark) {
-  page {
-    --bg-color: #1a1a1a;
-    --card-bg: #262626;
-    --text-primary: #e5e5e5;
-    --text-secondary: #a3a3a3;
-    --text-tertiary: #737373;
-    --border-color: #333333;
-    --shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.3);
-    --shadow-hover: 0 4rpx 20rpx rgba(0, 0, 0, 0.4);
-    --primary-color: #3a9a7a;
-    --primary-light: #4a9a7a;
-    --primary-dark: #1a5a3a;
-    --success-color: #3a9a7a;
-  }
-
   .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
 
   .profile-card {

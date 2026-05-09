@@ -173,9 +173,40 @@ const alpha = theme === 'dark' ? '50' : '20';
 | 改造 | 4：替换硬编码 | 1~2 小时（可分批） | 消除暗色遗漏死角 |
 | 改造 | 5：制定规范 | 一次性文档 | 新代码天然暗色兼容 |
 
-## 依赖关系
+## 实施记录（2026-05-10）
 
-扫描阶段（A→B→C）可以并行做。
+### 已完成
 
-改造阶段：Step 1 → Step 2 必须按顺序（先有变量，组件才能继承）。
-Step 3 / Step 4 / Step 5 可以并行推进，不影响功能。
+| 步骤 | 状态 | 详情 |
+|------|------|------|
+| 扫描 A：多余 wxml | ✅ | 发现大量空 view 节点（plan ~30个, profile ~50个, schedule 3个, statistics 2个, user-manage 3个），其中 header-bg 已在之前删除 |
+| 扫描 B：硬编码颜色 | ✅ | 发现 5 个页面 + 2 个组件共 ~80+ 处硬编码颜色 |
+| 扫描 C：组件隔离 | ✅ | 3 个组件均未配置 styleIsolation |
+| Step 1：集中变量到 app.wxss | ✅ | 创建 `app.wxss`，整合 5 个页面的 17 个变量（含标签系统变量），清空各页面重复定义共 ~85 行 |
+| Step 2：组件 styleIsolation | ✅ | chart-view / color-picker / shift-selector 三个组件均已添加 `"styleIsolation": "apply-shared"` |
+| Step 4：组件替换硬编码 | ✅ | color-picker: 替换 9 处，移除 4 条无效暗色覆盖；shift-selector: 替换 11 处，移除 12 条无效暗色覆盖 |
+| 编译验证 | ✅ | `tsc --noEmit` + `eslint` 均通过 |
+
+### 关键设计决策
+
+1. **profile 和 user-manage 保留 `--primary-light: #d1fae5` 覆盖**：这两个页面使用的 `--primary-light` 值为 `#d1fae5`（极浅绿色），与其他页面 `#6ee7b7` 语义不同（前者用于装饰背景渐变，后者用于按钮渐变），故保留页面级覆盖。
+
+2. **页面暗色块保留选择器特定覆盖**：集中变量后，各页面的 `@media (prefers-color-scheme: dark)` 块仅清除了 `page { --xxx }` 部分的变量重定义。`.page-header`、`.modal-container`、`.form-input` 等选择器级别的暗色覆盖因使用了与变量默认值不同的特定颜色（如 header 使用的深绿色渐变），暂时保留。这些可在后续分批替换。
+
+3. **组件暗色块精简**：color-picker 暗色块从 7 条规则减至 5 条，shift-selector 从 13 条减至 5 条。被移除的规则因 CSS 变量暗色值已覆盖对应场景。
+
+### 待后续处理
+
+- **Step 3**：清理多余 wxml 结构（plan/profile 页面有大量空 view 节点，建议利用组件重构时一并处理）
+- **Step 4（续）**：页面级硬编码颜色替换（page-header 渐变、弹窗容器、badge/tag 等）。这部分的替换需要逐个验证视觉一致性，建议分页面渐进式替换。
+- **Step 5**：编码规范已在本文档中，新增页面/组件时需遵循变量引用规则。
+
+### 改造前后对比
+
+| 指标 | 改造前 | 改造后 |
+|------|--------|--------|
+| 变量定义位置 | 5 个文件各定义一遍 | 1 个 app.wxss |
+| 变量定义行数 | ~85 行（分散） | ~60 行（集中） |
+| 暗色变量重定义 | 7 个文件（5 页 + 2 组件） | 1 个 app.wxss |
+| 组件变量继承 | 无（独立隔离） | apply-shared 自动继承 |
+| 新增页面暗色工作量 | 需手动添加 @media 块 | 自动生效 |

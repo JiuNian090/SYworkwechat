@@ -1,17 +1,5 @@
 /* pages/plan/plan.wxss */
-/* CSS Variables - 统一设计系统 */
 .plan-page {
-  --primary-color: #34d399;
-  --primary-light: #6ee7b7;
-  --primary-dark: #10b981;
-  --bg-color: #f5f5f5;
-  --card-bg: #ffffff;
-  --text-primary: #333333;
-  --text-secondary: #666666;
-  --text-tertiary: #999999;
-  --border-color: #e5e5e5;
-  --shadow-color: rgba(0, 0, 0, 0.08);
-
   background-color: var(--bg-color);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   min-height: 100vh;
@@ -870,20 +858,6 @@
 
 /* ========== DarkMode ========== */
 @media (prefers-color-scheme: dark) {
-  .plan-page {
-    --bg-color: #1a1a1a;
-    --card-bg: #262626;
-    --text-primary: #e5e5e5;
-    --text-secondary: #a3a3a3;
-    --text-tertiary: #737373;
-    --border-color: #333333;
-    --shadow-color: rgba(0, 0, 0, 0.4);
-    --primary-color: #3a9a7a;
-    --primary-light: #4a9a7a;
-    --primary-dark: #1a5a3a;
-    --success-color: #3a9a7a;
-  }
-
   .empty-tip-row { background: #2a2a2a; }
 
   .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }

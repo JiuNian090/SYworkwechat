@@ -1,0 +1,78 @@
+/* app.wxss - 全局 CSS 变量（暗色模式统一来源） */
+
+page {
+  /* 主色调 */
+  --primary-color: #34d399;
+  --primary-light: #6ee7b7;
+  --primary-dark: #10b981;
+
+  /* 背景 */
+  --bg-color: #f5f5f5;
+  --card-bg: #ffffff;
+
+  /* 文字 */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+
+  /* 边框与阴影 */
+  --border-color: #e5e5e5;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  --shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+
+  /* 功能色 */
+  --success-color: #34d399;
+  --warning-color: #fbbf24;
+  --error-color: #f87171;
+  --danger-color: #f87171;
+  --info-color: #60a5fa;
+
+  /* 班次类型色 */
+  --day-shift-color: #fbbf24;
+  --night-shift-color: #6366f1;
+  --off-day-color: #999999;
+
+  /* 圆角 */
+  --radius-sm: 8rpx;
+  --radius-md: 16rpx;
+  --radius-lg: 24rpx;
+
+  /* 标签系统色值（统计页专用） */
+  --tag-radius: 10rpx;
+  --tag-font: 22rpx;
+  --tag-padding-x: 16rpx;
+  --tag-padding-y: 5rpx;
+  --tag-date-bg: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  --tag-date-text: #2e7d32;
+  --tag-date-weekday: #66bb6a;
+  --tag-shift-bg: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  --tag-shift-text: #1565c0;
+  --tag-hours-bg: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  --tag-hours-text: #e65100;
+}
+
+@media (prefers-color-scheme: dark) {
+  page {
+    --bg-color: #1a1a1a;
+    --card-bg: #262626;
+    --text-primary: #e5e5e5;
+    --text-secondary: #a3a3a3;
+    --text-tertiary: #737373;
+    --border-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 4rpx 20rpx rgba(0, 0, 0, 0.4);
+    --primary-color: #3a9a7a;
+    --primary-light: #4a9a7a;
+    --primary-dark: #1a5a3a;
+    --success-color: #3a9a7a;
+    --tag-date-bg: linear-gradient(135deg, #1a3a1a 0%, #1a4a1a 100%);
+    --tag-date-text: #66bb6a;
+    --tag-date-weekday: #4a9a5a;
+    --tag-shift-bg: linear-gradient(135deg, #1a2a3a 0%, #1a3a4a 100%);
+    --tag-shift-text: #5a9ac0;
+    --tag-hours-bg: linear-gradient(135deg, #2a2a1a 0%, #3a2a1a 100%);
+    --tag-hours-text: #d08030;
+  }
+}
