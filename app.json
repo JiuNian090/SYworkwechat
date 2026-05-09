@@ -14,7 +14,8 @@
       "root": "subpkg-common",
       "name": "common",
       "pages": [
-        "pages/docs/docs"
+        "pages/docs/docs",
+        "pages/agreement/agreement"
       ]
     }
   ],

@@ -216,59 +216,6 @@
       </view>
     </view>
 
-    <!-- 声明板块 -->
-    <view class="section">
-      <view class="section-header">
-        <view class="section-header-left">
-          <view class="section-icon policy-icon">
-            <text class="icon-text">📋</text>
-          </view>
-          <text class="section-title">声明与政策</text>
-        </view>
-      </view>
-      <view class="section-body">
-        <view class="policy-list">
-          <view class="policy-item" bindtap="showDataSecurity">
-            <view class="policy-icon-wrapper">
-              <text class="policy-icon">🔒</text>
-            </view>
-            <view class="policy-info">
-              <text class="policy-title">数据安全</text>
-              <text class="policy-desc">了解我们的数据存储和保护措施</text>
-            </view>
-            <view class="policy-arrow">
-              <text class="arrow-icon">›</text>
-            </view>
-          </view>
-          
-          <view class="policy-item" bindtap="showPrivacyPolicy">
-            <view class="policy-icon-wrapper">
-              <text class="policy-icon">🔐</text>
-            </view>
-            <view class="policy-info">
-              <text class="policy-title">隐私政策</text>
-              <text class="policy-desc">我们如何处理和保护您的个人信息</text>
-            </view>
-            <view class="policy-arrow">
-              <text class="arrow-icon">›</text>
-            </view>
-          </view>
-          
-          <view class="policy-item" bindtap="showDisclaimer">
-            <view class="policy-icon-wrapper">
-              <text class="policy-icon">⚠️</text>
-            </view>
-            <view class="policy-info">
-              <text class="policy-title">免责声明</text>
-              <text class="policy-desc">使用本小程序的注意事项和责任界定</text>
-            </view>
-            <view class="policy-arrow">
-              <text class="arrow-icon">›</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
   </view>
 
   <!-- 用户名设置弹窗 -->
@@ -454,39 +401,9 @@
   </view>
 
   
-  <!-- 声明详情 WeUI 半屏弹窗 -->
-  <view class="modal-mask {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}" bindtap="hidePolicyModal"></view>
-  <view class="weui-half-modal {{showPolicyModal ? 'show' : ''}}" wx:if="{{showPolicyModal}}">
-    <view class="weui-half-header">
-      <view class="weui-half-title">
-        <text class="weui-half-title-icon">{{policyIcon}}</text>
-        <text class="weui-half-title-text" style="color: {{policyColor}};">{{policyTitle}}</text>
-      </view>
-      <view class="weui-half-close" bindtap="hidePolicyModal">
-        <text class="weui-half-close-icon">✕</text>
-      </view>
-    </view>
-    <scroll-view class="weui-half-body" scroll-y enhanced show-scrollbar="false">
-      <view class="weui-half-content">
-        <view class="policy-section" wx:for="{{policySections}}" wx:key="heading">
-          <view class="policy-section-header">
-            <view class="policy-section-icon" style="background: linear-gradient(135deg, {{policyColor}}15 0%, {{policyColor}}25 100%); border-color: {{policyColor}}30;">
-              <text style="color: {{policyColor}};">{{item.icon}}</text>
-            </view>
-            <text class="policy-section-title" style="color: {{policyColor}};">{{item.heading}}</text>
-          </view>
-          <view class="policy-section-body">
-            <view class="policy-detail-item" wx:for="{{item.items}}" wx:for-item="subItem" wx:key="*this">
-              <view class="policy-item-dot" style="background: {{policyColor}};"></view>
-              <text class="policy-item-text">{{subItem}}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </scroll-view>
-    <view class="weui-half-footer">
-      <button class="weui-half-btn" style="background: linear-gradient(135deg, {{policyColor}} 0%, {{policyColor}}dd 100%);" bindtap="hidePolicyModal">我知道了</button>
-    </view>
+  <!-- 底部协议链接 -->
+  <view class="agreement-footer">
+    <text class="agreement-link" bindtap="navigateToAgreement">用户服务及使用协议</text>
   </view>
 
 </view>

@@ -27,19 +27,6 @@ interface BackupStatus {
   label: string;
 }
 
-interface PolicySection {
-  heading: string;
-  icon: string;
-  items: string[];
-}
-
-interface PolicyContent {
-  title: string;
-  icon: string;
-  color: string;
-  sections: PolicySection[];
-}
-
 interface SavedAccount {
   account: string;
   password: string;
@@ -98,12 +85,6 @@ Page({
     rememberPassword: false,
     showDataManagementHelpModal: false,
     changelog: [] as unknown[],
-    showPolicyModal: false,
-    currentPolicyType: '',
-    policyTitle: '',
-    policyIcon: '',
-    policyColor: '',
-    policySections: [] as PolicySection[],
     lastCloudCheckTime: 0,
     cachedCloudStatus: null as unknown,
     lastLocalUpdate: 0,
@@ -1153,95 +1134,9 @@ Page({
     }
   },
 
-  getPolicyContent(type: string): PolicyContent | null {
-    const policies: Record<string, PolicyContent> = {
-      dataSecurity: {
-        title: '数据安全声明',
-        icon: '🔒',
-        color: '#10b981',
-        sections: [
-          { heading: '数据存储', icon: '💾', items: ['本小程序默认将所有数据存储在您的微信小程序本地存储中，不会上传至任何第三方服务器', '本地数据存储采用微信小程序的安全机制，保障数据的安全性'] },
-          { heading: '云备份功能', icon: '☁️', items: ['云备份功能为可选功能，您可以选择是否使用', '使用云备份功能时，数据将存储在腾讯云微信云开发服务中', '云备份的数据采用加密存储，您的账号和密码将进行加密处理'] },
-          { heading: '数据保护', icon: '🛡️', items: ['您的数据属于您个人，我们不会查看、使用或分享您的数据', '请妥善保管您的云备份账号和密码，避免数据泄露', '建议您定期备份重要数据，以防数据丢失'] },
-          { heading: '免责声明', icon: '⚠️', items: ['本小程序致力于保护您的数据安全，但无法保证绝对的安全', '因不可抗力、设备故障等原因造成的数据丢失，开发者不承担责任'] }
-        ]
-      },
-      privacy: {
-        title: '隐私政策',
-        icon: '🔐',
-        color: '#3b82f6',
-        sections: [
-          { heading: '信息收集', icon: '📋', items: ['本小程序仅收集您主动填写的信息，包括用户名、排班数据等', '我们不会收集您的微信个人信息、通讯录、地理位置等敏感信息', '您可以随时编辑或删除您的个人信息'] },
-          { heading: '信息使用', icon: '✅', items: ['您提供的信息仅用于小程序的功能运行，不会用于其他目的', '我们不会将您的信息出售、出租或分享给任何第三方'] },
-          { heading: '信息保护', icon: '🛡️', items: ['我们采取合理的技术措施保护您的信息安全', '数据传输过程中采用加密技术，防止数据泄露', '本地数据存储在您的设备上，您拥有完全控制权'] },
-          { heading: '变更说明', icon: '📝', items: ['我们可能会不时更新本隐私政策', '隐私政策更新后，将在小程序中公示'] }
-        ]
-      },
-      disclaimer: {
-        title: '免责声明',
-        icon: '⚠️',
-        color: '#f59e0b',
-        sections: [
-          { heading: '使用说明', icon: '📱', items: ['本小程序为免费公益项目，仅供个人使用', '您可以自由使用本小程序，但请遵守法律法规'] },
-          { heading: '功能说明', icon: '⚙️', items: ['本小程序尽力提供准确、稳定的功能，但不保证功能的绝对可用性', '因网络问题、系统升级等原因导致的服务中断，开发者不承担责任'] },
-          { heading: '内容责任', icon: '📄', items: ['您对自己输入和使用的数据负全部责任', '您不应使用本小程序存储敏感或重要信息', '因数据丢失、泄露造成的损失，开发者不承担赔偿责任'] },
-          { heading: '法律合规', icon: '⚖️', items: ['使用本小程序即表示您同意本免责声明', '本免责声明的解释权归开发者所有', '如有争议，应通过友好协商解决'] }
-        ]
-      }
-    };
-    return policies[type] || null;
-  },
-
-  showDataSecurity(): void {
-    const policy = this.getPolicyContent('dataSecurity');
-    if (policy) {
-      this.setData({
-        showPolicyModal: true,
-        currentPolicyType: 'dataSecurity',
-        policyTitle: policy.title,
-        policyIcon: policy.icon,
-        policyColor: policy.color,
-        policySections: policy.sections
-      });
-    }
-  },
-
-  showPrivacyPolicy(): void {
-    const policy = this.getPolicyContent('privacy');
-    if (policy) {
-      this.setData({
-        showPolicyModal: true,
-        currentPolicyType: 'privacy',
-        policyTitle: policy.title,
-        policyIcon: policy.icon,
-        policyColor: policy.color,
-        policySections: policy.sections
-      });
-    }
-  },
-
-  showDisclaimer(): void {
-    const policy = this.getPolicyContent('disclaimer');
-    if (policy) {
-      this.setData({
-        showPolicyModal: true,
-        currentPolicyType: 'disclaimer',
-        policyTitle: policy.title,
-        policyIcon: policy.icon,
-        policyColor: policy.color,
-        policySections: policy.sections
-      });
-    }
-  },
-
-  hidePolicyModal(): void {
-    this.setData({
-      showPolicyModal: false,
-      currentPolicyType: '',
-      policyTitle: '',
-      policyIcon: '',
-      policyColor: '',
-      policySections: []
+  navigateToAgreement(): void {
+    wx.navigateTo({
+      url: '/subpkg-common/pages/agreement/agreement'
     });
   }
 });
