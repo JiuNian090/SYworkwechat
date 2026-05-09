@@ -99,6 +99,7 @@ npm run tsc:check  # TypeScript 编译检查
 - **格式**：`- 分类：面向用户的变更描述`
 - **版本标题**：`## vX.X.X (YYYY-MM-DD)`，最新到最旧排序
 - **同步**：`sync_changelog.js` 自动同步 CHANGELOG.md → utils/changelog.ts
+- **Wiki文档**：每次开始更新更新日志时同步更新对应变更内容的CODE_WIKI文档，方便开发者参考
 
 ## 9. 版本管理规范
 - **版本号来源**：CHANGELOG.md 最新版本标题
