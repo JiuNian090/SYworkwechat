@@ -1615,6 +1615,8 @@ page {
     --border-color: #333333;
     --shadow-color: rgba(0, 0, 0, 0.4);
     --primary-color: #3a9a7a;
+    --primary-light: #4a9a7a;
+    --primary-dark: #1a5a3a;
     --success-color: #3a9a7a;
   }
 
@@ -1659,6 +1661,7 @@ page {
   .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
   .day-number { color: #e5e5e5; }
 
+  .add-image-btn:active { box-shadow: 0 4rpx 12rpx rgba(45, 122, 90, 0.3); }
   .action-btn.view { background: #1a2a3a; color: #5a9ac0; }
   .action-btn.view:active { background: #1a3a4a; }
   .action-btn.delete { background: #3a1a1a; color: #e06060; }

@@ -1639,6 +1639,8 @@ page {
     --border-color: #333333;
     --shadow-color: rgba(0, 0, 0, 0.4);
     --primary-color: #3a9a7a;
+    --primary-light: #4a9a7a;
+    --primary-dark: #1a5a3a;
     --success-color: #3a9a7a;
     --tag-date-bg: linear-gradient(135deg, #1a3a1a 0%, #1a4a1a 100%);
     --tag-date-text: #66bb6a;
