@@ -424,7 +424,7 @@ page {
 
 /* ========== 项目介绍区块 ========== */
 .about-section {
-  background: linear-gradient(135deg, #fff9f5 0%, #ffffff 100%);
+  background: var(--card-bg);
 }
 
 .about-card {
@@ -551,4 +551,6 @@ page {
   }
 
   .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
+
+  .about-section { background: var(--card-bg); }
 }
