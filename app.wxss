@@ -50,6 +50,28 @@ page {
   --tag-shift-text: #1565c0;
   --tag-hours-bg: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
   --tag-hours-text: #e65100;
+
+  /* 页面头渐变 */
+  --header-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  --header-gradient-dark: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%);
+
+  /* docs 页面专用 */
+  --title-color: #1a1a1a;
+  --text-color: #4a4a4a;
+  --tip-bg: rgba(24, 119, 242, 0.08);
+  --tip-border: rgba(24, 119, 242, 0.15);
+  --tip-text: #1877f2;
+  --info-bg: rgba(52, 211, 153, 0.1);
+  --info-border: rgba(52, 211, 153, 0.2);
+  --info-text: #10b981;
+  --warning-bg: rgba(245, 158, 11, 0.08);
+  --warning-border: rgba(245, 158, 11, 0.15);
+  --warning-text: #d97706;
+  --danger-bg: rgba(239, 68, 68, 0.08);
+  --danger-border: rgba(239, 68, 68, 0.15);
+  --danger-text: #dc2626;
+  --code-bg: rgba(0, 0, 0, 0.05);
+  --code-text: #374151;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -74,5 +96,48 @@ page {
     --tag-shift-text: #5a9ac0;
     --tag-hours-bg: linear-gradient(135deg, #2a2a1a 0%, #3a2a1a 100%);
     --tag-hours-text: #d08030;
+
+    --header-gradient: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%);
+    --header-gradient-dark: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%);
+
+    --title-color: #e5e5e5;
+    --text-color: #a3a3a3;
+    --tip-bg: rgba(24, 119, 242, 0.15);
+    --tip-border: rgba(24, 119, 242, 0.25);
+    --tip-text: #3b82f6;
+    --info-bg: rgba(52, 211, 153, 0.15);
+    --info-border: rgba(52, 211, 153, 0.25);
+    --info-text: #34d399;
+    --warning-bg: rgba(245, 158, 11, 0.15);
+    --warning-border: rgba(245, 158, 11, 0.25);
+    --warning-text: #fbbf24;
+    --danger-bg: rgba(239, 68, 68, 0.15);
+    --danger-border: rgba(239, 68, 68, 0.25);
+    --danger-text: #f87171;
+    --code-bg: rgba(255, 255, 255, 0.1);
+    --code-text: #e5e7eb;
   }
 }
+
+/*
+ * ── 编码规范：新写 UI 时颜色引用规则 ──
+ * 页面/容器背景    → var(--bg-color)
+ * 卡片/块背景      → var(--card-bg)
+ * 主文字           → var(--text-primary)
+ * 次要文字         → var(--text-secondary)
+ * 弱化文字         → var(--text-tertiary)
+ * 边框/分割线      → var(--border-color)
+ * 阴影             → var(--shadow-color) / var(--shadow)
+ * 主色背景/按钮    → var(--primary-color)
+ * 页面头渐变       → var(--header-gradient)
+ * 成功色           → var(--success-color)
+ * 警告色           → var(--warning-color)
+ * 错误色           → var(--error-color)
+ * 输入框背景       → var(--bg-color) 或 var(--card-bg)
+ * 弹窗蒙层         → rgba(0, 0, 0, 0.5)
+ * 组件隔离         → styleIsolation: "apply-shared"
+ *
+ * 不要用：color: #333 / background: #fff / border: 1rpx solid #eee
+ * 不要在每个页面重写 @media (prefers-color-scheme: dark)
+ * 新增页面只需引用 var(--xxx)，暗色自动生效
+ */

@@ -36,7 +36,7 @@
   position: relative;
   margin: 30rpx 30rpx 30rpx;
   padding: 65rpx 30rpx 65rpx;
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  background: var(--header-gradient);
   border-bottom: 2rpx solid var(--border-color);
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   border-radius: 24rpx;
@@ -859,8 +859,6 @@
 /* ========== DarkMode ========== */
 @media (prefers-color-scheme: dark) {
   .empty-tip-row { background: #2a2a2a; }
-
-  .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
 
   .template-item { background: #2a2a2a; border-color: #333333; }
   .template-item .template-name { opacity: 0.8; }

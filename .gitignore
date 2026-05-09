@@ -3,6 +3,7 @@ node_modules/
 
 # Trae AI configuration
 .trae/
+.learnings/
 
 # Logs
 logs

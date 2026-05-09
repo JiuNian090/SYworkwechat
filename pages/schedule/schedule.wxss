@@ -18,7 +18,7 @@ page {
   position: relative;
   margin: 30rpx 30rpx 30rpx;
   padding: 65rpx 30rpx 65rpx;
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  background: var(--header-gradient);
   border-bottom: 2rpx solid var(--border-color);
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   border-radius: 24rpx;
@@ -1633,7 +1633,6 @@ page {
 
   .stat-row.secondary { background: #2a2a2a; }
 
-  .page-header { background: linear-gradient(135deg, #2d7a5a 0%, #1a5a3a 100%); }
   .day-number { color: #e5e5e5; }
 
   .add-image-btn:active { box-shadow: 0 4rpx 12rpx rgba(45, 122, 90, 0.3); }
