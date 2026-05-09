@@ -3429,6 +3429,13 @@ page {
   .header-avatar { background: #2a2a2a; }
   .avatar { background: rgba(40, 40, 40, 0.95); border-color: rgba(255, 255, 255, 0.1); }
 
+  .grid-btn { background: #2a2a2a; }
+  .grid-btn:active { opacity: 0.8; }
+  .backup-btn { background: linear-gradient(135deg, #1a2a3a 0%, #1a2a2a 100%); }
+  .restore-btn { background: linear-gradient(135deg, #1a2a1a 0%, #1a2a1a 100%); }
+  .login-btn { background: linear-gradient(135deg, #2a2a3a 0%, #2a2a2a 100%); }
+  .register-btn { background: linear-gradient(135deg, #2a2a1a 0%, #2a2a2a 100%); }
+  .import-btn { background: linear-gradient(135deg, #1a2a1a 0%, #1a2a1a 100%); }
   .export-btn { background: linear-gradient(135deg, #1a2a3a 0%, #1a2a2a 100%); }
   .share-btn { background: linear-gradient(135deg, #1a2a1a 0%, #1a2a1a 100%); }
 
