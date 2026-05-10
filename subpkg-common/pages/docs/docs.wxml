@@ -399,23 +399,23 @@
   <view class="bottom-nav">
     <view class="nav-tabs">
       <view class="nav-tab {{activeSection === 'about' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-about">
-        <image class="nav-tab-icon" src="/images/book.png"></image>
+        <image class="nav-tab-icon" src="{{activeSection === 'about' ? '/images/book1.png' : (isDarkMode ? '/images/book2.png' : '/images/book.png')}}"></image>
         <text class="nav-tab-label">使用方法</text>
       </view>
       <view class="nav-tab {{activeSection === 'statistics' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-statistics">
-        <image class="nav-tab-icon" src="/images/status.png"></image>
+        <image class="nav-tab-icon" src="{{activeSection === 'statistics' ? '/images/status1.png' : (isDarkMode ? '/images/status2.png' : '/images/status.png')}}"></image>
         <text class="nav-tab-label">统计报表</text>
       </view>
       <view class="nav-tab {{activeSection === 'cloud' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-cloud">
-        <image class="nav-tab-icon" src="/images/cloud.png"></image>
+        <image class="nav-tab-icon" src="{{activeSection === 'cloud' ? '/images/cloud1.png' : (isDarkMode ? '/images/cloud2.png' : '/images/cloud.png')}}"></image>
         <text class="nav-tab-label">云备份</text>
       </view>
       <view class="nav-tab {{activeSection === 'data' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-data">
-        <image class="nav-tab-icon" src="/images/analytic.png"></image>
+        <image class="nav-tab-icon" src="{{activeSection === 'data' ? '/images/analytic1.png' : (isDarkMode ? '/images/analytic2.png' : '/images/analytic.png')}}"></image>
         <text class="nav-tab-label">数据管理</text>
       </view>
       <view class="nav-tab {{activeSection === 'profile' ? 'active' : ''}}" bindtap="scrollToSection" data-id="section-profile">
-        <image class="nav-tab-icon" src="/images/me.png"></image>
+        <image class="nav-tab-icon" src="{{activeSection === 'profile' ? '/images/me1.png' : (isDarkMode ? '/images/me2.png' : '/images/me.png')}}"></image>
         <text class="nav-tab-label">个人中心</text>
       </view>
     </view>

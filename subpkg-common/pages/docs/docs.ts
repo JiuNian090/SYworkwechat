@@ -3,7 +3,8 @@
 Page({
   data: {
     scrollToId: '',
-    activeSection: ''
+    activeSection: '',
+    isDarkMode: false
   },
 
   onLoad(options: Record<string, string>): void {
@@ -34,6 +35,19 @@ Page({
 
   onShow(): void {
     this.startScrollObserver();
+    // 检测暗色模式
+    const systemInfo = wx.getSystemInfoSync();
+    this.setData({
+      isDarkMode: systemInfo.theme === 'dark'
+    });
+  },
+
+  onThemeChange(): void {
+    // 监听主题变化
+    const systemInfo = wx.getSystemInfoSync();
+    this.setData({
+      isDarkMode: systemInfo.theme === 'dark'
+    });
   },
 
   onHide(): void {

@@ -9,13 +9,13 @@
     "tabBgColor": "#ffffff",
     "tabBorderStyle": "black",
     "iconPath1": "images/list-add.png",
-    "selectedIconPath1": "images/list-add-1.png",
+    "selectedIconPath1": "images/list-add1.png",
     "iconPath2": "images/schedule.png",
-    "selectedIconPath2": "images/schedule-1.png",
+    "selectedIconPath2": "images/schedule1.png",
     "iconPath3": "images/status.png",
-    "selectedIconPath3": "images/status-1.png",
+    "selectedIconPath3": "images/status1.png",
     "iconPath4": "images/me.png",
-    "selectedIconPath4": "images/me-1.png"
+    "selectedIconPath4": "images/me1.png"
   },
   "dark": {
     "navBgColor": "#1f1f1f",
@@ -26,13 +26,13 @@
     "tabSelectedColor": "#34d399",
     "tabBgColor": "#262626",
     "tabBorderStyle": "white",
-    "iconPath1": "images/list-add.png",
-    "selectedIconPath1": "images/list-add-1.png",
-    "iconPath2": "images/schedule.png",
-    "selectedIconPath2": "images/schedule-1.png",
-    "iconPath3": "images/status.png",
-    "selectedIconPath3": "images/status-1.png",
-    "iconPath4": "images/me.png",
-    "selectedIconPath4": "images/me-1.png"
+    "iconPath1": "images/list-add2.png",
+    "selectedIconPath1": "images/list-add1.png",
+    "iconPath2": "images/schedule2.png",
+    "selectedIconPath2": "images/schedule1.png",
+    "iconPath3": "images/status2.png",
+    "selectedIconPath3": "images/status1.png",
+    "iconPath4": "images/me2.png",
+    "selectedIconPath4": "images/me1.png"
   }
 }
