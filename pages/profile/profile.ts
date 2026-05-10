@@ -1009,12 +1009,13 @@ Page({
     }
     const localHash = this.computeLocalHash();
     const effectiveHash = (cache.hash as string) || '';
-    const { lastLocalUpdate } = this.data;
+    const { lastLocalUpdate, lastSyncHash } = this.data;
     const backupTime = cache.time ? new Date(cache.time as string).getTime() : 0;
 
-    if (effectiveHash && localHash === effectiveHash) {
-      // 数据一致 → 已同步，显示较新的时间
-      const syncTime = Math.max(backupTime, lastLocalUpdate);
+    // hash 一致 → 已同步，优先用云端备份时间
+    if ((effectiveHash && localHash === effectiveHash) ||
+        (!effectiveHash && lastSyncHash && localHash === lastSyncHash)) {
+      const syncTime = backupTime || lastLocalUpdate;
       const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
         backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED + (syncTimeStr ? ' ' + syncTimeStr : '') }
@@ -1022,16 +1023,25 @@ Page({
       return;
     }
 
+    // hash 不匹配：先判断本地是否真的有变动
+    if (lastSyncHash && localHash === lastSyncHash) {
+      // 本地实际未变 → 云端更新
+      const cloudTimeStr = cache.time ? this.formatBackupTime(cache.time as string) : '';
+      this.setData({
+        backupStatus: { type: 'cloud_newer', label: STATUS_TEXT.CLOUD_NEWER + (cloudTimeStr ? ' ' + cloudTimeStr : '') }
+      });
+      return;
+    }
+
+    // 本地确实有变动 → 按时间判断谁更新
     const localTimeStr = lastLocalUpdate ? this.formatBackupTime(new Date(lastLocalUpdate).toISOString()) : '';
     const cloudTimeStr = cache.time ? this.formatBackupTime(cache.time as string) : '';
 
     if (!cache.time || (backupTime && lastLocalUpdate > backupTime)) {
-      // 本地更新 → 显示本地时间
       this.setData({
         backupStatus: { type: 'local_newer', label: STATUS_TEXT.LOCAL_NEWER + (localTimeStr ? ' ' + localTimeStr : '') }
       });
     } else {
-      // 云端更新 → 显示云端时间
       this.setData({
         backupStatus: { type: 'cloud_newer', label: STATUS_TEXT.CLOUD_NEWER + (cloudTimeStr ? ' ' + cloudTimeStr : '') }
       });
@@ -1062,19 +1072,28 @@ Page({
 
   tryLocalHashShortCircuit(): boolean {
     const localHash = this.computeLocalHash();
-    if (this.data.lastSyncHash && localHash === this.data.lastSyncHash) {
-      this.setData({ lastCloudCheckTime: Date.now() });
-      this.useCachedStatus({ type: 'synced', label: STATUS_TEXT.SYNCED });
-      return true;
+    const { lastSyncHash, cachedCloudStatus } = this.data;
+    if (lastSyncHash && localHash === lastSyncHash) {
+      // 只在缓存未过期时走短路，避免忽略云端更新
+      if (cachedCloudStatus && (Date.now() - this.data.lastCloudCheckTime < CACHE_TTL)) {
+        this.setData({ lastCloudCheckTime: Date.now() });
+        this.useCachedStatus();
+        return true;
+      }
+      // 缓存已过期但本地无变化 → 不走短路，让远端请求判断
+      return false;
     }
     return false;
   },
 
   shouldRefreshCache(forceRefresh: boolean): boolean {
-    const { lastCloudCheckTime, lastLocalUpdate } = this.data;
+    const { lastCloudCheckTime, lastSyncHash } = this.data;
     const now = Date.now();
     if (forceRefresh) return true;
-    if (lastLocalUpdate > lastCloudCheckTime) return true;
+    // 本地数据是否真的有变动（用 hash 比对，不用不可靠的时间戳）
+    const localHash = this.computeLocalHash();
+    if (lastSyncHash && localHash !== lastSyncHash) return true;
+    // 缓存过期则刷新
     if (now - lastCloudCheckTime > CACHE_TTL) return true;
     return false;
   },
@@ -1088,7 +1107,7 @@ Page({
       this.setData({ backupStatus: { type: 'checking', label: STATUS_TEXT.CHECKING } });
     }
     if (!this.shouldRefreshCache(forceRefresh)) {
-      this.useCachedStatus({ type: 'checking', label: STATUS_TEXT.CHECKING });
+      this.useCachedStatus();
       return;
     }
     if (!forceRefresh && this.tryLocalHashShortCircuit()) {
