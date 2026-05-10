@@ -1605,6 +1605,10 @@ page {
 @media (prefers-color-scheme: dark) {
   .day-item { background: transparent; }
   .day-item.today { box-shadow: 0 4rpx 16rpx rgba(45, 122, 90, 0.25); }
+  .day-item.today .day-left { opacity: 0.6; }
+  .week-title-badge.current,
+  .month-title-badge.current { opacity: 0.6; }
+  .shift-hours-badge { opacity: 0.6; }
 
   .modal-input { background: #1a1a1a; color: #e5e5e5; }
   .modal-input:focus { background: #1a1a1a; }
