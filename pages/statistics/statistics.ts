@@ -717,6 +717,7 @@ Page({
       lastDateRange: null
     };
     (this as unknown as Record<string, unknown>)._periodDataCache = null;
+    (this as unknown as Record<string, unknown>)._lastTheme = wx.getAppBaseInfo().theme;
 
     const savedCustomHours = wx.getStorageSync('customHours') || 35;
     const dailyStandardHours = savedCustomHours / 7;
@@ -1194,8 +1195,18 @@ Page({
     const currentShifts = this.data.shifts;
 
     const shiftsChanged = calculateHash(JSON.stringify(allShifts)) !== calculateHash(JSON.stringify(currentShifts));
+    const previousTheme = (this as unknown as Record<string, unknown>)._lastTheme;
+    const currentTheme = wx.getAppBaseInfo().theme;
+    const themeChanged = previousTheme !== currentTheme;
 
-    if (shiftsChanged) {
+    if (shiftsChanged || themeChanged) {
+      // 清空缓存，因为主题变了需要重新计算热力图颜色
+      (this as unknown as Record<string, unknown>)._cache = {
+        lastShiftsHash: '',
+        lastStatistics: null,
+        lastDateRange: null
+      };
+      (this as unknown as Record<string, unknown>)._lastTheme = currentTheme;
       this.parsePeriodData();
       this.calculateStatistics();
     }
