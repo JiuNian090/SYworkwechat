@@ -52,7 +52,7 @@
             bindtap="showShiftSelector"
             bindlongpress="onDeleteShiftClick"
             data-date="{{item.date}}">
-          <view class="day-left" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + ';' : 'background:#07c160;') : ''}}">
+          <view class="day-left" style="{{item.isToday ? (item.shift ? 'background:' + item.shift.color + '80;' : 'background:#07c160;') : ''}}">
             <text class="day-weekday">{{item.weekday}}</text>
             <text class="day-date">{{item.month}}/{{item.day}}</text>
             <view wx:if="{{item.isToday}}" class="today-dot"></view>
