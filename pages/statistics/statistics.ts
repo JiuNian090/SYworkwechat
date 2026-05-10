@@ -1212,6 +1212,18 @@ Page({
     }
   },
 
+  onThemeChange(): void {
+    // 主题切换时立即清空缓存并重新计算
+    (this as unknown as Record<string, unknown>)._cache = {
+      lastShiftsHash: '',
+      lastStatistics: null,
+      lastDateRange: null
+    };
+    (this as unknown as Record<string, unknown>)._lastTheme = wx.getAppBaseInfo().theme;
+    this.parsePeriodData();
+    this.calculateStatistics();
+  },
+
   parsePeriodData(): void {
     const allShifts = wx.getStorageSync('shifts') || {};
     const currentHash = calculateHash(JSON.stringify(allShifts));
