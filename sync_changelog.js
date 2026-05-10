@@ -30,7 +30,8 @@ const changelogData: ChangelogData = {
 
 module.exports = changelogData;
 
-export {};`;
+export {};
+`;
 
         // 写入utils/changelog.ts文件
         fs.writeFile(utilsPath, changelogContent, 'utf8', (err) => {
