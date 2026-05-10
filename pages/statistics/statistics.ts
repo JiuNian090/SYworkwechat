@@ -332,7 +332,7 @@ Page({
 
   preventBubble(): void {},
 
-  calculateStatistics(): void {
+  calculateStatistics(forceRefresh = false): void {
     const { startDate, endDate, customHours, dailyStandardHours } = this.data;
 
     if (!startDate || !endDate) return;
@@ -357,7 +357,8 @@ Page({
         (this as unknown as Record<string, unknown>)._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       }
 
-      if ((cache?.lastShiftsHash as string) === currentShiftsHash &&
+      // 主题变化时强制刷新，不走缓存
+      if (!forceRefresh && (cache?.lastShiftsHash as string) === currentShiftsHash &&
           (cache?.lastDateRange as string) === currentDateRange &&
           cache?.lastStatistics) {
         (this as unknown as Record<string, unknown>)._allSchedules = (cache as unknown as Record<string, unknown>)._allSchedules || [];
@@ -1055,6 +1056,26 @@ Page({
     return this._isDarkMode() ? '#1a1a1a' : '#f0f0f0';
   },
 
+  /**
+   * 根据当前主题色盘，更新热力图所有格子的颜色（不重新计算统计数据）
+   * 用于主题切换时，drawPieChart 更新图例颜色后同步更新热力图格子
+   */
+  _updateHeatmapCellColorsForTheme(): void {
+    const heatmapWeeks = this.data.heatmapWeeks as HeatmapWeek[][];
+    if (!heatmapWeeks || heatmapWeeks.length === 0) return;
+
+    const newWeeks = heatmapWeeks.map(row =>
+      row.map(cell => ({
+        ...cell,
+        color: cell.isPlaceholder
+          ? this._getPlaceholderColor()
+          : this.getHeatmapColor(parseFloat((cell as Record<string, unknown>).workHours as string) || 0)
+      }))
+    );
+
+    this.setData({ heatmapWeeks: newWeeks });
+  },
+
   getHeatmapColor(hours: number): string {
     if (this._isDarkMode()) {
       if (hours <= 0) return '#3a3a3a';
@@ -1106,6 +1127,9 @@ Page({
       : ['#e3e3e3', '#c6e48b', '#7bc96f', '#5aad4a', '#3d8b37', '#2d6a2b'];
 
     this.setData({ pieColors, heatmapLegendColors });
+
+    // 主题切换时同步更新热力图格子颜色（图例已更新，格子颜色也要跟上）
+    this._updateHeatmapCellColorsForTheme();
 
     const query = this.createSelectorQuery();
     query.select('#pieCanvas').fields({ node: true, size: true }).exec(res => {
@@ -1221,7 +1245,7 @@ Page({
     };
     (this as unknown as Record<string, unknown>)._lastTheme = wx.getAppBaseInfo().theme;
     this.parsePeriodData();
-    this.calculateStatistics();
+    this.calculateStatistics(true); // 传入 true，强制刷新不走缓存
   },
 
   parsePeriodData(): void {
