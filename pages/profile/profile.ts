@@ -1058,13 +1058,21 @@ Page({
       this.updateBackupStatusUI(cachedCloudStatus as Record<string, unknown>);
     } else if (fallback) {
       this.setData({ backupStatus: fallback });
+    } else if (this.data.cloudLoggedIn) {
+      // 没有缓存也没有显式回退值 → 兜底为未备份
+      this.setData({ backupStatus: { type: 'unbacked', label: STATUS_TEXT.UNBACKED } });
     }
   },
 
   handleFetchSuccess(info: Record<string, unknown>): void {
     const now = Date.now();
     const cloudTime = (info.backupTime as string) || store.getState('lastBackupTime') || null;
-    const cloudHash = (info.backupHash as string) || this.data.lastSyncHash || null;
+    // 注意：空字符串 "" 应明确视为"无云端hash"，不应 fallthrough 到 lastSyncHash
+    // 只有 null/undefined 时才降级使用本地缓存的 lastSyncHash
+    const rawHash = info.backupHash;
+    const cloudHash = (typeof rawHash === 'string' && rawHash.length > 0)
+      ? rawHash
+      : (this.data.lastSyncHash || null);
     const newCache = {
       status: info.hasBackup ? 'has_backup' : 'no_backup',
       time: cloudTime,
@@ -1123,11 +1131,21 @@ Page({
       if (info.success) {
         this.handleFetchSuccess(info);
       } else {
-        this.useCachedStatus({ type: 'unbacked', label: STATUS_TEXT.UNBACKED });
+        // info.success === false 且无缓存 → 降级为未备份 / 错误提示
+        if (!this.data.cachedCloudStatus) {
+          this.setData({ backupStatus: { type: 'unbacked', label: STATUS_TEXT.UNBACKED } });
+        } else {
+          this.useCachedStatus({ type: 'unbacked', label: STATUS_TEXT.UNBACKED });
+        }
       }
     } catch (e) {
       console.error('检查备份状态失败', e);
-      this.useCachedStatus();
+      // 异常降级：有缓存用缓存，无缓存显示错误
+      if (this.data.cachedCloudStatus) {
+        this.useCachedStatus();
+      } else {
+        this.setData({ backupStatus: { type: 'error', label: STATUS_TEXT.ERROR } });
+      }
     }
   },
 
