@@ -248,7 +248,7 @@ page {
 
 .day-left {
   width: 72rpx;
-  padding: 20rpx 6rpx;
+  padding: 30rpx 6rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -291,7 +291,7 @@ page {
 
 .day-right {
   flex: 1;
-  padding: 8rpx;
+  padding: 16rpx;
   display: flex;
   align-items: center;
 }
@@ -302,7 +302,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14rpx 16rpx;
+  padding: 22rpx 16rpx;
   border-radius: 10rpx;
   gap: 12rpx;
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.04);
@@ -370,7 +370,7 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20rpx;
+  padding: 30rpx;
 }
 
 .no-shift-icon {
