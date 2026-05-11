@@ -100,7 +100,7 @@ npm run tsc:check  # TypeScript 编译检查
 - **版本标题**：`## vX.X.X (YYYY-MM-DD)`，最新到最旧排序
 - **同步**：`sync_changelog.js` 自动同步 CHANGELOG.md → utils/changelog.ts
 - **同步更新**：每次更新更新日志时，必须同步更新以下文件：
-  - `README.md`：更新文档中的"更新日志"章节，将最新版本添加到最前面，同时更新技术内容
+  - `README.md`：更新文档中的"更新日志"章节，将最新版本添加到最前面，同时更新技术内容，更新内容只保留3个最新的版本。
   - `CODE_WIKI.md`：更新文档版本号和变更日期，并同步更新相关技术内容
 
 
