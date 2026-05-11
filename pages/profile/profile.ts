@@ -1012,9 +1012,12 @@ Page({
     const { lastLocalUpdate, lastSyncHash } = this.data;
     const backupTime = cache.time ? new Date(cache.time as string).getTime() : 0;
 
-    // hash 一致 → 已同步，优先用云端备份时间
-    if ((effectiveHash && localHash === effectiveHash) ||
-        (!effectiveHash && lastSyncHash && localHash === lastSyncHash)) {
+    // 核心原则：只要 lastSyncHash 存在且 localHash === lastSyncHash，
+    // 就说明自上次备份以来本地数据没有变动，状态必须是 "已同步"。
+    // 云端 hash 仅作快速匹配用，不作为唯一判定依据 ——
+    // JSON.stringify 的 key 顺序差异（wx.getStorageSync 与 MongoDB BSON 反序列化之间）
+    // 可能导致相同数据计算出不同 hash，但 localHash vs lastSyncHash 永远是同一环境下的一致性比较。
+    if (lastSyncHash && localHash === lastSyncHash) {
       const syncTime = backupTime || lastLocalUpdate;
       const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
@@ -1023,17 +1026,18 @@ Page({
       return;
     }
 
-    // hash 不匹配：先判断本地是否真的有变动
-    if (lastSyncHash && localHash === lastSyncHash) {
-      // 本地实际未变 → 云端更新
-      const cloudTimeStr = cache.time ? this.formatBackupTime(cache.time as string) : '';
+    // localHash !== lastSyncHash：本地确实有变动
+    // 再尝试用云端 hash 做快速匹配（云端刚完成备份的情况）
+    if (effectiveHash && localHash === effectiveHash) {
+      const syncTime = backupTime || lastLocalUpdate;
+      const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
-        backupStatus: { type: 'cloud_newer', label: STATUS_TEXT.CLOUD_NEWER + (cloudTimeStr ? ' ' + cloudTimeStr : '') }
+        backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED + (syncTimeStr ? ' ' + syncTimeStr : '') }
       });
       return;
     }
 
-    // 本地确实有变动 → 按时间判断谁更新
+    // 本地有变动且云端 hash 不匹配 → 按时间判断谁更新
     const localTimeStr = lastLocalUpdate ? this.formatBackupTime(new Date(lastLocalUpdate).toISOString()) : '';
     const cloudTimeStr = cache.time ? this.formatBackupTime(cache.time as string) : '';
 
