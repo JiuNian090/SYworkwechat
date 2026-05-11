@@ -77,3 +77,14 @@ HeartBeat/
 
 # Trae 项目规则文件
 .trae/rules/project_rules.md
+
+# CodeBuddy AI 配置
+.codebuddy/
+codebuddy-plugin/
+.rules/
+
+# 微信小程序项目私人配置
+project.private.config.json
+
+# TypeScript 临时构建产物
+*.tsbuildinfo
