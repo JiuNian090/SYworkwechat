@@ -34,6 +34,7 @@
           wx:key="index"
           catchtap="onShiftSelect"
           data-index="{{index}}"
+          style="background: {{item.color}}80; border-left: 6rpx solid {{item.color}};"
         >
           <view class="weui-cell__bd">
             <view class="shift-label">

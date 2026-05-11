@@ -99,10 +99,8 @@ Page({
   },
 
   _getBgAlpha(): string {
-    try {
-      const theme = wx.getAppBaseInfo().theme;
-      return theme === 'dark' ? '50' : '20';
-    } catch (e) { return '20'; }
+    // 与周视图排班卡片的颜色深度保持一致（#color40）
+    return '40';
   },
 
   _addBgStyle(templates: unknown[]): unknown[] {
