@@ -834,6 +834,18 @@ page {
 .weui-cell__icon_latest {
   background-color: #07c160;
   box-shadow: 0 0 0 6rpx rgba(7, 193, 96, 0.2);
+  animation: changelog-dot-breath 2s ease-in-out infinite;
+}
+
+@keyframes changelog-dot-breath {
+  0%, 100% {
+    box-shadow: 0 0 0 6rpx rgba(7, 193, 96, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 10rpx rgba(7, 193, 96, 0.3), 0 0 16rpx rgba(7, 193, 96, 0.4);
+    transform: scale(1.15);
+  }
 }
 
 .weui-cell__line {

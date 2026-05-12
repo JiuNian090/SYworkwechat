@@ -124,7 +124,7 @@
 }
 
 .weui-cell_checked {
-  background-color: #f7f7f7;
+  background-color: transparent;
 }
 
 .weui-cell_checked .weui-cell__bd {
@@ -189,6 +189,6 @@
   .weui-sheet { background: #262626; }
   .weui-sheet__hd { background: #2a2a2a; }
   .weui-cell:active { background-color: #333333; }
-  .weui-cell_checked { background-color: #1a2a1a; }
+  .weui-cell_checked { background-color: transparent; }
   .tag-input-label { color: #a3a3a3; }
 }
