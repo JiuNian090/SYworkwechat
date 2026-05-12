@@ -82,6 +82,7 @@ HeartBeat/
 .codebuddy/
 codebuddy-plugin/
 .rules/
+rules/
 
 # 项目文档
 docs/
