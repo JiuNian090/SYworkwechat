@@ -83,6 +83,9 @@ HeartBeat/
 codebuddy-plugin/
 .rules/
 
+# 项目文档
+docs/
+
 # 微信小程序项目私人配置
 project.private.config.json
 
