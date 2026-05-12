@@ -725,7 +725,7 @@ page {
 
 /* 滚动视图 */
 .changelog-scroll {
-  max-height: 60vh;
+  max-height: 70vh;
   width: 100%;
   box-sizing: border-box;
 }
@@ -3086,7 +3086,7 @@ page {
 
 /* ========== 底部协议链接样式 ========== */
 .agreement-footer {
-  padding: 48rpx 32rpx 64rpx;
+  padding: 12rpx 32rpx 20rpx;
   display: flex;
   justify-content: center;
   align-items: center;
