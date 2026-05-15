@@ -30,3 +30,30 @@ export interface WeeklyStat {
   totalHours: number;
   dailyHours: number[];
 }
+
+export interface ChartColors {
+  plotBg: string;
+  gridLine: string;
+  gridLineLight: string;
+  axisBorder: string;
+  axisLabel: string;
+  axisUnit: string;
+  titleBg: string;
+  titleText: string;
+  legendText: string;
+  dataLabel: string;
+  chartLine: string;
+  chartLine2: string;
+  chartGrad1: string;
+  chartGrad2: string;
+  chartGrad3: string;
+  areaGrad1: string;
+  areaGrad2: string;
+  pointOuter: string;
+  pointInner: string;
+  standardLine: string;
+  shadowColor: string;
+  shadowColor2: string;
+  emptyText: string;
+  barShadow: string;
+}

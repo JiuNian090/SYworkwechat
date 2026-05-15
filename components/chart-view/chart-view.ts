@@ -1,4 +1,5 @@
 'use strict';
+import type { ChartColors } from '../../types/statistics';
 type CanvasContext = WechatMiniprogram.CanvasRenderingContext.CanvasRenderingContext2D;
 const DAY_THRESHOLD = 7;
 
@@ -26,39 +27,64 @@ interface ChartOption {
 
 type ChartTimeUnit = 'day' | 'week' | 'month';
 
-function getChartColors() {
-  const theme = wx.getAppBaseInfo().theme;
-  const isDark = theme === 'dark';
-  if (isDark) {
-    return {
-      plotBg: '#1f1f1f', gridLine: '#333333', gridLineLight: '#2a2a2a',
-      axisBorder: '#444444', axisLabel: '#9ca3af', axisUnit: '#737373',
-      titleBg: 'rgba(255,255,255,0.05)',
-      titleText: '#e5e5e5', legendText: '#a3a3a3', dataLabel: '#a3a3a3',
-      chartLine: '#34d399', chartLine2: '#10b981',
-      chartGrad1: '#34d399', chartGrad2: '#6ee7b7', chartGrad3: '#2a8a6a',
-      areaGrad1: 'rgba(52,211,153,0.15)', areaGrad2: 'rgba(52,211,153,0.02)',
-      pointOuter: '#34d399', pointInner: '#e5e5e5',
-      standardLine: '#3b82f6',
-      shadowColor: 'rgba(52,211,153,0.2)', shadowColor2: 'rgba(52,211,153,0.35)',
-      emptyText: '#737373',
-      barShadow: 'rgba(52,211,153,0.15)'
-    };
-  }
-  return {
-    plotBg: '#fafbfc', gridLine: '#e5e7eb', gridLineLight: '#e5e7eb',
-    axisBorder: '#d1d5db', axisLabel: '#6b7280', axisUnit: '#9ca3af',
-    titleBg: 'rgba(31,41,55,0.04)',
-    titleText: '#1f2937', legendText: '#374151', dataLabel: '#374151',
-    chartLine: '#34d399', chartLine2: '#10b981',
-    chartGrad1: '#34d399', chartGrad2: '#6ee7b7', chartGrad3: '#a7f3d0',
-    areaGrad1: 'rgba(52,211,153,0.12)', areaGrad2: 'rgba(52,211,153,0.02)',
-    pointOuter: '#34d399', pointInner: '#fff',
+const THEME_COLORS: Record<string, ChartColors> = {
+  dark: {
+    plotBg: '#1f1f1f',
+    gridLine: '#333333',
+    gridLineLight: '#2a2a2a',
+    axisBorder: '#444444',
+    axisLabel: '#9ca3af',
+    axisUnit: '#737373',
+    titleBg: 'rgba(255,255,255,0.05)',
+    titleText: '#e5e5e5',
+    legendText: '#a3a3a3',
+    dataLabel: '#a3a3a3',
+    chartLine: '#34d399',
+    chartLine2: '#10b981',
+    chartGrad1: '#34d399',
+    chartGrad2: '#6ee7b7',
+    chartGrad3: '#2a8a6a',
+    areaGrad1: 'rgba(52,211,153,0.15)',
+    areaGrad2: 'rgba(52,211,153,0.02)',
+    pointOuter: '#34d399',
+    pointInner: '#e5e5e5',
     standardLine: '#3b82f6',
-    shadowColor: 'rgba(52,211,153,0.15)', shadowColor2: 'rgba(52,211,153,0.3)',
+    shadowColor: 'rgba(52,211,153,0.2)',
+    shadowColor2: 'rgba(52,211,153,0.35)',
+    emptyText: '#737373',
+    barShadow: 'rgba(52,211,153,0.15)',
+  },
+  light: {
+    plotBg: '#fafbfc',
+    gridLine: '#e5e7eb',
+    gridLineLight: '#e5e7eb',
+    axisBorder: '#d1d5db',
+    axisLabel: '#6b7280',
+    axisUnit: '#9ca3af',
+    titleBg: 'rgba(31,41,55,0.04)',
+    titleText: '#1f2937',
+    legendText: '#374151',
+    dataLabel: '#374151',
+    chartLine: '#34d399',
+    chartLine2: '#10b981',
+    chartGrad1: '#34d399',
+    chartGrad2: '#6ee7b7',
+    chartGrad3: '#a7f3d0',
+    areaGrad1: 'rgba(52,211,153,0.12)',
+    areaGrad2: 'rgba(52,211,153,0.02)',
+    pointOuter: '#34d399',
+    pointInner: '#fff',
+    standardLine: '#3b82f6',
+    shadowColor: 'rgba(52,211,153,0.15)',
+    shadowColor2: 'rgba(52,211,153,0.3)',
     emptyText: '#9ca3af',
-    barShadow: 'rgba(52,211,153,0.12)'
-  };
+    barShadow: 'rgba(52,211,153,0.12)',
+  },
+};
+
+function getChartColors(): ChartColors {
+  const theme = wx.getAppBaseInfo().theme;
+  return THEME_COLORS[theme === 'dark' ? 'dark' : 'light'];
 }
 
 Component({
