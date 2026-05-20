@@ -1,6 +1,6 @@
 # SYwork 微信小程序 Code Wiki
 
-> 文档版本：v4.1.6 | 更新日期：2026-05-12
+> 文档版本：v4.1.6 | 更新日期：2026-05-20 | GitNexus 分析版
 
 ---
 
@@ -30,7 +30,19 @@ SYwork 是一款基于微信小程序的工时记录与排班管理系统，主�
 | 压缩 | JSZip（数据导出 ZIP 格式） |
 | 图表 | Canvas 2D 自绘 |
 
-### 1.3 项目结构
+### 1.3 GitNexus 项目统计
+
+通过 GitNexus 代码知识图谱分析，本项目包含：
+
+| 指标 | 数量 |
+|------|------|
+| 代码文件 | 80 个 |
+| 知识图谱节点 | 2,172 个 |
+| 代码关系边 | 3,510 条 |
+| 社区/模块 | 64 个 |
+| 执行流程 | 167 个 |
+
+### 1.4 项目结构
 
 ```
 SYworkwechat/
@@ -188,18 +200,30 @@ interface StoreState {
 
 **文件位置**：`utils/cloudManager.ts`
 
-**核心方法**：
+**GitNexus 分析 - CloudManager 类结构**：
 
-| 方法 | 说明 |
-|------|------|
-| `register(account, password, nickname)` | 注册云账户 |
-| `login(account, password)` | 登录云账户 |
-| `backup()` | 备份数据到云端 |
-| `restore()` | 从云端恢复数据 |
-| `getBackupInfo()` | 获取备份信息 |
-| `getLocalData()` | 获取本地数据（含哈希） |
-| `getAllLocalImages()` | 获取所有本地图片 |
-| `calculateImageHash(...)` | 计算图片哈希 |
+| 成员类型 | 名称 | 参数数量 |
+|----------|------|----------|
+| 构造函数 | `constructor` | 0 |
+| 属性 | `userId` | - |
+| 属性 | `MAX_IMAGES_PER_BATCH` | - |
+| 方法 | `isCloudInitialized` | 0 |
+| 方法 | `callCloudFunction` | 3 |
+| 方法 | `register` | 3 |
+| 方法 | `login` | 2 |
+| 方法 | `isLoggedIn` | 0 |
+| 方法 | `logout` | 0 |
+| 方法 | `getCurrentAccount` | 0 |
+| 方法 | `getLocalData` | 0 |
+| 方法 | `checkAndUpdateOldImageNames` | 0 |
+| 方法 | `getAllLocalImages` | 0 |
+| 方法 | `validateImageExists` | 1 |
+| 方法 | `calculateImageHash` | 4 |
+| 方法 | `backup` | 0 |
+| 方法 | `restore` | 0 |
+| 方法 | `performRestoreWithNewFlow` | 1 |
+| 方法 | `getBackupInfo` | 0 |
+| 方法 | `getLatestBackupInfo` | 0 |
 
 **关键常量**：
 
@@ -298,9 +322,62 @@ export.zip
 
 ---
 
-## 四、页面模块
+## 四、执行流程分析（GitNexus 发现）
 
-### 4.1 Schedule 排班页面
+根据 GitNexus 知识图谱分析，项目包含 **167 个执行流程**，以下是部分核心流程：
+
+### 4.1 云相关流程
+
+| 流程名称 | 说明 |
+|----------|------|
+| `OnCloudLogin → _formatDate` | 云登录流程 |
+| `OnCloudStatusTap → ComputeLocalHash` | 云端状态点击 → 计算本地哈希 |
+| `OnCloudStatusTap → FormatBackupTime` | 云端状态点击 → 格式化备份时间 |
+| `RegisterToCloud → _formatDate` | 注册到云端 |
+| `OnCloudLogin → _getTimePeriod` | 云登录 → 获取时间周期 |
+| `OnCloudLogin → UpdateAvatarInOtherPages` | 云登录 → 更新其他页面头像 |
+
+### 4.2 统计页面流程
+
+| 流程名称 | 说明 |
+|----------|------|
+| `OnWeekPickerChange → CalculateOptimalChartUnit` | 周选择器变更 → 计算图表单位 |
+| `OnMonthPickerChange → CalculateOptimalChartUnit` | 月选择器变更 → 计算图表单位 |
+| `OnYearPickerChange → CalculateOptimalChartUnit` | 年选择器变更 → 计算图表单位 |
+| `SelectNextWeek → CalculateOptimalChartUnit` | 选择下周 → 计算图表单位 |
+| `SelectThisMonth → CalculateOptimalChartUnit` | 选择本月 → 计算图表单位 |
+| `SelectThisYear → CalculateOptimalChartUnit` | 选择本年 → 计算图表单位 |
+| `OnShow → CalculateOptimalChartUnit` | 页面显示 → 计算图表单位 |
+| `OnThemeChange → CalculateOptimalChartUnit` | 主题变更 → 计算图表单位 |
+| `ChangeChartTimeUnit → CalculateOptimalChartUnit` | 图表时间单位变更 → 计算图表单位 |
+
+### 4.3 页面模块流程
+
+| 流程名称 | 说明 |
+|----------|------|
+| `OnUnload → UpdateAvatarInOtherPages` | 页面卸载 → 更新其他页面头像 |
+| `OnLoad → _formatDate` | 页面加载 → 格式化日期 |
+
+---
+
+## 五、代码社区/模块划分（GitNexus 发现）
+
+GitNexus 将项目划分为 **64 个社区/模块**，主要包括：
+
+| 社区名称 | 说明 |
+|----------|------|
+| `Statistics` | 统计页面相关代码 |
+| `Profile` | 个人中心相关代码 |
+| `Schedule` | 排班页面相关代码 |
+| `Chart-view` | 图表组件相关代码 |
+| `Color-picker` | 颜色选择器组件 |
+| `User-manage` | 用户管理相关代码 |
+
+---
+
+## 六、页面模块
+
+### 6.1 Schedule 排班页面
 
 **文件位置**：`pages/schedule/schedule.ts`
 
@@ -329,7 +406,7 @@ export.zip
 - `_importComplete`：数据导入完成
 - `avatarType`：头像类型变更
 
-### 4.2 Plan 计划页面
+### 6.2 Plan 计划页面
 
 **文件位置**：`pages/plan/plan.ts`
 
@@ -349,7 +426,7 @@ export.zip
 | `deleteTemplate(index)` | 删除模板 |
 | `saveTemplates()` | 保存模板 |
 
-### 4.3 Statistics 统计页面
+### 6.3 Statistics 统计页面
 
 **文件位置**：`pages/statistics/statistics.ts`
 
@@ -368,7 +445,7 @@ export.zip
 | `setChartType(type)` | 设置图表类型 |
 | `exportCSV()` | 导出 CSV |
 
-### 4.4 Profile 个人中心
+### 6.4 Profile 个人中心
 
 **文件位置**：`pages/profile/profile.ts`
 
@@ -394,9 +471,9 @@ export.zip
 
 ---
 
-## 五、组件模块
+## 七、组件模块
 
-### 5.1 ChartView 图表组件
+### 7.1 ChartView 图表组件
 
 **文件位置**：`components/chart-view/`
 
@@ -417,13 +494,13 @@ interface ChartViewProps {
 }
 ```
 
-### 5.2 ColorPicker 颜色选择器
+### 7.2 ColorPicker 颜色选择器
 
 **文件位置**：`components/color-picker/`
 
 **功能**：预设颜色选择 + 自定义颜色
 
-### 5.3 ShiftSelector 班次选择器
+### 7.3 ShiftSelector 班次选择器
 
 **文件位置**：`components/shift-selector/`
 
@@ -431,9 +508,9 @@ interface ChartViewProps {
 
 ---
 
-## 六、主题系统
+## 八、主题系统
 
-### 6.1 深色模式支持
+### 8.1 深色模式支持
 
 **文件位置**：`app.json` + `app.wxss` + 各页面 `.wxss`
 
@@ -465,7 +542,7 @@ interface ChartViewProps {
 }
 ```
 
-### 6.2 CSS 主题变量集中管理
+### 8.2 CSS 主题变量集中管理
 
 **文件位置**：`app.wxss`（全局统一管理）
 
@@ -514,7 +591,7 @@ page {
 - 热力图、饼图等图表组件都支持深色主题
 - 统计页面支持主题色动态切换
 
-### 6.3 主题检测
+### 8.3 主题检测
 
 **在页面中使用**：
 
@@ -537,9 +614,9 @@ Page({
 
 ---
 
-## 七、工具函数
+## 九、工具函数
 
-### 7.1 Date 日期工具
+### 9.1 Date 日期工具
 
 **文件位置**：`utils/date.ts`
 
@@ -555,7 +632,7 @@ Page({
 | `isCurrentWeek(date)` | 判断是否在当前周 |
 | `isCurrentMonth(date)` | 判断是否在当前月 |
 
-### 7.2 Encrypt 加密工具
+### 9.2 Encrypt 加密工具
 
 **文件位置**：`utils/encrypt.ts`
 
@@ -569,7 +646,7 @@ Page({
 | `verifyPassword(password, hash)` | 验证密码 |
 | `calculateHash(data)` | 计算数据哈希（djb2） |
 
-### 7.3 Storage 存储管理
+### 9.3 Storage 存储管理
 
 **文件位置**：`utils/storage.ts`
 
@@ -588,9 +665,9 @@ Page({
 
 ---
 
-## 八、云函数
+## 十、云函数
 
-### 8.1 userLogin 用户登录
+### 10.1 userLogin 用户登录
 
 **文件位置**：`cloudfunctions/userLogin/index.js`
 
@@ -602,7 +679,7 @@ Page({
 | `login` | 用户登录 |
 | `getUserInfo` | 获取用户信息 |
 
-### 8.2 backup 数据备份
+### 10.2 backup 数据备份
 
 **文件位置**：`cloudfunctions/backup/index.js`
 
@@ -615,7 +692,7 @@ Page({
 | `getExistingImages` | 获取已存在的图片列表 |
 | `completeBackup` | 完成备份 |
 
-### 8.3 restore 数据恢复
+### 10.3 restore 数据恢复
 
 **文件位置**：`cloudfunctions/restore/index.js`
 
@@ -628,7 +705,7 @@ Page({
 | `restoreOtherData` | 恢复其他数据 |
 | `restore` | 执行恢复 |
 
-### 8.4 cleanup 数据清理
+### 10.4 cleanup 数据清理
 
 **文件位置**：`cloudfunctions/cleanup/index.js`
 
@@ -636,9 +713,9 @@ Page({
 
 ---
 
-## 九、数据模型
+## 十一、数据模型
 
-### 9.1 ShiftTemplate 班次模板
+### 11.1 ShiftTemplate 班次模板
 
 ```typescript
 interface ShiftTemplate {
@@ -652,7 +729,7 @@ interface ShiftTemplate {
 }
 ```
 
-### 9.2 Shift 排班数据
+### 11.2 Shift 排班数据
 
 ```typescript
 interface Shift extends ShiftTemplate {
@@ -660,7 +737,7 @@ interface Shift extends ShiftTemplate {
 }
 ```
 
-### 9.3 Image 图片数据
+### 11.3 Image 图片数据
 
 ```typescript
 interface WeekImage {
@@ -673,7 +750,7 @@ interface WeekImage {
 }
 ```
 
-### 9.4 CloudBackup 云端备份
+### 11.4 CloudBackup 云端备份
 
 ```typescript
 interface CloudBackup {
@@ -691,9 +768,9 @@ interface CloudBackup {
 
 ---
 
-## 十、配置说明
+## 十二、配置说明
 
-### 10.1 环境配置
+### 12.1 环境配置
 
 复制 `env.js.example` 为 `env.js` 并填写：
 
@@ -704,7 +781,7 @@ module.exports = {
 };
 ```
 
-### 9.2 全局配置
+### 12.2 全局配置
 
 **文件位置**：`config.ts`
 
@@ -718,7 +795,7 @@ module.exports = {
 | `backupSystemVersion` | 备份系统版本（需与云函数保持一致） |
 | `defaults` | 默认配置（周工时、头像等） |
 
-### 10.3 构建命令
+### 12.3 构建命令
 
 ```bash
 npm run build      # TypeScript 检查 + 版本同步 + changelog 同步
@@ -730,9 +807,9 @@ npm run tsc:check  # TypeScript 编译检查
 
 ---
 
-## 十一、开发规范
+## 十三、开发规范
 
-### 11.1 命名规范
+### 13.1 命名规范
 
 | 类别 | 规范 | 示例 |
 |------|------|------|
@@ -742,14 +819,14 @@ npm run tsc:check  # TypeScript 编译检查
 | 接口 | PascalCase，无 I 前缀 | `interface ShiftTemplate` |
 | 文件 | 小写+连字符 | `chart-view.ts` |
 
-### 11.2 类型安全
+### 13.2 类型安全
 
 - 优先使用 `interface` 而非 `type`（对象类型）
 - 使用 union type 替代 enum
 - 避免 `any`，使用 `unknown` 配合类型守卫
 - 微信 API 的回调风格用 Promise 包装
 
-### 11.3 错误处理
+### 13.3 错误处理
 
 - 所有 `wx.cloud.callFunction` 调用必须有 `catch`
 - Storage 操作使用 `try-catch` 包裹
@@ -757,21 +834,21 @@ npm run tsc:check  # TypeScript 编译检查
 
 ---
 
-## 十二、常见问题
+## 十四、常见问题
 
-### 12.1 云函数修改后需要重新上传
+### 14.1 云函数修改后需要重新上传
 
 云函数位于 `cloudfunctions/` 目录，使用 JavaScript。修改后需在微信开发者工具中右键上传部署。
 
-### 12.2 备份版本号不一致
+### 14.2 备份版本号不一致
 
 `config.ts` 的 `backupSystemVersion` 必须与云函数中的 `BACKUP_SYSTEM_VERSION` 保持一致。
 
-### 12.3 图片恢复失败
+### 14.3 图片恢复失败
 
 恢复流程改为懒加载模式：只写入元数据（包含 fileID），实际图片在查看时才从云端下载。
 
-### 12.4 多账户数据隔离
+### 14.4 多账户数据隔离
 
 本地账户通过 Storage key 隔离，云账户通过 `cloudUserId` 隔离。
 
@@ -796,3 +873,17 @@ npm run tsc:check  # TypeScript 编译检查
 ### C. 最低基础库版本
 
 项目要求微信基础库版本 >= 2.10.0（通过 `app.ts` 中的 `checkSDKVersionCompatibility()` 检查）。
+
+### D. GitNexus 分析工具
+
+本 Wiki 部分内容由 GitNexus 代码知识图谱自动分析生成：
+
+| GitNexus 工具 | 用途 |
+|---------------|------|
+| `list_repos` | 列出已索引的仓库 |
+| `query` | 搜索代码执行流程和关系 |
+| `context` | 单个符号的 360 度视图 |
+| `impact` | 分析变更的影响范围 |
+| `cypher` | 执行 Cypher 查询分析 |
+| `detect_changes` | 分析未提交的代码变更 |
+| `route_map` | API 路由映射分析 |

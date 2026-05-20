@@ -5,6 +5,9 @@ node_modules/
 .trae/
 .learnings/
 
+# Claude AI configuration
+.claude/
+
 # Logs
 logs
 *.log
@@ -92,3 +95,29 @@ project.private.config.json
 
 # TypeScript 临时构建产物
 *.tsbuildinfo
+
+# GitNexus code intelligence index
+.gitnexus/
+
+# WeChat cloud development artifacts
+.cloudbase/
+
+# Editor directories
+.vim/
+
+# Package lock files (optional, some teams prefer to commit these)
+# package-lock.json
+# yarn.lock
+
+# Test coverage
+.nyc_output/
+
+# Debug logs
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local development configuration
+local.config.js
+local.json
