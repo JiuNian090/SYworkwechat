@@ -208,33 +208,9 @@ module.exports = versionInfo;
   console.log('✅ utils/versionInfo.js 已更新');
 }
 
-// 更新config.ts中的backupSystemVersion
-function updateConfigTs(version) {
-  let content = fs.readFileSync(CONFIG_TS_PATH, 'utf8');
-  content = content.replace(
-    /backupSystemVersion:\s*['"][^'"]*['"]/,
-    `backupSystemVersion: 'v${version}'`
-  );
-  fs.writeFileSync(CONFIG_TS_PATH, content);
-  console.log('✅ config.ts 已更新');
-}
+// config.ts 和云函数中的 backupSystemVersion 是独立的备份系统版本号
+// 只有在备份系统架构有重大变更时才更新，普通版本发布不修改此值
 
-// 更新云函数中的BACKUP_SYSTEM_VERSION
-function updateCloudFunctions(version) {
-  const cloudFunctions = ['backup', 'restore', 'cleanup'];
-  cloudFunctions.forEach(func => {
-    const filePath = path.join(CLOUD_FUNCTIONS_PATH, func, 'index.js');
-    if (fs.existsSync(filePath)) {
-      let content = fs.readFileSync(filePath, 'utf8');
-      content = content.replace(
-        /const BACKUP_SYSTEM_VERSION\s*=\s*['"][^'"]*['"]/,
-        `const BACKUP_SYSTEM_VERSION = 'v${version}'`
-      );
-      fs.writeFileSync(filePath, content);
-      console.log(`✅ cloudfunctions/${func}/index.js 已更新`);
-    }
-  });
-}
 
 // 同步changelog到utils/changelog.ts
 function syncChangelogToTs() {
@@ -310,8 +286,6 @@ async function main() {
   updatePackageJson(version);
   updateProjectConfig(version);
   updateVersionInfo(version);
-  updateConfigTs(version);
-  updateCloudFunctions(version);
   syncChangelogToTs();
 
   console.log('\n🎉 版本发布完成！');
