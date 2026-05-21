@@ -6,6 +6,7 @@
   "scripts": {
     "sync-changelog": "node sync_changelog.js",
     "update-version": "node version-manager.js",
+    "release": "node release.js",
     "tsc:check": "tsc --noEmit",
     "build": "tsc --noEmit && node version-manager.js && node sync_changelog.js",
     "dev": "node version-manager.js && node sync_changelog.js",
