@@ -38,6 +38,27 @@ interface PeriodData {
   weeks: Record<string, number[]>;
 }
 
+// 核心统计数据计算接口
+interface StatisticsResult {
+  shiftsInRange: Record<string, unknown>[];
+  filteredSchedules: FilteredSchedule[];
+  totalHours: number;
+  workDays: number;
+  dayShifts: number;
+  nightShifts: number;
+  offDays: number;
+  dayCount: number;
+}
+
+// 进度统计数据计算接口
+interface ProgressStats {
+  standardHours: number;
+  hourDifference: number;
+  differenceText: string;
+  progressText: string;
+  hourDifferenceWithSign: string;
+}
+
 Page({
   formatDate,
   getWeekday,
@@ -332,16 +353,197 @@ Page({
 
   preventBubble(): void {},
 
-  calculateStatistics(forceRefresh = false): void {
-    const { startDate, endDate, customHours, dailyStandardHours } = this.data;
-
-    if (!startDate || !endDate) return;
+  /**
+   * 验证日期范围的合法性
+   * @param startDate 开始日期
+   * @param endDate 结束日期
+   * @returns 验证是否通过
+   */
+  validateDateRange(startDate: string, endDate: string): boolean {
+    if (!startDate || !endDate) {
+      return false;
+    }
 
     if (new Date(startDate) > new Date(endDate)) {
       wx.showToast({
         title: '开始日期不能晚于结束日期',
         icon: 'none'
       });
+      return false;
+    }
+
+    return true;
+  },
+
+  /**
+   * 判断是否应该使用缓存
+   */
+  shouldUseCache(forceRefresh: boolean, currentShiftsHash: string, currentDateRange: string): boolean {
+    const cache = (this as unknown as Record<string, unknown>)._cache as Record<string, unknown>;
+    return !forceRefresh &&
+           (cache?.lastShiftsHash as string) === currentShiftsHash &&
+           (cache?.lastDateRange as string) === currentDateRange &&
+           !!cache?.lastStatistics;
+  },
+
+  /**
+   * 从缓存加载统计数据
+   */
+  loadFromCache(): void {
+    const cache = (this as unknown as Record<string, unknown>)._cache as Record<string, unknown>;
+    (this as unknown as Record<string, unknown>)._allSchedules = (cache as unknown as Record<string, unknown>)._allSchedules || [];
+
+    this._initVirtualScrollParams();
+    const initialSlice = this._computeVisibleSlice(0);
+
+    const cachedData = Object.assign({}, cache.lastStatistics, {
+      filteredSchedules: initialSlice.items,
+      visibleSchedules: initialSlice.items,
+      listTopPadding: initialSlice.topPadding,
+      listBottomPadding: initialSlice.bottomPadding,
+      listTotalCount: (this as unknown as Record<string, unknown>)._allSchedules.length
+    });
+
+    this.setData(cachedData);
+    this.updateAllCharts();
+  },
+
+  /**
+   * 保存统计数据到缓存
+   */
+  saveToCache(currentShiftsHash: string, currentDateRange: string, newData: Record<string, unknown>, filteredSchedules: FilteredSchedule[]): void {
+    const cacheStore = (this as unknown as Record<string, unknown>)._cache as Record<string, unknown>;
+    cacheStore.lastShiftsHash = currentShiftsHash;
+    cacheStore.lastDateRange = currentDateRange;
+    cacheStore.lastStatistics = newData;
+    cacheStore._allSchedules = filteredSchedules;
+  },
+
+  /**
+   * 核心统计计算 - 计算班次和工时数据
+   */
+  computeStatistics(startDate: string, endDate: string, allShifts: Record<string, unknown>): StatisticsResult {
+    const shiftsInRange: Record<string, unknown>[] = [];
+    let totalHours = 0;
+    let workDays = 0;
+    let dayShifts = 0;
+    let nightShifts = 0;
+    let offDays = 0;
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const dayCount = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    const filteredSchedules: FilteredSchedule[] = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = this.formatDate(d);
+      const shiftData = allShifts[dateStr] as Record<string, unknown> | undefined;
+
+      if (shiftData) {
+        const shift = {
+          date: dateStr,
+          ...shiftData
+        };
+        shiftsInRange.push(shift);
+        totalHours += parseFloat(shiftData.workHours as string) || 0;
+
+        const shiftType = shiftData.type as string;
+        if (shiftType === '白天班') {
+          workDays++;
+          dayShifts++;
+        } else if (shiftType === '跨夜班') {
+          workDays++;
+          nightShifts++;
+        } else if (shiftType === '休息日') {
+          offDays++;
+        }
+
+        filteredSchedules.push({
+          date: dateStr,
+          day: this.formatDayDisplay(dateStr),
+          weekday: this.getWeekday(dateStr),
+          shiftType: shiftType,
+          shiftName: (shiftData.name as string) || '',
+          workHours: (shiftData.workHours as string) || '--:--'
+        });
+      } else {
+        filteredSchedules.push({
+          date: dateStr,
+          day: this.formatDayDisplay(dateStr),
+          weekday: this.getWeekday(dateStr),
+          shiftType: '休息日',
+          shiftName: '',
+          workHours: '--:--'
+        });
+        offDays++;
+      }
+    }
+
+    return {
+      shiftsInRange,
+      filteredSchedules,
+      totalHours,
+      workDays,
+      dayShifts,
+      nightShifts,
+      offDays,
+      dayCount
+    };
+  },
+
+  /**
+   * 进度统计计算 - 计算标准工时和进度信息
+   */
+  computeProgressStats(totalHours: number, dayCount: number, customHours: number, dailyStandardHours: number): ProgressStats {
+    let standardHours = 0;
+
+    if (dayCount === 7) {
+      standardHours = customHours;
+    } else {
+      standardHours = dayCount * dailyStandardHours;
+    }
+
+    const hourDifference = totalHours - standardHours;
+    let differenceText = '';
+    if (hourDifference > 0) {
+      differenceText = `超额 +${hourDifference.toFixed(1)} 小时`;
+    } else if (hourDifference < 0) {
+      differenceText = `差额 ${hourDifference.toFixed(1)} 小时`;
+    } else {
+      differenceText = '工时正好';
+    }
+
+    const progressPercent = standardHours > 0 ? (totalHours / standardHours * 100).toFixed(1) : '0.0';
+    const progressStatus = totalHours >= standardHours ? '已完成' : '进行中';
+    const progressText = `${progressStatus} ${progressPercent}%`;
+
+    const hourDifferenceWithSign = hourDifference > 0 ? `+${hourDifference.toFixed(1)}` : hourDifference.toFixed(1);
+
+    return {
+      standardHours,
+      hourDifference,
+      differenceText,
+      progressText,
+      hourDifferenceWithSign
+    };
+  },
+
+  /**
+   * 更新所有图表数据
+   */
+  updateAllCharts(): void {
+    this.updateChartData();
+    this.calculateCumulativeStats();
+    wx.nextTick(() => {
+      this.drawPieChart();
+    });
+  },
+
+  calculateStatistics(forceRefresh = false): void {
+    const { startDate, endDate, customHours, dailyStandardHours } = this.data;
+
+    // 1. 验证日期范围
+    if (!this.validateDateRange(startDate, endDate)) {
       return;
     }
 
@@ -352,160 +554,72 @@ Page({
       const currentShiftsHash = calculateHash(JSON.stringify(allShifts));
       const currentDateRange = `${startDate}_${endDate}_${chartTimeUnit}_${customHours}`;
 
+      // 确保缓存对象存在
       const cache = (this as unknown as Record<string, unknown>)._cache as Record<string, unknown>;
       if (!cache) {
         (this as unknown as Record<string, unknown>)._cache = { lastShiftsHash: '', lastStatistics: null, lastDateRange: null };
       }
 
-      // 主题变化时强制刷新，不走缓存
-      if (!forceRefresh && (cache?.lastShiftsHash as string) === currentShiftsHash &&
-          (cache?.lastDateRange as string) === currentDateRange &&
-          cache?.lastStatistics) {
-        (this as unknown as Record<string, unknown>)._allSchedules = (cache as unknown as Record<string, unknown>)._allSchedules || [];
-        this._initVirtualScrollParams();
-        const initialSlice = this._computeVisibleSlice(0);
-        const cachedData = Object.assign({}, cache.lastStatistics, {
-          filteredSchedules: initialSlice.items,
-          visibleSchedules: initialSlice.items,
-          listTopPadding: initialSlice.topPadding,
-          listBottomPadding: initialSlice.bottomPadding,
-          listTotalCount: (this as unknown as Record<string, unknown>)._allSchedules.length
-        });
-        this.setData(cachedData);
-        this.updateChartData();
-        this.drawPieChart();
-        this.calculateCumulativeStats();
+      // 2. 检查缓存
+      if (this.shouldUseCache(forceRefresh, currentShiftsHash, currentDateRange)) {
+        this.loadFromCache();
         return;
       }
 
-      const shiftsInRange: Record<string, unknown>[] = [];
-      let totalHours = 0;
-      let workDays = 0;
-      let dayShifts = 0;
-      let nightShifts = 0;
-      let offDays = 0;
+      // 3. 计算统计数据
+      const statsResult = this.computeStatistics(startDate, endDate, allShifts);
+      const progressStats = this.computeProgressStats(
+        statsResult.totalHours,
+        statsResult.dayCount,
+        customHours,
+        dailyStandardHours
+      );
 
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      const dayCount = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-
-      const filteredSchedules: FilteredSchedule[] = [];
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const dateStr = this.formatDate(d);
-        const shiftData = allShifts[dateStr] as Record<string, unknown> | undefined;
-
-        if (shiftData) {
-          const shift = {
-            date: dateStr,
-            ...shiftData
-          };
-          shiftsInRange.push(shift);
-          totalHours += parseFloat(shiftData.workHours as string) || 0;
-
-          const shiftType = shiftData.type as string;
-          if (shiftType === '白天班') {
-            workDays++;
-            dayShifts++;
-          } else if (shiftType === '跨夜班') {
-            workDays++;
-            nightShifts++;
-          } else if (shiftType === '休息日') {
-            offDays++;
-          }
-
-          filteredSchedules.push({
-            date: dateStr,
-            day: this.formatDayDisplay(dateStr),
-            weekday: this.getWeekday(dateStr),
-            shiftType: shiftType,
-            shiftName: (shiftData.name as string) || '',
-            workHours: (shiftData.workHours as string) || '--:--'
-          });
-        } else {
-          filteredSchedules.push({
-            date: dateStr,
-            day: this.formatDayDisplay(dateStr),
-            weekday: this.getWeekday(dateStr),
-            shiftType: '休息日',
-            shiftName: '',
-            workHours: '--:--'
-          });
-          offDays++;
-        }
-      }
-
-      let standardHours = 0;
-
-      if (dayCount === 7) {
-        standardHours = customHours;
-      } else {
-        standardHours = dayCount * dailyStandardHours;
-      }
-
-      const hourDifference = totalHours - standardHours;
-      let differenceText = '';
-      if (hourDifference > 0) {
-        differenceText = `超额 +${hourDifference.toFixed(1)} 小时`;
-      } else if (hourDifference < 0) {
-        differenceText = `差额 ${hourDifference.toFixed(1)} 小时`;
-      } else {
-        differenceText = '工时正好';
-      }
-
-      const progressPercent = standardHours > 0 ? (totalHours / standardHours * 100).toFixed(1) : '0.0';
-      const progressStatus = totalHours >= standardHours ? '已完成' : '进行中';
-      const progressText = `${progressStatus} ${progressPercent}%`;
-
-      const hourDifferenceWithSign = hourDifference > 0 ? `+${hourDifference.toFixed(1)}` : hourDifference.toFixed(1);
-
-      (this as unknown as Record<string, unknown>)._allSchedules = filteredSchedules;
+      // 4. 初始化虚拟滚动
+      (this as unknown as Record<string, unknown>)._allSchedules = statsResult.filteredSchedules;
       this._initVirtualScrollParams();
       const initialSlice = this._computeVisibleSlice(0);
 
+      // 5. 构建更新数据
       const newData: Record<string, unknown> = {
-        shifts: shiftsInRange,
+        shifts: statsResult.shiftsInRange,
         filteredSchedules: initialSlice.items,
         visibleSchedules: initialSlice.items,
         listTopPadding: initialSlice.topPadding,
         listBottomPadding: initialSlice.bottomPadding,
-        listTotalCount: filteredSchedules.length,
-        totalHours: totalHours.toFixed(1),
-        standardHours: standardHours.toFixed(1),
-        hourDifference: hourDifference.toFixed(1),
-        hourDifferenceWithSign: hourDifferenceWithSign,
-        differenceText: differenceText,
-        progressText: progressText,
+        listTotalCount: statsResult.filteredSchedules.length,
+        totalHours: statsResult.totalHours.toFixed(1),
+        standardHours: progressStats.standardHours.toFixed(1),
+        hourDifference: progressStats.hourDifference.toFixed(1),
+        hourDifferenceWithSign: progressStats.hourDifferenceWithSign,
+        differenceText: progressStats.differenceText,
+        progressText: progressStats.progressText,
         statistics: {
-          totalDays: dayCount,
-          workDays: workDays,
-          dayShifts: dayShifts,
-          nightShifts: nightShifts,
-          offDays: offDays,
-          totalHours: totalHours.toFixed(1),
-          hourDifference: hourDifference.toFixed(1),
-          hourDifferenceWithSign: hourDifferenceWithSign
+          totalDays: statsResult.dayCount,
+          workDays: statsResult.workDays,
+          dayShifts: statsResult.dayShifts,
+          nightShifts: statsResult.nightShifts,
+          offDays: statsResult.offDays,
+          totalHours: statsResult.totalHours.toFixed(1),
+          hourDifference: progressStats.hourDifference.toFixed(1),
+          hourDifferenceWithSign: progressStats.hourDifferenceWithSign
         }
       };
 
-      const heatmapResult = this.generateHeatmapData(filteredSchedules);
+      // 6. 生成热力图数据
+      const heatmapResult = this.generateHeatmapData(statsResult.filteredSchedules);
       newData.heatmapWeeks = heatmapResult.weeks;
       newData.heatmapCellSizeRpx = heatmapResult.cellSizeRpx;
       newData.heatmapGapRpx = heatmapResult.gapRpx;
       newData.heatmapColumnsPerRow = heatmapResult.columnsPerRow;
 
-      const cacheStore = (this as unknown as Record<string, unknown>)._cache as Record<string, unknown>;
-      cacheStore.lastShiftsHash = currentShiftsHash;
-      cacheStore.lastDateRange = currentDateRange;
-      cacheStore.lastStatistics = newData;
-      cacheStore._allSchedules = filteredSchedules;
+      // 7. 保存缓存
+      this.saveToCache(currentShiftsHash, currentDateRange, newData, statsResult.filteredSchedules);
 
+      // 8. 更新UI和图表
       this.setData(newData);
-      this.updateChartData();
-      this.calculateCumulativeStats();
-      wx.nextTick(() => {
-        this.drawPieChart();
-      });
+      this.updateAllCharts();
+
     } catch (e) {
       console.error('计算统计数据失败', e);
       wx.showToast({
