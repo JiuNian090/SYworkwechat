@@ -90,6 +90,7 @@ Page({
     lastLocalUpdate: 0,
     backupStatus: null as BackupStatus | null,
     lastSyncHash: '',
+    lastSyncTime: 0,
     shiftColor: '#07c160',
     shiftGlowColor: 'rgba(7, 193, 96, 0.6)',
     savedAccounts: [] as SavedAccount[],
@@ -265,6 +266,11 @@ Page({
       lastSyncHash = wx.getStorageSync('lastSyncHash') || '';
     } catch (e) {}
 
+    let lastSyncTime = 0;
+    try {
+      lastSyncTime = store.getState('lastSyncTime') as number || 0;
+    } catch (e) {}
+
     this.setData({
       username: avatarInfo.username as string,
       avatarText: avatarInfo.avatarText as string,
@@ -280,6 +286,7 @@ Page({
       savedAccounts: savedAccounts,
       autoRestoreMap: autoRestoreMap,
       lastSyncHash: lastSyncHash,
+      lastSyncTime: lastSyncTime,
       backupStatus: cloudLoggedIn
         ? { type: 'checking', label: STATUS_TEXT.CHECKING }
         : { type: 'unbacked', label: STATUS_TEXT.NOT_LOGGED_IN }
@@ -874,13 +881,13 @@ Page({
             const syncHash = this.computeLocalHash();
             wx.setStorageSync('lastSyncHash', syncHash);
             const now = Date.now();
-            store.setState({ _lastDataModified: now, lastBackupTime: now }, ['_lastDataModified', 'lastBackupTime']);
+            store.setState({ _lastDataModified: now, lastBackupTime: now, lastSyncTime: now }, ['_lastDataModified', 'lastBackupTime', 'lastSyncTime']);
             this.updateLocalUpdateTime();
 
-            // 直接缓存为 SYNCED，不依赖云端查询
             const syncTimeStr = this.formatBackupTime(new Date(now).toISOString());
             this.setData({
               lastSyncHash: syncHash,
+              lastSyncTime: now,
               lastCloudCheckTime: now,
               cachedCloudStatus: {
                 status: 'has_backup',
@@ -921,17 +928,18 @@ Page({
             const syncHash = this.computeLocalHash();
             wx.setStorageSync('lastSyncHash', syncHash);
             const now = Date.now();
-            store.setState({ _lastDataModified: now, lastBackupTime: now, lastRestoreTime: now }, ['_lastDataModified', 'lastBackupTime', 'lastRestoreTime']);
+            store.setState({ _lastDataModified: now, lastRestoreTime: now, lastSyncTime: now }, ['_lastDataModified', 'lastRestoreTime', 'lastSyncTime']);
             this.updateLocalUpdateTime();
 
-            // 直接缓存为 SYNCED，不依赖云端查询
             const syncTimeStr = this.formatBackupTime(new Date(now).toISOString());
+            const existingCache = this.data.cachedCloudStatus as Record<string, unknown> | null;
             this.setData({
               lastSyncHash: syncHash,
+              lastSyncTime: now,
               lastCloudCheckTime: now,
               cachedCloudStatus: {
                 status: 'has_backup',
-                time: new Date(now).toISOString(),
+                time: existingCache?.time as string || new Date(now).toISOString(),
                 hash: syncHash
               },
               backupStatus: {
@@ -1009,16 +1017,11 @@ Page({
     }
     const localHash = this.computeLocalHash();
     const effectiveHash = (cache.hash as string) || '';
-    const { lastLocalUpdate, lastSyncHash } = this.data;
-    const backupTime = cache.time ? new Date(cache.time as string).getTime() : 0;
+    const { lastLocalUpdate, lastSyncHash, lastSyncTime } = this.data;
+    const cloudBackupTime = cache.time ? new Date(cache.time as string).getTime() : 0;
 
-    // 核心原则：只要 lastSyncHash 存在且 localHash === lastSyncHash，
-    // 就说明自上次备份以来本地数据没有变动，状态必须是 "已同步"。
-    // 云端 hash 仅作快速匹配用，不作为唯一判定依据 ——
-    // JSON.stringify 的 key 顺序差异（wx.getStorageSync 与 MongoDB BSON 反序列化之间）
-    // 可能导致相同数据计算出不同 hash，但 localHash vs lastSyncHash 永远是同一环境下的一致性比较。
     if (lastSyncHash && localHash === lastSyncHash) {
-      const syncTime = backupTime || lastLocalUpdate;
+      const syncTime = lastSyncTime || cloudBackupTime || lastLocalUpdate;
       const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
         backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED + (syncTimeStr ? ' ' + syncTimeStr : '') }
@@ -1026,12 +1029,8 @@ Page({
       return;
     }
 
-    // localHash !== lastSyncHash：本地确实有变动
-    // 再尝试用云端 hash 做快速匹配（云端刚完成备份的情况）
-    // 注意：如果 lastSyncHash 为空，说明设备从未执行过同步操作，
-    // 即使 localHash === effectiveHash，也应该显示"云端最新"，而不是"已同步"
     if (effectiveHash && localHash === effectiveHash && lastSyncHash) {
-      const syncTime = backupTime || lastLocalUpdate;
+      const syncTime = lastSyncTime || cloudBackupTime || lastLocalUpdate;
       const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
         backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED + (syncTimeStr ? ' ' + syncTimeStr : '') }
@@ -1039,11 +1038,10 @@ Page({
       return;
     }
 
-    // 本地有变动且云端 hash 不匹配 → 按时间判断谁更新
     const localTimeStr = lastLocalUpdate ? this.formatBackupTime(new Date(lastLocalUpdate).toISOString()) : '';
     const cloudTimeStr = cache.time ? this.formatBackupTime(cache.time as string) : '';
 
-    if (!cache.time || (backupTime && lastLocalUpdate > backupTime)) {
+    if (!cache.time || (cloudBackupTime && lastLocalUpdate > cloudBackupTime)) {
       this.setData({
         backupStatus: { type: 'local_newer', label: STATUS_TEXT.LOCAL_NEWER + (localTimeStr ? ' ' + localTimeStr : '') }
       });

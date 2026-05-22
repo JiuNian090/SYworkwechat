@@ -18,6 +18,7 @@ const STORAGE_KEYS: Record<string, string> = {
   autoRestoreMap: 'autoRestoreMap',
   lastBackupTime: 'lastBackupTime',
   lastRestoreTime: 'lastRestoreTime',
+  lastSyncTime: 'lastSyncTime',
   _lastDataModified: '_lastDataModified'
 };
 
