@@ -10,6 +10,14 @@ const changelogData: ChangelogData = {
 
 
 
+
+## v4.2.0 (2026-05-22)
+- 🎉 新增 lastSyncTime 跟踪，并用于同步状态显示
+- 🎉 在个人中心页面添加 lastSyncTime 数据字段
+- ⚡ 重构同步状态计算逻辑，使用 lastSyncTime 替代旧的备份时间逻辑
+- ✨ 在个人中心页面初始化时加载和渲染 lastSyncTime
+- ✨ 更新 store 状态以在同步/备份操作期间持久化 lastSyncTime
+
 ## v4.1.9 (2026-05-22)
 - 🔧 修复未同步过的设备同步状态判断逻辑
 
