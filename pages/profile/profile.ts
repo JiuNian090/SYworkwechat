@@ -1028,7 +1028,9 @@ Page({
 
     // localHash !== lastSyncHash：本地确实有变动
     // 再尝试用云端 hash 做快速匹配（云端刚完成备份的情况）
-    if (effectiveHash && localHash === effectiveHash) {
+    // 注意：如果 lastSyncHash 为空，说明设备从未执行过同步操作，
+    // 即使 localHash === effectiveHash，也应该显示"云端最新"，而不是"已同步"
+    if (effectiveHash && localHash === effectiveHash && lastSyncHash) {
       const syncTime = backupTime || lastLocalUpdate;
       const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
