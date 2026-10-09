@@ -90,6 +90,7 @@ exports.main = async (event, context) => {
           data: {
             shiftTemplates: dataBackup.shiftTemplates,
             shifts: dataBackup.shifts,
+            avatarInfo: dataBackup.avatarInfo || null,
             images: imageBackup.images || [],
             imageWeekRelation: imageBackup.imageWeekRelation || {},
             backupIndex: dataBackup.backupIndex || {},

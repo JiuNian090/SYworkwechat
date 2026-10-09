@@ -283,7 +283,7 @@ exports.main = async (event, context) => {
 
       // ========== completeBackup ==========
       case 'completeBackup': {
-        const { shiftTemplates, shifts, images, imageWeekRelation, backupIndex, version = 'v1.0.0' } = data;
+        const { shiftTemplates, shifts, images, imageWeekRelation, backupIndex, avatarInfo, version = 'v1.0.0' } = data;
 
         let totalChanges = false;
         let deletedImageCount = 0;
@@ -298,11 +298,13 @@ exports.main = async (event, context) => {
         const versionComparison = compareVersions(version, existingVersion);
 
         // 2. 备份数据集合（全量替换）
+        // set 会整体替换文档，avatarInfo 缺省时回填云端已有值，避免旧客户端把头像备份覆盖掉
         const dataBackupData = {
           userId,
           shiftTemplates,
           shifts,
           backupIndex: backupIndex || {},
+          avatarInfo: avatarInfo || (existingDataBackup.data[0] && existingDataBackup.data[0].avatarInfo) || null,
           backupSystemVersion: version,
           backupTime: new Date(),
           updateTime: new Date()
@@ -391,7 +393,7 @@ exports.main = async (event, context) => {
 
       // ========== backup (旧版兼容) ==========
       case 'backup': {
-        const { shiftTemplates, shifts, images, imageWeekRelation, backupIndex, version = 'v1.0.0' } = data;
+        const { shiftTemplates, shifts, images, imageWeekRelation, backupIndex, avatarInfo, version = 'v1.0.0' } = data;
 
         let totalChanges = false;
         let deletedImageCount = 0;
@@ -404,11 +406,13 @@ exports.main = async (event, context) => {
         }
         const versionComparison = compareVersions(version, existingVersion);
 
+        // set 会整体替换文档，avatarInfo 缺省时回填云端已有值，避免旧客户端把头像备份覆盖掉
         const dataBackupData = {
           userId,
           shiftTemplates,
           shifts,
           backupIndex: backupIndex || {},
+          avatarInfo: avatarInfo || (existingDataBackup.data[0] && existingDataBackup.data[0].avatarInfo) || null,
           backupSystemVersion: version,
           backupTime: new Date(),
           updateTime: new Date()

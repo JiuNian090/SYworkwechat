@@ -53,8 +53,10 @@ class DataClearManager {
               wx.removeStorageSync(STORAGE_KEYS[key] || key);
             });
 
-            // 清除 store 中的状态
+            // 清除 store 中的状态（业务数据同步清理，否则 plan 页仍能读到内存里的旧模板）
             store.removeState(loginKeys, loginKeys);
+            const dataKeys = ['shifts', 'shiftTemplates', 'customWeeklyHours'];
+            store.removeState(dataKeys, dataKeys);
 
             wx.hideLoading();
 

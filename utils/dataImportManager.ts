@@ -26,10 +26,67 @@ interface ImportData {
   shiftTemplates: unknown[];
   shifts: Record<string, unknown>;
   customWeeklyHours: number;
+  hasCustomWeeklyHours: boolean;
+}
+
+interface ImportPayload {
+  shiftTemplates?: unknown[];
+  shifts?: Record<string, unknown>;
+  customWeeklyHours?: number;
 }
 
 class DataImportManager {
   constructor() {
+  }
+
+  normalizePayload(data: Record<string, unknown>, fileName: string): ImportPayload {
+    const payload: ImportPayload = {};
+
+    const isShiftFile: boolean = fileName === '排班数据.json';
+    const isTemplateFile: boolean = fileName === '班次模板.json';
+
+    if (!isShiftFile) {
+      if (Array.isArray(data.shiftTemplates)) {
+        payload.shiftTemplates = data.shiftTemplates as unknown[];
+      } else if (Array.isArray(data.data)) {
+        payload.shiftTemplates = data.data as unknown[];
+      }
+    }
+
+    if (!isTemplateFile) {
+      const shifts: unknown = data.shifts;
+      if (shifts && typeof shifts === 'object' && !Array.isArray(shifts)) {
+        payload.shifts = shifts as Record<string, unknown>;
+      }
+    }
+
+    if (typeof data.customWeeklyHours === 'number') {
+      payload.customWeeklyHours = data.customWeeklyHours;
+    }
+
+    return payload;
+  }
+
+  applyPayload(payload: ImportPayload): boolean {
+    const updates: Record<string, unknown> = {};
+
+    if (Array.isArray(payload.shiftTemplates)) {
+      updates.shiftTemplates = payload.shiftTemplates;
+    }
+    if (payload.shifts && typeof payload.shifts === 'object' && !Array.isArray(payload.shifts)) {
+      updates.shifts = payload.shifts;
+    }
+    if (typeof payload.customWeeklyHours === 'number') {
+      updates.customWeeklyHours = payload.customWeeklyHours;
+    }
+
+    const keys: string[] = Object.keys(updates);
+    if (keys.length === 0) {
+      return false;
+    }
+
+    store.setState(updates, keys);
+    return true;
   }
 
   importData(callback?: ImportCallback): void {
@@ -79,49 +136,13 @@ class DataImportManager {
           const data: Record<string, unknown> = JSON.parse(readRes.data as string);
 
           const fileName: string = filePath.split('/').pop() || '';
-          let importSuccess: boolean = false;
 
-          if (fileName === '班次模板.json') {
-            const shiftTemplatesData: unknown = (data as Record<string, unknown>).data || (data as Record<string, unknown>).shiftTemplates;
-            if (Array.isArray(shiftTemplatesData)) {
-              wx.setStorageSync('shiftTemplates', shiftTemplatesData);
-              importSuccess = true;
-            } else {
-              throw new Error('班次模板数据格式不正确');
-            }
-          }
-          else if (fileName === '排班数据.json') {
-            const shiftsData: unknown = (data as Record<string, unknown>).shifts;
-            if (shiftsData && typeof shiftsData === 'object') {
-              wx.setStorageSync('shifts', shiftsData);
-              if ((data as Record<string, unknown>).customWeeklyHours !== undefined) {
-                wx.setStorageSync('customWeeklyHours', (data as Record<string, unknown>).customWeeklyHours);
-              }
-              importSuccess = true;
-            } else {
-              throw new Error('排班数据格式不正确');
-            }
-          }
-          else {
-            if (!data.hasOwnProperty('shiftTemplates') || !data.hasOwnProperty('shifts')) {
-              throw new Error('数据格式不正确');
-            }
-
-            if (data.shiftTemplates) {
-              wx.setStorageSync('shiftTemplates', data.shiftTemplates);
-            }
-            if (data.shifts) {
-              wx.setStorageSync('shifts', data.shifts);
-            }
-            if (data.customWeeklyHours !== undefined) {
-              wx.setStorageSync('customWeeklyHours', data.customWeeklyHours);
-            }
-            importSuccess = true;
+          const payload: ImportPayload = this.normalizePayload(data, fileName);
+          if (!this.applyPayload(payload)) {
+            throw new Error('数据格式不正确');
           }
 
-          if (importSuccess) {
-            this.finishImport(callback);
-          }
+          this.finishImport(callback);
         } catch (e) {
           wx.hideLoading();
           console.error('解析数据失败', e);
@@ -175,7 +196,8 @@ class DataImportManager {
             const importData: ImportData = {
               shiftTemplates: [],
               shifts: {},
-              customWeeklyHours: 35
+              customWeeklyHours: 35,
+              hasCustomWeeklyHours: false
             };
 
             const processShiftTemplates = (): Promise<void> => {
@@ -211,6 +233,7 @@ class DataImportManager {
                       }
                       if (data.customWeeklyHours !== undefined) {
                         importData.customWeeklyHours = data.customWeeklyHours;
+                        importData.hasCustomWeeklyHours = true;
                       }
                     } catch (e) {
                       console.error('解析排班数据.json失败', e);
@@ -239,6 +262,7 @@ class DataImportManager {
                       }
                       if (data.customWeeklyHours !== undefined) {
                         importData.customWeeklyHours = data.customWeeklyHours;
+                        importData.hasCustomWeeklyHours = true;
                       }
                     } catch (e) {
                       console.error('解析data.json失败', e);
@@ -282,15 +306,11 @@ class DataImportManager {
               processDataJson(),
               processImageRelation()
             ]).then(() => {
-              if (importData.shiftTemplates.length > 0) {
-                wx.setStorageSync('shiftTemplates', importData.shiftTemplates);
-              }
-              if (Object.keys(importData.shifts).length > 0) {
-                wx.setStorageSync('shifts', importData.shifts);
-              }
-              if (importData.customWeeklyHours !== undefined) {
-                wx.setStorageSync('customWeeklyHours', importData.customWeeklyHours);
-              }
+              this.applyPayload({
+                shiftTemplates: importData.shiftTemplates.length > 0 ? importData.shiftTemplates : undefined,
+                shifts: Object.keys(importData.shifts).length > 0 ? importData.shifts : undefined,
+                customWeeklyHours: importData.hasCustomWeeklyHours ? importData.customWeeklyHours : undefined
+              });
 
               const imageDir = zip.folder('images') || zip.folder('image');
               if (imageDir) {

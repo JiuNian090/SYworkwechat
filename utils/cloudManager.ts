@@ -840,18 +840,22 @@ class CloudManager {
       if (restoreResult.result.success) {
         const backupData = restoreResult.result.data as Record<string, unknown>;
 
-        wx.removeStorageSync('shifts');
-        wx.removeStorageSync('shiftTemplates');
         wx.removeStorageSync('statData');
         wx.removeStorageSync('statLastModified');
         wx.removeStorageSync('standardHours');
         wx.removeStorageSync('imagesLastModified');
 
+        // shiftTemplates / shifts 统一交给 store 写入：store.setState 会同时更新内存状态与本地存储，
+        // 否则 plan 页（只读 store）在恢复后仍展示旧模板
+        const restoredData: Record<string, unknown> = {};
         if (backupData.shiftTemplates) {
-          wx.setStorageSync('shiftTemplates', backupData.shiftTemplates);
+          restoredData.shiftTemplates = backupData.shiftTemplates;
         }
         if (backupData.shifts) {
-          wx.setStorageSync('shifts', backupData.shifts);
+          restoredData.shifts = backupData.shifts;
+        }
+        if (Object.keys(restoredData).length > 0) {
+          store.setState(restoredData, Object.keys(restoredData));
         }
         if (backupData.avatarInfo) {
           const avatarInfo = backupData.avatarInfo as Record<string, string>;
