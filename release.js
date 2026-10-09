@@ -90,6 +90,20 @@ function getLatestTag() {
   }
 }
 
+// 版本日期：取本版本最后一次提交的日期（技能规则：不得使用执行任务当天的日期）
+function getReleaseDate() {
+  try {
+    const d = execSync('git log -1 --format=%ad --date=short', { encoding: 'utf8', cwd: PROJECT_ROOT }).trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+      return d;
+    }
+  } catch (e) {
+    console.warn('读取提交日期失败，回退为当前日期:', e.message);
+  }
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
 // 分类提交信息
 function categorizeCommits(commits) {
   const categorized = {};
@@ -272,9 +286,8 @@ async function main() {
   // 分类提交
   const categorized = categorizeCommits(commits);
 
-  // 生成日期
-  const today = new Date();
-  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  // 生成日期：取本版本最后一次提交的日期（而非任务执行当天），对齐 .agents/rules/version-management-rules.md
+  const dateStr = getReleaseDate();
 
   // 生成更新日志内容
   const changelogContent = generateUserFriendlyChangelog(categorized, version, dateStr);
