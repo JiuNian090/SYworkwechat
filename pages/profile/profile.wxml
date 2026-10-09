@@ -136,6 +136,9 @@
         </view>
       </view>
       <view class="section-body">
+        <view class="section-hint">
+          <text class="hint-text">跨设备同步（不依赖云环境）：导出数据（勾选排班图片会打包成 zip）→ 用微信发给对方 → 对方点“导入数据”。</text>
+        </view>
         <view class="btn-grid">
           <view class="grid-btn export-btn" bindtap="showDataTypeModal">
             <text class="btn-icon">📤</text>
@@ -254,6 +257,10 @@
       <view class="modal-close" bindtap="hideDataTypeModal">
         <text class="close-icon">✕</text>
       </view>
+    </view>
+    <view class="select-actions">
+      <text class="select-action" bindtap="selectAllDataTypes">全选</text>
+      <text class="select-action" bindtap="clearDataTypeSelection">清空</text>
     </view>
     <scroll-view class="modal-body" scroll-y enhanced show-scrollbar="false">
       <view class="select-card-list">

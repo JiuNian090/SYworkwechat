@@ -582,6 +582,29 @@ page {
   opacity: 0.9;
 }
 
+/* ========== 区块说明与批量选择 ========== */
+.section-hint {
+  padding: 0 4rpx 16rpx;
+}
+
+.hint-text {
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #999;
+}
+
+.select-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 32rpx;
+  padding: 0 8rpx 16rpx;
+}
+
+.select-action {
+  font-size: 26rpx;
+  color: #07c160;
+}
+
 .btn-icon {
   font-size: 40rpx;
   margin-bottom: 12rpx;

@@ -379,6 +379,30 @@ Page({
     });
   },
 
+  selectAllDataTypes(): void {
+    const allDataTypes = this.data.dataTypes.map(type => ({
+      ...type,
+      checked: true
+    }));
+
+    this.setData({
+      dataTypes: allDataTypes,
+      selectedDataTypes: allDataTypes.map(type => type.id)
+    });
+  },
+
+  clearDataTypeSelection(): void {
+    const clearedDataTypes = this.data.dataTypes.map(type => ({
+      ...type,
+      checked: false
+    }));
+
+    this.setData({
+      dataTypes: clearedDataTypes,
+      selectedDataTypes: []
+    });
+  },
+
   hideDataTypeModal(): void {
     this.setData({ showDataTypeModal: false });
   },

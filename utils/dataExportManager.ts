@@ -194,9 +194,14 @@ class DataExportManager {
 
             wx.showModal({
               title: '导出成功',
-              content: '数据已导出为JSON文件，请点击下方"分享数据"按钮将文件发送给好友',
-              showCancel: false,
-              confirmText: '知道了'
+              content: '数据已导出为JSON文件，是否立即分享给好友或"文件传输助手"？',
+              cancelText: '稍后',
+              confirmText: '立即分享',
+              success: (res: { confirm: boolean }) => {
+                if (res.confirm) {
+                  this.shareFile(filePath, fileName);
+                }
+              }
             });
 
             if (callback) callback({ filePath, fileName });
@@ -400,9 +405,14 @@ class DataExportManager {
 
           wx.showModal({
             title: '导出成功',
-            content: '数据已导出为ZIP文件，请点击下方"分享数据"按钮将文件发送给好友',
-            showCancel: false,
-            confirmText: '知道了'
+            content: '数据已导出为ZIP文件，是否立即分享给好友或"文件传输助手"？',
+            cancelText: '稍后',
+            confirmText: '立即分享',
+            success: (res: { confirm: boolean }) => {
+              if (res.confirm) {
+                this.shareFile(filePath, fileName);
+              }
+            }
           });
 
           if (callback) callback({ filePath, fileName });
