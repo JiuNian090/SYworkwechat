@@ -1155,14 +1155,14 @@ page {
   left: 0;
   right: 0;
   background: var(--card-bg);
-  border-radius: 32rpx 32rpx 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   z-index: 999;
   transform: translateY(100%);
   transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
   max-height: 75vh;
-  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -8rpx 32rpx var(--shadow-color);
 }
 
 .modal-container.show {
@@ -1230,12 +1230,12 @@ page {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #4CAF50;
-  border: 2rpx solid #45a049;
+  background: var(--primary-color);
+  border: 2rpx solid var(--primary-dark);
 }
 
 .modal-header .help-btn:active {
-  background: #45a049;
+  background: var(--primary-dark);
 }
 
 .modal-header .help-icon {
@@ -1253,8 +1253,8 @@ page {
 
 .modal-footer {
   padding: 20rpx 24rpx;
-  border-top: 1rpx solid #f0f0f0;
-  background: #ffffff;
+  border-top: 1rpx solid var(--border-color);
+  background: var(--card-bg);
   flex-shrink: 0;
   display: flex;
   gap: 16rpx;
@@ -1285,7 +1285,7 @@ page {
 }
 
 .btn-cancel {
-  background: #f3f4f6;
+  background: var(--bg-color);
   color: var(--text-secondary);
 }
 
@@ -1295,60 +1295,25 @@ page {
   box-shadow: 0 4rpx 12rpx rgba(52, 211, 153, 0.3);
 }
 
-/* ========== 弹窗内表单卡片样式 ========== */
-.modal-container .form-card {
-  margin: 8rpx 24rpx;
-  padding: 28rpx;
-  background: #ffffff;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
-}
-
-.modal-container .form-card .form-group {
-  padding: 0;
-  margin-bottom: 28rpx;
-}
-
-.modal-container .form-card .form-group:last-child {
-  margin-bottom: 0;
-}
-
-.modal-container .form-card .form-input {
-  height: 84rpx;
+/* ========== 输入框样式 ========== */
+.input-wrapper {
+  background: var(--bg-color);
+  border-radius: var(--radius-md);
+  border: 2rpx solid var(--border-color);
   padding: 0 24rpx;
-  font-size: 30rpx;
-  color: var(--text-primary);
-  background: #f8f9fa;
-  border-radius: 12rpx;
-  border: 2rpx solid #f0f0f0;
+  margin: 0 24rpx;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
-.modal-container .form-card .form-input:focus {
-  background: #ffffff;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
-}
-
-/* ========== 输入框样式 ========== */
-.input-wrapper {
-  background: #f8f9fa;
-  border-radius: 14rpx;
-  border: 2rpx solid #e8e8e8;
-  padding: 4rpx 24rpx;
-  margin: 0 24rpx;
-  transition: all 0.2s ease;
-}
-
 .input-wrapper:focus-within {
   border-color: var(--primary-color);
-  background: #ffffff;
+  background: var(--card-bg);
   box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
 }
 
 .modal-input {
-  height: 80rpx;
+  height: 84rpx;
   font-size: 30rpx;
   color: var(--text-primary);
   background: transparent;
@@ -1366,14 +1331,19 @@ page {
 /* 表单卡片 */
 .form-card {
   margin: 8rpx 24rpx;
+  padding: 28rpx;
   background: var(--card-bg);
-  border-radius: 20rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
 .form-card .form-group {
-  padding: 28rpx 28rpx 24rpx;
+  padding: 0;
+  margin-bottom: 28rpx;
+}
+
+.form-card .form-group:last-child {
   margin-bottom: 0;
 }
 
@@ -1408,7 +1378,7 @@ page {
 
 /* ========== 表单样式 ========== */
 .form-group {
-  margin-bottom: 24rpx;
+  margin-bottom: 28rpx;
 }
 
 .form-group:last-child {
@@ -1420,15 +1390,25 @@ page {
   font-size: 26rpx;
   color: var(--text-secondary);
   margin-bottom: 12rpx;
+  font-weight: 500;
 }
 
 .form-input {
-  height: 80rpx;
+  height: 84rpx;
   background: var(--bg-color);
   border-radius: var(--radius-md);
-  padding: 0 20rpx;
-  font-size: 28rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
   color: var(--text-primary);
+  border: 2rpx solid var(--border-color);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  background: var(--card-bg);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
 }
 
 .password-wrapper {
@@ -1437,12 +1417,23 @@ page {
   align-items: center;
   background: var(--bg-color);
   border-radius: var(--radius-md);
+  border: 2rpx solid var(--border-color);
   padding-right: 20rpx;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.password-wrapper:focus-within {
+  background: var(--card-bg);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
 }
 
 .password-input {
   flex: 1;
   background: transparent;
+  border: none;
+  padding: 0 24rpx;
 }
 
 .password-toggle {
@@ -1467,20 +1458,20 @@ page {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 24rpx;
-  background: #f8f9fa;
-  border-radius: 16rpx;
-  border: 2rpx solid #f0f0f0;
+  padding: 24rpx;
+  background: var(--bg-color);
+  border-radius: var(--radius-md);
+  border: 2rpx solid var(--border-color);
   transition: all 0.2s ease;
 }
 
 .select-card-item:active {
   transform: scale(0.98);
-  background: #f0fdf4;
+  background: rgba(52, 211, 153, 0.08);
 }
 
 .select-card-item.checked {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  background: rgba(52, 211, 153, 0.12);
   border-color: var(--primary-color);
 }
 
@@ -1493,12 +1484,12 @@ page {
 .select-checkbox {
   width: 40rpx;
   height: 40rpx;
-  border: 3rpx solid #d1d5db;
-  border-radius: 10rpx;
+  border: 3rpx solid var(--border-color);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  background: var(--card-bg);
   transition: all 0.25s ease;
   flex-shrink: 0;
 }
@@ -2649,50 +2640,10 @@ page {
   line-height: 1;
 }
 
-/* ========== 表单卡片样式 ========== */
-.form-card {
-  margin: 0 24rpx;
-  padding: 28rpx;
-  background: var(--card-bg);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
-}
-
-/* ========== 表单样式 ========== */
-.form-group {
-  margin-bottom: 28rpx;
-}
-
-.form-group:last-child {
-  margin-bottom: 0;
-}
-
-.form-label {
-  display: block;
-  font-size: 26rpx;
-  color: var(--text-secondary);
-  margin-bottom: 12rpx;
-  font-weight: 500;
-}
-
-.form-input {
-  width: 100%;
-  height: 84rpx;
-  padding: 0 24rpx;
-  font-size: 30rpx;
-  color: var(--text-primary);
-  background: #f8f9fa;
-  border-radius: 12rpx;
-  border: 2rpx solid #f0f0f0;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-.form-input:focus {
-  background: #ffffff;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4rpx rgba(52, 211, 153, 0.1);
-}
+/* ========== 表单样式 ==========
+ * 说明：此处曾重复定义一份 .form-group/.form-label/.form-input（从 user-manage 复制而来），
+ * 会覆盖文件上方的弹窗表单样式且带硬编码颜色，已移除；统一以上方定义为准。
+ * ========== */
 
 .btn-danger {
   background: linear-gradient(135deg, var(--danger-color) 0%, #ef4444 100%);
@@ -2767,13 +2718,13 @@ page {
 .checkbox {
   width: 36rpx;
   height: 36rpx;
-  border: 2rpx solid #d1d5db;
-  border-radius: 8rpx;
+  border: 2rpx solid var(--border-color);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.25s ease;
-  background: #ffffff;
+  background: var(--card-bg);
 }
 
 .checkbox.checked {

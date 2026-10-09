@@ -104,12 +104,6 @@
 <view class="modal-container {{currentModal ? 'show' : ''}}">
   <view class="modal-header">
     <view class="modal-title-wrapper">
-      <text class="modal-title-icon" wx:if="{{currentModal === 'updateNickname'}}">🏷️</text>
-      <text class="modal-title-icon" wx:elif="{{currentModal === 'updatePassword'}}">🔐</text>
-      <text class="modal-title-icon" wx:elif="{{currentModal === 'avatar'}}">🎭</text>
-      <text class="modal-title-icon" wx:elif="{{currentModal === 'switchAccount'}}">🔄</text>
-      <text class="modal-title-icon" wx:elif="{{currentModal === 'login'}}">🔑</text>
-      <text class="modal-title-icon" wx:else>🗑️</text>
       <text class="modal-title" wx:if="{{currentModal === 'updateNickname'}}">修改昵称</text>
       <text class="modal-title" wx:elif="{{currentModal === 'updatePassword'}}">修改密码</text>
       <text class="modal-title" wx:elif="{{currentModal === 'avatar'}}">选择头像</text>

@@ -3,6 +3,28 @@ const { deviceInfo, getPlatformName, isHarmonyOS, supportsFeature, compareVersio
 const config = require('./config');
 const { store } = require('./utils/store');
 
+// 说明：tabBar 的 iconPath / selectedIconPath 不支持 theme.json 的 @主题变量
+// （微信只对 tabBar 的 color / selectedColor / backgroundColor / borderStyle 这类颜色字段支持主题变量），
+// 所以图标随系统主题切换必须走运行时 API：浅色用 *.png，深色用 *2.png（选中态两套共用 *1.png）。
+interface TabBarIconSet {
+  iconPath: string;
+  selectedIconPath: string;
+}
+
+const TAB_BAR_ICONS_LIGHT: TabBarIconSet[] = [
+  { iconPath: 'images/list-add.png', selectedIconPath: 'images/list-add1.png' },
+  { iconPath: 'images/schedule.png', selectedIconPath: 'images/schedule1.png' },
+  { iconPath: 'images/status.png', selectedIconPath: 'images/status1.png' },
+  { iconPath: 'images/me.png', selectedIconPath: 'images/me1.png' }
+];
+
+const TAB_BAR_ICONS_DARK: TabBarIconSet[] = [
+  { iconPath: 'images/list-add2.png', selectedIconPath: 'images/list-add1.png' },
+  { iconPath: 'images/schedule2.png', selectedIconPath: 'images/schedule1.png' },
+  { iconPath: 'images/status2.png', selectedIconPath: 'images/status1.png' },
+  { iconPath: 'images/me2.png', selectedIconPath: 'images/me1.png' }
+];
+
 interface IGlobalData {
   deviceInfo: Record<string, any> | null;
   platform: string | null;
@@ -13,6 +35,12 @@ interface IAppOption {
   [key: string]: any;
   globalData: IGlobalData;
   onLaunch(options: Record<string, any>): void;
+  onShow(): void;
+  initTabBarIcons(): void;
+  bindThemeChange(): void;
+  applyTabBarIcons(isDark: boolean): void;
+  isDarkTheme(): boolean;
+  _themeChangeBound?: boolean;
   initExperienceAnalysis(options: Record<string, any>): void;
   checkSDKVersionCompatibility(): void;
   initCloudAndSync(): Promise<void>;
@@ -36,6 +64,8 @@ App<IAppOption>({
   onLaunch(options: Record<string, any>) {
     this.initDeviceInfo();
 
+    this.initTabBarIcons();
+
     this.setupErrorHandlers();
 
     this.checkSDKVersionCompatibility();
@@ -45,6 +75,55 @@ App<IAppOption>({
     setTimeout(() => {
       this.initCloudAndSync();
     }, 0);
+  },
+
+  onShow() {
+    // tabBar 在 onShow 阶段才确保就绪；从后台回到前台时系统主题也可能已经改变
+    this.initTabBarIcons();
+  },
+
+  initTabBarIcons() {
+    try {
+      this.applyTabBarIcons(this.isDarkTheme());
+      this.bindThemeChange();
+    } catch (e) {
+      console.error('初始化 tabBar 图标失败:', e);
+    }
+  },
+
+  isDarkTheme(): boolean {
+    try {
+      const appBaseInfo = typeof wx.getAppBaseInfo === 'function'
+        ? wx.getAppBaseInfo()
+        : wx.getSystemInfoSync();
+      return (appBaseInfo as unknown as { theme?: string }).theme === 'dark';
+    } catch (e) {
+      return false;
+    }
+  },
+
+  bindThemeChange() {
+    if (this._themeChangeBound || typeof wx.onThemeChange !== 'function') {
+      return;
+    }
+    this._themeChangeBound = true;
+    wx.onThemeChange((res: { theme: string }) => {
+      this.applyTabBarIcons(res.theme === 'dark');
+    });
+  },
+
+  applyTabBarIcons(isDark: boolean) {
+    const icons = isDark ? TAB_BAR_ICONS_DARK : TAB_BAR_ICONS_LIGHT;
+    icons.forEach((icon, index) => {
+      wx.setTabBarItem({
+        index: index,
+        iconPath: icon.iconPath,
+        selectedIconPath: icon.selectedIconPath,
+        fail: (err: WechatMiniprogram.GeneralCallbackResult) => {
+          console.warn(`设置 tabBar 第 ${index + 1} 项图标失败:`, err);
+        }
+      });
+    });
   },
 
   initExperienceAnalysis(options: Record<string, any>) {

@@ -293,7 +293,7 @@ page {
   font-size: 30rpx;
   color: var(--text-primary);
   background: var(--bg-color);
-  border-radius: 12rpx;
+  border-radius: var(--radius-md);
   border: 2rpx solid var(--border-color);
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -310,7 +310,7 @@ page {
   display: flex;
   align-items: center;
   background: var(--bg-color);
-  border-radius: 12rpx;
+  border-radius: var(--radius-md);
   border: 2rpx solid var(--border-color);
   transition: all 0.2s ease;
 }
@@ -358,7 +358,7 @@ page {
   width: 36rpx;
   height: 36rpx;
   border: 2rpx solid var(--border-color);
-  border-radius: 8rpx;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -389,22 +389,22 @@ page {
   text-align: center;
   padding: 32rpx 28rpx;
   margin: 24rpx 24rpx 20rpx;
-  background: linear-gradient(135deg, #fff7e6 0%, #fff9f0 100%);
+  background: var(--warning-bg);
   border-radius: var(--radius-lg);
-  border: 1rpx solid #ffd591;
-  box-shadow: 0 2rpx 12rpx rgba(250, 173, 20, 0.08);
+  border: 1rpx solid var(--warning-border);
+  box-shadow: 0 2rpx 12rpx var(--shadow-color);
 }
 
 .warning-icon-wrapper {
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #faad14, #ffc53d);
+  background: var(--warning-color);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(250, 173, 20, 0.3);
+  box-shadow: 0 4rpx 12rpx var(--shadow-color);
 }
 
 .warning-icon {
@@ -415,13 +415,13 @@ page {
 .warning-title {
   font-size: 30rpx;
   font-weight: 600;
-  color: #d46b08;
+  color: var(--warning-text);
   margin-bottom: 8rpx;
 }
 
 .warning-content {
   font-size: 26rpx;
-  color: #d46b08;
+  color: var(--warning-text);
   line-height: 1.6;
 }
 
@@ -495,21 +495,21 @@ page {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--danger-color) 0%, #ef4444 100%);
+  background: var(--danger-color);
   color: #ffffff;
-  box-shadow: 0 4rpx 12rpx rgba(248, 113, 113, 0.25);
+  box-shadow: 0 4rpx 12rpx var(--shadow-color);
 }
 
 .btn-delete-account {
-  background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%);
+  background: var(--warning-color);
   color: #ffffff;
-  box-shadow: 0 4rpx 12rpx rgba(250, 173, 20, 0.25);
+  box-shadow: 0 4rpx 12rpx var(--shadow-color);
 }
 
 .btn-delete-confirm {
-  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  background: var(--danger-color);
   color: #ffffff;
-  box-shadow: 0 4rpx 12rpx rgba(255, 77, 79, 0.25);
+  box-shadow: 0 4rpx 12rpx var(--shadow-color);
 }
 
 .avatar-selector {
@@ -1177,14 +1177,14 @@ page {
   left: 0;
   right: 0;
   background: var(--card-bg);
-  border-radius: 32rpx 32rpx 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   z-index: 1001;
   transform: translateY(100%);
   transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
   max-height: 75vh;
-  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -8rpx 32rpx var(--shadow-color);
 }
 
 .modal-container.show {
@@ -1206,12 +1206,8 @@ page {
   gap: 12rpx;
 }
 
-.modal-title-icon {
-  font-size: 36rpx;
-}
-
 .modal-title {
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 1rpx;

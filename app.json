@@ -45,26 +45,26 @@
       {
         "pagePath": "pages/plan/plan",
         "text": "计划",
-        "iconPath": "@iconPath1",
-        "selectedIconPath": "@selectedIconPath1"
+        "iconPath": "images/list-add.png",
+        "selectedIconPath": "images/list-add1.png"
       },
       {
         "pagePath": "pages/schedule/schedule",
         "text": "排班",
-        "iconPath": "@iconPath2",
-        "selectedIconPath": "@selectedIconPath2"
+        "iconPath": "images/schedule.png",
+        "selectedIconPath": "images/schedule1.png"
       },
       {
         "pagePath": "pages/statistics/statistics",
         "text": "统计",
-        "iconPath": "@iconPath3",
-        "selectedIconPath": "@selectedIconPath3"
+        "iconPath": "images/status.png",
+        "selectedIconPath": "images/status1.png"
       },
       {
         "pagePath": "pages/profile/profile",
         "text": "我的",
-        "iconPath": "@iconPath4",
-        "selectedIconPath": "@selectedIconPath4"
+        "iconPath": "images/me.png",
+        "selectedIconPath": "images/me1.png"
       }
     ]
   }

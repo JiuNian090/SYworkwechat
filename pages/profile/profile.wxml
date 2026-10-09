@@ -225,7 +225,6 @@
   <view class="modal-container {{showUsernameModal ? 'show' : ''}}" wx:if="{{showUsernameModal}}">
     <view class="modal-header">
       <view class="modal-title-wrapper">
-        <text class="modal-title-icon">📝</text>
         <text class="modal-title">设置用户名</text>
       </view>
       <view class="modal-close" bindtap="hideUsernameModal">
@@ -251,7 +250,6 @@
   <view class="modal-container {{showDataTypeModal ? 'show' : ''}}" wx:if="{{showDataTypeModal}}">
     <view class="modal-header">
       <view class="modal-title-wrapper">
-        <text class="modal-title-icon">📊</text>
         <text class="modal-title">选择导出数据</text>
       </view>
       <view class="modal-close" bindtap="hideDataTypeModal">
@@ -288,7 +286,6 @@
   <view class="modal-container {{showFileNameModal ? 'show' : ''}}" wx:if="{{showFileNameModal}}">
     <view class="modal-header">
       <view class="modal-title-wrapper">
-        <text class="modal-title-icon">📄</text>
         <text class="modal-title">设置文件名</text>
       </view>
       <view class="modal-close" bindtap="hideFileNameModal">
@@ -320,7 +317,6 @@
   <view class="modal-container {{showCloudLoginModal ? 'show' : ''}}" wx:if="{{showCloudLoginModal}}">
     <view class="modal-header">
       <view class="modal-title-wrapper">
-        <text class="modal-title-icon">🔑</text>
         <text class="modal-title">登录</text>
       </view>
       <view class="modal-close" bindtap="hideCloudLoginModal">
@@ -363,7 +359,6 @@
   <view class="modal-container {{showCloudRegisterModal ? 'show' : ''}}" wx:if="{{showCloudRegisterModal}}">
     <view class="modal-header">
       <view class="modal-title-wrapper">
-        <text class="modal-title-icon">📝</text>
         <text class="modal-title">注册</text>
       </view>
       <view class="modal-close" bindtap="hideCloudRegisterModal">
