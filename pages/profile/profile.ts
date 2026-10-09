@@ -997,7 +997,9 @@ Page({
     let latestTime = store.getState('_lastDataModified') as number || 0;
     const lastBackupTime = store.getState('lastBackupTime') as number || 0;
     if (lastBackupTime > latestTime) latestTime = lastBackupTime;
-    this.setData({ lastLocalUpdate: latestTime || Date.now() });
+    // 不要用 Date.now() 兜底：没有本地修改/备份记录时保持 0，
+    // 否则会被当成“刚刚本地修改过”，任何云端备份都会被判为“本地最新”
+    this.setData({ lastLocalUpdate: latestTime });
   },
 
   formatBackupTime(isoString: string): string {
@@ -1020,16 +1022,12 @@ Page({
     const { lastLocalUpdate, lastSyncHash, lastSyncTime } = this.data;
     const cloudBackupTime = cache.time ? new Date(cache.time as string).getTime() : 0;
 
-    if (lastSyncHash && localHash === lastSyncHash) {
-      const syncTime = lastSyncTime || cloudBackupTime || lastLocalUpdate;
-      const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
-      this.setData({
-        backupStatus: { type: 'synced', label: STATUS_TEXT.SYNCED + (syncTimeStr ? ' ' + syncTimeStr : '') }
-      });
-      return;
-    }
+    // 已同步必须与云端返回的 hash 比对：本地 hash 等于“上次同步时的 hash”不代表云端没变，
+    // 否则设备 A 上传后，设备 B 会一直停在“已同步”；仅当云端未提供 hash 时才降级用本机旧 hash
+    const isSameAsCloud = !!effectiveHash && localHash === effectiveHash;
+    const isSameAsLastSync = !effectiveHash && !!lastSyncHash && localHash === lastSyncHash;
 
-    if (effectiveHash && localHash === effectiveHash && lastSyncHash) {
+    if (isSameAsCloud || isSameAsLastSync) {
       const syncTime = lastSyncTime || cloudBackupTime || lastLocalUpdate;
       const syncTimeStr = syncTime ? this.formatBackupTime(new Date(syncTime).toISOString()) : '';
       this.setData({
